@@ -1,0 +1,17 @@
+.git
+.cursor
+**/.venv
+**/node_modules
+**/.next
+**/out
+**/dist
+**/build
+**/__pycache__
+**/*.pyc
+frontend/.env.local
+backend/.env
+backend/instance/backups
+docs
+*.md
+packaging/output
+agent-transcripts

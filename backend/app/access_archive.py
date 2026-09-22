@@ -1,0 +1,530 @@
+"""
+Read-only archive of every genuine table in the original Access database.
+
+The .mdb file has 322 TABLE objects; after dropping Access system tables and
+import/paste/conversion-error artifacts there are 126 plant tables. Those are
+copied into SQLite (`acc_*`) so the All Tables page can search and filter them
+even after the Access file is no longer attached.
+"""
+from __future__ import annotations
+
+import json
+import re
+import unicodedata
+from datetime import date, datetime
+from decimal import Decimal
+from pathlib import Path
+
+from sqlalchemy import inspect, text
+from sqlalchemy.engine import Engine
+
+from .config import settings
+from .database import engine
+
+META_TABLE = "access_archive_meta"
+SQLITE_PREFIX = "acc_"
+
+CATEGORY_FORM_KEY = {
+    "analyses": "analyses",
+    "anodes": "anodes",
+    "cathodes": "cathodes",
+    "membranes": "membranes",
+    "inspections": "inspections",
+    "elements": "elements",
+    "shutdowns": "shutdowns",
+    "voltage": "voltage",
+    "remarks": "remarks",
+    "imports": "import_export",
+    "ui_state": "settings",
+    "lookups": "settings",
+    "other": "search",
+}
+
+
+def quote_ident(name: str) -> str:
+    return '"' + str(name).replace('"', '""') + '"'
+
+
+def slugify(name: str) -> str:
+    normalized = unicodedata.normalize("NFKD", name)
+    ascii_name = normalized.encode("ascii", "ignore").decode("ascii")
+    slug = re.sub(r"[^a-zA-Z0-9]+", "_", ascii_name).strip("_").lower()
+    return (slug or "table")[:70]
+
+
+def is_junk_table(name: str) -> bool:
+    lower = name.lower()
+    compact = lower.replace(" ", "")
+    if name.startswith("MSys"):
+        return True
+    if "importerror" in compact:
+        return True
+    if "paste errors" in lower or "conversion errors" in lower:
+        return True
+    if "einfuegefehler" in compact:
+        return True
+    if "einf" in lower and "fehler" in lower:
+        return True
+    return False
+
+
+def categorize(name: str) -> str:
+    n = name.lower()
+    if "analyse" in n:
+        return "analyses"
+    if "anode" in n:
+        return "anodes"
+    if "kathod" in n:
+        return "cathodes"
+    if "membran" in n:
+        return "membranes"
+    if "inspektion" in n:
+        return "inspections"
+    if n in {"montage", "gruppierung"} or n.startswith("grupp") or "einzelteil" in n:
+        return "elements"
+    if "abschalt" in n:
+        return "shutdowns"
+    if any(
+        token in n
+        for token in (
+            "spannung",
+            "normelek",
+            "normierung",
+            "unelement",
+            "unkorrektur",
+            "ceelektrolyseur",
+            "eingabece",
+            "eingabeun",
+            "leistungstest",
+            "verteilun",
+            "klassenverteilung",
+        )
+    ) or n in {"pls", "nadatum", "el0ges"}:
+        return "voltage"
+    if "bemerk" in n:
+        return "remarks"
+    if n.startswith("tblimport") or n.startswith("tlbimport") or "eingelesene" in n or n.startswith("tblinfo") or n.startswith("tbldatei"):
+        return "imports"
+    if n.startswith("tblgew") or "format" in n or n in {"anoden neu", "kathode neu", "membrane neu"}:
+        return "ui_state"
+    if any(
+        token in n
+        for token in (
+            "elektrolyseur",
+            "teilanlage",
+            "gesamtanlage",
+            "gleichrichter",
+            "transformator",
+            "reserve",
+            "basisdaten",
+            "elementflaeche",
+        )
+    ):
+        return "lookups"
+    return "other"
+
+
+def form_key_for(name: str) -> str:
+    return CATEGORY_FORM_KEY[categorize(name)]
+
+
+def _cell(value):
+    if value is None:
+        return None
+    if isinstance(value, bytes):
+        return None
+    if isinstance(value, Decimal):
+        return float(value)
+    if isinstance(value, datetime):
+        return value.isoformat(sep=" ", timespec="seconds")
+    if isinstance(value, date):
+        return value.isoformat()
+    if isinstance(value, bool):
+        return int(value)
+    return value
+
+
+def _dialect_name(bind=None) -> str:
+    target = bind if bind is not None else engine
+    if hasattr(target, "dialect"):
+        return target.dialect.name
+    return engine.dialect.name
+
+
+def _table_exists(conn, name: str) -> bool:
+    dialect = conn.engine.dialect.name if hasattr(conn, "engine") else _dialect_name()
+    if dialect == "sqlite":
+        row = conn.execute(
+            text("SELECT name FROM sqlite_master WHERE type='table' AND name=:n"),
+            {"n": name},
+        ).fetchone()
+        return bool(row)
+    if dialect == "postgresql":
+        row = conn.execute(
+            text(
+                "SELECT 1 FROM information_schema.tables "
+                "WHERE table_schema = 'public' AND table_name = :n"
+            ),
+            {"n": name},
+        ).fetchone()
+        return bool(row)
+    return name in inspect(conn).get_table_names()
+
+
+def _pk_column_sql(dialect: str) -> str:
+    if dialect == "postgresql":
+        return "_rowid INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY"
+    return "_rowid INTEGER PRIMARY KEY AUTOINCREMENT"
+
+
+def _ensure_meta_table(conn) -> None:
+    conn.execute(
+        text(
+            f"""
+            CREATE TABLE IF NOT EXISTS {META_TABLE} (
+                slug TEXT PRIMARY KEY,
+                original_name TEXT NOT NULL,
+                sqlite_table TEXT NOT NULL,
+                category TEXT NOT NULL,
+                form_key TEXT NOT NULL,
+                row_count INTEGER NOT NULL,
+                columns_json TEXT NOT NULL,
+                synced_at TEXT NOT NULL
+            )
+            """
+        )
+    )
+
+
+def archive_is_populated(bind: Engine | None = None) -> bool:
+    bind = bind or engine
+    try:
+        with bind.connect() as conn:
+            if not _table_exists(conn, META_TABLE):
+                return False
+            count = conn.execute(text(f"SELECT COUNT(*) FROM {META_TABLE}")).scalar() or 0
+            return count > 0
+    except Exception:
+        return False
+
+
+def _drop_archive(conn) -> None:
+    names: list[str] = []
+    if _table_exists(conn, META_TABLE):
+        names.extend(row[0] for row in conn.execute(text(f"SELECT sqlite_table FROM {META_TABLE}")))
+    dialect = conn.engine.dialect.name if hasattr(conn, "engine") else _dialect_name()
+    if dialect == "sqlite":
+        extra = conn.execute(
+            text("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE :p"),
+            {"p": f"{SQLITE_PREFIX}%"},
+        ).fetchall()
+        names.extend(row[0] for row in extra)
+    else:
+        names.extend(name for name in inspect(conn).get_table_names() if name.startswith(SQLITE_PREFIX))
+    seen: set[str] = set()
+    for name in names:
+        if name in seen:
+            continue
+        seen.add(name)
+        conn.execute(text(f"DROP TABLE IF EXISTS {quote_ident(name)}"))
+    conn.execute(text(f"DROP TABLE IF EXISTS {quote_ident(META_TABLE)}"))
+
+
+def unique_slugs(names: list[str]) -> dict[str, str]:
+    used: dict[str, int] = {}
+    mapping: dict[str, str] = {}
+    for name in names:
+        base = slugify(name)
+        n = used.get(base, 0) + 1
+        used[base] = n
+        mapping[name] = base if n == 1 else f"{base}_{n}"
+    return mapping
+
+
+def sync_access_archive(db_path: str | None = None, progress=None) -> dict:
+    """Copy every non-junk Access table into SQLite `acc_*` tables."""
+    from .migrate_access import get_access_connection
+
+    source = db_path or settings.ACCESS_DB_PATH
+    if not source or not Path(source).is_file():
+        raise FileNotFoundError(f"Access database not found: {source}")
+
+    log = progress or (lambda _msg: None)
+    log(f"Archiving Access tables from {source}")
+
+    access = get_access_connection(source)
+    cur = access.cursor()
+    try:
+        names = [row.table_name for row in cur.tables(tableType="TABLE") if not is_junk_table(row.table_name)]
+        names.sort(key=str.lower)
+        slugs = unique_slugs(names)
+        now = datetime.utcnow().isoformat(sep=" ", timespec="seconds")
+
+        with engine.begin() as conn:
+            _drop_archive(conn)
+            _ensure_meta_table(conn)
+
+            archived = 0
+            for original in names:
+                slug = slugs[original]
+                sqlite_table = f"{SQLITE_PREFIX}{slug}"
+                try:
+                    cur.execute(f"SELECT * FROM [{original.replace(']', '')}]")
+                except Exception as exc:  # noqa: BLE001
+                    log(f"  skip {original}: {exc}")
+                    continue
+                columns = [col[0] for col in (cur.description or [])]
+                if not columns:
+                    log(f"  skip {original}: no columns")
+                    continue
+                col_sql = ", ".join(f"{quote_ident(col)} TEXT" for col in columns)
+                conn.execute(
+                    text(
+                        f"CREATE TABLE {quote_ident(sqlite_table)} "
+                        f"({_pk_column_sql(_dialect_name(conn.engine))}, {col_sql})"
+                    )
+                )
+                placeholders = ", ".join([f":c{i}" for i in range(len(columns))])
+                insert_sql = (
+                    f"INSERT INTO {quote_ident(sqlite_table)} "
+                    f"({', '.join(quote_ident(c) for c in columns)}) VALUES ({placeholders})"
+                )
+                rows = cur.fetchall()
+                payload = []
+                for row in rows:
+                    payload.append({f"c{i}": _cell(value) for i, value in enumerate(row)})
+                if payload:
+                    conn.execute(text(insert_sql), payload)
+                conn.execute(
+                    text(
+                        f"""
+                        INSERT INTO {META_TABLE}
+                        (slug, original_name, sqlite_table, category, form_key, row_count, columns_json, synced_at)
+                        VALUES (:slug, :original_name, :sqlite_table, :category, :form_key, :row_count, :columns_json, :synced_at)
+                        """
+                    ),
+                    {
+                        "slug": slug,
+                        "original_name": original,
+                        "sqlite_table": sqlite_table,
+                        "category": categorize(original),
+                        "form_key": form_key_for(original),
+                        "row_count": len(payload),
+                        "columns_json": json.dumps(columns, ensure_ascii=False),
+                        "synced_at": now,
+                    },
+                )
+                archived += 1
+                log(f"  {original} ({len(payload)} rows)")
+    finally:
+        access.close()
+
+    log(f"Archived {archived} Access tables")
+    return {"source": source, "tables": archived}
+
+
+def ensure_access_archive() -> None:
+    if archive_is_populated():
+        return
+    source = settings.ACCESS_DB_PATH
+    if source and Path(source).is_file():
+        sync_access_archive(source)
+
+
+def list_archive_tables() -> list[dict]:
+    ensure_access_archive()
+    if not archive_is_populated():
+        return []
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                f"""
+                SELECT slug, original_name, sqlite_table, category, form_key, row_count, columns_json, synced_at
+                FROM {META_TABLE}
+                ORDER BY LOWER(original_name)
+                """
+            )
+        ).mappings()
+        out = []
+        for row in rows:
+            out.append(
+                {
+                    "slug": row["slug"],
+                    "name": row["original_name"],
+                    "sqlite_table": row["sqlite_table"],
+                    "category": row["category"],
+                    "form_key": row["form_key"],
+                    "row_count": row["row_count"],
+                    "columns": json.loads(row["columns_json"] or "[]"),
+                    "synced_at": row["synced_at"],
+                }
+            )
+        return out
+
+
+def get_archive_table(slug: str) -> dict | None:
+    ensure_access_archive()
+    if not archive_is_populated():
+        return None
+    with engine.connect() as conn:
+        row = conn.execute(
+            text(
+                f"""
+                SELECT slug, original_name, sqlite_table, category, form_key, row_count, columns_json, synced_at
+                FROM {META_TABLE}
+                WHERE slug = :slug
+                """
+            ),
+            {"slug": slug},
+        ).mappings().first()
+        if not row:
+            return None
+        return {
+            "slug": row["slug"],
+            "name": row["original_name"],
+            "sqlite_table": row["sqlite_table"],
+            "category": row["category"],
+            "form_key": row["form_key"],
+            "row_count": row["row_count"],
+            "columns": json.loads(row["columns_json"] or "[]"),
+            "synced_at": row["synced_at"],
+        }
+
+
+def _row_where(columns: list[str], q: str | None, column: str | None, value: str | None):
+    clauses: list[str] = []
+    params: dict = {}
+    if q:
+        like = f"%{q}%"
+        parts = []
+        for i, col in enumerate(columns[:40]):
+            key = f"q{i}"
+            parts.append(f"CAST({quote_ident(col)} AS TEXT) LIKE :{key}")
+            params[key] = like
+        if parts:
+            clauses.append("(" + " OR ".join(parts) + ")")
+    if column and value is not None and column in columns:
+        clauses.append(f"CAST({quote_ident(column)} AS TEXT) LIKE :colval")
+        params["colval"] = f"%{value}%"
+    where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+    return where, params
+
+
+def query_archive_rows(
+    slug: str,
+    *,
+    q: str | None = None,
+    column: str | None = None,
+    value: str | None = None,
+    skip: int = 0,
+    limit: int = 200,
+) -> tuple[dict, list[dict], int]:
+    meta = get_archive_table(slug)
+    if meta is None:
+        raise KeyError(slug)
+    columns = meta["columns"]
+    where, params = _row_where(columns, q, column, value)
+    table = quote_ident(meta["sqlite_table"])
+    with engine.connect() as conn:
+        total = conn.execute(text(f"SELECT COUNT(*) FROM {table}{where}"), params).scalar() or 0
+        params = {**params, "limit": int(limit), "skip": int(skip)}
+        data_cols = ", ".join(quote_ident(c) for c in columns) if columns else "*"
+        select_cols = f"_rowid AS _id, {data_cols}" if columns else "_rowid AS _id"
+        rows = conn.execute(
+            text(f"SELECT {select_cols} FROM {table}{where} LIMIT :limit OFFSET :skip"),
+            params,
+        ).mappings()
+        data = [{k: v for k, v in dict(row).items()} for row in rows]
+    return meta, data, int(total)
+
+
+def _read_row(conn, table: str, columns: list[str], row_id: int) -> dict | None:
+    data_cols = ", ".join(quote_ident(c) for c in columns) if columns else "*"
+    select_cols = f"_rowid AS _id, {data_cols}" if columns else "_rowid AS _id"
+    row = conn.execute(
+        text(f"SELECT {select_cols} FROM {table} WHERE _rowid = :id"),
+        {"id": row_id},
+    ).mappings().first()
+    if not row:
+        return None
+    return {k: v for k, v in dict(row).items()}
+
+
+def insert_archive_row(slug: str, values: dict) -> dict:
+    meta = get_archive_table(slug)
+    if meta is None:
+        raise KeyError(slug)
+    columns = meta["columns"]
+    payload = {}
+    for key, value in (values or {}).items():
+        if key in {"_id", "_rowid"} or key not in columns:
+            continue
+        if value is None or (isinstance(value, str) and value.strip() == ""):
+            continue
+        payload[key] = str(value)
+    table = quote_ident(meta["sqlite_table"])
+    with engine.begin() as conn:
+        dialect = conn.engine.dialect.name
+        returning = " RETURNING _rowid" if dialect != "sqlite" else ""
+        if payload:
+            col_sql = ", ".join(quote_ident(c) for c in payload)
+            placeholders = ", ".join(f":c{i}" for i, _ in enumerate(payload))
+            params = {f"c{i}": v for i, v in enumerate(payload.values())}
+            result = conn.execute(
+                text(f"INSERT INTO {table} ({col_sql}) VALUES ({placeholders}){returning}"),
+                params,
+            )
+        else:
+            result = conn.execute(text(f"INSERT INTO {table} DEFAULT VALUES{returning}"))
+        row_id = result.scalar() if returning else result.lastrowid
+        conn.execute(
+            text(f"UPDATE {META_TABLE} SET row_count = row_count + 1 WHERE slug = :slug"),
+            {"slug": slug},
+        )
+        return _read_row(conn, table, columns, int(row_id)) or {}
+
+
+def update_archive_row(slug: str, row_id: int, values: dict) -> dict:
+    meta = get_archive_table(slug)
+    if meta is None:
+        raise KeyError(slug)
+    columns = meta["columns"]
+    assignments = []
+    params: dict = {"id": int(row_id)}
+    for i, (key, value) in enumerate((values or {}).items()):
+        if key in {"_id", "_rowid"} or key not in columns:
+            continue
+        assignments.append(f"{quote_ident(key)} = :c{i}")
+        params[f"c{i}"] = None if value is None or (isinstance(value, str) and value.strip() == "") else str(value)
+    if not assignments:
+        raise ValueError("No updatable fields")
+    table = quote_ident(meta["sqlite_table"])
+    with engine.begin() as conn:
+        result = conn.execute(
+            text(f"UPDATE {table} SET {', '.join(assignments)} WHERE _rowid = :id"),
+            params,
+        )
+        if result.rowcount == 0:
+            raise KeyError(row_id)
+        row = _read_row(conn, table, columns, int(row_id))
+        if row is None:
+            raise KeyError(row_id)
+        return row
+
+
+def delete_archive_row(slug: str, row_id: int) -> None:
+    meta = get_archive_table(slug)
+    if meta is None:
+        raise KeyError(slug)
+    table = quote_ident(meta["sqlite_table"])
+    with engine.begin() as conn:
+        result = conn.execute(
+            text(f"DELETE FROM {table} WHERE _rowid = :id"),
+            {"id": int(row_id)},
+        )
+        if result.rowcount == 0:
+            raise KeyError(row_id)
+        conn.execute(
+            text(f"UPDATE {META_TABLE} SET row_count = MAX(0, row_count - 1) WHERE slug = :slug"),
+            {"slug": slug},
+        )

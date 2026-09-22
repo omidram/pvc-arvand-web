@@ -1,0 +1,576 @@
+@import "tailwindcss";
+
+/* Classic Windows / MS Access 97-2003 "silver" form theme, with a dark variant. */
+:root {
+  --win-face: #d4d0c8;
+  --win-face-hi: #dedad2;
+  --win-face-dark: #c2beb5;
+  --win-panel: #ece9e2;
+  --win-border-shadow: #808080;
+  --win-border-dark: #404040;
+  --win-border-light: #ffffff;
+  --win-navy: #0a246a;
+  --win-navy-dark: #05173f;
+  --win-navy-mid: #3a6ea5;
+  --win-text: #000000;
+  --win-muted: #3f3f3f;
+  --win-input: #ffffff;
+  --win-danger: #a10000;
+  --win-row-alt: #f2f1ee;
+  --win-logo-bg: #ffffff;
+  --app-font-size: 13px;
+  --background: var(--win-face);
+  --foreground: var(--win-text);
+}
+
+html[data-theme="dark"] {
+  --win-face: #3a3a3a;
+  --win-face-hi: #4a4a4a;
+  --win-face-dark: #2a2a2a;
+  --win-panel: #232323;
+  --win-border-shadow: #1a1a1a;
+  --win-border-dark: #000000;
+  --win-border-light: #6b6b6b;
+  --win-navy: #2f5aa8;
+  --win-navy-dark: #17325f;
+  --win-navy-mid: #5b8fc7;
+  --win-text: #eae8e3;
+  --win-muted: #b7b4ac;
+  --win-input: #262626;
+  --win-danger: #ff6b60;
+  --win-row-alt: #333230;
+  --win-logo-bg: #ffffff;
+  --app-font-size: 13px;
+  --background: var(--win-face);
+  --foreground: var(--win-text);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+html {
+  color-scheme: light;
+  font-size: var(--app-font-size, 13px);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--win-face);
+  color: var(--win-text);
+  font-family: Tahoma, "Segoe UI", "Vazirmatn", Arial, sans-serif;
+  font-size: var(--app-font-size, 13px);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+[dir="rtl"] {
+  font-size: calc(var(--app-font-size, 13px) + 0.5px);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--win-face-dark) var(--win-panel);
+}
+
+::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+::-webkit-scrollbar-track {
+  background: var(--win-panel);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--win-face);
+  border: 1px solid var(--win-border-shadow);
+  box-shadow: inset 1px 1px 0 var(--win-border-light);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--win-face-hi);
+}
+
+/* Recharts tooltip/legend inherit the app font */
+.recharts-wrapper,
+.recharts-wrapper * {
+  font-family: Tahoma, "Segoe UI", "Vazirmatn", Arial, sans-serif;
+}
+
+/* Uhde Access EAP main menu — locked to classic silver, matching the original form. */
+.access-eap {
+  background: #c0c0c0;
+  color: #000000;
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+}
+
+.access-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 28px;
+  min-width: 0;
+  width: 100%;
+  padding: 0 8px;
+  background: #ffffff;
+  color: #000000;
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 400;
+  text-align: center;
+  text-decoration: none;
+  border: 2px outset #ffffff;
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.access-menu-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: #ffffe8;
+}
+
+.access-menu-btn:active:not(:disabled):not([aria-disabled="true"]) {
+  border-style: inset;
+}
+
+.access-menu-btn:focus-visible,
+.access-menu-btn.is-default-focus {
+  outline: 1px dotted #000000;
+  outline-offset: -5px;
+}
+
+.access-menu-btn[aria-disabled="true"],
+.access-menu-btn:disabled {
+  color: #6d6d6d;
+  background: #ffffff;
+  cursor: default;
+}
+
+.access-field-box {
+  display: inline-block;
+  min-width: 1.75rem;
+  background: #ffffff;
+  color: #000000;
+  border: 2px inset #ffffff;
+  padding: 1px 7px;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.access-header-sunken {
+  border: 2px inset #ffffff;
+  background: #c0c0c0;
+}
+
+.access-strip {
+  border-right: 2px groove #ffffff;
+}
+
+.access-logo-well {
+  width: 58px;
+  height: 58px;
+  background: #ffffff;
+  border: 2px inset #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+}
+
+.access-uhde-card {
+  width: 88px;
+  padding: 6px 4px 7px;
+  border: 1px solid #808080;
+  background: transparent;
+}
+
+.access-forms-pane {
+  width: 268px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #2d2d30;
+  color: #cccccc;
+  border-left: 1px solid #1e1e1e;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+.access-forms-pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  padding: 0 10px;
+  background: #252526;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid #3f3f46;
+}
+
+.access-forms-pane-count {
+  font-size: 10px;
+  font-weight: 400;
+  color: #9cdcfe;
+}
+
+.access-forms-search {
+  padding: 6px 8px;
+  border-bottom: 1px solid #3f3f46;
+}
+
+.access-forms-search input {
+  width: 100%;
+  height: 22px;
+  padding: 0 6px;
+  background: #3c3c3c;
+  color: #f3f3f3;
+  border: 1px solid #555555;
+  font-size: 11px;
+  outline: none;
+}
+
+.access-forms-search input::placeholder {
+  color: #9a9a9a;
+}
+
+.access-forms-search input:focus {
+  border-color: #007acc;
+}
+
+.access-forms-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 0 8px;
+}
+
+.access-forms-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 22px;
+  padding: 0 10px;
+  color: #d4d4d4;
+  font-size: 11px;
+  line-height: 1;
+  text-decoration: none;
+  cursor: default;
+  user-select: none;
+}
+
+.access-forms-item:hover:not(.is-disabled) {
+  background: #094771;
+  color: #ffffff;
+}
+
+.access-forms-item.is-active {
+  background: #094771;
+  color: #ffffff;
+}
+
+.access-forms-item.is-subform {
+  color: #b0b0b0;
+}
+
+.access-forms-item.is-disabled {
+  opacity: 0.42;
+  cursor: default;
+}
+
+.access-forms-item-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.access-nav-form-icon {
+  position: relative;
+  flex-shrink: 0;
+  width: 14px;
+  height: 12px;
+  background: #f0f0f0;
+  border: 1px solid #6b6b6b;
+}
+
+.access-nav-form-icon-bar {
+  display: block;
+  height: 3px;
+  background: #5b4b9a;
+}
+
+.access-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 10px;
+  background: var(--win-face);
+  color: var(--win-text);
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 11px;
+  border: 2px outset var(--win-face);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.access-toolbar-btn:hover {
+  background: var(--win-face-hi);
+}
+
+.access-toolbar-btn:active {
+  border-style: inset;
+}
+
+.access-toolbar-btn.is-active {
+  border-style: inset;
+  background: var(--win-face-dark);
+}
+
+.access-toolbar-btn:focus-visible {
+  outline: 1px dotted var(--win-text);
+  outline-offset: -4px;
+}
+
+.access-form-window {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  background: var(--win-face);
+  color: var(--win-text);
+}
+
+.access-form-caption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 22px;
+  padding: 0 6px;
+  background: linear-gradient(90deg, var(--win-navy), var(--win-navy-mid));
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.access-form-body {
+  flex: 1;
+  padding: 8px 10px 6px;
+}
+
+.access-form-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  border-top: 2px groove var(--win-face);
+  background: var(--win-face);
+  padding: 3px 6px;
+  font-size: 11px;
+}
+
+.access-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--win-face);
+  color: var(--win-text);
+  border: 2px outset var(--win-face);
+  font-size: 11px;
+  line-height: 1;
+  cursor: default;
+}
+
+.access-nav-btn:disabled {
+  color: #6d6d6d;
+}
+
+.access-nav-btn:active:not(:disabled) {
+  border-style: inset;
+}
+
+.access-nav-btn.is-active {
+  border-style: inset;
+  background: var(--win-face-dark);
+}
+
+.access-subform {
+  border: 2px inset #ffffff;
+  background: var(--win-face);
+}
+
+.access-subform-caption {
+  background: var(--win-face-dark);
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.access-label {
+  width: 132px;
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 1.2;
+  padding-top: 3px;
+}
+
+.access-link {
+  color: var(--win-navy);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+/* Access 97 inner forms — same silver canvas as the EAP main menu. */
+.access-hub {
+  min-height: 100%;
+  background: #c0c0c0;
+  color: #000000;
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+  padding: 8px 12px 16px;
+}
+
+.access-hub-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.access-hub-title {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 18px;
+  border: 2px inset #ffffff;
+  background: #c0c0c0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #000000;
+}
+
+.access-hub-title.is-blue {
+  color: #000080;
+}
+
+.access-hub-menu-btn {
+  width: auto;
+  min-width: 108px;
+  height: 26px;
+  padding: 0 14px;
+}
+
+.access-group {
+  border: 2px groove #ffffff;
+  background: #c0c0c0;
+  padding: 6px 8px 8px;
+  margin-bottom: 8px;
+}
+
+.access-group legend {
+  padding: 0 4px;
+  font-size: 11px;
+  color: #000000;
+}
+
+.access-col {
+  min-width: 168px;
+  padding: 4px 6px 8px;
+}
+
+.access-col-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.access-sunken {
+  border: 2px inset #ffffff;
+  background: #c0c0c0;
+  padding: 8px 6px;
+}
+
+.access-radio {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 11px;
+  line-height: 1.25;
+  margin: 3px 0;
+  cursor: default;
+}
+
+.access-radio input {
+  margin-top: 1px;
+}
+
+.access-inset-field {
+  height: 20px;
+  border: 2px inset #ffffff;
+  background: #ffffff;
+  color: #000000;
+  padding: 0 4px;
+  font-size: 11px;
+  font-family: Tahoma, Arial, sans-serif;
+}
+
+.access-plant-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 12px;
+  padding: 2px 8px 8px;
+}
+
+.access-cont-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.access-cont-table th {
+  text-align: left;
+  font-weight: 700;
+  padding: 2px 6px;
+}
+
+.access-cont-table td {
+  padding: 2px 4px;
+  border-top: 1px solid #000000;
+  vertical-align: middle;
+}
+
+.access-cont-table input,
+.access-cont-table select {
+  height: 22px;
+  border: 2px inset #ffffff;
+  background: #ffffff;
+  color: #000000;
+  padding: 0 4px;
+  font-size: 12px;
+  font-family: Tahoma, Arial, sans-serif;
+}
+
+.access-selector {
+  width: 14px;
+  color: #000000;
+  font-size: 12px;
+}
+
+.access-import-dialog {
+  width: min(560px, 100%);
+  border: 2px outset #c0c0c0;
+  background: #c0c0c0;
+  padding: 10px;
+}

@@ -1,0 +1,4 @@
+pdf_458438.txt	pages=1	size=458438	text_bytes=127
+pdf_458438.txt	pages=1	size=458438	text_bytes=127
+pdf_1913525.txt	pages=43	size=1913525	text_bytes=50344
+pdf_17624656.txt	pages=43	size=17624656	text_bytes=1096

@@ -1,0 +1,14 @@
+{
+  "mdb_path": "c:\\Users\\Omid\\Downloads\\New folder (4)\\PVC_Arvand_kofigurierte Datenbank.mdb",
+  "mdb_exists": true,
+  "methods": {
+    "pyodbc": {
+      "ok": false,
+      "error": "('42000', \"[42000] [Microsoft][ODBC Microsoft Access Driver] Record(s) cannot be read; no read permission on 'MSysObjects'. (-1907) (SQLExecDirectW)\")"
+    },
+    "win32com": {
+      "ok": false,
+      "error": "(-2147352567, 'Exception occurred.', (0, None, 'You already have the database open.', None, -1, -2146820421), None)"
+    }
+  }
+}

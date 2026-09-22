@@ -1,0 +1,59 @@
+# Dependencies & build
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+backend/.venv/
+backend/venv/
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+.Python
+dist/
+build/
+backend/dist/
+backend/build/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env.local
+*.pem
+
+# Runtime data (keep schema via migrations; do not ship live plant DB)
+backend/instance/*.db
+backend/instance/backups/
+backend/instance/*.json
+!backend/instance/.gitkeep
+
+# Packaging artifacts (large)
+packaging/output/
+*.zip
+*.exe
+*.msi
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+*.log
+
+# Analysis dumps / temp
+backend/scripts/_files_analysis/
+backend/scripts/_tmp_*
+backend/scripts/*.mdb
+backend/scripts/*.accdb
+*.tsv
+.cursor/
+docs/*.log
+
+
+# Test / coverage
+coverage/
+.pytest_cache/
+.mypy_cache/
+.next/
