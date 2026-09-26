@@ -655,62 +655,62 @@ function CurrentEfficiencyTab() {
 }
 
 function VoltageMenu() {
+  const { t } = useI18n();
   return (
-    <AccessHub title="Standardized Voltage">
+    <AccessHub title={t("voltage.title")}>
       <div className="mb-4 access-sunken inline-block px-3 py-2">
-        <div className="mb-2 text-[12px] font-bold">Data Input</div>
+        <div className="mb-2 text-[12px] font-bold">{t("menus.dataInput")}</div>
         <div className="flex flex-wrap gap-2">
           <AccessBtn className="!w-auto px-3" href="/voltage?form=normalizations">
-            Data Input Electrolyzers
+            {t("menus.dataInputElectrolyzers")}
           </AccessBtn>
           <AccessBtn className="!w-auto px-3" href="/voltage?form=readings">
-            Data Input Elements
+            {t("menus.dataInputElements")}
           </AccessBtn>
           <AccessBtn className="!w-auto px-3" href="/voltage?form=readings">
-            Read Data from File
+            {t("menus.readFromFile")}
           </AccessBtn>
         </div>
       </div>
       <div className="grid max-w-[720px] grid-cols-2 gap-3 sm:grid-cols-3">
         <div className="access-sunken">
-          <div className="access-col-title">Tables and diagrams</div>
+          <div className="access-col-title">{t("menus.tablesDiagrams")}</div>
           <div className="mt-2 flex flex-col gap-2">
-            <AccessBtn href="/voltage?form=distribution">Total Plant</AccessBtn>
-            <AccessBtn href="/voltage?form=distribution">Train</AccessBtn>
-            <AccessBtn href="/voltage?form=normalizations">Electrolyzer</AccessBtn>
-            <AccessBtn href="/voltage?form=distribution">Groups</AccessBtn>
-            <AccessBtn href="/voltage?form=readings">Elements</AccessBtn>
+            <AccessBtn href="/voltage?form=distribution">{t("menus.totalPlant")}</AccessBtn>
+            <AccessBtn href="/voltage?form=distribution">{t("menus.train")}</AccessBtn>
+            <AccessBtn href="/voltage?form=normalizations">{t("menus.electrolyzer")}</AccessBtn>
+            <AccessBtn href="/voltage?form=distribution">{t("menus.groups")}</AccessBtn>
+            <AccessBtn href="/voltage?form=readings">{t("menus.elements")}</AccessBtn>
           </div>
         </div>
         <div className="access-sunken">
-          <div className="access-col-title">Single elements</div>
+          <div className="access-col-title">{t("menus.singleElements")}</div>
           <div className="mt-2 flex flex-col gap-2">
-            <AccessBtn href="/voltage?form=readings">Tables / diagrams</AccessBtn>
+            <AccessBtn href="/voltage?form=readings">{t("menus.tablesOrDiagrams")}</AccessBtn>
           </div>
         </div>
         <div className="access-sunken">
-          <div className="access-col-title">Groups</div>
+          <div className="access-col-title">{t("menus.groups")}</div>
           <div className="mt-2 flex flex-col gap-2">
-            <AccessBtn href="/statistics?form=groups">Tables / diagrams</AccessBtn>
+            <AccessBtn href="/statistics?form=groups">{t("menus.tablesOrDiagrams")}</AccessBtn>
           </div>
         </div>
       </div>
     </AccessHub>
   );
 }
-
 function VoltagePageInner() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
   const tab = searchParams.get("form") || searchParams.get("tab") || undefined;
   if (!tab) return <VoltageMenu />;
   return (
-    <AccessFormWindow caption="Standardized Voltage" helpKey="voltage" backHref="/voltage" backLabel="Standardized Voltage">
+    <AccessFormWindow caption={t("voltage.title")} helpKey="voltage" backHref="/voltage" backLabel={t("voltage.title")}>
       <Tabs
         defaultTab={tab === "current-efficiency" ? "calculator" : tab}
         tabs={[
-          { key: "normalizations", label: "Input Electrolyzers", content: <NormalizationsTab /> },
-          { key: "readings", label: "Input Elements", content: <ReadingsTab /> },
+          { key: "normalizations", label: t("menus.inputElectrolyzers"), content: <NormalizationsTab /> },
+          { key: "readings", label: t("menus.inputElements"), content: <ReadingsTab /> },
           { key: "calculator", label: t("voltage.tabCalculator"), content: <CalculatorTab /> },
           { key: "distribution", label: t("voltage.tabDistribution"), content: <DistributionTab /> },
         ]}

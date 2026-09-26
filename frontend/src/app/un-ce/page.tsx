@@ -5,8 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Line, LineChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { currentEfficiencyEntriesApi, electrolyzersApi, voltageReadingsApi } from "@/lib/endpoints";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function UnCePage() {
+  const { t } = useI18n();
   const [from, setFrom] = useState("2006-06-01");
   const [till, setTill] = useState("2016-10-04");
   const [elNr, setElNr] = useState("");
@@ -44,10 +46,10 @@ export default function UnCePage() {
   }, [drawn, unQuery.data, ceQuery.data, elNr, showAll, from, till]);
 
   return (
-    <AccessHub title="Un / CE">
+    <AccessHub title={t("mainMenu.unCe")}>
       <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
       <div className="max-w-md">
-        <div className="mb-2 text-[12px] font-bold">Electrolyzer</div>
+        <div className="mb-2 text-[12px] font-bold">{t("menus.electrolyzer")}</div>
         <select
           className="access-inset-field mb-3 w-40"
           value={elNr}
@@ -63,9 +65,9 @@ export default function UnCePage() {
         </select>
         <div className="flex flex-col gap-2">
           <AccessBtn className="!w-[140px]" onClick={() => setDrawn(true)}>
-            Graph
+            {t("menus.graph")}
           </AccessBtn>
-          <div className="text-[12px]">All Electrolyzers</div>
+          <div className="text-[12px]">{t("menus.allElectrolyzers")}</div>
           <AccessBtn
             className="!w-[140px]"
             onClick={() => {
@@ -73,14 +75,14 @@ export default function UnCePage() {
               setDrawn(true);
             }}
           >
-            Graph
+            {t("menus.graph")}
           </AccessBtn>
         </div>
       </div>
       {drawn ? (
         <div className="access-sunken mt-4">
           {rows.length === 0 ? (
-            <div className="p-3 text-[12px]">No Un / CE pairs in this period.</div>
+            <div className="p-3 text-[12px]">{t("menus.noUnCe")}</div>
           ) : (
             <ResponsiveContainer width="100%" height={320}>
               <LineChart data={rows}>
@@ -89,8 +91,8 @@ export default function UnCePage() {
                 <YAxis yAxisId="left" stroke="#000" fontSize={11} />
                 <YAxis yAxisId="right" orientation="right" stroke="#000" fontSize={11} />
                 <Tooltip />
-                <Line yAxisId="left" type="monotone" dataKey="un" name="Un [V]" stroke="#0a246a" dot={false} />
-                <Line yAxisId="right" type="monotone" dataKey="ce" name="CE [%]" stroke="#c41212" dot={false} />
+                <Line yAxisId="left" type="monotone" dataKey="un" name={t("menus.graphUn")} stroke="#0a246a" dot={false} />
+                <Line yAxisId="right" type="monotone" dataKey="ce" name={t("menus.graphCe")} stroke="#c41212" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           )}

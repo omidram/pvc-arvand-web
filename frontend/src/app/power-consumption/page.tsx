@@ -5,8 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
 import { electrolyzersApi, reportsApi, statisticsApi } from "@/lib/endpoints";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function PowerConsumptionPage() {
+  const { t } = useI18n();
   const [from, setFrom] = useState("2006-06-01");
   const [till, setTill] = useState("2016-10-04");
   const [shown, setShown] = useState<{ title: string; mode: "chart" | "table" } | null>(null);
@@ -41,70 +43,70 @@ export default function PowerConsumptionPage() {
   }, [powerQuery.data, trendsQuery.data]);
 
   return (
-    <AccessHub title="Power Consumption">
+    <AccessHub title={t("mainMenu.powerConsumption")}>
       <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
       <div className="grid grid-cols-1 gap-2 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
         <ReportColumn
-          title="Total Plant"
+          title={t("menus.totalPlant")}
           values={plant.values}
           onChange={plant.onChange}
           onDisplay={() => setShown({ title: "Total Plant", mode: plant.values.result === "table" ? "table" : "chart" })}
           groups={[
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}
         />
         <ReportColumn
-          title="Train"
+          title={t("menus.train")}
           values={train.values}
           onChange={train.onChange}
           onDisplay={() => setShown({ title: "Train", mode: train.values.result === "table" ? "table" : "chart" })}
           groups={[
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}
         />
         <ReportColumn
-          title="Electrolyzers"
+          title={t("menus.electrolyzers")}
           values={el.values}
           onChange={el.onChange}
           onDisplay={() => setShown({ title: "Electrolyzers", mode: el.values.result === "table" ? "table" : "chart" })}
           groups={[
             {
-              legend: "Table Un",
+              legend: t("menus.tableUn"),
               name: "tableUn",
               options: [
-                { value: "electrolyzers", label: "Electrolyzers" },
-                { value: "all-elements", label: "All Elements per Electrol." },
+                { value: "electrolyzers", label: t("menus.electrolyzers") },
+                { value: "all-elements", label: t("menus.allElementsPerEl") },
               ],
             },
             {
-              legend: "Basis CE",
+              legend: t("menus.basisCe"),
               name: "basis",
               options: [
-                { value: "anod", label: "Anod. Bal. Electrolyzer" },
-                { value: "naoh", label: "NaOH Prod. Electrolyzer" },
+                { value: "anod", label: t("menus.anodBalEl") },
+                { value: "naoh", label: t("menus.naohEl") },
               ],
             },
             {
-              legend: "Calculation for",
+              legend: t("menus.calculationFor"),
               name: "calc",
               options: [
-                { value: "individual", label: "Individual Electrolyzer" },
-                { value: "several", label: "Several Electrolyzers" },
-                { value: "all", label: "All Electrolyzers" },
+                { value: "individual", label: t("menus.individualEl") },
+                { value: "several", label: t("menus.severalElectrolyzers") },
+                { value: "all", label: t("menus.allElectrolyzers") },
               ],
               extra: (v) =>
                 v === "individual" ? (
@@ -116,44 +118,44 @@ export default function PowerConsumptionPage() {
                 ) : null,
             },
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}
         />
         <ReportColumn
-          title="Groups"
+          title={t("menus.groups")}
           values={group.values}
           onChange={group.onChange}
           onDisplay={() => setShown({ title: "Groups", mode: group.values.result === "table" ? "table" : "chart" })}
           groups={[
             {
-              legend: "Table Un",
+              legend: t("menus.tableUn"),
               name: "tableUn",
               options: [
-                { value: "all-elements", label: "All Elements per Electrol." },
-                { value: "groups", label: "Groups" },
+                { value: "all-elements", label: t("menus.allElementsPerEl") },
+                { value: "groups", label: t("menus.groups") },
               ],
             },
             {
-              legend: "Basis CE",
+              legend: t("menus.basisCe"),
               name: "basis",
               options: [
-                { value: "anod", label: "Anodic Bal. Group" },
-                { value: "naoh", label: "NaOH Prod. Group" },
+                { value: "anod", label: t("menus.anodBalGroup") },
+                { value: "naoh", label: t("menus.naohGroup") },
               ],
             },
             {
-              legend: "Calculation for",
+              legend: t("menus.calculationFor"),
               name: "calc",
               options: [
-                { value: "individual", label: "Individual Group" },
-                { value: "several", label: "Several Groups" },
-                { value: "all", label: "All Groups" },
+                { value: "individual", label: t("menus.individualGroup") },
+                { value: "several", label: t("menus.severalGroups") },
+                { value: "all", label: t("menus.allGroups") },
               ],
               extra: (v) =>
                 v === "individual" ? (
@@ -161,52 +163,52 @@ export default function PowerConsumptionPage() {
                 ) : null,
             },
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}
         />
         <ReportColumn
-          title="Elements"
+          title={t("menus.elements")}
           values={element.values}
           onChange={element.onChange}
           onDisplay={() => setShown({ title: "Elements", mode: element.values.result === "table" ? "table" : "chart" })}
           groups={[
             {
-              legend: "Table Un",
+              legend: t("menus.tableUn"),
               name: "tableUn",
               options: [
-                { value: "all-elements", label: "All Elements per Electrol." },
-                { value: "individual", label: "Individual Element" },
+                { value: "all-elements", label: t("menus.allElementsPerEl") },
+                { value: "individual", label: t("menus.individualElement") },
               ],
             },
             {
-              legend: "Basis CE",
+              legend: t("menus.basisCe"),
               name: "basis",
               options: [
-                { value: "anod", label: "Anodic Bal. Element" },
-                { value: "naoh", label: "NaOH Prod. Element" },
+                { value: "anod", label: t("menus.anodBalElement") },
+                { value: "naoh", label: t("menus.naohElement") },
               ],
             },
             {
-              legend: "Calculation for",
+              legend: t("menus.calculationFor"),
               name: "calc",
               options: [
-                { value: "individual", label: "Individual Element" },
-                { value: "several", label: "Several Elements" },
-                { value: "all", label: "All Elements" },
+                { value: "individual", label: t("menus.individualElement") },
+                { value: "several", label: t("menus.severalElements") },
+                { value: "all", label: t("menus.allElements") },
               ],
             },
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}

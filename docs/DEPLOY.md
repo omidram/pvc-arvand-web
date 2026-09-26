@@ -141,3 +141,56 @@ a Windows workstation and copy the SQLite file into the Docker volume.
 3. Restrict who can reach port 8080 on the server (firewall / VLAN).
 4. Do not commit `backend/.env` with real secrets; Docker generates a JWT
    secret into `/data/jwt_secret.txt` on first start.
+
+---
+
+## 4. Debian server from GitHub
+
+Use this when the server only has SSH. The app stays on GitHub; the server
+pulls it. Plant data stays in the Docker volume `pvc_arvand_data` across updates.
+
+### First time (on the Debian server)
+
+```bash
+sudo apt-get update
+sudo apt-get install -y git
+git clone https://github.com/omidram/pvc-arvand-web.git
+cd pvc-arvand-web
+bash deploy/install.sh
+```
+
+Open `http://SERVER-IP:8080/` and sign in. Change the password in the UI.
+
+Optional, before the first start, edit `.env` (created from `deploy/env.example`)
+to set `DEFAULT_ADMIN_PASSWORD` and `APP_PUBLISH_PORT`.
+
+If Docker was just installed and compose says permission denied, log out of SSH
+and back in, then run `bash deploy/install.sh` again.
+
+### Every later update
+
+On your PC: commit and `git push`.
+
+On the server:
+
+```bash
+cd pvc-arvand-web
+bash deploy/update.sh
+```
+
+That pulls `main` and rebuilds the container. It does not delete the database.
+
+### Useful commands on the server
+
+```bash
+docker compose logs -f --tail 100
+docker compose restart
+docker compose down          # stops the app, keeps the data volume
+```
+
+If `ufw` is enabled:
+
+```bash
+sudo ufw allow 8080/tcp
+```
+

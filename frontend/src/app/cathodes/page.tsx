@@ -54,10 +54,10 @@ export default function CathodesPage() {
 
   return (
     <AccessWorkspace<Cathode>
-      caption="Cathode Details"
+      caption={t("menus.cathodeDetails")}
       helpKey="cathodes"
       backHref="/elements"
-      backLabel="Element Administration"
+      backLabel={t("elements.title")}
       records={listQuery.data}
       isLoading={listQuery.isLoading}
       error={listQuery.error as Error | null}

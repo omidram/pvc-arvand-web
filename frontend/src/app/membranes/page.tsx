@@ -39,10 +39,10 @@ export default function MembranesPage() {
 
   return (
     <AccessWorkspace<Membrane>
-      caption="Membrane Details"
+      caption={t("menus.membraneDetails")}
       helpKey="membranes"
       backHref="/elements"
-      backLabel="Element Administration"
+      backLabel={t("elements.title")}
       records={listQuery.data}
       isLoading={listQuery.isLoading}
       error={listQuery.error as Error | null}

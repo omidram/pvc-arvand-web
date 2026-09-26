@@ -7,15 +7,15 @@ services:
     container_name: pvc-arvand
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "${APP_PUBLISH_PORT:-8080}:8080"
     environment:
       PVC_ENV: production
       APP_HOST: 0.0.0.0
       APP_PORT: 8080
       PVC_DATA_DIR: /data
       PVC_STATIC_DIR: /app/static
-      DEFAULT_ADMIN_USERNAME: admin
-      DEFAULT_ADMIN_PASSWORD: admin123
+      DEFAULT_ADMIN_USERNAME: ${DEFAULT_ADMIN_USERNAME:-admin}
+      DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-admin123}
     volumes:
       - pvc_arvand_data:/data
 

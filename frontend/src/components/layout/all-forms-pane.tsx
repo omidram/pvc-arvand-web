@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth/context";
 import { getAccessFormShortcuts } from "@/lib/access-form-routes";
+import { useI18n } from "@/lib/i18n/context";
 
 function AccessFormIcon() {
   return (
@@ -23,6 +24,7 @@ function isCurrentForm(href: string, pathname: string, query: string): boolean {
 }
 
 export function AllFormsPane() {
+  const { t } = useI18n();
   const { canView } = useAuth();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -39,7 +41,7 @@ export function AllFormsPane() {
   return (
     <aside className="access-forms-pane min-h-0 self-stretch" dir="ltr">
       <div className="access-forms-pane-header">
-        <span>All Forms</span>
+        <span>{t("menus.allForms")}</span>
         <span className="access-forms-pane-count">{filtered.length}</span>
       </div>
       <div className="access-forms-search">
@@ -47,8 +49,8 @@ export function AllFormsPane() {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search forms…"
-          aria-label="Search forms"
+          placeholder={t("menus.searchForms")}
+          aria-label={t("menus.searchForms")}
         />
       </div>
       <div className="access-forms-list">

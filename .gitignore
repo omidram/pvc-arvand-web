@@ -2,6 +2,9 @@
 node_modules/
 frontend/node_modules/
 frontend/.next/
+frontend-modern/node_modules/
+frontend-modern/.next/
+frontend-modern/.env.local
 frontend/out/
 backend/.venv/
 backend/venv/

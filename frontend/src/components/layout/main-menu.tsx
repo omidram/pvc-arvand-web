@@ -5,9 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { settingsApi } from "@/lib/endpoints";
 import { useAuth } from "@/lib/auth/context";
 import { UhdeCellBars, UhdeLogoMark } from "@/components/layout/uhde-mark";
-import { translations } from "@/lib/i18n/translations";
-
-const m = translations.en.mainMenu;
+import { useI18n } from "@/lib/i18n/context";
 
 function accessDate(value: string | null | undefined): string {
   if (!value) return "";
@@ -57,6 +55,7 @@ function MenuButton({
 
 export function MainMenu() {
   const { canView, logout } = useAuth();
+  const { t } = useI18n();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const settings = settingsQuery.data;
 
@@ -68,10 +67,10 @@ export function MainMenu() {
             <UhdeCellBars height={48} />
           </div>
           <div className="access-uhde-card space-y-0.5 text-center text-[11px] leading-tight text-black">
-            <div>{m.uhde}</div>
-            <div>{m.uhdeDept}</div>
-            <div className="pt-2">{m.uhdeStreet}</div>
-            <div>{m.uhdeCity}</div>
+            <div>{t("mainMenu.uhde")}</div>
+            <div>{t("mainMenu.uhdeDept")}</div>
+            <div className="pt-2">{t("mainMenu.uhdeStreet")}</div>
+            <div>{t("mainMenu.uhdeCity")}</div>
           </div>
           <div className="mt-auto flex justify-center pt-6">
             <div className="access-logo-well">
@@ -82,23 +81,23 @@ export function MainMenu() {
 
         <section className="flex min-w-0 flex-1 flex-col px-3 pb-4 pt-1">
           <div className="access-header-sunken mb-5 px-4 pb-3 pt-2">
-            <h1 className="mb-3 text-center text-[22px] font-bold leading-tight text-black">{m.programTitle}</h1>
+            <h1 className="mb-3 text-center text-[22px] font-bold leading-tight text-black">{t("mainMenu.programTitle")}</h1>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-black">
               <span>
-                <span className="font-bold">{m.client}:</span> {settings?.customer || "—"}
+                <span className="font-bold">{t("mainMenu.client")}:</span> {settings?.customer || "—"}
               </span>
               <span>
-                <span className="font-bold">{m.typeOfPlant}:</span> {settings?.plant_type || "—"}
+                <span className="font-bold">{t("mainMenu.typeOfPlant")}:</span> {settings?.plant_type || "—"}
               </span>
               <span>
-                <span className="font-bold">{m.uan}:</span> {settings?.uan || "—"}
+                <span className="font-bold">{t("mainMenu.uan")}:</span> {settings?.uan || "—"}
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="font-bold">{m.version}:</span>
+                <span className="font-bold">{t("mainMenu.version")}:</span>
                 <span className="access-field-box">{settings?.version || "—"}</span>
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="font-bold">{m.date}:</span>
+                <span className="font-bold">{t("mainMenu.date")}:</span>
                 <span className="access-field-box">{accessDate(settings?.date) || "—"}</span>
               </span>
             </div>
@@ -117,58 +116,58 @@ export function MainMenu() {
           >
             <MenuButton
               href="/elements"
-              label={m.elementAdministration}
+              label={t("mainMenu.elementAdministration")}
               allowed={canView("elements")}
               defaultFocus
               className="col-start-1 row-start-1"
             />
             <MenuButton
               href="/settings?tab=arrangements"
-              label={m.cellArrangement}
+              label={t("mainMenu.cellArrangement")}
               allowed={canView("settings")}
               className="col-start-1 row-start-2"
             />
-            <MenuButton href="/search" label={m.search} allowed={canView("search")} className="col-start-1 row-start-3" />
+            <MenuButton href="/search" label={t("mainMenu.search")} allowed={canView("search")} className="col-start-1 row-start-3" />
 
             <MenuButton
               href="/voltage"
-              label={m.standardizedVoltage}
+              label={t("mainMenu.standardizedVoltage")}
               allowed={canView("voltage")}
               className="col-start-2 row-start-1"
             />
             <MenuButton
               href="/current-efficiency"
-              label={m.currentEfficiency}
+              label={t("mainMenu.currentEfficiency")}
               allowed={canView("voltage")}
               className="col-start-2 row-start-2"
             />
             <MenuButton
               href="/power-consumption"
-              label={m.powerConsumption}
+              label={t("mainMenu.powerConsumption")}
               allowed={canView("statistics")}
               className="col-start-2 row-start-3"
             />
-            <MenuButton href="/un-ce" label={m.unCe} allowed={canView("reports")} className="col-start-2 row-start-4" />
+            <MenuButton href="/un-ce" label={t("mainMenu.unCe")} allowed={canView("reports")} className="col-start-2 row-start-4" />
             <MenuButton
               href="/test-run-results"
-              label={m.testRunResults}
+              label={t("mainMenu.testRunResults")}
               allowed={canView("voltage")}
               className="col-start-2 row-start-5"
             />
 
-            <MenuButton href="/analyses" label={m.analysis} allowed={canView("analyses")} className="col-start-3 row-start-1" />
+            <MenuButton href="/analyses" label={t("mainMenu.analysis")} allowed={canView("analyses")} className="col-start-3 row-start-1" />
             <MenuButton
               href="/statistics"
-              label={m.statistics}
+              label={t("mainMenu.statistics")}
               allowed={canView("statistics")}
               className="col-start-4 row-start-1"
             />
-            <MenuButton href="/shutdowns" label={m.shutDown} allowed={canView("shutdowns")} className="col-start-5 row-start-1" />
+            <MenuButton href="/shutdowns" label={t("mainMenu.shutDown")} allowed={canView("shutdowns")} className="col-start-5 row-start-1" />
 
-            <MenuButton href="/remarks" label={m.remarks} allowed={canView("remarks")} className="col-start-7 row-start-1" />
-            <MenuButton href="/about" label={m.aboutEap} allowed className="col-start-7 row-start-2" />
-            <MenuButton href="/settings" label={m.settings} allowed={canView("settings")} className="col-start-7 row-start-3" />
-            <MenuButton onClick={logout} label={m.exit} allowed className="col-start-7 row-start-5" />
+            <MenuButton href="/remarks" label={t("mainMenu.remarks")} allowed={canView("remarks")} className="col-start-7 row-start-1" />
+            <MenuButton href="/about" label={t("mainMenu.aboutEap")} allowed className="col-start-7 row-start-2" />
+            <MenuButton href="/settings" label={t("mainMenu.settings")} allowed={canView("settings")} className="col-start-7 row-start-3" />
+            <MenuButton onClick={logout} label={t("mainMenu.exit")} allowed className="col-start-7 row-start-5" />
           </div>
         </section>
       </div>

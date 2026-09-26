@@ -46,26 +46,28 @@ export default function SearchPage() {
   const results = searchQuery.data;
 
   return (
-    <AccessFormWindow caption="Search Functions" helpKey="search">
+    <AccessFormWindow caption={t("search.title")} helpKey="search">
       <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-        {[
-          ["Element number", "element"],
-          ["Active elements", "active"],
-          ["Passive elements", "passive"],
-          ["Anode Number", "anode"],
-          ["Cathode Number", "cathode"],
-          ["Membrane number", "membrane"],
-          ["Assembly date", "assembly"],
-          ["Commisioning date", "commissioning"],
-          ["Decommisioning date", "decommissioning"],
-          ["Disassembly date", "disassembly"],
-          ["Duplicate anode (all)", "dup-anode"],
-          ["Duplicate Cathode (all)", "dup-cathode"],
-          ["Duplicate membrane (all)", "dup-membrane"],
-          ["Group", "group"],
-          ["Reason for Inspection", "inspection"],
-          ["DOL", "dol"],
-        ].map(([label, kind]) => (
+        {(
+          [
+            ["menus.searchElement", "element"],
+            ["menus.searchActive", "active"],
+            ["menus.searchPassive", "passive"],
+            ["menus.searchAnode", "anode"],
+            ["menus.searchCathode", "cathode"],
+            ["menus.searchMembrane", "membrane"],
+            ["menus.searchAssembly", "assembly"],
+            ["menus.searchCommissioning", "commissioning"],
+            ["menus.searchDecommissioning", "decommissioning"],
+            ["menus.searchDisassembly", "disassembly"],
+            ["menus.searchDupAnode", "dup-anode"],
+            ["menus.searchDupCathode", "dup-cathode"],
+            ["menus.searchDupMembrane", "dup-membrane"],
+            ["menus.searchGroup", "group"],
+            ["menus.searchInspection", "inspection"],
+            ["menus.searchDol", "dol"],
+          ] as const
+        ).map(([labelKey, kind]) => (
           <AccessBtn
             key={kind}
             onClick={() => {
@@ -77,7 +79,7 @@ export default function SearchPage() {
               }
             }}
           >
-            {label}
+            {t(labelKey)}
           </AccessBtn>
         ))}
       </div>

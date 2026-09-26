@@ -125,10 +125,10 @@ export default function InspectionsPage() {
 
   return (
     <AccessWorkspace<InspectionReport>
-      caption="Element Inspection"
+      caption={t("menus.elementInspection")}
       helpKey="inspections"
       backHref="/elements"
-      backLabel="Element Administration"
+      backLabel={t("elements.title")}
       records={listQuery.data}
       isLoading={listQuery.isLoading}
       error={listQuery.error as Error | null}

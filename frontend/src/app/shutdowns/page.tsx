@@ -176,23 +176,24 @@ function ShutdownsList() {
 }
 
 function ShutdownMenu() {
+  const { t } = useI18n();
   return (
-    <AccessHub title="Shut Down">
+    <AccessHub title={t("shutdowns.title")}>
       <div className="flex flex-wrap items-start gap-8 pt-4">
         <div>
-          <div className="mb-2 text-[12px] font-bold">Input</div>
+          <div className="mb-2 text-[12px] font-bold">{t("menus.input")}</div>
           <div className="access-sunken flex w-[200px] flex-col gap-2">
-            <AccessBtn href="/shutdowns?form=list">Shut Down List</AccessBtn>
-            <AccessBtn href="/shutdowns?form=reasons">Shut Down Reasons</AccessBtn>
-            <AccessBtn href="/shutdowns?form=categories">Shut Down Categories</AccessBtn>
+            <AccessBtn href="/shutdowns?form=list">{t("menus.shutdownList")}</AccessBtn>
+            <AccessBtn href="/shutdowns?form=reasons">{t("menus.shutdownReasons")}</AccessBtn>
+            <AccessBtn href="/shutdowns?form=categories">{t("menus.shutdownCategories")}</AccessBtn>
           </div>
         </div>
         <div>
-          <div className="mb-2 text-[12px] font-bold">Results</div>
+          <div className="mb-2 text-[12px] font-bold">{t("menus.results")}</div>
           <div className="access-sunken flex w-[200px] flex-col gap-2">
-            <AccessBtn href="/shutdowns?form=reasons">Shut Down Reasons</AccessBtn>
-            <AccessBtn href="/shutdowns?form=categories">Category</AccessBtn>
-            <AccessBtn href="/shutdowns?form=list">Time Period</AccessBtn>
+            <AccessBtn href="/shutdowns?form=reasons">{t("menus.shutdownReasons")}</AccessBtn>
+            <AccessBtn href="/shutdowns?form=categories">{t("menus.category")}</AccessBtn>
+            <AccessBtn href="/shutdowns?form=list">{t("menus.timePeriod")}</AccessBtn>
           </div>
         </div>
       </div>
@@ -206,7 +207,7 @@ function ShutdownsForms() {
   const form = searchParams.get("form");
   const tab = form === "categories" ? "categories" : form === "reasons" ? "causes" : "log";
   return (
-    <AccessFormWindow caption="Shut Down" helpKey="shutdowns" backHref="/shutdowns" backLabel="Shut Down">
+    <AccessFormWindow caption={t("shutdowns.title")} helpKey="shutdowns" backHref="/shutdowns" backLabel={t("shutdowns.title")}>
       <Tabs
         defaultTab={tab}
         tabs={[

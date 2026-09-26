@@ -72,7 +72,7 @@ export default function SegregationPage() {
         caption={t("segregation.title")}
         helpKey="anodes"
         backHref="/elements"
-        backLabel="Element Administration"
+        backLabel={t("elements.title")}
         records={listQuery.data}
         isLoading={listQuery.isLoading}
         error={listQuery.error as Error | null}

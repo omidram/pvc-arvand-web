@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AccessBtn, AccessGroup, AccessRadio } from "@/components/layout/access-hub";
+import { useI18n } from "@/lib/i18n/context";
 
 export type RadioGroupDef = {
   legend: string;
@@ -24,6 +25,7 @@ export function ReportColumn({
   onChange: (name: string, value: string) => void;
   onDisplay: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="access-col flex min-h-[420px] flex-col">
       <div className="access-col-title">{title}</div>
@@ -44,7 +46,7 @@ export function ReportColumn({
           </AccessGroup>
         ))}
         <div className="mt-auto pt-2">
-          <AccessBtn onClick={onDisplay}>Display Results</AccessBtn>
+          <AccessBtn onClick={onDisplay}>{t("menus.displayResults")}</AccessBtn>
         </div>
       </div>
     </div>
@@ -66,8 +68,9 @@ export function ResultsPane({
   yKey: string;
   yLabel: string;
 }) {
+  const { t } = useI18n();
   if (rows.length === 0) {
-    return <div className="access-sunken mt-3 p-3 text-[12px]">No records in the selected time period.</div>;
+    return <div className="access-sunken mt-3 p-3 text-[12px]">{t("menus.noRecordsPeriod")}</div>;
   }
   return (
     <div className="access-sunken mt-3">

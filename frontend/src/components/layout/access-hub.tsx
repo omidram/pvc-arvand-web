@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { useI18n } from "@/lib/i18n/context";
 
 export function AccessHub({
   title,
   titleBlue,
   backHref = "/",
-  backLabel = "Main Menu",
+  backLabel,
   extraButtons,
   children,
 }: {
@@ -18,6 +19,8 @@ export function AccessHub({
   extraButtons?: ReactNode;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
+  const back = backLabel || t("common.mainMenu");
   return (
     <div className="access-hub" dir="ltr">
       <div className="access-hub-head">
@@ -25,7 +28,7 @@ export function AccessHub({
         <div className="flex flex-wrap items-start gap-2">
           {extraButtons}
           <Link href={backHref} className="access-menu-btn access-hub-menu-btn">
-            {backLabel}
+            {back}
           </Link>
         </div>
       </div>
@@ -103,15 +106,16 @@ export function AccessPeriod({
   onFrom: (value: string) => void;
   onTill: (value: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div className="mb-3 flex flex-wrap items-end gap-3 text-[12px]">
-      <span className="font-bold">Time Period from</span>
+      <span className="font-bold">{t("menus.timePeriodFrom")}</span>
       <label className="inline-flex items-center gap-1">
-        from
+        {t("menus.from")}
         <input type="date" className="access-inset-field w-[118px]" value={from} onChange={(e) => onFrom(e.target.value)} />
       </label>
       <label className="inline-flex items-center gap-1">
-        till
+        {t("menus.till")}
         <input type="date" className="access-inset-field w-[118px]" value={till} onChange={(e) => onTill(e.target.value)} />
       </label>
     </div>

@@ -20,90 +20,91 @@ import { ExportButtons } from "@/components/domain/export-buttons";
 
 const SCOPES = ["plant", "sub_plant", "electrolyzer", "group", "element"] as const;
 
-const COLUMNS: { title: string; scope: string; items: { label: string; type: string }[] }[] = [
+const COLUMNS: { titleKey: string; scope: string; items: { labelKey: string; type: string }[] }[] = [
   {
-    title: "Total Plant",
+    titleKey: "menus.totalPlant",
     scope: "plant",
     items: [
-      { label: "Anolyte", type: "anolyte" },
-      { label: "Catholyte", type: "catholyte" },
-      { label: "Pure Brine", type: "pure_brine" },
-      { label: "Chlorine", type: "chlorine_gas" },
-      { label: "Hydrogen", type: "hydrogen" },
-      { label: "HCl to Anolyte", type: "hcl" },
-      { label: "Demin. Water", type: "demin_water" },
-      { label: "Lean Caustic", type: "caustic_feed" },
+      { labelKey: "enums.analysisType.anolyte", type: "anolyte" },
+      { labelKey: "enums.analysisType.catholyte", type: "catholyte" },
+      { labelKey: "enums.analysisType.pure_brine", type: "pure_brine" },
+      { labelKey: "enums.analysisType.chlorine_gas", type: "chlorine_gas" },
+      { labelKey: "enums.analysisType.hydrogen", type: "hydrogen" },
+      { labelKey: "menus.hclToAnolyte", type: "hcl" },
+      { labelKey: "enums.analysisType.demin_water", type: "demin_water" },
+      { labelKey: "menus.leanCaustic", type: "caustic_feed" },
     ],
   },
   {
-    title: "Train",
+    titleKey: "menus.train",
     scope: "sub_plant",
     items: [
-      { label: "Anolyte", type: "anolyte" },
-      { label: "Catholyte", type: "catholyte" },
-      { label: "Pure Brine", type: "pure_brine" },
-      { label: "Chlorine", type: "chlorine_gas" },
-      { label: "HCl to Anolyte", type: "hcl" },
-      { label: "Lean Caustic Feed", type: "caustic_feed" },
+      { labelKey: "enums.analysisType.anolyte", type: "anolyte" },
+      { labelKey: "enums.analysisType.catholyte", type: "catholyte" },
+      { labelKey: "enums.analysisType.pure_brine", type: "pure_brine" },
+      { labelKey: "enums.analysisType.chlorine_gas", type: "chlorine_gas" },
+      { labelKey: "menus.hclToAnolyte", type: "hcl" },
+      { labelKey: "menus.leanCausticFeed", type: "caustic_feed" },
     ],
   },
   {
-    title: "Electrolyzer",
+    titleKey: "menus.electrolyzer",
     scope: "electrolyzer",
     items: [
-      { label: "Anolyte", type: "anolyte" },
-      { label: "Catholyte", type: "catholyte" },
-      { label: "Pure Brine", type: "pure_brine" },
-      { label: "Chlorine", type: "chlorine_gas" },
-      { label: "HCl for Acidification", type: "hcl" },
+      { labelKey: "enums.analysisType.anolyte", type: "anolyte" },
+      { labelKey: "enums.analysisType.catholyte", type: "catholyte" },
+      { labelKey: "enums.analysisType.pure_brine", type: "pure_brine" },
+      { labelKey: "enums.analysisType.chlorine_gas", type: "chlorine_gas" },
+      { labelKey: "menus.hclAcidification", type: "hcl" },
     ],
   },
   {
-    title: "Group",
+    titleKey: "menus.groups",
     scope: "group",
     items: [
-      { label: "Anolyte", type: "anolyte" },
-      { label: "Catholyte", type: "catholyte" },
-      { label: "Pure Brine", type: "pure_brine" },
-      { label: "Chlorine", type: "chlorine_gas" },
+      { labelKey: "enums.analysisType.anolyte", type: "anolyte" },
+      { labelKey: "enums.analysisType.catholyte", type: "catholyte" },
+      { labelKey: "enums.analysisType.pure_brine", type: "pure_brine" },
+      { labelKey: "enums.analysisType.chlorine_gas", type: "chlorine_gas" },
     ],
   },
   {
-    title: "Element",
+    titleKey: "menus.elements",
     scope: "element",
     items: [
-      { label: "Anolyte", type: "anolyte" },
-      { label: "Catholyte", type: "catholyte" },
-      { label: "Pure Brine", type: "pure_brine" },
-      { label: "Chlorine", type: "chlorine_gas" },
+      { labelKey: "enums.analysisType.anolyte", type: "anolyte" },
+      { labelKey: "enums.analysisType.catholyte", type: "catholyte" },
+      { labelKey: "enums.analysisType.pure_brine", type: "pure_brine" },
+      { labelKey: "enums.analysisType.chlorine_gas", type: "chlorine_gas" },
     ],
   },
 ];
 
 function AnalysisMenu() {
+  const { t } = useI18n();
   const [importOpen, setImportOpen] = useState(false);
   return (
     <AccessHub
-      title="Analysis"
+      title={t("analyses.title")}
       extraButtons={
         <>
           <AccessBtn className="!w-auto px-3" href="/current-efficiency">
-            Current Efficiency
+            {t("mainMenu.currentEfficiency")}
           </AccessBtn>
           <AccessBtn className="!w-auto px-3" onClick={() => setImportOpen(true)}>
-            Import Analyses
+            {t("menus.importAnalyses")}
           </AccessBtn>
         </>
       }
     >
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {COLUMNS.map((col) => (
-          <div key={col.title} className="access-sunken">
-            <div className="access-col-title mb-3">{col.title}</div>
+          <div key={col.titleKey} className="access-sunken">
+            <div className="access-col-title mb-3">{t(col.titleKey)}</div>
             <div className="flex flex-col gap-2">
               {col.items.map((item) => (
-                <AccessBtn key={item.label} href={`/analyses?type=${item.type}&scope=${col.scope}`}>
-                  {item.label}
+                <AccessBtn key={item.labelKey} href={`/analyses?type=${item.type}&scope=${col.scope}`}>
+                  {t(item.labelKey)}
                 </AccessBtn>
               ))}
             </div>
@@ -211,7 +212,7 @@ function AnalysisEntry() {
   ];
 
   return (
-    <AccessFormWindow caption="Analysis" helpKey="analyses" backHref="/analyses" backLabel="Analysis">
+    <AccessFormWindow caption={t("analyses.title")} helpKey="analyses" backHref="/analyses" backLabel={t("analyses.title")}>
       <div className="mb-4 flex flex-wrap gap-3">
         <ExportButtons prefix="/analyses" params={params} filenameBase="analyses" />
         {editable && (

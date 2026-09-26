@@ -56,7 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           fallback={
             <aside className="access-forms-pane min-h-0 self-stretch" dir="ltr">
               <div className="access-forms-pane-header">
-                <span>All Forms</span>
+                <span>{t("menus.allForms")}</span>
               </div>
             </aside>
           }

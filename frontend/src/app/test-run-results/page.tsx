@@ -7,9 +7,11 @@ import { useCrudResource } from "@/lib/use-resource";
 import type { PerformanceTest } from "@/lib/types";
 import { AccessHub } from "@/components/layout/access-hub";
 import { useAuth } from "@/lib/auth/context";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function TestRunResultsPage() {
   const { canEdit } = useAuth();
+  const { t } = useI18n();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const { listQuery, createMutation, updateMutation } = useCrudResource<PerformanceTest>(
     "performance-tests",
@@ -26,18 +28,18 @@ export default function TestRunResultsPage() {
   }
 
   return (
-    <AccessHub title="Performance Test Results" titleBlue>
+    <AccessHub title={t("menus.performanceTests")} titleBlue>
       <div className="access-plant-bar">
         <span>{s?.customer || "PVC Arvand"}</span>
-        <span>{s?.plant_type === "KOH" ? "KOH Electrolysis" : "NaCl Electrolysis"}</span>
+        <span>{s?.plant_type === "KOH" ? t("menus.kohElectrolysis") : t("menus.naclElectrolysis")}</span>
         <span>{s?.uan || "03-3039"}</span>
       </div>
       <table className="access-cont-table">
         <thead>
           <tr>
             <th className="w-4" />
-            <th className="w-40">Date</th>
-            <th>Part of Plant</th>
+            <th className="w-40">{t("menus.date")}</th>
+            <th>{t("menus.partOfPlant")}</th>
             <th className="w-28">CE [%]</th>
             <th className="w-40">SPC [kWh/t NaOH]</th>
           </tr>

@@ -7,7 +7,7 @@ COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/src ./src
 COPY frontend/public ./public
-COPY frontend/tsconfig.json frontend/next.config.ts frontend/postcss.config.mjs frontend/next-env.d.ts ./
+COPY frontend/tsconfig.json frontend/next.config.ts frontend/postcss.config.mjs ./
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PVC_STATIC_EXPORT=1
 ENV NEXT_PUBLIC_SAME_ORIGIN=1
@@ -27,7 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/app ./app
 COPY --from=frontend /src/out ./static
-COPY backend/instance/pvc_arvand.db ./seed/pvc_arvand.db
+RUN mkdir -p ./seed
 
 ENV PVC_ENV=production
 ENV PVC_STATIC_DIR=/app/static

@@ -6,9 +6,11 @@ import { useCrudResource } from "@/lib/use-resource";
 import type { Remark } from "@/lib/types";
 import { AccessHub } from "@/components/layout/access-hub";
 import { useAuth } from "@/lib/auth/context";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function RemarksPage() {
   const { canEdit } = useAuth();
+  const { t } = useI18n();
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Remark>(
     "remarks",
     remarksApi,
@@ -23,14 +25,14 @@ export default function RemarksPage() {
   }
 
   return (
-    <AccessHub title="Remarks" titleBlue>
+    <AccessHub title={t("remarks.title")} titleBlue>
       <table className="access-cont-table">
         <thead>
           <tr>
             <th className="w-4" />
-            <th className="w-16">No.</th>
-            <th className="w-36">Date</th>
-            <th>Remark</th>
+            <th className="w-16">{t("menus.number")}</th>
+            <th className="w-36">{t("menus.date")}</th>
+            <th>{t("menus.remark")}</th>
           </tr>
         </thead>
         <tbody>

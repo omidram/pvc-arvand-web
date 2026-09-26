@@ -96,10 +96,10 @@ export function AssemblyDataForm() {
   return (
     <>
       <AccessWorkspace<Element>
-        caption="Assembly Data"
+        caption={t("menus.assemblyData")}
         helpKey="elements"
         backHref="/elements"
-        backLabel="Element Administration"
+        backLabel={t("elements.title")}
         records={listQuery.data}
         isLoading={listQuery.isLoading}
         error={listQuery.error as Error | null}

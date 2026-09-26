@@ -58,10 +58,10 @@ export default function AnodesPage() {
 
   return (
     <AccessWorkspace<Anode>
-      caption="Anode Details"
+      caption={t("menus.anodeDetails")}
       helpKey="anodes"
       backHref="/elements"
-      backLabel="Element Administration"
+      backLabel={t("elements.title")}
       records={listQuery.data}
       isLoading={listQuery.isLoading}
       error={listQuery.error as Error | null}

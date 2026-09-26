@@ -6,8 +6,10 @@ import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-h
 import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
 import { currentEfficiencyEntriesApi, electrolyzersApi } from "@/lib/endpoints";
 import { formatDate } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function CurrentEfficiencyPage() {
+  const { t } = useI18n();
   const [from, setFrom] = useState("2006-06-01");
   const [till, setTill] = useState("2016-10-04");
   const [shown, setShown] = useState<{ title: string; mode: "chart" | "table"; scope: string } | null>(null);
@@ -62,26 +64,26 @@ export default function CurrentEfficiencyPage() {
   const elNames = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean);
 
   return (
-    <AccessHub title="Current Efficiency">
+    <AccessHub title={t("mainMenu.currentEfficiency")}>
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div className="access-sunken px-3 py-2">
-          <div className="text-[12px] font-bold">Data Input</div>
-          <div className="mb-2 text-[11px]">CE from NaOH Production</div>
+          <div className="text-[12px] font-bold">{t("menus.dataInput")}</div>
+          <div className="mb-2 text-[11px]">{t("menus.ceFromNaoh")}</div>
           <div className="flex flex-wrap gap-1">
             <AccessBtn className="!w-auto" href="/voltage?form=normalizations">
-              Total Plant
+              {t("menus.totalPlant")}
             </AccessBtn>
             <AccessBtn className="!w-auto" href="/voltage?form=normalizations">
-              Trains
+              {t("menus.trains")}
             </AccessBtn>
             <AccessBtn className="!w-auto" href="/voltage?form=normalizations">
-              Electrolyzers
+              {t("menus.electrolyzers")}
             </AccessBtn>
             <AccessBtn className="!w-auto" href="/voltage?form=normalizations">
-              Groups
+              {t("menus.groups")}
             </AccessBtn>
             <AccessBtn className="!w-auto" href="/voltage?form=readings">
-              Elements
+              {t("menus.elements")}
             </AccessBtn>
           </div>
         </div>
@@ -90,117 +92,117 @@ export default function CurrentEfficiencyPage() {
 
       <div className="grid grid-cols-1 gap-2 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
         <ReportColumn
-          title="Total Plant"
+          title={t("menus.totalPlant")}
           values={plant.values}
           onChange={plant.onChange}
           onDisplay={() => display("Total Plant", plant, "plant")}
           groups={[
             {
-              legend: "Basis",
+              legend: t("menus.basis"),
               name: "basis",
               options: [
-                { value: "anod", label: "Anod. Bal. Electrolyzers" },
-                { value: "naoh", label: "NaOH Prod. Tot. Plant" },
+                { value: "anod", label: t("menus.anodBalEls") },
+                { value: "naoh", label: t("menus.naohPlant") },
               ],
             },
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}
         />
         <ReportColumn
-          title="Train"
+          title={t("menus.train")}
           values={train.values}
           onChange={train.onChange}
           onDisplay={() => display("Train", train, "train")}
           groups={[
             {
-              legend: "Basis",
+              legend: t("menus.basis"),
               name: "basis",
               options: [
-                { value: "anod", label: "Anod. Bal. Electrolyzers" },
-                { value: "naoh", label: "NaOH Prod. Train" },
+                { value: "anod", label: t("menus.anodBalEls") },
+                { value: "naoh", label: t("menus.naohTrain") },
               ],
             },
             {
-              legend: "Calculation for",
+              legend: t("menus.calculationFor"),
               name: "calc",
               options: [
-                { value: "individual", label: "Individual Train" },
-                { value: "all", label: "All Trains" },
+                { value: "individual", label: t("menus.individualTrain") },
+                { value: "all", label: t("menus.allTrains") },
               ],
               extra: (v) => (v === "individual" ? combo(trainNr, setTrainNr, ["1", "2", ...elNames]) : null),
             },
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}
         />
         <ReportColumn
-          title="Electrolyzers"
+          title={t("menus.electrolyzers")}
           values={el.values}
           onChange={el.onChange}
           onDisplay={() => display("Electrolyzers", el, "electrolyzer")}
           groups={[
             {
-              legend: "Basis",
+              legend: t("menus.basis"),
               name: "basis",
               options: [
-                { value: "anod", label: "Anod. Bal. Electrolyzer" },
-                { value: "naoh", label: "NaOH Prod. Electrolyzer" },
+                { value: "anod", label: t("menus.anodBalEl") },
+                { value: "naoh", label: t("menus.naohEl") },
               ],
             },
             {
-              legend: "Calculation for",
+              legend: t("menus.calculationFor"),
               name: "calc",
               options: [
-                { value: "individual", label: "Individual Electrolyzer" },
-                { value: "various", label: "Various Electrolyseurs" },
-                { value: "all", label: "All Electrolyzers" },
+                { value: "individual", label: t("menus.individualEl") },
+                { value: "various", label: t("menus.variousEls") },
+                { value: "all", label: t("menus.allElectrolyzers") },
               ],
               extra: (v) => (v === "individual" ? combo(elNr, setElNr, elNames.length ? elNames : ["2C"]) : null),
             },
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}
         />
         <ReportColumn
-          title="Groups"
+          title={t("menus.groups")}
           values={group.values}
           onChange={group.onChange}
           onDisplay={() => display("Groups", group, "group")}
           groups={[
             {
-              legend: "Basis",
+              legend: t("menus.basis"),
               name: "basis",
               options: [
-                { value: "anod", label: "Anod. Balance Group" },
-                { value: "naoh", label: "NaOH Prod. Group" },
+                { value: "anod", label: t("menus.anodBalGroup") },
+                { value: "naoh", label: t("menus.naohGroup") },
               ],
             },
             {
-              legend: "Calculation for",
+              legend: t("menus.calculationFor"),
               name: "calc",
               options: [
-                { value: "individual", label: "Individual Group" },
-                { value: "several", label: "Several Groups" },
-                { value: "all", label: "All Groups" },
+                { value: "individual", label: t("menus.individualGroup") },
+                { value: "several", label: t("menus.severalGroups") },
+                { value: "all", label: t("menus.allGroups") },
               ],
               extra: (v) =>
                 v === "individual" ? (
@@ -208,44 +210,44 @@ export default function CurrentEfficiencyPage() {
                 ) : null,
             },
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}
         />
         <ReportColumn
-          title="Elements"
+          title={t("menus.elements")}
           values={element.values}
           onChange={element.onChange}
           onDisplay={() => display("Elements", element, "element")}
           groups={[
             {
-              legend: "Basis",
+              legend: t("menus.basis"),
               name: "basis",
               options: [
-                { value: "anod", label: "Anod. Balance Element" },
-                { value: "naoh", label: "NaOH Prod. Element" },
+                { value: "anod", label: t("menus.anodBalElement") },
+                { value: "naoh", label: t("menus.naohElement") },
               ],
             },
             {
-              legend: "Calculation for",
+              legend: t("menus.calculationFor"),
               name: "calc",
               options: [
-                { value: "individual", label: "Individual Element" },
-                { value: "several", label: "Several Elements" },
-                { value: "all", label: "All Elements" },
+                { value: "individual", label: t("menus.individualElement") },
+                { value: "several", label: t("menus.severalElements") },
+                { value: "all", label: t("menus.allElements") },
               ],
             },
             {
-              legend: "Results as",
+              legend: t("menus.resultsAs"),
               name: "result",
               options: [
-                { value: "chart", label: "Chart" },
-                { value: "table", label: "Table" },
+                { value: "chart", label: t("menus.chart") },
+                { value: "table", label: t("menus.table") },
               ],
             },
           ]}

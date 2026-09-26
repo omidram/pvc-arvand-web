@@ -28,16 +28,17 @@ import {
 const TOOLTIP_STYLE = { background: "#ffffff", border: "1px solid #808080", borderRadius: 0, fontSize: 12, color: "#000" };
 
 function StatisticsMenu() {
+  const { t } = useI18n();
   const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
   const [elNr, setElNr] = useState(elQuery.data?.[0]?.name || "1G");
   const names = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean);
   return (
-    <AccessHub title="Statistics">
+    <AccessHub title={t("statistics.title")}>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="access-sunken">
-          <div className="access-col-title">Single Element Voltages</div>
+          <div className="access-col-title">{t("menus.singleElementVoltages")}</div>
           <label className="mb-2 mt-2 block text-[12px]">
-            Elektrolyser
+            {t("menus.electrolyzer")}
             <select className="access-inset-field mt-1 w-full" value={elNr} onChange={(e) => setElNr(e.target.value)}>
               {(names.length ? names : ["1G"]).map((n) => (
                 <option key={n}>{n}</option>
@@ -45,31 +46,31 @@ function StatisticsMenu() {
             </select>
           </label>
           <div className="flex flex-col gap-2">
-            <AccessBtn href={`/statistics?form=voltages&electrolyzer=${encodeURIComponent(elNr)}`}>Element Voltages</AccessBtn>
-            <AccessBtn href="/statistics?form=high">Elements With High Voltages</AccessBtn>
+            <AccessBtn href={`/statistics?form=voltages&electrolyzer=${encodeURIComponent(elNr)}`}>{t("menus.elementVoltages")}</AccessBtn>
+            <AccessBtn href="/statistics?form=high">{t("menus.highVoltages")}</AccessBtn>
             <AccessBtn href={`/statistics?form=distribution&electrolyzer=${encodeURIComponent(elNr)}`}>
-              Distribution Un
+              {t("menus.distributionUn")}
             </AccessBtn>
           </div>
         </div>
         <div className="access-sunken">
-          <div className="access-col-title">Power Consumption</div>
+          <div className="access-col-title">{t("mainMenu.powerConsumption")}</div>
           <div className="mt-6 flex flex-col gap-2">
-            <AccessBtn href="/statistics?form=power">Electrolyzers</AccessBtn>
+            <AccessBtn href="/statistics?form=power">{t("menus.electrolyzers")}</AccessBtn>
           </div>
         </div>
         <div className="access-sunken">
-          <div className="access-col-title">Membranes</div>
+          <div className="access-col-title">{t("menus.membranes")}</div>
           <div className="mt-6 flex flex-col gap-2">
-            <AccessBtn href="/statistics?form=dol">DOL</AccessBtn>
+            <AccessBtn href="/statistics?form=dol">{t("menus.dol")}</AccessBtn>
           </div>
         </div>
         <div className="access-sunken">
-          <div className="access-col-title">Groups</div>
+          <div className="access-col-title">{t("menus.groups")}</div>
           <div className="mt-6 flex flex-col gap-2">
-            <AccessBtn href="/statistics?form=groups">Un all Groups Sel. by Date</AccessBtn>
-            <AccessBtn href="/statistics?form=groups">Un all Groups Sel. by El. and Date</AccessBtn>
-            <AccessBtn href="/statistics?form=groups">Un Groups in Sel. Electrol.</AccessBtn>
+            <AccessBtn href="/statistics?form=groups">{t("menus.unGroupsByDate")}</AccessBtn>
+            <AccessBtn href="/statistics?form=groups">{t("menus.unGroupsByElDate")}</AccessBtn>
+            <AccessBtn href="/statistics?form=groups">{t("menus.unGroupsInEl")}</AccessBtn>
           </div>
         </div>
       </div>
@@ -102,19 +103,19 @@ function StatisticsDetails() {
 
   const title =
     form === "power"
-      ? "Average Power Consumption"
+      ? t("mainMenu.powerConsumption")
       : form === "dol"
-        ? "Days On-Line (DOL)"
+        ? t("menus.dol")
         : form === "distribution"
-          ? "Distribution Un"
+          ? t("menus.distributionUn")
           : form === "high"
-            ? "Elements with high voltages"
+            ? t("menus.highVoltages")
             : form === "voltages"
-              ? "Element Voltages"
-              : "Groups";
+              ? t("menus.elementVoltages")
+              : t("statistics.title");
 
   return (
-    <AccessFormWindow caption={title} helpKey="statistics" backHref="/statistics" backLabel="Statistics">
+    <AccessFormWindow caption={title} helpKey="statistics" backHref="/statistics" backLabel={t("statistics.title")}>
       {(form === "dol" || !form) && (
         <Card className="mb-4">
           <CardHeader>
