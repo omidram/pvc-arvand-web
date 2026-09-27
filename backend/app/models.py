@@ -65,6 +65,25 @@ class BackupSettings(Base):
     last_run_message: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
 
+class VoltageSyncSettings(Base):
+    """Watch-folder sync from ARIAORMS LogSheets Excel → standardized voltage."""
+    __tablename__ = "voltage_sync_settings"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    watch_dir: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    poll_seconds: Mapped[int] = mapped_column(Integer, default=30)
+    source_url: Mapped[str | None] = mapped_column(
+        String(500),
+        default="http://192.168.20.12:8080/LogSheetsReports.aspx",
+        nullable=True,
+    )
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    last_run_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    last_run_message: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # JSON map: relative path -> {mtime, size} of last successfully applied file
+    processed_state: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
 # ==========================================================================
 # Plant configuration / lookups  (tblElektrolyseurbezeichnung, etc.)
 # ==========================================================================

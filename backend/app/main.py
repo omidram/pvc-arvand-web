@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import inspect, text
 
-from . import backup_scheduler, models
+from . import backup_scheduler, models, voltage_sync_scheduler
 from .auth import require_form_access, seed_default_admin
 from .config import settings
 from .database import Base, SessionLocal, engine
@@ -30,6 +30,7 @@ from .routers import (
     statistics,
     users as users_router_module,
     voltage,
+    voltage_sync as voltage_sync_router_module,
 )
 
 Base.metadata.create_all(bind=engine)
@@ -87,13 +88,15 @@ def _safe_static_file(full_path: str):
 
 
 @app.on_event("startup")
-def _start_backup_scheduler() -> None:
+def _start_schedulers() -> None:
     backup_scheduler.init_scheduler_from_db()
+    voltage_sync_scheduler.init_scheduler_from_db()
 
 
 @app.on_event("shutdown")
-def _stop_backup_scheduler() -> None:
+def _stop_schedulers() -> None:
     backup_scheduler.shutdown_scheduler()
+    voltage_sync_scheduler.shutdown_scheduler()
 
 app.add_middleware(
     CORSMiddleware,
@@ -197,6 +200,7 @@ _api(db_tables.router)
 
 # --- Automatic / manual backup ---
 _api(backup_router_module.router, dependencies=_perm("settings"))
+_api(voltage_sync_router_module.router, dependencies=_perm("settings"))
 
 # --- Admin database files / local vs online switch ---
 _api(database_router_module.router)

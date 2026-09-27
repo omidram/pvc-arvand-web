@@ -70,3 +70,4 @@ if is_production():
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 (DATA_DIR / "backups").mkdir(parents=True, exist_ok=True)
+(DATA_DIR / "ariaorms_exports").mkdir(parents=True, exist_ok=True)

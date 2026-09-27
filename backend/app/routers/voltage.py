@@ -169,67 +169,31 @@ async def import_voltage_excel(
     electrolyzer: str | None = None,
     reading_date: str | None = None,
 ):
-    """Import SiteMan / F2-style plant voltage Excel (wide layout with time slots)."""
-    from ..plant_import import parse_voltage_excel
+    """Import SiteMan / F2 / ARIAORMS LogSheets Excel (upsert by electrolyzer+date+time+position)."""
+    from .. import voltage_sync
 
     content = await file.read()
-    parsed = parse_voltage_excel(content)
-    if parsed.get("error"):
-        raise HTTPException(status_code=400, detail=parsed["error"])
-
-    el = (electrolyzer or parsed.get("electrolyzer") or "").strip()
-    if not el:
-        raise HTTPException(status_code=400, detail="Could not detect electrolyzer; pass electrolyzer= explicitly")
-
-    if reading_date:
-        date_val = datetime.fromisoformat(reading_date)
-    elif parsed.get("reading_date"):
-        date_val = datetime.fromisoformat(parsed["reading_date"])
-    else:
-        raise HTTPException(status_code=400, detail="Could not detect reading date; pass reading_date=YYYY-MM-DD")
-
-    created = 0
-    for item in parsed.get("readings") or []:
-        db.add(
-            models.VoltageReading(
-                electrolyzer=item.get("electrolyzer") or el,
-                position=item.get("position"),
-                element_nr=item.get("element_nr"),
-                date=date_val,
-                time=item.get("time"),
-                voltage=item.get("voltage"),
-            )
+    try:
+        info = voltage_sync.apply_excel_bytes(
+            db,
+            content,
+            electrolyzer=electrolyzer,
+            reading_date=reading_date,
+            hint_from_name=file.filename or "",
         )
-        created += 1
+        db.commit()
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    # Optional normalization header from totals (first filled time slot)
-    totals = parsed.get("totals") or {}
-    for _tlabel, tvals in totals.items():
-        total_v = tvals.get("total")
-        if total_v is None and tvals.get("rack_a") is not None and tvals.get("rack_b") is not None:
-            total_v = float(tvals["rack_a"]) + float(tvals["rack_b"])
-        if total_v is None:
-            continue
-        db.add(
-            models.ElectrolyzerNormalization(
-                electrolyzer=el,
-                date=date_val,
-                time=_tlabel,
-                total_voltage=total_v,
-                element_count=created,
-                anolyte_temp=tvals.get("anolyte_temp"),
-                catholyte_temp=tvals.get("catholyte_temp"),
-            )
-        )
-        break
-
-    db.commit()
     return {
-        "imported_rows": created,
-        "electrolyzer": el,
-        "reading_date": date_val.date().isoformat(),
-        "operators": parsed.get("operators") or [],
-        "sheet": parsed.get("sheet"),
+        "imported_rows": info.get("rows_upserted"),
+        "electrolyzer": info.get("electrolyzer"),
+        "reading_date": info.get("reading_date"),
+        "times": info.get("times") or [],
+        "operators": info.get("operators") or [],
+        "sheet": info.get("sheet"),
+        "out_of_range_count": info.get("out_of_range_count") or 0,
+        "mode": "upsert",
     }
 
 

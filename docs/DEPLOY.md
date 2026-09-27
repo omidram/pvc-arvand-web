@@ -126,6 +126,34 @@ docker run --rm -v pvc_arvand_web_pvc_arvand_data:/data -v ${PWD}:/backup alpine
 
 The in-app **Settings → Backup** tab is usually enough for daily plant backups.
 
+### ARIAORMS voltage sync (Ubuntu)
+
+ARIAORMS at `http://192.168.20.12:8080/LogSheetsReports.aspx` writes electrolyzer
+voltage log sheets to Excel. PVC Arvand watches a folder and **upserts** those
+rows into **Standardized Voltage** by electrolyzer + date + time slot.
+
+1. On the Ubuntu host, create a shared export folder (default compose mount):
+
+```bash
+mkdir -p ./ariaorms_exports
+```
+
+2. In ARIAORMS: **VIEW LOGSHEETS** → pick electrolyzer / date range → **Excel**,
+   and save the file into that folder (same file name can be overwritten; changes
+   are detected by size/mtime/hash).
+
+3. In PVC Arvand: **Settings → ARIAORMS Voltage Sync** → enable automatic sync
+   (poll every 30s by default). Watch folder inside the container is
+   `/data/ariaorms_exports`.
+
+4. Or click **Sync Now** / **Upload Excel once** for a manual upsert.
+
+Optional `.env`:
+
+```bash
+ARIAORMS_EXPORT_DIR=/var/lib/ariaorms/exports
+```
+
 ### Access import on the server
 
 `.mdb` Access import needs the Microsoft Access ODBC driver, which is not in the

@@ -18,6 +18,10 @@ services:
       DEFAULT_ADMIN_PASSWORD: ${DEFAULT_ADMIN_PASSWORD:-admin123}
     volumes:
       - pvc_arvand_data:/data
+      # ARIAORMS LogSheets Excel exports → Standardized Voltage sync
+      # Create the host folder, then drop .xlsx files exported from
+      # http://192.168.20.12:8080/LogSheetsReports.aspx into it.
+      - ${ARIAORMS_EXPORT_DIR:-./ariaorms_exports}:/data/ariaorms_exports
 
 volumes:
   pvc_arvand_data:

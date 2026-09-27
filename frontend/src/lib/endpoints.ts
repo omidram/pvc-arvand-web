@@ -490,3 +490,21 @@ export const backupApi = {
     window.URL.revokeObjectURL(url);
   },
 };
+
+// ---------------------------------------------------------------- Voltage sync (ARIAORMS)
+export const voltageSyncApi = {
+  getSettings: async (): Promise<T.VoltageSyncSettings> => (await apiClient.get("/voltage-sync/settings")).data,
+  updateSettings: async (
+    payload: Pick<T.VoltageSyncSettings, "enabled" | "watch_dir" | "poll_seconds" | "source_url">
+  ): Promise<T.VoltageSyncSettings> => (await apiClient.put("/voltage-sync/settings", payload)).data,
+  runNow: async (): Promise<T.VoltageSyncRunResult> => (await apiClient.post("/voltage-sync/run")).data,
+  importFile: async (file: File, params?: { electrolyzer?: string; reading_date?: string }): Promise<T.VoltageSyncRunResult> => {
+    const form = new FormData();
+    form.append("file", file);
+    const { data } = await apiClient.post("/voltage-sync/import-file", form, {
+      params,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data;
+  },
+};

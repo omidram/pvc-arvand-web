@@ -49,6 +49,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { ImportExportTab } from "@/components/domain/import-export-tab";
 import { BackupTab } from "@/components/domain/backup-tab";
+import { VoltageSyncTab } from "@/components/domain/voltage-sync-tab";
 import { DatabaseTab } from "@/components/domain/database-tab";
 import { DirectoryTab } from "@/components/domain/directory-tab";
 import { useI18n } from "@/lib/i18n/context";
@@ -645,6 +646,9 @@ function SettingsPageInner() {
             ? [{ key: "import-export", label: t("importExport.title"), content: <ImportExportTab /> }]
             : []),
           ...(canEdit("settings") ? [{ key: "backup", label: t("backup.title"), content: <BackupTab /> }] : []),
+          ...(canEdit("settings")
+            ? [{ key: "voltage-sync", label: t("voltageSync.title"), content: <VoltageSyncTab /> }]
+            : []),
           ...(isAdmin ? [{ key: "database", label: t("database.title"), content: <DatabaseTab /> }] : []),
           ...(isAdmin ? [{ key: "directory", label: t("directory.title"), content: <DirectoryTab /> }] : []),
         ]}

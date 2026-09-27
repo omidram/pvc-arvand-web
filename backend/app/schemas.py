@@ -92,6 +92,37 @@ class BackupFileInfo(BaseModel):
     created_at: datetime
 
 
+# ---------------------------------------------------------------- Voltage sync (ARIAORMS)
+
+class VoltageSyncSettingsBase(ORMModel):
+    enabled: bool = False
+    watch_dir: str | None = None
+    poll_seconds: int = Field(default=30, ge=5, le=3600)
+    source_url: str | None = "http://192.168.20.12:8080/LogSheetsReports.aspx"
+
+
+class VoltageSyncSettingsUpdate(VoltageSyncSettingsBase):
+    pass
+
+
+class VoltageSyncSettingsRead(VoltageSyncSettingsBase):
+    id: int
+    last_run_at: datetime | None = None
+    last_run_status: str | None = None
+    last_run_message: str | None = None
+    resolved_watch_dir: str | None = None
+    watched_file_count: int = 0
+
+
+class VoltageSyncRunResult(BaseModel):
+    ok: bool
+    files_scanned: int = 0
+    files_applied: int = 0
+    rows_upserted: int = 0
+    message: str = ""
+    details: list[dict] = []
+
+
 # ---------------------------------------------------------------- Lookups
 
 class ElectrolyzerBase(ORMModel):

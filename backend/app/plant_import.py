@@ -103,11 +103,21 @@ def parse_plant_date(value: Any) -> date | None:
     for name, mo in persian_months.items():
         if name in text:
             ym = re.search(r"(13|14)\d{2}", text)
-            if ym:
-                try:
-                    return jalali_to_gregorian(int(ym.group(0)), mo, 1)
-                except Exception:
-                    return None
+            if not ym:
+                continue
+            # ARIAORMS header: "یکشنبه 5 ام مهر ماه 1405"
+            day = 1
+            day_m = re.search(rf"(\d{{1,2}})\s*(?:ام|م)?\s*{re.escape(name)}", text)
+            if day_m:
+                day = int(day_m.group(1))
+            else:
+                day_m = re.search(r"(\d{1,2})\s*ام", text)
+                if day_m:
+                    day = int(day_m.group(1))
+            try:
+                return jalali_to_gregorian(int(ym.group(0)), mo, day)
+            except Exception:
+                return None
     return None
 
 
@@ -157,14 +167,42 @@ def _sheet_rows(wb, sheet_name: str | None = None) -> list[list[Any]]:
 
 
 # ---------------------------------------------------------------------------
-# 1) SiteMan / F2 voltage Excel
+# 1) SiteMan / F2 / ARIAORMS LogSheets voltage Excel
 # ---------------------------------------------------------------------------
 
 _CELL_RE = re.compile(r"^(?P<el>[A-Za-z]+\d*)-(?P<pos>\d{1,3})\b")
 _EL_RE = re.compile(r"^(?P<el>[A-Za-z]+\d*)\[", re.I)
+_EL_VOLTAGE_RE = re.compile(r"electrolyzer\s+voltage\s+(?P<el>[A-Za-z]+\d*)", re.I)
+_EL_IN_TEXT_RE = re.compile(r"(?:ELECTROLYZER|EL)\s*(?P<el>[A-Za-z]+\d*)", re.I)
+
+
+def _col_index(vals_lower: list[str], *names: str) -> int | None:
+    for name in names:
+        try:
+            return vals_lower.index(name.lower())
+        except ValueError:
+            continue
+    return None
+
+
+def _detect_electrolyzer(*texts: str) -> str | None:
+    for text in texts:
+        if not text:
+            continue
+        for rx in (_EL_VOLTAGE_RE, _EL_RE, _EL_IN_TEXT_RE, _CELL_RE):
+            m = rx.search(text)
+            if m:
+                return m.group("el").upper()
+    return None
 
 
 def parse_voltage_excel(content: bytes) -> dict[str, Any]:
+    """Parse SiteMan / F2 / ARIAORMS LogSheetsReports Excel exports.
+
+    ARIAORMS wide layout (typical):
+      No | Unit | Equipment | Tag | Parameter | Unit | Normal Range | 02:00 | 06:00 | …
+    Rows: "Electrolyzer voltage A2" (total) + "A2-001" … element cells.
+    """
     wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
     # Prefer clean numeric sheet over SiteMan annotated sheet
     preferred = None
@@ -181,40 +219,68 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
     wb.close()
 
     reading_date: date | None = None
-    if rows and rows[0] and rows[0][0] is not None:
-        reading_date = parse_plant_date(rows[0][0])
+    for row in rows[:12]:
+        for cell in row or []:
+            if cell is None:
+                continue
+            d = parse_plant_date(cell)
+            if d:
+                reading_date = d
+                break
+        if reading_date:
+            break
 
     header_idx = None
     time_cols: dict[int, str] = {}
+    tag_col: int | None = None
+    param_col: int | None = None
+    equip_col: int | None = None
     for i, row in enumerate(rows):
         vals = [str(c).strip() if c is not None else "" for c in row]
-        if "Parameter" in vals or "parameter" in [v.lower() for v in vals]:
+        vals_lower = [v.lower() for v in vals]
+        if "parameter" not in vals_lower and "tag" not in vals_lower:
+            continue
+        tag_col = _col_index(vals_lower, "tag")
+        param_col = _col_index(vals_lower, "parameter")
+        equip_col = _col_index(vals_lower, "equipment")
+        # SiteMan legacy: Parameter often in column 1 without named Tag
+        if param_col is None and tag_col is None and len(vals) > 1:
+            param_col = 1
+            equip_col = equip_col if equip_col is not None else 0
+        for j, v in enumerate(vals):
+            if re.match(r"^\d{1,2}:\d{2}$", v):
+                time_cols[j] = v
+        if time_cols and (param_col is not None or tag_col is not None):
             header_idx = i
-            for j, v in enumerate(vals):
-                if re.match(r"^\d{1,2}:\d{2}$", v):
-                    time_cols[j] = v
             break
 
     if header_idx is None:
-        return {"error": "Header row with Parameter / time columns not found", "readings": [], "totals": {}}
+        return {"error": "Header row with Parameter/Tag / time columns not found", "readings": [], "totals": {}}
 
     electrolyzer = None
     readings: list[dict[str, Any]] = []
     totals: dict[str, Any] = {}
     operators: set[str] = set()
+    out_of_range: list[dict[str, Any]] = []
 
     for row in rows[header_idx + 1 :]:
         if not row or all(c is None or str(c).strip() == "" for c in row):
             continue
-        equipment = str(row[0]).strip() if row[0] is not None else ""
-        parameter = str(row[1]).strip() if len(row) > 1 and row[1] is not None else ""
-        if not parameter or parameter.lower() == "parameter":
+
+        def _cell(idx: int | None) -> str:
+            if idx is None or idx >= len(row) or row[idx] is None:
+                return ""
+            return str(row[idx]).strip()
+
+        equipment = _cell(equip_col if equip_col is not None else 0)
+        tag = _cell(tag_col)
+        parameter = _cell(param_col if param_col is not None else (1 if equip_col is None else None))
+        label = parameter or tag
+        if not label or label.lower() in {"parameter", "tag"}:
             continue
 
         if not electrolyzer:
-            m_el = _EL_RE.match(equipment) or _EL_RE.match(parameter)
-            if m_el:
-                electrolyzer = m_el.group("el").upper()
+            electrolyzer = _detect_electrolyzer(equipment, tag, parameter, label)
 
         # Extract operator from SiteMan-style cells
         for j in time_cols:
@@ -224,12 +290,12 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
                 if op:
                     operators.add(op)
 
-        cell_m = _CELL_RE.match(parameter)
+        cell_m = _CELL_RE.match(label) or _CELL_RE.match(tag) or _CELL_RE.match(parameter)
         if cell_m:
-            pos = str(int(cell_m.group("pos")))  # normalize 001 → 1 display? keep zero-pad from source
-            pos = cell_m.group("pos")  # keep as in file e.g. 001
+            pos_raw = cell_m.group("pos")
             el = cell_m.group("el").upper()
             electrolyzer = electrolyzer or el
+            pos = pos_raw.lstrip("0") or "0"
             for j, tlabel in time_cols.items():
                 raw = row[j] if j < len(row) else None
                 voltage = parse_float_plant(raw)
@@ -238,20 +304,31 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
                 # skip absurd totals mistaken as cells
                 if voltage > 20:
                     continue
-                readings.append(
-                    {
-                        "electrolyzer": el,
-                        "position": pos.lstrip("0") or "0",
-                        "element_nr": f"{el}-{pos}",
-                        "time": tlabel,
-                        "voltage": voltage,
-                        "date": reading_date.isoformat() if reading_date else None,
-                    }
-                )
+                entry = {
+                    "electrolyzer": el,
+                    "position": pos,
+                    "element_nr": f"{el}-{pos_raw}",
+                    "time": tlabel,
+                    "voltage": voltage,
+                    "date": reading_date.isoformat() if reading_date else None,
+                }
+                readings.append(entry)
+                # Normal Range column often sits just before first time slot
+                if time_cols:
+                    first_time = min(time_cols.keys())
+                    nr_idx = first_time - 1
+                    if nr_idx >= 0 and nr_idx < len(row):
+                        limit = parse_float_plant(row[nr_idx])
+                        # ARIAORMS shows "-3.5" as max delta style; flag high cell voltage
+                        if limit is not None and limit < 0 and voltage >= abs(limit):
+                            out_of_range.append({**entry, "normal_range": limit})
             continue
 
-        # Aggregate / plant rows
-        key = parameter.lower()
+        # Aggregate / plant rows (total voltage, temps, load)
+        key = label.lower()
+        el_from_label = _detect_electrolyzer(label, tag, parameter, equipment)
+        if el_from_label:
+            electrolyzer = electrolyzer or el_from_label
         for j, tlabel in time_cols.items():
             raw = row[j] if j < len(row) else None
             voltage = parse_float_plant(raw)
@@ -281,7 +358,9 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
         "operators": sorted(operators),
         "readings": readings,
         "totals": totals,
+        "out_of_range": out_of_range,
         "imported_cells": len(readings),
+        "times": sorted(set(time_cols.values())),
     }
 
 
