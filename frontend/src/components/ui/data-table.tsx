@@ -38,8 +38,8 @@ export function DataTable<T extends object>({
   if (!data || data.length === 0) return <EmptyState title={emptyTitle ?? t("common.noRecordsFound")} description={emptyDescription} />;
 
   return (
-    <div className="overflow-x-auto border-2 border-[var(--win-border-shadow)] [border-style:inset] bg-[var(--win-input)]">
-      <table className="w-full min-w-max border-collapse text-start text-xs">
+    <div className="ui-table-wrap overflow-x-auto border-2 border-[var(--win-border-shadow)] [border-style:inset] bg-[var(--win-input)]">
+      <table className="ui-table w-full min-w-max border-collapse text-start text-xs">
         <thead>
           <tr className="bg-[var(--win-face)]">
             {columns.map((col) => (
@@ -68,6 +68,7 @@ export function DataTable<T extends object>({
               <tr
                 key={String(raw[keyField as string])}
                 onClick={() => onRowClick?.(row)}
+                data-selected={selected ? "true" : undefined}
                 className={cn(
                   selected
                     ? "bg-[var(--win-navy)] text-white"

@@ -22,14 +22,15 @@ export function Tabs({
   }, [defaultTab]);
 
   return (
-    <div>
-      <div className="flex flex-wrap gap-0.5 px-0.5 pt-0.5">
+    <div className="ui-tabs">
+      <div className="ui-tabs-list flex flex-wrap gap-0.5 px-0.5 pt-0.5">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActive(tab.key)}
+            data-active={active === tab.key ? "true" : undefined}
             className={cn(
-              "relative z-0 border-2 border-b-0 px-3 py-1.5 text-xs font-bold [border-style:outset]",
+              "ui-tab relative z-0 border-2 border-b-0 px-3 py-1.5 text-xs font-bold [border-style:outset]",
               active === tab.key
                 ? "z-10 -mb-0.5 bg-[var(--win-face)] pb-2 text-[var(--win-navy)]"
                 : "translate-y-0.5 bg-[var(--win-face-dark)] text-[var(--win-muted)] hover:bg-[var(--win-face)]"
@@ -39,7 +40,7 @@ export function Tabs({
           </button>
         ))}
       </div>
-      <div className="border-2 border-[var(--win-face)] [border-style:outset] bg-[var(--win-face)] p-4">
+      <div className="ui-tabs-panel border-2 border-[var(--win-face)] [border-style:outset] bg-[var(--win-face)] p-4">
         {activeTab?.content}
       </div>
     </div>

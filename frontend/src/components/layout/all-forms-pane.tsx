@@ -35,7 +35,9 @@ export function AllFormsPane() {
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (!term) return shortcuts;
-    return shortcuts.filter((item) => item.name.toLowerCase().includes(term));
+    return shortcuts.filter(
+      (item) => item.label.toLowerCase().includes(term) || item.name.toLowerCase().includes(term)
+    );
   }, [q, shortcuts]);
 
   return (
@@ -60,16 +62,16 @@ export function AllFormsPane() {
           const className = `access-forms-item${item.kind === "subform" ? " is-subform" : ""}${allowed ? "" : " is-disabled"}${active ? " is-active" : ""}`;
           if (!allowed) {
             return (
-              <span key={item.name} className={className} title={item.name}>
+              <span key={item.name} className={className} title={`${item.label} (${item.name})`}>
                 <AccessFormIcon />
-                <span className="access-forms-item-label">{item.name}</span>
+                <span className="access-forms-item-label">{item.label}</span>
               </span>
             );
           }
           return (
-            <Link key={item.name} href={item.href} className={className} title={item.name}>
+            <Link key={item.name} href={item.href} className={className} title={`${item.label} (${item.name})`}>
               <AccessFormIcon />
-              <span className="access-forms-item-label">{item.name}</span>
+              <span className="access-forms-item-label">{item.label}</span>
             </Link>
           );
         })}

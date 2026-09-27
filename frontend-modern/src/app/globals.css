@@ -1,0 +1,214 @@
+@import "tailwindcss";
+
+/* Contemporary dashboard theme (sidebar app, pre-Access chrome). */
+:root {
+  --win-face: #ffffff;
+  --win-face-hi: #f8fafc;
+  --win-face-dark: #e2e8f0;
+  --win-panel: #f1f5f9;
+  --win-border-shadow: #e2e8f0;
+  --win-border-dark: #cbd5e1;
+  --win-border-light: #ffffff;
+  --win-navy: #1d4ed8;
+  --win-navy-dark: #1e3a8a;
+  --win-navy-mid: #3b82f6;
+  --win-text: #0f172a;
+  --win-muted: #64748b;
+  --win-input: #ffffff;
+  --win-danger: #dc2626;
+  --win-row-alt: #f8fafc;
+  --win-logo-bg: #ffffff;
+  --app-font-size: 14px;
+  --background: var(--win-face);
+  --foreground: var(--win-text);
+}
+
+html[data-theme="dark"] {
+  --win-face: #3a3a3a;
+  --win-face-hi: #4a4a4a;
+  --win-face-dark: #2a2a2a;
+  --win-panel: #232323;
+  --win-border-shadow: #1a1a1a;
+  --win-border-dark: #000000;
+  --win-border-light: #6b6b6b;
+  --win-navy: #2f5aa8;
+  --win-navy-dark: #17325f;
+  --win-navy-mid: #5b8fc7;
+  --win-text: #eae8e3;
+  --win-muted: #b7b4ac;
+  --win-input: #262626;
+  --win-danger: #ff6b60;
+  --win-row-alt: #333230;
+  --win-logo-bg: #ffffff;
+  --app-font-size: 13px;
+  --background: var(--win-face);
+  --foreground: var(--win-text);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+html {
+  color-scheme: light;
+  font-size: var(--app-font-size, 13px);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--win-face);
+  color: var(--win-text);
+  font-family: Tahoma, "Segoe UI", "Vazirmatn", Arial, sans-serif;
+  font-size: var(--app-font-size, 13px);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+[dir="rtl"] {
+  font-size: calc(var(--app-font-size, 13px) + 0.5px);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--win-face-dark) var(--win-panel);
+}
+
+::-webkit-scrollbar {
+  width: 15px;
+  height: 15px;
+}
+::-webkit-scrollbar-track {
+  background: var(--win-panel);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--win-face);
+  border: 1px solid var(--win-border-shadow);
+  box-shadow: inset 1px 1px 0 var(--win-border-light);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--win-face-hi);
+}
+
+/* Recharts tooltip/legend inherit the app font */
+.recharts-wrapper,
+.recharts-wrapper * {
+  font-family: Tahoma, "Segoe UI", "Vazirmatn", Arial, sans-serif;
+}
+
+/* Uhde Access EAP main menu — locked to classic silver, matching the original form. */
+.access-eap {
+  background: #c0c0c0;
+  color: #000000;
+  font-family: Tahoma, "MS Sans Serif", Arial, sans-serif;
+}
+
+.access-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 28px;
+  min-width: 0;
+  width: 100%;
+  padding: 0 8px;
+  background: #ffffff;
+  color: #000000;
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 400;
+  text-align: center;
+  text-decoration: none;
+  border: 2px outset #ffffff;
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.access-menu-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: #ffffe8;
+}
+
+.access-menu-btn:active:not(:disabled):not([aria-disabled="true"]) {
+  border-style: inset;
+}
+
+.access-menu-btn:focus-visible {
+  outline: 1px dotted #000000;
+  outline-offset: -5px;
+}
+
+.access-menu-btn[aria-disabled="true"],
+.access-menu-btn:disabled {
+  color: #6d6d6d;
+  background: #ffffff;
+  cursor: default;
+}
+
+.access-field-box {
+  display: inline-block;
+  min-width: 1.75rem;
+  background: #ffffff;
+  color: #000000;
+  border: 2px inset #ffffff;
+  padding: 1px 7px;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.access-header-sunken {
+  border: 2px inset #ffffff;
+  background: #c0c0c0;
+}
+
+.access-strip {
+  border-right: 2px groove #ffffff;
+}
+
+.access-logo-well {
+  width: 56px;
+  height: 56px;
+  background: #ffffff;
+  border: 2px inset #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.access-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 10px;
+  background: var(--win-face);
+  color: var(--win-text);
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 11px;
+  border: 2px outset var(--win-face);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.access-toolbar-btn:hover {
+  background: var(--win-face-hi);
+}
+
+.access-toolbar-btn:active {
+  border-style: inset;
+}
+
+.access-toolbar-btn.is-active {
+  border-style: inset;
+  background: var(--win-face-dark);
+}
+
+.access-toolbar-btn:focus-visible {
+  outline: 1px dotted var(--win-text);
+  outline-offset: -4px;
+}

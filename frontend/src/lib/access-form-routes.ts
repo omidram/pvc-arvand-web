@@ -1,7 +1,9 @@
 import { ACCESS_FORM_NAMES } from "@/lib/access-form-names";
+import { accessFormEnglishLabel } from "@/lib/access-form-labels";
 
 export type AccessFormShortcut = {
   name: string;
+  label: string;
   href: string;
   formKey: string;
   kind: "form" | "subform" | "other";
@@ -33,15 +35,15 @@ const EXACT: Record<string, Route> = {
   "Anodische Bilanz": { href: "/analyses", formKey: "analyses" },
   Betriebsdaten: { href: "/overview", formKey: "dashboard" },
   DOL: { href: "/statistics?form=dol", formKey: "statistics" },
-  "Datenerfassung Elektrolyseure": { href: "/voltage", formKey: "voltage" },
-  "Datenerfassung Elemente": { href: "/voltage?form=readings", formKey: "voltage" },
-  DiaGruppe: { href: "/statistics?form=groups", formKey: "statistics" },
+  "Datenerfassung Elektrolyseure": { href: "/voltage?form=input-electrolyzer", formKey: "voltage" },
+  "Datenerfassung Elemente": { href: "/voltage?form=input-elements", formKey: "voltage" },
+  DiaGruppe: { href: "/voltage?form=tables&scope=group-tables", formKey: "voltage" },
   DiaUnCEA: { href: "/un-ce", formKey: "reports" },
   Einzelteile: { href: "/settings?tab=cell-components", formKey: "settings" },
   Energieverbrauch: { href: "/power-consumption", formKey: "statistics" },
   Formular1: { href: "/", formKey: "" },
-  "Gesamt Norm >90": { href: "/voltage?form=normalizations", formKey: "voltage" },
-  "Gesamt Normierung": { href: "/voltage?form=normalizations", formKey: "voltage" },
+  "Gesamt Norm >90": { href: "/voltage?form=tables&scope=elements", formKey: "voltage" },
+  "Gesamt Normierung": { href: "/voltage?form=tables&scope=elements", formKey: "voltage" },
   Gruppen: { href: "/settings?tab=groups", formKey: "settings" },
   "Gruppen Übersicht": { href: "/settings?tab=groups", formKey: "settings" },
   Gruppenmerkmale: { href: "/settings?tab=groups", formKey: "settings" },
@@ -60,11 +62,11 @@ const EXACT: Record<string, Route> = {
   "An StromAusGes": { href: "/analyses", formKey: "analyses" },
   frmAboutEAP: { href: "/about", formKey: "" },
   frmAbschaltungen: { href: "/shutdowns?form=list", formKey: "shutdowns" },
-  frmAbschaltungenZeitraum: { href: "/shutdowns?form=list", formKey: "shutdowns" },
+  frmAbschaltungenZeitraum: { href: "/shutdowns?form=period", formKey: "shutdowns" },
   frmAbschaltungsUrsachen: { href: "/shutdowns?form=reasons", formKey: "shutdowns" },
   frmAbschaltungskategorien: { href: "/shutdowns?form=categories", formKey: "shutdowns" },
-  frmAbschaltungszusammenfassung: { href: "/shutdowns", formKey: "shutdowns" },
-  frmAbschaltungszusammenfassungKategorie: { href: "/shutdowns", formKey: "shutdowns" },
+  frmAbschaltungszusammenfassung: { href: "/shutdowns?form=summary-reason", formKey: "shutdowns" },
+  frmAbschaltungszusammenfassungKategorie: { href: "/shutdowns?form=summary-category", formKey: "shutdowns" },
   frmAnalyseAnolytEinlesen: { href: "/analyses", formKey: "analyses" },
   frmAnalyseHClElektrolyseur: { href: "/analyses?type=hcl&scope=electrolyzer", formKey: "analyses" },
   frmAnalyseHClGesamtanlage: { href: "/analyses?type=hcl&scope=plant", formKey: "analyses" },
@@ -78,8 +80,8 @@ const EXACT: Record<string, Route> = {
   frmBemerkungen: { href: "/remarks", formKey: "remarks" },
   frmDateneinlesenElemente: { href: "/voltage?form=readings", formKey: "voltage" },
   frmDateneinlesenElementeAlt: { href: "/voltage?form=readings", formKey: "voltage" },
-  frmEingabeUnElement: { href: "/voltage?form=readings", formKey: "voltage" },
-  frmEingabeUnGruppe: { href: "/voltage?form=readings", formKey: "voltage" },
+  frmEingabeUnElement: { href: "/voltage?form=input-single", formKey: "voltage" },
+  frmEingabeUnGruppe: { href: "/voltage?form=input-group", formKey: "voltage" },
   frmEinstellungen: { href: "/settings", formKey: "settings" },
   frmElementinspektion: { href: "/inspections", formKey: "inspections" },
   frmEnergieverbrauchDurchschnitt: { href: "/power-consumption", formKey: "statistics" },
@@ -143,8 +145,12 @@ function patternRoute(name: string): Route {
   }
   if (n.includes("abschalt")) {
     if (n.includes("ursach") || n.includes("reason")) return { href: "/shutdowns?form=reasons", formKey: "shutdowns" };
+    if (n.includes("kategor") && n.includes("zusammen")) return { href: "/shutdowns?form=summary-category", formKey: "shutdowns" };
     if (n.includes("kategor")) return { href: "/shutdowns?form=categories", formKey: "shutdowns" };
-    return { href: "/shutdowns", formKey: "shutdowns" };
+    if (n.includes("zeitraum") || n.includes("period")) return { href: "/shutdowns?form=period", formKey: "shutdowns" };
+    if (n.includes("zusammen")) return { href: "/shutdowns?form=summary-reason", formKey: "shutdowns" };
+    if (n.includes("menu")) return { href: "/shutdowns", formKey: "shutdowns" };
+    return { href: "/shutdowns?form=list", formKey: "shutdowns" };
   }
   if (n.includes("bemerkung")) return { href: "/remarks", formKey: "remarks" };
   if (n.includes("leistungstest") || n.includes("test run")) return { href: "/test-run-results", formKey: "voltage" };
@@ -198,6 +204,12 @@ function kindOf(name: string): AccessFormShortcut["kind"] {
 export function getAccessFormShortcuts(): AccessFormShortcut[] {
   return ACCESS_FORM_NAMES.map((name) => {
     const route = resolveAccessForm(name);
-    return { name, href: route.href, formKey: route.formKey, kind: kindOf(name) };
+    return {
+      name,
+      label: accessFormEnglishLabel(name),
+      href: route.href,
+      formKey: route.formKey,
+      kind: kindOf(name),
+    };
   });
 }

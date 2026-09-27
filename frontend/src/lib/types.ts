@@ -464,7 +464,15 @@ export interface GroupStat {
 
 export interface ShutdownSummary {
   total_shutdowns: number;
+  total_hours?: number;
   by_category: { category: string; count: number; total_hours: number }[];
+  by_reason?: {
+    code: string | null;
+    cause: string | null;
+    category: string | null;
+    count: number;
+    total_hours: number;
+  }[];
 }
 
 export interface VoltageDistribution {

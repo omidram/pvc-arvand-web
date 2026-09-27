@@ -7,13 +7,16 @@ import { useAuth } from "@/lib/auth/context";
 import { LoginScreen } from "@/components/auth/login-screen";
 import { SessionControls } from "@/components/layout/session-controls";
 import { AllFormsPane } from "@/components/layout/all-forms-pane";
+import { ModernSidebar } from "@/components/layout/modern-sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
+import { useUiStyle } from "@/lib/ui-style/context";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
   const pathname = usePathname();
   const { t } = useI18n();
+  const { isModern } = useUiStyle();
   const isMainMenu = pathname === "/";
 
   if (isLoading) {
@@ -26,6 +29,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <LoginScreen />;
+  }
+
+  if (isModern) {
+    return (
+      <div className="modern-shell flex h-screen w-full overflow-hidden">
+        <ModernSidebar />
+        <main className="modern-main min-w-0 flex-1 overflow-y-auto">
+          <div className="modern-content mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</div>
+        </main>
+      </div>
+    );
   }
 
   return (

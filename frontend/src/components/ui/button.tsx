@@ -22,8 +22,10 @@ export function Button({ className, variant = "primary", size = "md", disabled, 
   return (
     <button
       disabled={disabled}
+      data-variant={variant}
+      data-size={size}
       className={cn(
-        "inline-flex items-center justify-center border-2 border-[var(--win-face)] [border-style:outset] active:[border-style:inset] disabled:cursor-not-allowed disabled:text-[#6b6b6b] disabled:[border-style:solid] disabled:border-[#b8b5ad]",
+        "ui-button inline-flex items-center justify-center border-2 border-[var(--win-face)] [border-style:outset] active:[border-style:inset] disabled:cursor-not-allowed disabled:text-[#6b6b6b] disabled:[border-style:solid] disabled:border-[#b8b5ad]",
         variants[variant],
         sizes[size],
         className

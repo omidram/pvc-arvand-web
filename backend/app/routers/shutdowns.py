@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -22,6 +24,8 @@ def _enrich(obj: models.Shutdown) -> schemas.ShutdownRead:
 @router.get("", response_model=list[schemas.ShutdownRead])
 def list_shutdowns(
     q: str | None = Query(default=None),
+    date_from: datetime | None = Query(default=None),
+    date_to: datetime | None = Query(default=None),
     skip: int = 0,
     limit: int = Query(default=500, le=5000),
     db: Session = Depends(get_db),
@@ -32,20 +36,34 @@ def list_shutdowns(
         query = query.filter(
             or_(models.Shutdown.plant_part.ilike(like), models.Shutdown.cause.ilike(like), models.Shutdown.category.ilike(like))
         )
+    if date_from is not None:
+        query = query.filter(models.Shutdown.shutdown_time >= date_from)
+    if date_to is not None:
+        query = query.filter(models.Shutdown.shutdown_time <= date_to)
     items = query.order_by(models.Shutdown.shutdown_time.desc()).offset(skip).limit(limit).all()
     return [_enrich(i) for i in items]
 
 
 @router.get("/export.xlsx", include_in_schema=False)
-def export_shutdowns_xlsx(q: str | None = None, db: Session = Depends(get_db)):
-    items = list_shutdowns(q=q, limit=20000, db=db)
+def export_shutdowns_xlsx(
+    q: str | None = None,
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
+    db: Session = Depends(get_db),
+):
+    items = list_shutdowns(q=q, date_from=date_from, date_to=date_to, limit=20000, db=db)
     rows = rows_to_dicts(items, SHUTDOWN_EXPORT_FIELDS)
     return export_xlsx(rows, SHUTDOWN_EXPORT_FIELDS, "shutdowns")
 
 
 @router.get("/export.pdf", include_in_schema=False)
-def export_shutdowns_pdf(q: str | None = None, db: Session = Depends(get_db)):
-    items = list_shutdowns(q=q, limit=2000, db=db)
+def export_shutdowns_pdf(
+    q: str | None = None,
+    date_from: datetime | None = None,
+    date_to: datetime | None = None,
+    db: Session = Depends(get_db),
+):
+    items = list_shutdowns(q=q, date_from=date_from, date_to=date_to, limit=2000, db=db)
     rows = rows_to_dicts(items, SHUTDOWN_EXPORT_FIELDS)
     return export_pdf(rows, SHUTDOWN_EXPORT_FIELDS, "shutdowns")
 
@@ -109,20 +127,47 @@ causes_router = build_crud_router(
 summary_router = APIRouter(prefix="/shutdowns-summary", tags=["shutdowns"])
 
 
+def _hours(s: models.Shutdown) -> float:
+    if s.shutdown_time and s.startup_time:
+        return max((s.startup_time - s.shutdown_time).total_seconds() / 3600, 0)
+    return 0.0
+
+
 @summary_router.get("")
 def shutdown_summary(db: Session = Depends(get_db)):
     shutdowns = db.query(models.Shutdown).all()
     by_category: dict[str, dict] = {}
+    by_reason: dict[str, dict] = {}
     for s in shutdowns:
+        hours = _hours(s)
         cat = s.category or "Unknown"
-        entry = by_category.setdefault(cat, {"category": cat, "count": 0, "total_hours": 0.0})
-        entry["count"] += 1
-        if s.shutdown_time and s.startup_time:
-            hours = (s.startup_time - s.shutdown_time).total_seconds() / 3600
-            entry["total_hours"] += max(hours, 0)
+        cat_entry = by_category.setdefault(cat, {"category": cat, "count": 0, "total_hours": 0.0})
+        cat_entry["count"] += 1
+        cat_entry["total_hours"] += hours
+
+        key = f"{s.code or ''}|{s.cause or ''}|{s.category or ''}"
+        reason_entry = by_reason.setdefault(
+            key,
+            {
+                "code": s.code,
+                "cause": s.cause,
+                "category": s.category,
+                "count": 0,
+                "total_hours": 0.0,
+            },
+        )
+        reason_entry["count"] += 1
+        reason_entry["total_hours"] += hours
+
     for entry in by_category.values():
         entry["total_hours"] = round(entry["total_hours"], 2)
+    for entry in by_reason.values():
+        entry["total_hours"] = round(entry["total_hours"], 2)
+
+    total_hours = round(sum(_hours(s) for s in shutdowns), 2)
     return {
         "total_shutdowns": len(shutdowns),
+        "total_hours": total_hours,
         "by_category": list(by_category.values()),
+        "by_reason": list(by_reason.values()),
     }

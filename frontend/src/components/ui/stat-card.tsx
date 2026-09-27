@@ -22,12 +22,15 @@ export function StatCard({
   };
 
   return (
-    <div className="flex items-center justify-between border-2 border-[var(--win-face)] bg-[var(--win-face)] p-3 [border-style:outset]">
+    <div
+      data-accent={accent}
+      className="ui-stat flex items-center justify-between border-2 border-[var(--win-face)] bg-[var(--win-face)] p-3 [border-style:outset]"
+    >
       <div>
-        <div className="text-[11px] font-bold uppercase tracking-wide text-[var(--win-muted)]">{label}</div>
-        <div className="mt-1 text-xl font-bold text-[var(--win-navy)]">{value}</div>
+        <div className="ui-stat-label text-[11px] font-bold uppercase tracking-wide text-[var(--win-muted)]">{label}</div>
+        <div className="ui-stat-value mt-1 text-xl font-bold text-[var(--win-navy)]">{value}</div>
       </div>
-      <div className={cn("flex h-9 w-9 items-center justify-center border [border-style:solid]", accents[accent])}>
+      <div className={cn("ui-stat-icon flex h-9 w-9 items-center justify-center border [border-style:solid]", accents[accent])}>
         <Icon size={18} />
       </div>
     </div>

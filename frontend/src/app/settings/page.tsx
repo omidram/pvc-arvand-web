@@ -54,9 +54,10 @@ import { DirectoryTab } from "@/components/domain/directory-tab";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useTheme } from "@/lib/theme/context";
+import { useUiStyle } from "@/lib/ui-style/context";
 import type { ThemeColors, ThemePresetId } from "@/lib/theme/presets";
 import { NAMED_PRESETS } from "@/lib/theme/presets";
-import { Sun, Moon, MonitorCog, Contrast, Waves, Trees, Grape, Wheat, Palette } from "lucide-react";
+import { Sun, Moon, MonitorCog, Contrast, Waves, Trees, Grape, Wheat, Palette, LayoutTemplate, Sparkles } from "lucide-react";
 
 type T = ReturnType<typeof useI18n>["t"];
 
@@ -223,6 +224,11 @@ function numberNameColumns(t: T) {
 function AppearanceTab() {
   const { t } = useI18n();
   const { preset, resolvedColors, fontSize, setPreset, setColor, setFontSize, reset } = useTheme();
+  const { uiStyle, setUiStyle } = useUiStyle();
+
+  function selectUiStyle(style: "access" | "modern") {
+    setUiStyle(style);
+  }
 
   const presets: { value: ThemePresetId; icon: typeof Sun; swatch: string }[] = [
     { value: "classic", icon: Sun, swatch: NAMED_PRESETS.classic.navy },
@@ -249,6 +255,47 @@ function AppearanceTab() {
 
   return (
     <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("appearance.uiStyle")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4 text-xs text-[var(--win-muted)]">{t("appearance.uiStyleDesc")}</p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => selectUiStyle("access")}
+              className={
+                uiStyle === "access"
+                  ? "flex flex-col items-start gap-1.5 border-2 border-[var(--win-navy)] bg-[var(--win-navy)] px-3 py-3 text-start text-white [border-style:inset]"
+                  : "flex flex-col items-start gap-1.5 border-2 border-[var(--win-face)] bg-[var(--win-face)] px-3 py-3 text-start [border-style:outset] hover:bg-[var(--win-face-hi)]"
+              }
+            >
+              <LayoutTemplate size={20} className={uiStyle === "access" ? "text-white" : "text-[var(--win-navy)]"} />
+              <div className="text-sm font-bold">{t("appearance.uiAccess")}</div>
+              <div className={uiStyle === "access" ? "text-[11px] text-white/80" : "text-[11px] text-[var(--win-muted)]"}>
+                {t("appearance.uiAccessDesc")}
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => selectUiStyle("modern")}
+              className={
+                uiStyle === "modern"
+                  ? "flex flex-col items-start gap-1.5 border-2 border-[var(--win-navy)] bg-[var(--win-navy)] px-3 py-3 text-start text-white [border-style:inset]"
+                  : "flex flex-col items-start gap-1.5 border-2 border-[var(--win-face)] bg-[var(--win-face)] px-3 py-3 text-start [border-style:outset] hover:bg-[var(--win-face-hi)]"
+              }
+            >
+              <Sparkles size={20} className={uiStyle === "modern" ? "text-white" : "text-[var(--win-navy)]"} />
+              <div className="text-sm font-bold">{t("appearance.uiModern")}</div>
+              <div className={uiStyle === "modern" ? "text-[11px] text-white/80" : "text-[11px] text-[var(--win-muted)]"}>
+                {t("appearance.uiModernDesc")}
+              </div>
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>{t("appearance.title")}</CardTitle>

@@ -70,19 +70,19 @@ export default function CurrentEfficiencyPage() {
           <div className="text-[12px] font-bold">{t("menus.dataInput")}</div>
           <div className="mb-2 text-[11px]">{t("menus.ceFromNaoh")}</div>
           <div className="flex flex-wrap gap-1">
-            <AccessBtn className="!w-auto" href="/voltage?form=normalizations">
+            <AccessBtn className="!w-auto" onClick={() => display("Total Plant", plant, "plant")}>
               {t("menus.totalPlant")}
             </AccessBtn>
-            <AccessBtn className="!w-auto" href="/voltage?form=normalizations">
+            <AccessBtn className="!w-auto" onClick={() => display("Train", train, "train")}>
               {t("menus.trains")}
             </AccessBtn>
-            <AccessBtn className="!w-auto" href="/voltage?form=normalizations">
+            <AccessBtn className="!w-auto" onClick={() => display("Electrolyzers", el, "electrolyzer")}>
               {t("menus.electrolyzers")}
             </AccessBtn>
-            <AccessBtn className="!w-auto" href="/voltage?form=normalizations">
+            <AccessBtn className="!w-auto" onClick={() => display("Groups", group, "group")}>
               {t("menus.groups")}
             </AccessBtn>
-            <AccessBtn className="!w-auto" href="/voltage?form=readings">
+            <AccessBtn className="!w-auto" onClick={() => display("Elements", element, "element")}>
               {t("menus.elements")}
             </AccessBtn>
           </div>
