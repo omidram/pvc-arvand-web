@@ -32,6 +32,7 @@ FORM_KEYS: list[str] = [
     "anodes",
     "cathodes",
     "membranes",
+    "storage",
     "shutdowns",
     "voltage",
     "analyses",
@@ -103,11 +104,32 @@ def require_admin(user: models.User = Depends(get_current_user)) -> models.User:
 
 
 def user_permission_map(db: Session, user: models.User) -> dict[str, str]:
+    """Resolve effective menu access. 'none' means the section is completely hidden."""
     if user.role == "admin":
         return {key: "edit" for key in FORM_KEYS}
+
+    levels = {key: "none" for key in FORM_KEYS}
+
+    if user.role_id:
+        rows = (
+            db.query(models.RolePermission)
+            .filter(models.RolePermission.role_id == user.role_id)
+            .all()
+        )
+        for row in rows:
+            if row.form_key in levels and row.level in LEVEL_RANK:
+                levels[row.form_key] = row.level
+        return levels
+
     rows = db.query(models.FormPermission).filter(models.FormPermission.user_id == user.id).all()
-    levels = {row.form_key: row.level for row in rows}
-    return {key: levels.get(key, "none") for key in FORM_KEYS}
+    for row in rows:
+        if row.form_key in levels and row.level in LEVEL_RANK:
+            levels[row.form_key] = row.level
+    return levels
+
+
+def effective_form_level(db: Session, user: models.User, form_key: str) -> str:
+    return user_permission_map(db, user).get(form_key, "none")
 
 
 def require_form_access(form_key: str):
@@ -121,12 +143,7 @@ def require_form_access(form_key: str):
         if user.role == "admin":
             return user
         required = "edit" if request.method in WRITE_METHODS else "view"
-        row = (
-            db.query(models.FormPermission)
-            .filter(models.FormPermission.user_id == user.id, models.FormPermission.form_key == form_key)
-            .first()
-        )
-        level = row.level if row else "none"
+        level = effective_form_level(db, user, form_key)
         if LEVEL_RANK.get(level, 0) < LEVEL_RANK[required]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -137,7 +154,133 @@ def require_form_access(form_key: str):
     return _dependency
 
 
+def require_any_form_access(*form_keys: str):
+    """Allow if the user has the required level on ANY of the listed form keys."""
+
+    def _dependency(
+        request: Request,
+        user: models.User = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> models.User:
+        if user.role == "admin":
+            return user
+        required = "edit" if request.method in WRITE_METHODS else "view"
+        for form_key in form_keys:
+            level = effective_form_level(db, user, form_key)
+            if LEVEL_RANK.get(level, 0) >= LEVEL_RANK[required]:
+                return user
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"You do not have {required} access to any of {list(form_keys)}",
+        )
+
+    return _dependency
+
+
+DEFAULT_ROLES: list[dict] = [
+    {
+        "name": "Operator",
+        "description": "Standard plant operator — most forms viewable, voltage editable",
+        "is_system": True,
+        "permissions": {
+            "dashboard": "view",
+            "statistics": "view",
+            "reports": "view",
+            "monitoring": "view",
+            "elements": "view",
+            "inspections": "view",
+            "anodes": "view",
+            "cathodes": "view",
+            "membranes": "view",
+            "storage": "view",
+            "shutdowns": "view",
+            "voltage": "edit",
+            "analyses": "view",
+            "search": "view",
+            "remarks": "edit",
+            "settings": "none",
+            "import_export": "none",
+        },
+    },
+    {
+        "name": "Inspector",
+        "description": "بازرس — فقط بخش ولتاژ فعال است؛ بقیه منوها مخفی",
+        "is_system": True,
+        "permissions": {
+            "dashboard": "none",
+            "statistics": "none",
+            "reports": "none",
+            "monitoring": "view",
+            "elements": "none",
+            "inspections": "none",
+            "anodes": "none",
+            "cathodes": "none",
+            "membranes": "none",
+            "storage": "none",
+            "shutdowns": "none",
+            "voltage": "edit",
+            "analyses": "none",
+            "search": "none",
+            "remarks": "none",
+            "settings": "none",
+            "import_export": "none",
+        },
+    },
+    {
+        "name": "Viewer",
+        "description": "Read-only access to overview and reports",
+        "is_system": True,
+        "permissions": {
+            "dashboard": "view",
+            "statistics": "view",
+            "reports": "view",
+            "monitoring": "view",
+            "elements": "view",
+            "inspections": "view",
+            "anodes": "view",
+            "cathodes": "view",
+            "membranes": "view",
+            "storage": "view",
+            "shutdowns": "view",
+            "voltage": "view",
+            "analyses": "view",
+            "search": "view",
+            "remarks": "view",
+            "settings": "none",
+            "import_export": "none",
+        },
+    },
+]
+
+
+def _set_role_permissions(db: Session, role: models.AppRole, permissions: dict[str, str]) -> None:
+    db.query(models.RolePermission).filter(models.RolePermission.role_id == role.id).delete()
+    for form_key, level in permissions.items():
+        if form_key not in FORM_KEYS or level not in ("none", "view", "edit"):
+            continue
+        if level == "none":
+            continue
+        db.add(models.RolePermission(role_id=role.id, form_key=form_key, level=level))
+
+
+def seed_default_roles(db: Session) -> None:
+    for spec in DEFAULT_ROLES:
+        existing = db.query(models.AppRole).filter(models.AppRole.name == spec["name"]).first()
+        if existing:
+            continue
+        role = models.AppRole(
+            name=spec["name"],
+            description=spec.get("description"),
+            is_system=bool(spec.get("is_system")),
+        )
+        db.add(role)
+        db.flush()
+        _set_role_permissions(db, role, spec.get("permissions") or {})
+    db.commit()
+
+
 def seed_default_admin(db: Session) -> None:
+    seed_default_roles(db)
     if db.query(models.User).count() > 0:
         return
     admin = models.User(

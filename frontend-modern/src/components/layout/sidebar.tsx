@@ -33,7 +33,7 @@ import { useTheme } from "@/lib/theme/context";
 
 const NAV_GROUPS: {
   groupKey: string;
-  items: { href: string; labelKey: string; icon: typeof LayoutDashboard; formKey: string }[];
+  items: { href: string; labelKey: string; icon: typeof LayoutDashboard; formKey: string; adminOnly?: boolean }[];
 }[] = [
   {
     groupKey: "nav.groupOverview",
@@ -71,7 +71,10 @@ const NAV_GROUPS: {
   },
   {
     groupKey: "nav.groupSystem",
-    items: [{ href: "/settings", labelKey: "nav.settings", icon: Settings, formKey: "settings" }],
+    items: [
+      { href: "/settings", labelKey: "nav.settings", icon: Settings, formKey: "settings" },
+      { href: "/users", labelKey: "nav.users", icon: Users, formKey: "users", adminOnly: true },
+    ],
   },
 ];
 
@@ -149,7 +152,11 @@ export function Sidebar() {
         </div>
 
         {NAV_GROUPS.map((group) => {
-          const visibleItems = group.items.filter((item) => canView(item.formKey));
+          const visibleItems = group.items.filter((item) => {
+            if (item.adminOnly && !isAdmin) return false;
+            if (item.adminOnly) return true;
+            return canView(item.formKey);
+          });
           if (visibleItems.length === 0) return null;
           return (
             <div key={group.groupKey}>

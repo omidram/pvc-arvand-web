@@ -35,6 +35,8 @@ class UserRead(ORMModel):
     username: str
     full_name: str | None = None
     role: str
+    role_id: int | None = None
+    role_name: str | None = None
     is_active: bool
     created_at: datetime
     auth_source: str = "local"
@@ -49,6 +51,7 @@ class UserCreate(BaseModel):
     full_name: str | None = None
     password: str = Field(min_length=4)
     role: str = "user"
+    role_id: int | None = None
     is_active: bool = True
     permissions: dict[str, str] | None = None
 
@@ -56,6 +59,7 @@ class UserCreate(BaseModel):
 class UserUpdate(BaseModel):
     full_name: str | None = None
     role: str | None = None
+    role_id: int | None = None
     is_active: bool | None = None
     password: str | None = Field(default=None, min_length=4)
     permissions: dict[str, str] | None = None
@@ -63,6 +67,28 @@ class UserUpdate(BaseModel):
 
 class MeResponse(UserRead):
     permissions: dict[str, str] = {}
+
+
+class AppRoleBase(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    description: str | None = Field(default=None, max_length=255)
+    permissions: dict[str, str] = {}
+
+
+class AppRoleUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=80)
+    description: str | None = Field(default=None, max_length=255)
+    permissions: dict[str, str] | None = None
+
+
+class AppRoleRead(ORMModel):
+    id: int
+    name: str
+    description: str | None = None
+    is_system: bool = False
+    created_at: datetime
+    permissions: dict[str, str] = {}
+    user_count: int = 0
 
 
 # ---------------------------------------------------------------- Backup

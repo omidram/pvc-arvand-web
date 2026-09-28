@@ -9,14 +9,24 @@ from ..database import get_db
 router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(require_admin)])
 
 
+def _role_name(db: Session, role_id: int | None) -> str | None:
+    if not role_id:
+        return None
+    role = db.query(models.AppRole).filter(models.AppRole.id == role_id).first()
+    return role.name if role else None
+
+
 def _with_permissions(db: Session, user: models.User) -> schemas.UserWithPermissions:
     return schemas.UserWithPermissions(
         id=user.id,
         username=user.username,
         full_name=user.full_name,
         role=user.role,
+        role_id=user.role_id,
+        role_name=_role_name(db, user.role_id),
         is_active=user.is_active,
         created_at=user.created_at,
+        auth_source=getattr(user, "auth_source", "local") or "local",
         permissions=user_permission_map(db, user),
     )
 
@@ -29,6 +39,18 @@ def _set_permissions(db: Session, user: models.User, permissions: dict[str, str]
         if level == "none":
             continue
         db.add(models.FormPermission(user_id=user.id, form_key=form_key, level=level))
+
+
+def _apply_role_id(db: Session, user: models.User, role_id: int | None) -> None:
+    if role_id is None:
+        user.role_id = None
+        return
+    role = db.query(models.AppRole).filter(models.AppRole.id == role_id).first()
+    if not role:
+        raise HTTPException(status_code=400, detail="App role not found")
+    user.role_id = role_id
+    # Role matrix is the source of truth — clear per-user overrides
+    db.query(models.FormPermission).filter(models.FormPermission.user_id == user.id).delete()
 
 
 @router.get("/form-keys")
@@ -45,6 +67,8 @@ def list_users(db: Session = Depends(get_db)):
 def create_user(payload: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(models.User).filter(models.User.username == payload.username).first():
         raise HTTPException(status_code=400, detail="Username already exists")
+    if payload.role not in ("admin", "user", "visitor"):
+        raise HTTPException(status_code=400, detail="Invalid system role")
     user = models.User(
         username=payload.username,
         full_name=payload.full_name,
@@ -53,11 +77,13 @@ def create_user(payload: schemas.UserCreate, db: Session = Depends(get_db)):
         is_active=payload.is_active,
     )
     db.add(user)
+    db.flush()
+    if payload.role != "admin" and payload.role_id is not None:
+        _apply_role_id(db, user, payload.role_id)
+    elif payload.role != "admin" and payload.permissions:
+        _set_permissions(db, user, payload.permissions)
     db.commit()
     db.refresh(user)
-    if payload.permissions:
-        _set_permissions(db, user, payload.permissions)
-        db.commit()
     return _with_permissions(db, user)
 
 
@@ -69,15 +95,27 @@ def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends
     if payload.full_name is not None:
         user.full_name = payload.full_name
     if payload.role is not None:
+        if payload.role not in ("admin", "user", "visitor"):
+            raise HTTPException(status_code=400, detail="Invalid system role")
         user.role = payload.role
+        if payload.role == "admin":
+            user.role_id = None
+            db.query(models.FormPermission).filter(models.FormPermission.user_id == user.id).delete()
     if payload.is_active is not None:
         user.is_active = payload.is_active
     if payload.password:
         user.password_hash = hash_password(payload.password)
-    db.commit()
-    if payload.permissions is not None:
+
+    # role_id / permissions: role_id wins when set; explicit null clears role
+    if "role_id" in payload.model_fields_set:
+        if user.role == "admin":
+            user.role_id = None
+        else:
+            _apply_role_id(db, user, payload.role_id)
+    elif payload.permissions is not None and user.role != "admin" and not user.role_id:
         _set_permissions(db, user, payload.permissions)
-        db.commit()
+
+    db.commit()
     db.refresh(user)
     return _with_permissions(db, user)
 

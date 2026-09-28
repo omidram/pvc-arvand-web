@@ -30,20 +30,41 @@ from .database import Base
 # Users / authentication / per-form access control
 # ==========================================================================
 
+class AppRole(Base):
+    """Named plant role with a menu/section visibility matrix (e.g. Inspector)."""
+    __tablename__ = "app_roles"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    is_system: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class RolePermission(Base):
+    """Per-role, per-form access. Missing / 'none' = section completely hidden."""
+    __tablename__ = "role_permissions"
+    __table_args__ = (UniqueConstraint("role_id", "form_key", name="uq_role_permission_role_form"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    role_id: Mapped[int] = mapped_column(Integer, ForeignKey("app_roles.id"), index=True)
+    form_key: Mapped[str] = mapped_column(String(50), index=True)
+    level: Mapped[str] = mapped_column(String(10), default="none")  # none | view | edit
+
+
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, index=True)
     full_name: Mapped[str | None] = mapped_column(String(150))
     password_hash: Mapped[str] = mapped_column(String(255))
-    role: Mapped[str] = mapped_column(String(20), default="user")  # admin | user | visitor
+    role: Mapped[str] = mapped_column(String(20), default="user")  # admin | user | visitor (system privilege)
+    role_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("app_roles.id"), nullable=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     auth_source: Mapped[str] = mapped_column(String(20), default="local")  # local | ad
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 class FormPermission(Base):
-    """Per-user, per-form access level. Missing row == 'none' (hidden)."""
+    """Per-user, per-form access level. Used when the user has no app role_id. Missing == 'none' (hidden)."""
     __tablename__ = "form_permissions"
     __table_args__ = (UniqueConstraint("user_id", "form_key", name="uq_form_permission_user_form"),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

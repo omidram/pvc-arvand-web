@@ -263,6 +263,7 @@ export const usersApi = {
     full_name?: string;
     password: string;
     role: T.UserRole;
+    role_id?: number | null;
     is_active?: boolean;
     permissions?: Record<string, T.PermissionLevel>;
   }): Promise<T.UserAccount> => (await apiClient.post("/users", payload)).data,
@@ -271,6 +272,7 @@ export const usersApi = {
     payload: Partial<{
       full_name: string;
       role: T.UserRole;
+      role_id: number | null;
       is_active: boolean;
       password: string;
       permissions: Record<string, T.PermissionLevel>;
@@ -278,6 +280,26 @@ export const usersApi = {
   ): Promise<T.UserAccount> => (await apiClient.put(`/users/${id}`, payload)).data,
   remove: async (id: number): Promise<void> => {
     await apiClient.delete(`/users/${id}`);
+  },
+};
+
+export const rolesApi = {
+  list: async (): Promise<T.AppRole[]> => (await apiClient.get("/roles")).data,
+  create: async (payload: {
+    name: string;
+    description?: string | null;
+    permissions?: Record<string, T.PermissionLevel>;
+  }): Promise<T.AppRole> => (await apiClient.post("/roles", payload)).data,
+  update: async (
+    id: number,
+    payload: Partial<{
+      name: string;
+      description: string | null;
+      permissions: Record<string, T.PermissionLevel>;
+    }>
+  ): Promise<T.AppRole> => (await apiClient.put(`/roles/${id}`, payload)).data,
+  remove: async (id: number): Promise<void> => {
+    await apiClient.delete(`/roles/${id}`);
   },
 };
 

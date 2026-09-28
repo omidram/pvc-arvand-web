@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import inspect, text
@@ -25,10 +25,12 @@ from .routers import (
     monitoring as monitoring_router_module,
     remarks,
     reports,
+    roles as roles_router_module,
     search,
     segregation,
     shutdowns,
     statistics,
+    storage as storage_router_module,
     users as users_router_module,
     voltage,
     voltage_sync as voltage_sync_router_module,
@@ -48,7 +50,19 @@ def _ensure_user_auth_source() -> None:
         conn.execute(text("ALTER TABLE users ADD COLUMN auth_source VARCHAR(20) DEFAULT 'local'"))
 
 
+def _ensure_user_role_id() -> None:
+    try:
+        columns = {col["name"] for col in inspect(engine).get_columns("users")}
+    except Exception:
+        return
+    if "role_id" in columns:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN role_id INTEGER"))
+
+
 _ensure_user_auth_source()
+_ensure_user_role_id()
 
 with SessionLocal() as _db:
     seed_default_admin(_db)
@@ -126,9 +140,10 @@ def _api(router, **kwargs):
     app.include_router(router, prefix="/api" + extra_prefix, **kwargs)
 
 
-# --- Auth & Users (auth is public; users is admin-only, enforced in its own router) ---
+# --- Auth & Users (auth is public; users/roles are admin-only, enforced in their routers) ---
 _api(auth_router_module.router)
 _api(users_router_module.router)
+_api(roles_router_module.router)
 
 # --- Plant configuration / settings ---
 _api(config_router.electrolyzers_router, dependencies=_perm("settings"))
@@ -182,6 +197,9 @@ _api(voltage.calc_router, dependencies=_perm("voltage"))
 _api(voltage.current_efficiency_router, dependencies=_perm("voltage"))
 _api(voltage.ce_calc_router, dependencies=_perm("voltage"))
 
+# --- Lagerbestand (Access: frmLagerbestandAnoden/Kathoden/Membranen) ---
+_api(storage_router_module.router)
+
 # --- Analyses ---
 _api(analyses.router, dependencies=_perm("analyses"))
 
@@ -226,12 +244,16 @@ def root():
     return {"name": app.title, "version": app.version, "docs": "/docs"}
 
 
-@app.get("/{full_path:path}", include_in_schema=False)
-def spa_or_static(full_path: str):
+# SPA fallback — GET/HEAD only. Never register a catch-all that matches /api/*
+# for other methods (that would turn missing API routes into HTTP 405).
+@app.api_route("/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False)
+def spa_or_static(full_path: str, request: Request):
     first = (full_path or "").split("/", 1)[0]
     if first in {"api", "docs", "redoc", "openapi.json", "health"}:
-        return JSONResponse({"detail": "Not found"}, status_code=404)
+        raise HTTPException(status_code=404, detail="Not found")
     target = _safe_static_file(full_path)
     if target is not None:
         return FileResponse(target)
+    if request.method == "HEAD":
+        raise HTTPException(status_code=404, detail="Not found")
     return JSONResponse({"detail": "Not found"}, status_code=404)

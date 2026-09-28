@@ -570,6 +570,8 @@ export interface AuthUser {
   username: string;
   full_name: string | null;
   role: UserRole;
+  role_id?: number | null;
+  role_name?: string | null;
   is_active: boolean;
   created_at: string;
   permissions: Record<string, PermissionLevel>;
@@ -577,6 +579,16 @@ export interface AuthUser {
 }
 
 export type UserAccount = AuthUser;
+
+export interface AppRole {
+  id: number;
+  name: string;
+  description: string | null;
+  is_system: boolean;
+  created_at: string;
+  permissions: Record<string, PermissionLevel>;
+  user_count: number;
+}
 
 export interface LoginResponse {
   access_token: string;

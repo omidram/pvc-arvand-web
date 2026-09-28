@@ -3,7 +3,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from .. import models
-from ..auth import require_form_access
+from ..auth import require_any_form_access, require_form_access
 from ..calculations import days_on_line
 from ..database import get_db
 
@@ -17,7 +17,8 @@ def _safe_count(db: Session, model) -> int:
         return 0
 
 
-@router.get("/dashboard", dependencies=[Depends(require_form_access("dashboard"))])
+# Voltage-only roles (e.g. Inspector) still need the live voltage strip on Main Menu.
+@router.get("/dashboard", dependencies=[Depends(require_any_form_access("dashboard", "voltage"))])
 def dashboard(db: Session = Depends(get_db)):
     from .. import alerts_engine
 

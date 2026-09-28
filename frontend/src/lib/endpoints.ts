@@ -270,6 +270,7 @@ export const usersApi = {
     full_name?: string;
     password: string;
     role: T.UserRole;
+    role_id?: number | null;
     is_active?: boolean;
     permissions?: Record<string, T.PermissionLevel>;
   }): Promise<T.UserAccount> => (await apiClient.post("/users", payload)).data,
@@ -278,6 +279,7 @@ export const usersApi = {
     payload: Partial<{
       full_name: string;
       role: T.UserRole;
+      role_id: number | null;
       is_active: boolean;
       password: string;
       permissions: Record<string, T.PermissionLevel>;
@@ -286,6 +288,43 @@ export const usersApi = {
   remove: async (id: number): Promise<void> => {
     await apiClient.delete(`/users/${id}`);
   },
+};
+
+export const rolesApi = {
+  list: async (): Promise<T.AppRole[]> => (await apiClient.get("/roles")).data,
+  create: async (payload: {
+    name: string;
+    description?: string | null;
+    permissions?: Record<string, T.PermissionLevel>;
+  }): Promise<T.AppRole> => (await apiClient.post("/roles", payload)).data,
+  update: async (
+    id: number,
+    payload: Partial<{
+      name: string;
+      description: string | null;
+      permissions: Record<string, T.PermissionLevel>;
+    }>
+  ): Promise<T.AppRole> => (await apiClient.put(`/roles/${id}`, payload)).data,
+  remove: async (id: number): Promise<void> => {
+    await apiClient.delete(`/roles/${id}`);
+  },
+};
+
+export type StorageSummary = {
+  counts: { anodes: number; cathodes: number; membranes: number; total: number };
+  anodes_by_manufacturer: { manufacturer: string; generation: string; count: number }[];
+  cathodes_by_manufacturer: { manufacturer: string; generation: string; count: number }[];
+  membranes_by_type: { membrane_type: string; count: number }[];
+};
+
+export const storageApi = {
+  summary: async (): Promise<StorageSummary> => (await apiClient.get("/storage/summary")).data,
+  anodes: async (q?: string): Promise<T.Anode[]> =>
+    (await apiClient.get("/storage/anodes", { params: { q, limit: 5000 } })).data,
+  cathodes: async (q?: string): Promise<T.Cathode[]> =>
+    (await apiClient.get("/storage/cathodes", { params: { q, limit: 5000 } })).data,
+  membranes: async (q?: string): Promise<T.Membrane[]> =>
+    (await apiClient.get("/storage/membranes", { params: { q, limit: 5000 } })).data,
 };
 
 export type DbArchiveTable = {

@@ -34,11 +34,12 @@ export function AllFormsPane() {
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    if (!term) return shortcuts;
-    return shortcuts.filter(
+    const allowedOnly = shortcuts.filter((item) => !item.formKey || canView(item.formKey));
+    if (!term) return allowedOnly;
+    return allowedOnly.filter(
       (item) => item.label.toLowerCase().includes(term) || item.name.toLowerCase().includes(term)
     );
-  }, [q, shortcuts]);
+  }, [q, shortcuts, canView]);
 
   return (
     <aside className="access-forms-pane min-h-0 self-stretch" dir="ltr">
@@ -57,17 +58,8 @@ export function AllFormsPane() {
       </div>
       <div className="access-forms-list">
         {filtered.map((item) => {
-          const allowed = !item.formKey || canView(item.formKey);
           const active = isCurrentForm(item.href, pathname, query);
-          const className = `access-forms-item${item.kind === "subform" ? " is-subform" : ""}${allowed ? "" : " is-disabled"}${active ? " is-active" : ""}`;
-          if (!allowed) {
-            return (
-              <span key={item.name} className={className} title={`${item.label} (${item.name})`}>
-                <AccessFormIcon />
-                <span className="access-forms-item-label">{item.label}</span>
-              </span>
-            );
-          }
+          const className = `access-forms-item${item.kind === "subform" ? " is-subform" : ""}${active ? " is-active" : ""}`;
           return (
             <Link key={item.name} href={item.href} className={className} title={`${item.label} (${item.name})`}>
               <AccessFormIcon />

@@ -32,14 +32,8 @@ function MenuButton({
   autoFocus?: boolean;
   className?: string;
 }) {
+  if (!allowed) return null;
   const cls = `access-menu-btn ${className ?? ""}`;
-  if (!allowed) {
-    return (
-      <button type="button" disabled className={cls} aria-disabled="true" title={label}>
-        {label}
-      </button>
-    );
-  }
   if (href) {
     return (
       <Link href={href} className={cls} autoFocus={autoFocus}>
@@ -56,7 +50,7 @@ function MenuButton({
 
 export function MainMenu() {
   const { t } = useI18n();
-  const { canView, logout } = useAuth();
+  const { canView, isAdmin, logout } = useAuth();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const settings = settingsQuery.data;
 
@@ -167,6 +161,7 @@ export function MainMenu() {
             <MenuButton href="/remarks" label={t("mainMenu.remarks")} allowed={canView("remarks")} className="col-start-7 row-start-1" />
             <MenuButton href="/about" label={t("mainMenu.aboutEap")} allowed className="col-start-7 row-start-2" />
             <MenuButton href="/settings" label={t("mainMenu.settings")} allowed={canView("settings")} className="col-start-7 row-start-3" />
+            <MenuButton href="/users" label={t("nav.users")} allowed={isAdmin} className="col-start-7 row-start-4" />
             <MenuButton onClick={logout} label={t("mainMenu.exit")} allowed className="col-start-7 row-start-5" />
           </div>
         </section>

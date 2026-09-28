@@ -30,6 +30,7 @@ import {
   FlaskRound,
   SplitSquareVertical,
   Bell,
+  Warehouse,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -67,6 +68,7 @@ const NAV_GROUPS: {
       { href: "/anodes", labelKey: "nav.anodes", icon: CircleDot, formKey: "anodes" },
       { href: "/cathodes", labelKey: "nav.cathodes", icon: CircleDot, formKey: "cathodes" },
       { href: "/membranes", labelKey: "nav.membranes", icon: Layers, formKey: "membranes" },
+      { href: "/storage", labelKey: "nav.storage", icon: Warehouse, formKey: "storage" },
     ],
   },
   {

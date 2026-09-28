@@ -62,13 +62,20 @@ def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=schemas.MeResponse)
 def me(user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    role_name = None
+    if user.role_id:
+        role = db.query(models.AppRole).filter(models.AppRole.id == user.role_id).first()
+        role_name = role.name if role else None
     return schemas.MeResponse(
         id=user.id,
         username=user.username,
         full_name=user.full_name,
         role=user.role,
+        role_id=user.role_id,
+        role_name=role_name,
         is_active=user.is_active,
         created_at=user.created_at,
+        auth_source=getattr(user, "auth_source", "local") or "local",
         permissions=user_permission_map(db, user),
     )
 

@@ -32,14 +32,8 @@ function MenuButton({
   defaultFocus?: boolean;
   className?: string;
 }) {
+  if (!allowed) return null;
   const cls = `access-menu-btn ${defaultFocus ? "is-default-focus" : ""} ${className ?? ""}`;
-  if (!allowed) {
-    return (
-      <button type="button" disabled className={cls} aria-disabled="true" title={label}>
-        {label}
-      </button>
-    );
-  }
   if (href) {
     return (
       <Link href={href} className={cls}>
@@ -55,13 +49,15 @@ function MenuButton({
 }
 
 export function MainMenu() {
-  const { canView, logout } = useAuth();
+  const { canView, isAdmin, logout } = useAuth();
   const { t } = useI18n();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
-  // Always fetch — admin and plant users both need the main-menu voltage strip.
+  const canSeeVoltage = canView("voltage") || canView("dashboard") || canView("monitoring");
+  // Always fetch when the user can see voltage-related UI (incl. Inspector role).
   const dashboardQuery = useQuery({
     queryKey: ["statistics", "dashboard", "main-menu-voltage"],
     queryFn: statisticsApi.dashboard,
+    enabled: canSeeVoltage,
     staleTime: 0,
     refetchOnMount: "always",
     refetchInterval: 30_000,
@@ -114,12 +110,14 @@ export function MainMenu() {
           </div>
 
           <div className="mb-3">
-            <VoltageReportPanel
-              voltage={voltage}
-              compact
-              loading={dashboardQuery.isLoading}
-              error={dashboardQuery.isError ? (dashboardQuery.error as Error).message : null}
-            />
+            {canSeeVoltage ? (
+              <VoltageReportPanel
+                voltage={voltage}
+                compact
+                loading={dashboardQuery.isLoading}
+                error={dashboardQuery.isError ? (dashboardQuery.error as Error).message : null}
+              />
+            ) : null}
           </div>
 
           <div
@@ -147,6 +145,12 @@ export function MainMenu() {
               className="col-start-1 row-start-2"
             />
             <MenuButton href="/search" label={t("mainMenu.search")} allowed={canView("search")} className="col-start-1 row-start-3" />
+            <MenuButton
+              href="/storage"
+              label={t("nav.storage")}
+              allowed={canView("storage") || canView("anodes") || canView("cathodes") || canView("membranes")}
+              className="col-start-1 row-start-4"
+            />
 
             <MenuButton
               href="/monitoring"
@@ -192,6 +196,7 @@ export function MainMenu() {
             <MenuButton href="/remarks" label={t("mainMenu.remarks")} allowed={canView("remarks")} className="col-start-7 row-start-1" />
             <MenuButton href="/about" label={t("mainMenu.aboutEap")} allowed className="col-start-7 row-start-2" />
             <MenuButton href="/settings" label={t("mainMenu.settings")} allowed={canView("settings")} className="col-start-7 row-start-3" />
+            <MenuButton href="/users" label={t("nav.users")} allowed={isAdmin} className="col-start-7 row-start-4" />
             <MenuButton onClick={logout} label={t("mainMenu.exit")} allowed className="col-start-7 row-start-5" />
           </div>
         </section>
