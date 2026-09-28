@@ -428,6 +428,26 @@ export interface ElectrodeSegregation {
   remarks: string | null;
 }
 
+export interface DashboardVoltageStats {
+  plant_total_voltage: number;
+  cell_count: number;
+  ok_count: number;
+  warning_count: number;
+  danger_count: number;
+  health_pct: number | null;
+  max_voltage: number | null;
+  avg_voltage: number | null;
+  danger_limit: number;
+  cell_gauge_max: number;
+  electrolyzers: {
+    electrolyzer: string;
+    cell_count: number;
+    total_voltage: number;
+    avg_voltage: number | null;
+    max_voltage: number | null;
+  }[];
+}
+
 export interface DashboardStats {
   customer: string | null;
   uan: string | null;
@@ -444,6 +464,7 @@ export interface DashboardStats {
     analysis_samples: number;
     voltage_readings: number;
   };
+  voltage?: DashboardVoltageStats | null;
 }
 
 export interface DolByMembraneType {
@@ -602,4 +623,112 @@ export interface VoltageSyncRunResult {
   rows_upserted: number;
   message: string;
   details: Record<string, unknown>[];
+}
+
+// ---------------------------------------------------------------- Monitoring / alerts
+export type AlertSeverity = "ok" | "warning" | "danger" | "info" | "unknown";
+export type AlertStatus = "open" | "acknowledged" | "resolved";
+
+export interface AlertRule {
+  id: number;
+  name: string;
+  metric: string;
+  operator: string;
+  warning_threshold: number | null;
+  danger_threshold: number | null;
+  electrolyzer: string | null;
+  enabled: boolean;
+  notify: boolean;
+  description: string | null;
+}
+
+export interface AlertEvent {
+  id: number;
+  rule_id: number | null;
+  fingerprint: string;
+  severity: AlertSeverity;
+  category: string;
+  metric: string;
+  title: string;
+  message: string | null;
+  electrolyzer: string | null;
+  position: string | null;
+  element_nr: string | null;
+  component_ref: string | null;
+  value: number | null;
+  threshold: number | null;
+  reading_date: string | null;
+  reading_time: string | null;
+  status: AlertStatus;
+  created_at: string;
+  updated_at: string;
+  acknowledged_at: string | null;
+  resolved_at: string | null;
+}
+
+export interface AlertSummary {
+  open_danger: number;
+  open_warning: number;
+  open_info: number;
+  open_total: number;
+  acknowledged: number;
+  resolved_today: number;
+}
+
+export interface MonitoringCellStatus {
+  electrolyzer: string;
+  position: string;
+  element_nr: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  voltage: number | null;
+  standardized_voltage: number | null;
+  reading_date: string | null;
+  reading_time: string | null;
+  severity: AlertSeverity;
+  threshold: number | null;
+}
+
+export interface MonitoringElectrolyzerBlock {
+  electrolyzer: string;
+  reading_date: string | null;
+  reading_time: string | null;
+  cell_count: number;
+  ok_count: number;
+  warning_count: number;
+  danger_count: number;
+  max_voltage: number | null;
+  avg_voltage: number | null;
+  total_voltage: number | null;
+  cells: MonitoringCellStatus[];
+}
+
+export interface MonitoringComponentIssue {
+  kind: string;
+  severity: AlertSeverity;
+  electrolyzer: string | null;
+  position: string | null;
+  element_nr: string | null;
+  component_ref: string | null;
+  detail: string;
+}
+
+export interface MonitoringSnapshot {
+  generated_at: string;
+  summary: AlertSummary;
+  voltage: {
+    cell_count: number;
+    ok_count: number;
+    warning_count: number;
+    danger_count: number;
+    max_voltage: number | null;
+    electrolyzer_count: number;
+    active_elements: number;
+    anode_count: number;
+    cathode_count: number;
+    component_issue_count: number;
+  };
+  electrolyzers: MonitoringElectrolyzerBlock[];
+  component_issues: MonitoringComponentIssue[];
+  recent_alerts: AlertEvent[];
 }

@@ -1,0 +1,508 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Activity,
+  AlertTriangle,
+  Bell,
+  CheckCircle2,
+  CircleDot,
+  RefreshCw,
+  Save,
+  ShieldAlert,
+  Zap,
+} from "lucide-react";
+import { monitoringApi } from "@/lib/endpoints";
+import type { AlertEvent, AlertRule, MonitoringCellStatus, MonitoringElectrolyzerBlock } from "@/lib/types";
+import { AccessFormWindow } from "@/components/layout/access-form";
+import { Button } from "@/components/ui/button";
+import { Input, Label } from "@/components/ui/input";
+import { Tabs } from "@/components/ui/tabs";
+import { LoadingState, ErrorState } from "@/components/ui/spinner";
+import { useI18n } from "@/lib/i18n/context";
+import { useAuth } from "@/lib/auth/context";
+import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
+
+function severityClass(sev: string): string {
+  if (sev === "danger") return "is-danger";
+  if (sev === "warning") return "is-warning";
+  if (sev === "ok") return "is-ok";
+  return "is-unknown";
+}
+
+function Kpi({
+  label,
+  value,
+  tone,
+  icon: Icon,
+}: {
+  label: string;
+  value: string | number;
+  tone: "danger" | "warning" | "ok" | "neutral" | "info";
+  icon: typeof Zap;
+}) {
+  return (
+    <div className={`mon-kpi mon-kpi-${tone}`}>
+      <div className="mon-kpi-icon">
+        <Icon size={18} />
+      </div>
+      <div>
+        <div className="mon-kpi-value">{value}</div>
+        <div className="mon-kpi-label">{label}</div>
+      </div>
+    </div>
+  );
+}
+
+function CellChip({ cell, onSelect }: { cell: MonitoringCellStatus; onSelect: (c: MonitoringCellStatus) => void }) {
+  return (
+    <button
+      type="button"
+      className={`mon-cell ${severityClass(cell.severity)}`}
+      title={`${cell.electrolyzer}-${cell.position}: ${cell.voltage ?? "—"} V`}
+      onClick={() => onSelect(cell)}
+    >
+      <span className="mon-cell-pos">{cell.position}</span>
+      <span className="mon-cell-v">{cell.voltage != null ? Number(cell.voltage).toFixed(2) : "—"}</span>
+    </button>
+  );
+}
+
+function ElectrolyzerCard({
+  block,
+  onSelect,
+}: {
+  block: MonitoringElectrolyzerBlock;
+  onSelect: (c: MonitoringCellStatus) => void;
+}) {
+  const { t } = useI18n();
+  const health =
+    block.danger_count > 0 ? "danger" : block.warning_count > 0 ? "warning" : block.cell_count ? "ok" : "unknown";
+  const dateLabel = block.reading_date ? formatDate(block.reading_date) : "—";
+  const timeLabel =
+    block.reading_time && !String(block.reading_time).includes("1899") ? ` · ${block.reading_time}` : "";
+  return (
+    <section className={`mon-el-card ${severityClass(health)}`}>
+      <header className="mon-el-head">
+        <div>
+          <h3 className="mon-el-title">{block.electrolyzer}</h3>
+          <p className="mon-el-meta">
+            {dateLabel}
+            {timeLabel}
+          </p>
+        </div>
+        <div className="mon-el-stats">
+          <span>
+            {t("monitoring.maxV")}: <strong>{formatNumber(block.max_voltage, 3)}</strong>
+          </span>
+          <span>
+            {t("monitoring.avgV")}: <strong>{formatNumber(block.avg_voltage, 3)}</strong>
+          </span>
+          <span className="mon-pill is-danger">{block.danger_count}</span>
+          <span className="mon-pill is-warning">{block.warning_count}</span>
+          <span className="mon-pill is-ok">{block.ok_count}</span>
+        </div>
+      </header>
+      <div className="mon-cell-grid">
+        {block.cells.map((cell) => (
+          <CellChip key={`${cell.electrolyzer}-${cell.position}`} cell={cell} onSelect={onSelect} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AlertsPanel({
+  alerts,
+  canEdit,
+}: {
+  alerts: AlertEvent[];
+  canEdit: boolean;
+}) {
+  const { t } = useI18n();
+  const qc = useQueryClient();
+  const ack = useMutation({
+    mutationFn: (id: number) => monitoringApi.acknowledge(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["monitoring"] });
+    },
+  });
+  const resolve = useMutation({
+    mutationFn: (id: number) => monitoringApi.resolve(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["monitoring"] });
+    },
+  });
+
+  if (!alerts.length) {
+    return <div className="mon-empty">{t("monitoring.noAlerts")}</div>;
+  }
+
+  return (
+    <div className="mon-alert-list">
+      {alerts.map((a) => (
+        <article key={a.id} className={`mon-alert ${severityClass(a.severity)}`}>
+          <div className="mon-alert-main">
+            <div className="mon-alert-title">
+              <ShieldAlert size={16} />
+              <span>{a.title}</span>
+              <span className={`mon-sev-badge ${severityClass(a.severity)}`}>{a.severity}</span>
+              <span className="mon-status-badge">{a.status}</span>
+            </div>
+            <p className="mon-alert-msg">{a.message}</p>
+            <div className="mon-alert-meta">
+              {a.electrolyzer ? `${a.electrolyzer}${a.position ? `-${a.position}` : ""}` : ""}
+              {a.value != null ? ` · ${Number(a.value).toFixed(3)} V` : ""}
+              {a.threshold != null ? ` · ${t("monitoring.limit")} ${a.threshold}` : ""}
+              {` · ${formatDateTime(a.created_at)}`}
+            </div>
+          </div>
+          {canEdit && a.status !== "resolved" ? (
+            <div className="mon-alert-actions">
+              {a.status === "open" ? (
+                <Button type="button" variant="secondary" onClick={() => ack.mutate(a.id)}>
+                  {t("monitoring.acknowledge")}
+                </Button>
+              ) : null}
+              <Button type="button" onClick={() => resolve.mutate(a.id)}>
+                {t("monitoring.resolve")}
+              </Button>
+            </div>
+          ) : null}
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function RulesPanel() {
+  const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const editable = canEdit("monitoring") || canEdit("voltage");
+  const qc = useQueryClient();
+  const rulesQuery = useQuery({ queryKey: ["monitoring", "rules"], queryFn: monitoringApi.listRules });
+  const [drafts, setDrafts] = useState<Record<number, AlertRule>>({});
+
+  useEffect(() => {
+    if (rulesQuery.data) {
+      setDrafts(Object.fromEntries(rulesQuery.data.map((r) => [r.id, { ...r }])));
+    }
+  }, [rulesQuery.data]);
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const ops = Object.values(drafts).map((r) =>
+        monitoringApi.updateRule(r.id, {
+          name: r.name,
+          warning_threshold: r.warning_threshold,
+          danger_threshold: r.danger_threshold,
+          enabled: r.enabled,
+          notify: r.notify,
+          electrolyzer: r.electrolyzer,
+          operator: r.operator,
+        })
+      );
+      await Promise.all(ops);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["monitoring"] });
+    },
+  });
+
+  if (rulesQuery.isLoading) return <LoadingState />;
+  if (rulesQuery.isError) return <ErrorState message={(rulesQuery.error as Error).message} />;
+
+  return (
+    <div className="space-y-4">
+      <p className="mon-help">{t("monitoring.rulesHelp")}</p>
+      <div className="mon-rules">
+        {Object.values(drafts).map((rule) => (
+          <div key={rule.id} className="mon-rule-row">
+            <label className="mon-rule-enable">
+              <input
+                type="checkbox"
+                checked={rule.enabled}
+                disabled={!editable}
+                onChange={(e) =>
+                  setDrafts((prev) => ({ ...prev, [rule.id]: { ...rule, enabled: e.target.checked } }))
+                }
+              />
+            </label>
+            <div className="mon-rule-body">
+              <div className="mon-rule-name">{rule.name}</div>
+              <div className="mon-rule-desc">
+                {rule.description || rule.metric} · {rule.operator}
+              </div>
+              <div className="mon-rule-fields">
+                <div>
+                  <Label>{t("monitoring.warningLimit")}</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    disabled={!editable}
+                    value={rule.warning_threshold ?? ""}
+                    onChange={(e) =>
+                      setDrafts((prev) => ({
+                        ...prev,
+                        [rule.id]: {
+                          ...rule,
+                          warning_threshold: e.target.value === "" ? null : Number(e.target.value),
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>{t("monitoring.dangerLimit")}</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    disabled={!editable}
+                    value={rule.danger_threshold ?? ""}
+                    onChange={(e) =>
+                      setDrafts((prev) => ({
+                        ...prev,
+                        [rule.id]: {
+                          ...rule,
+                          danger_threshold: e.target.value === "" ? null : Number(e.target.value),
+                        },
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>{t("monitoring.electrolyzerFilter")}</Label>
+                  <Input
+                    disabled={!editable}
+                    placeholder={t("monitoring.allElectrolyzers")}
+                    value={rule.electrolyzer ?? ""}
+                    onChange={(e) =>
+                      setDrafts((prev) => ({
+                        ...prev,
+                        [rule.id]: { ...rule, electrolyzer: e.target.value || null },
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {editable ? (
+        <Button type="button" onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
+          <Save className="h-4 w-4" />
+          {saveMutation.isPending ? t("monitoring.saving") : t("monitoring.saveRules")}
+        </Button>
+      ) : null}
+      {saveMutation.isSuccess ? <span className="text-sm text-green-700">{t("monitoring.rulesSaved")}</span> : null}
+    </div>
+  );
+}
+
+function OverviewTab() {
+  const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const qc = useQueryClient();
+  const [selected, setSelected] = useState<MonitoringCellStatus | null>(null);
+  const [elFilter, setElFilter] = useState<string>("all");
+
+  const snapQuery = useQuery({
+    queryKey: ["monitoring", "snapshot"],
+    queryFn: monitoringApi.snapshot,
+    refetchInterval: 20_000,
+  });
+
+  const evalMutation = useMutation({
+    mutationFn: () => monitoringApi.evaluate(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["monitoring"] }),
+  });
+
+  const data = snapQuery.data;
+  const electrolyzers = useMemo(() => {
+    if (!data) return [];
+    if (elFilter === "all") return data.electrolyzers;
+    return data.electrolyzers.filter((e) => e.electrolyzer === elFilter);
+  }, [data, elFilter]);
+
+  if (snapQuery.isLoading) return <LoadingState label={t("monitoring.loading")} />;
+  if (snapQuery.isError || !data) return <ErrorState message={(snapQuery.error as Error)?.message || "Error"} />;
+
+  const { summary, voltage } = data;
+
+  return (
+    <div className="mon-page">
+      <div className="mon-toolbar">
+        <div>
+          <h2 className="mon-heading">{t("monitoring.liveTitle")}</h2>
+          <p className="mon-sub">
+            {t("monitoring.updatedAt", { time: formatDateTime(data.generated_at) })}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <select className="mon-select" value={elFilter} onChange={(e) => setElFilter(e.target.value)}>
+            <option value="all">{t("monitoring.allElectrolyzers")}</option>
+            {data.electrolyzers.map((e) => (
+              <option key={e.electrolyzer} value={e.electrolyzer}>
+                {e.electrolyzer}
+              </option>
+            ))}
+          </select>
+          <Button type="button" variant="secondary" onClick={() => snapQuery.refetch()}>
+            <RefreshCw className="h-4 w-4" />
+            {t("monitoring.refresh")}
+          </Button>
+          {canEdit("monitoring") || canEdit("voltage") ? (
+            <Button type="button" onClick={() => evalMutation.mutate()} disabled={evalMutation.isPending}>
+              <Bell className="h-4 w-4" />
+              {evalMutation.isPending ? t("monitoring.evaluating") : t("monitoring.evaluateNow")}
+            </Button>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="mon-kpi-row">
+        <Kpi label={t("monitoring.openDanger")} value={voltage.danger_count} tone="danger" icon={ShieldAlert} />
+        <Kpi label={t("monitoring.openWarning")} value={voltage.warning_count} tone="warning" icon={AlertTriangle} />
+        <Kpi label={t("monitoring.cellsOk")} value={voltage.ok_count} tone="ok" icon={CheckCircle2} />
+        <Kpi
+          label={t("monitoring.maxCellV")}
+          value={voltage.max_voltage != null ? Number(voltage.max_voltage).toFixed(3) : "—"}
+          tone="info"
+          icon={Zap}
+        />
+        <Kpi label={t("monitoring.componentIssues")} value={voltage.component_issue_count} tone="neutral" icon={CircleDot} />
+        <Kpi
+          label={t("monitoring.openInbox")}
+          value={summary.open_total}
+          tone={summary.open_danger > 0 ? "danger" : summary.open_total > 0 ? "warning" : "neutral"}
+          icon={Bell}
+        />
+      </div>
+
+      <div className="mon-legend">
+        <span className="mon-legend-item is-ok">{t("monitoring.legendOk")}</span>
+        <span className="mon-legend-item is-warning">{t("monitoring.legendWarning")}</span>
+        <span className="mon-legend-item is-danger">{t("monitoring.legendDanger")}</span>
+        <span className="mon-legend-item is-unknown">{t("monitoring.legendUnknown")}</span>
+      </div>
+
+      <div className="mon-el-stack">
+        {electrolyzers.length === 0 ? (
+          <div className="mon-empty">{t("monitoring.noVoltageData")}</div>
+        ) : (
+          electrolyzers.map((block) => (
+            <ElectrolyzerCard key={block.electrolyzer} block={block} onSelect={setSelected} />
+          ))
+        )}
+      </div>
+
+      <div className="mon-split">
+        <section className="mon-panel">
+          <h3 className="mon-panel-title">{t("monitoring.recentAlerts")}</h3>
+          <AlertsPanel
+            alerts={data.recent_alerts.filter((a) => a.status !== "resolved").slice(0, 12)}
+            canEdit={canEdit("monitoring") || canEdit("voltage")}
+          />
+        </section>
+        <section className="mon-panel">
+          <h3 className="mon-panel-title">{t("monitoring.anodeCathodeIssues")}</h3>
+          {data.component_issues.length === 0 ? (
+            <div className="mon-empty">{t("monitoring.noComponentIssues")}</div>
+          ) : (
+            <div className="mon-issue-list">
+              {data.component_issues.slice(0, 30).map((issue, idx) => (
+                <div key={`${issue.kind}-${issue.element_nr}-${idx}`} className={`mon-issue ${severityClass(issue.severity)}`}>
+                  <strong>{issue.kind.replaceAll("_", " ")}</strong>
+                  <span>
+                    {issue.electrolyzer}
+                    {issue.position ? `-${issue.position}` : ""}
+                    {issue.element_nr ? ` · ${issue.element_nr}` : ""}
+                    {issue.component_ref ? ` · ${issue.component_ref}` : ""}
+                  </span>
+                  <span className="mon-issue-detail">{issue.detail}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+
+      {selected ? (
+        <div className="mon-detail">
+          <strong>
+            {selected.electrolyzer}-{selected.position}
+          </strong>
+          <span>
+            {t("fields.voltage")}: {formatNumber(selected.voltage, 3)} V
+          </span>
+          <span>
+            Un: {formatNumber(selected.standardized_voltage, 3)}
+          </span>
+          <span>
+            {t("nav.anodes")}: {selected.anode_nr || "—"}
+          </span>
+          <span>
+            {t("nav.cathodes")}: {selected.cathode_nr || "—"}
+          </span>
+          <span className={`mon-sev-badge ${severityClass(selected.severity)}`}>{selected.severity}</span>
+          <button type="button" className="mon-detail-close" onClick={() => setSelected(null)}>
+            ×
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function InboxTab() {
+  const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const [status, setStatus] = useState("open");
+  const alertsQuery = useQuery({
+    queryKey: ["monitoring", "alerts", status],
+    queryFn: () => monitoringApi.listAlerts({ status, limit: 200 }),
+    refetchInterval: 15_000,
+  });
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        {(["open", "acknowledged", "resolved", "all"] as const).map((s) => (
+          <button
+            key={s}
+            type="button"
+            className={`mon-filter-chip ${status === s ? "is-active" : ""}`}
+            onClick={() => setStatus(s)}
+          >
+            {t(`monitoring.status.${s}`)}
+          </button>
+        ))}
+      </div>
+      {alertsQuery.isLoading ? (
+        <LoadingState />
+      ) : alertsQuery.isError ? (
+        <ErrorState message={(alertsQuery.error as Error).message} />
+      ) : (
+        <AlertsPanel alerts={alertsQuery.data || []} canEdit={canEdit("monitoring") || canEdit("voltage")} />
+      )}
+    </div>
+  );
+}
+
+export default function MonitoringPage() {
+  const { t } = useI18n();
+
+  return (
+    <AccessFormWindow caption={t("monitoring.title")} helpKey="monitoring">
+      <Tabs
+        tabs={[
+          { key: "overview", label: t("monitoring.tabOverview"), content: <OverviewTab /> },
+          { key: "alerts", label: t("monitoring.tabAlerts"), content: <InboxTab /> },
+          { key: "rules", label: t("monitoring.tabRules"), content: <RulesPanel /> },
+        ]}
+      />
+    </AccessFormWindow>
+  );
+}

@@ -508,3 +508,31 @@ export const voltageSyncApi = {
     return data;
   },
 };
+
+// ---------------------------------------------------------------- Monitoring / alerts
+export const monitoringApi = {
+  snapshot: async (): Promise<T.MonitoringSnapshot> => (await apiClient.get("/monitoring/snapshot")).data,
+  summary: async (): Promise<T.AlertSummary> => (await apiClient.get("/monitoring/summary")).data,
+  evaluate: async (): Promise<{ ok: boolean; summary: T.AlertSummary }> =>
+    (await apiClient.post("/monitoring/evaluate")).data,
+  listRules: async (): Promise<T.AlertRule[]> => (await apiClient.get("/monitoring/rules")).data,
+  createRule: async (payload: Omit<T.AlertRule, "id">): Promise<T.AlertRule> =>
+    (await apiClient.post("/monitoring/rules", payload)).data,
+  updateRule: async (id: number, payload: Partial<T.AlertRule>): Promise<T.AlertRule> =>
+    (await apiClient.put(`/monitoring/rules/${id}`, payload)).data,
+  deleteRule: async (id: number): Promise<void> => {
+    await apiClient.delete(`/monitoring/rules/${id}`);
+  },
+  listAlerts: async (params?: {
+    status?: string;
+    severity?: string;
+    category?: string;
+    limit?: number;
+  }): Promise<T.AlertEvent[]> => (await apiClient.get("/monitoring/alerts", { params })).data,
+  acknowledge: async (id: number): Promise<T.AlertEvent> =>
+    (await apiClient.post(`/monitoring/alerts/${id}/acknowledge`)).data,
+  resolve: async (id: number): Promise<T.AlertEvent> =>
+    (await apiClient.post(`/monitoring/alerts/${id}/resolve`)).data,
+  resolveAll: async (severity?: string): Promise<{ ok: boolean; resolved: number }> =>
+    (await apiClient.post("/monitoring/alerts/resolve-all", null, { params: { severity } })).data,
+};

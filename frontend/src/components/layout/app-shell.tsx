@@ -8,6 +8,7 @@ import { LoginScreen } from "@/components/auth/login-screen";
 import { SessionControls } from "@/components/layout/session-controls";
 import { AllFormsPane } from "@/components/layout/all-forms-pane";
 import { ModernSidebar } from "@/components/layout/modern-sidebar";
+import { AlertToaster } from "@/components/domain/alert-toaster";
 import { Spinner } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useUiStyle } from "@/lib/ui-style/context";
@@ -38,6 +39,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="modern-main min-w-0 flex-1 overflow-y-auto">
           <div className="modern-content mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</div>
         </main>
+        <AlertToaster />
       </div>
     );
   }
@@ -78,6 +80,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <AllFormsPane />
         </Suspense>
       </div>
+      <AlertToaster />
     </div>
   );
 }

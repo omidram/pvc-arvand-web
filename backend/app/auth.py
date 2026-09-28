@@ -26,6 +26,7 @@ FORM_KEYS: list[str] = [
     "dashboard",
     "statistics",
     "reports",
+    "monitoring",
     "elements",
     "inspections",
     "anodes",

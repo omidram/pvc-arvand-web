@@ -1,14 +1,25 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, CircleDot, Layers, PowerOff, ClipboardCheck, FlaskConical, Zap, Factory } from "lucide-react";
+import {
+  Boxes,
+  CircleDot,
+  Layers,
+  PowerOff,
+  ClipboardCheck,
+  FlaskConical,
+  Zap,
+  Factory,
+} from "lucide-react";
 import { statisticsApi, shutdownSummaryApi } from "@/lib/endpoints";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
+import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
 import { useI18n } from "@/lib/i18n/context";
+import { formatNumber } from "@/lib/utils";
 import {
   Bar,
   BarChart,
@@ -28,7 +39,13 @@ const TOOLTIP_STYLE = { background: "#ffffff", border: "1px solid #808080", bord
 
 export default function OverviewPage() {
   const { t } = useI18n();
-  const dashboardQuery = useQuery({ queryKey: ["statistics", "dashboard"], queryFn: statisticsApi.dashboard });
+  const dashboardQuery = useQuery({
+    queryKey: ["statistics", "dashboard", "with-voltage-gauges"],
+    queryFn: statisticsApi.dashboard,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchInterval: 30_000,
+  });
   const dolQuery = useQuery({ queryKey: ["statistics", "dol-by-membrane-type"], queryFn: statisticsApi.dolByMembraneType });
   const shutdownSummaryQuery = useQuery({ queryKey: ["shutdowns", "summary"], queryFn: shutdownSummaryApi.get });
 
@@ -37,9 +54,15 @@ export default function OverviewPage() {
 
   const stats = dashboardQuery.data!;
   const counts = stats.counts;
+  const voltage = stats.voltage ?? null;
 
   return (
     <AccessFormWindow caption={t("dashboard.title", { customer: stats.customer || "Plant" })} helpKey="overview">
+      <VoltageReportPanel
+        voltage={voltage}
+        loading={dashboardQuery.isLoading}
+        error={dashboardQuery.isError ? (dashboardQuery.error as Error).message : null}
+      />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <StatCard label={t("dashboard.electrolyzers")} value={counts.electrolyzers} icon={Factory} accent="cyan" />
@@ -51,7 +74,12 @@ export default function OverviewPage() {
         <StatCard label={t("dashboard.shutdowns")} value={counts.shutdowns} icon={PowerOff} accent="rose" />
         <StatCard label={t("dashboard.inspections")} value={counts.inspections} icon={ClipboardCheck} accent="cyan" />
         <StatCard label={t("dashboard.analysisSamples")} value={counts.analysis_samples} icon={FlaskConical} accent="emerald" />
-        <StatCard label={t("dashboard.voltageReadings")} value={counts.voltage_readings} icon={Zap} accent="blue" />
+        <StatCard
+          label={t("dashboard.plantTotalVoltage")}
+          value={voltage?.plant_total_voltage != null ? `${formatNumber(voltage.plant_total_voltage, 1)} V` : "—"}
+          icon={Zap}
+          accent="blue"
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">

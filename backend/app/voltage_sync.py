@@ -176,6 +176,15 @@ def apply_parsed_voltage(
             )
 
     db.flush()
+    # Re-evaluate voltage alert rules so monitoring inbox stays in sync
+    try:
+        from . import alerts_engine
+
+        alerts_engine.ensure_default_rules(db)
+        alerts_engine.evaluate_voltage_rules(db)
+    except Exception:  # noqa: BLE001
+        logger.exception("Alert evaluation after voltage import failed")
+
     return {
         "electrolyzer": el,
         "reading_date": date_val.date().isoformat(),

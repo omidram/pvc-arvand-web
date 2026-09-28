@@ -19,8 +19,14 @@ def _safe_count(db: Session, model) -> int:
 
 @router.get("/dashboard", dependencies=[Depends(require_form_access("dashboard"))])
 def dashboard(db: Session = Depends(get_db)):
+    from .. import alerts_engine
+
     settings_row = db.query(models.PlantSettings).first()
     active_elements = db.query(models.Element).filter(models.Element.disassembly_date.is_(None)).count()
+    try:
+        voltage = alerts_engine.voltage_live_stats(db)
+    except Exception:
+        voltage = None
     return {
         "customer": settings_row.customer if settings_row else None,
         "uan": settings_row.uan if settings_row else None,
@@ -37,6 +43,7 @@ def dashboard(db: Session = Depends(get_db)):
             "analysis_samples": _safe_count(db, models.AnalysisSample),
             "voltage_readings": _safe_count(db, models.VoltageReading),
         },
+        "voltage": voltage,
     }
 
 

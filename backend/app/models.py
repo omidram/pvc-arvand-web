@@ -84,6 +84,49 @@ class VoltageSyncSettings(Base):
     processed_state: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class AlertRule(Base):
+    """Configurable warning/danger thresholds for plant monitoring."""
+    __tablename__ = "alert_rules"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(120))
+    metric: Mapped[str] = mapped_column(String(40), index=True)
+    # cell_voltage | standardized_voltage | total_voltage
+    # missing_anode | missing_cathode | anode_decommissioned | cathode_decommissioned
+    operator: Mapped[str] = mapped_column(String(10), default="gt")  # gt | gte | lt | lte
+    warning_threshold: Mapped[float | None] = mapped_column(Float, nullable=True)
+    danger_threshold: Mapped[float | None] = mapped_column(Float, nullable=True)
+    electrolyzer: Mapped[str | None] = mapped_column(String(50), nullable=True)  # null = all
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    notify: Mapped[bool] = mapped_column(Boolean, default=True)
+    description: Mapped[str | None] = mapped_column(String(255), nullable=True)
+
+
+class AlertEvent(Base):
+    """Raised alerts shown in the monitoring inbox / notifications."""
+    __tablename__ = "alert_events"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    rule_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("alert_rules.id"), nullable=True, index=True)
+    fingerprint: Mapped[str] = mapped_column(String(200), index=True)
+    severity: Mapped[str] = mapped_column(String(20), index=True)  # warning | danger | info
+    category: Mapped[str] = mapped_column(String(40), index=True)  # voltage | anode | cathode | element
+    metric: Mapped[str] = mapped_column(String(40))
+    title: Mapped[str] = mapped_column(String(200))
+    message: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    electrolyzer: Mapped[str | None] = mapped_column(String(50), index=True, nullable=True)
+    position: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    element_nr: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    component_ref: Mapped[str | None] = mapped_column(String(50), nullable=True)  # anode/cathode nr
+    value: Mapped[float | None] = mapped_column(Float, nullable=True)
+    threshold: Mapped[float | None] = mapped_column(Float, nullable=True)
+    reading_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    reading_time: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    status: Mapped[str] = mapped_column(String(20), default="open", index=True)  # open | acknowledged | resolved
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    acknowledged_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+
 # ==========================================================================
 # Plant configuration / lookups  (tblElektrolyseurbezeichnung, etc.)
 # ==========================================================================

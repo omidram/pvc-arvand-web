@@ -29,12 +29,15 @@ import {
   LineChart,
   FlaskRound,
   SplitSquareVertical,
+  Bell,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import type { Locale } from "@/lib/i18n/translations";
 import { useAuth } from "@/lib/auth/context";
 import { useTheme } from "@/lib/theme/context";
+import { monitoringApi } from "@/lib/endpoints";
 
 const NAV_GROUPS: {
   groupKey: string;
@@ -45,6 +48,7 @@ const NAV_GROUPS: {
     items: [
       { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, formKey: "dashboard" },
       { href: "/overview", labelKey: "nav.overview", icon: Activity, formKey: "dashboard" },
+      { href: "/monitoring", labelKey: "nav.monitoring", icon: Bell, formKey: "monitoring" },
       { href: "/statistics", labelKey: "nav.statistics", icon: BarChart3, formKey: "statistics" },
       { href: "/reports", labelKey: "nav.reports", icon: FileBarChart, formKey: "reports" },
     ],
@@ -98,16 +102,19 @@ function NavLink({
   active,
   icon: Icon,
   label,
+  badge,
 }: {
   href: string;
   active: boolean;
   icon: typeof LayoutDashboard;
   label: string;
+  badge?: number;
 }) {
   return (
     <Link href={href} className={cn("ms-nav-link", active && "is-active")}>
       <Icon size={15} className="ms-nav-icon" />
       <span className="truncate">{label}</span>
+      {badge && badge > 0 ? <span className="ms-badge">{badge > 99 ? "99+" : badge}</span> : null}
     </Link>
   );
 }
@@ -117,6 +124,14 @@ export function ModernSidebar() {
   const { t, locale, setLocale } = useI18n();
   const { user, isAdmin, canView, logout } = useAuth();
   const { resolvedTheme, toggle: toggleTheme } = useTheme();
+  const canMonitor = canView("monitoring") || canView("voltage");
+  const alertSummary = useQuery({
+    queryKey: ["monitoring", "summary"],
+    queryFn: monitoringApi.summary,
+    enabled: canMonitor,
+    refetchInterval: 20_000,
+  });
+  const openAlerts = alertSummary.data?.open_total ?? 0;
 
   return (
     <aside className="modern-sidebar">
@@ -168,6 +183,7 @@ export function ModernSidebar() {
         {NAV_GROUPS.map((group) => {
           const visibleItems = group.items.filter((item) => {
             if (item.adminOnly && !isAdmin) return false;
+            if (item.formKey === "monitoring") return canMonitor;
             return canView(item.formKey);
           });
           if (visibleItems.length === 0) return null;
@@ -181,6 +197,7 @@ export function ModernSidebar() {
                   active={navActive(pathname, item.href)}
                   icon={item.icon}
                   label={t(item.labelKey)}
+                  badge={item.href === "/monitoring" ? openAlerts : undefined}
                 />
               ))}
             </div>

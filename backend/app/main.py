@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import inspect, text
 
-from . import backup_scheduler, models, voltage_sync_scheduler
+from . import alerts_engine, backup_scheduler, models, voltage_sync_scheduler
 from .auth import require_form_access, seed_default_admin
 from .config import settings
 from .database import Base, SessionLocal, engine
@@ -22,6 +22,7 @@ from .routers import (
     directory as directory_router_module,
     elements,
     inspections,
+    monitoring as monitoring_router_module,
     remarks,
     reports,
     search,
@@ -51,6 +52,7 @@ _ensure_user_auth_source()
 
 with SessionLocal() as _db:
     seed_default_admin(_db)
+    alerts_engine.ensure_default_rules(_db)
 
 app = FastAPI(title="PVC Arvand - Electrolyzer Management System", version="1.0.0")
 
@@ -201,6 +203,8 @@ _api(db_tables.router)
 # --- Automatic / manual backup ---
 _api(backup_router_module.router, dependencies=_perm("settings"))
 _api(voltage_sync_router_module.router, dependencies=_perm("settings"))
+# Monitoring uses voltage access (or admin); form_key "monitoring" is for finer grants in Users.
+_api(monitoring_router_module.router, dependencies=_perm("voltage"))
 
 # --- Admin database files / local vs online switch ---
 _api(database_router_module.router)

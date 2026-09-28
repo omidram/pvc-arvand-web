@@ -123,6 +123,116 @@ class VoltageSyncRunResult(BaseModel):
     details: list[dict] = []
 
 
+# ---------------------------------------------------------------- Monitoring / alerts
+
+class AlertRuleBase(ORMModel):
+    name: str
+    metric: str
+    operator: str = "gt"
+    warning_threshold: float | None = None
+    danger_threshold: float | None = None
+    electrolyzer: str | None = None
+    enabled: bool = True
+    notify: bool = True
+    description: str | None = None
+
+
+class AlertRuleUpdate(ORMModel):
+    name: str | None = None
+    metric: str | None = None
+    operator: str | None = None
+    warning_threshold: float | None = None
+    danger_threshold: float | None = None
+    electrolyzer: str | None = None
+    enabled: bool | None = None
+    notify: bool | None = None
+    description: str | None = None
+
+
+class AlertRuleRead(AlertRuleBase):
+    id: int
+
+
+class AlertEventRead(ORMModel):
+    id: int
+    rule_id: int | None = None
+    fingerprint: str
+    severity: str
+    category: str
+    metric: str
+    title: str
+    message: str | None = None
+    electrolyzer: str | None = None
+    position: str | None = None
+    element_nr: str | None = None
+    component_ref: str | None = None
+    value: float | None = None
+    threshold: float | None = None
+    reading_date: datetime | None = None
+    reading_time: str | None = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    acknowledged_at: datetime | None = None
+    resolved_at: datetime | None = None
+
+
+class AlertSummary(BaseModel):
+    open_danger: int = 0
+    open_warning: int = 0
+    open_info: int = 0
+    open_total: int = 0
+    acknowledged: int = 0
+    resolved_today: int = 0
+
+
+class MonitoringCellStatus(BaseModel):
+    electrolyzer: str
+    position: str
+    element_nr: str | None = None
+    anode_nr: str | None = None
+    cathode_nr: str | None = None
+    voltage: float | None = None
+    standardized_voltage: float | None = None
+    reading_date: datetime | None = None
+    reading_time: str | None = None
+    severity: str = "ok"  # ok | warning | danger | unknown
+    threshold: float | None = None
+
+
+class MonitoringElectrolyzerBlock(BaseModel):
+    electrolyzer: str
+    reading_date: datetime | None = None
+    reading_time: str | None = None
+    cell_count: int = 0
+    ok_count: int = 0
+    warning_count: int = 0
+    danger_count: int = 0
+    max_voltage: float | None = None
+    avg_voltage: float | None = None
+    total_voltage: float | None = None
+    cells: list[MonitoringCellStatus] = []
+
+
+class MonitoringComponentIssue(BaseModel):
+    kind: str  # missing_anode | missing_cathode | anode_decommissioned | cathode_decommissioned
+    severity: str
+    electrolyzer: str | None = None
+    position: str | None = None
+    element_nr: str | None = None
+    component_ref: str | None = None
+    detail: str
+
+
+class MonitoringSnapshot(BaseModel):
+    generated_at: datetime
+    summary: AlertSummary
+    voltage: dict
+    electrolyzers: list[MonitoringElectrolyzerBlock]
+    component_issues: list[MonitoringComponentIssue]
+    recent_alerts: list[AlertEventRead]
+
+
 # ---------------------------------------------------------------- Lookups
 
 class ElectrolyzerBase(ORMModel):

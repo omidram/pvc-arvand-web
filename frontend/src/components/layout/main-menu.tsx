@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { settingsApi } from "@/lib/endpoints";
+import { settingsApi, statisticsApi } from "@/lib/endpoints";
 import { useAuth } from "@/lib/auth/context";
 import { UhdeCellBars, UhdeLogoMark } from "@/components/layout/uhde-mark";
+import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
 import { useI18n } from "@/lib/i18n/context";
 
 function accessDate(value: string | null | undefined): string {
@@ -57,7 +58,16 @@ export function MainMenu() {
   const { canView, logout } = useAuth();
   const { t } = useI18n();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
+  // Always fetch — admin and plant users both need the main-menu voltage strip.
+  const dashboardQuery = useQuery({
+    queryKey: ["statistics", "dashboard", "main-menu-voltage"],
+    queryFn: statisticsApi.dashboard,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchInterval: 30_000,
+  });
   const settings = settingsQuery.data;
+  const voltage = dashboardQuery.data?.voltage;
 
   return (
     <div className="access-eap flex h-full min-h-0 flex-1 flex-col" dir="ltr">
@@ -79,8 +89,8 @@ export function MainMenu() {
           </div>
         </aside>
 
-        <section className="flex min-w-0 flex-1 flex-col px-3 pb-4 pt-1">
-          <div className="access-header-sunken mb-5 px-4 pb-3 pt-2">
+        <section className="flex min-w-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-1">
+          <div className="access-header-sunken mb-3 px-4 pb-3 pt-2">
             <h1 className="mb-3 text-center text-[22px] font-bold leading-tight text-black">{t("mainMenu.programTitle")}</h1>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-black">
               <span>
@@ -103,8 +113,17 @@ export function MainMenu() {
             </div>
           </div>
 
+          <div className="mb-3">
+            <VoltageReportPanel
+              voltage={voltage}
+              compact
+              loading={dashboardQuery.isLoading}
+              error={dashboardQuery.isError ? (dashboardQuery.error as Error).message : null}
+            />
+          </div>
+
           <div
-            className="grid min-h-[260px] flex-1 content-start overflow-x-auto"
+            className="grid min-h-[220px] content-start overflow-x-auto"
             style={{
               display: "grid",
               minWidth: 820,
@@ -129,6 +148,12 @@ export function MainMenu() {
             />
             <MenuButton href="/search" label={t("mainMenu.search")} allowed={canView("search")} className="col-start-1 row-start-3" />
 
+            <MenuButton
+              href="/monitoring"
+              label={t("nav.monitoring")}
+              allowed={canView("monitoring") || canView("voltage")}
+              className="col-start-3 row-start-2"
+            />
             <MenuButton
               href="/voltage"
               label={t("mainMenu.standardizedVoltage")}
