@@ -177,7 +177,7 @@ export default function StoragePage() {
   );
 }
 
-function StockTab<T extends Record<string, unknown>>({
+function StockTab<T extends object>({
   summaryTitle,
   summaryRows,
   columns,

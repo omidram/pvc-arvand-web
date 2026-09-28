@@ -60,8 +60,8 @@ export default function OverviewPage() {
     <AccessFormWindow caption={t("dashboard.title", { customer: stats.customer || "Plant" })} helpKey="overview">
       <VoltageReportPanel
         voltage={voltage}
-        loading={dashboardQuery.isLoading}
-        error={dashboardQuery.isError ? (dashboardQuery.error as Error).message : null}
+        loading={false}
+        error={null}
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
