@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import inspect, text
 
-from . import alerts_engine, backup_scheduler, models, voltage_sync_scheduler
+from . import alerts_engine, audit, backup_scheduler, models, voltage_sync_scheduler
+from .audit_middleware import AuditMiddleware
 from .auth import require_form_access, seed_default_admin
 from .config import settings
 from .database import Base, SessionLocal, engine
@@ -22,6 +23,7 @@ from .routers import (
     directory as directory_router_module,
     elements,
     inspections,
+    logs as logs_router_module,
     monitoring as monitoring_router_module,
     remarks,
     reports,
@@ -69,6 +71,9 @@ with SessionLocal() as _db:
     alerts_engine.ensure_default_rules(_db)
 
 app = FastAPI(title="PVC Arvand - Electrolyzer Management System", version="1.0.0")
+
+# Register SQLAlchemy audit listeners (imported for side effects).
+_ = audit
 
 
 def _safe_static_file(full_path: str):
@@ -128,6 +133,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(AuditMiddleware)
 
 
 def _perm(form_key: str) -> list[Depends]:
@@ -140,10 +146,11 @@ def _api(router, **kwargs):
     app.include_router(router, prefix="/api" + extra_prefix, **kwargs)
 
 
-# --- Auth & Users (auth is public; users/roles are admin-only, enforced in their routers) ---
+# --- Auth & Users (auth is public; users/roles/logs are admin-only in their routers) ---
 _api(auth_router_module.router)
 _api(users_router_module.router)
 _api(roles_router_module.router)
+_api(logs_router_module.router)
 
 # --- Plant configuration / settings ---
 _api(config_router.electrolyzers_router, dependencies=_perm("settings"))

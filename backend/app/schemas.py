@@ -91,6 +91,33 @@ class AppRoleRead(ORMModel):
     user_count: int = 0
 
 
+class AuditLogRead(ORMModel):
+    id: int
+    created_at: datetime
+    user_id: int | None = None
+    username: str | None = None
+    user_role: str | None = None
+    action: str
+    resource: str | None = None
+    resource_id: str | None = None
+    method: str | None = None
+    path: str | None = None
+    status_code: int | None = None
+    ip_address: str | None = None
+    user_agent: str | None = None
+    summary: str | None = None
+    before_data: dict | list | str | None = None
+    after_data: dict | list | str | None = None
+    changes: dict | list | str | None = None
+    request_body: dict | list | str | None = None
+    success: bool = True
+
+
+class AuditLogListResponse(BaseModel):
+    total: int
+    items: list[AuditLogRead]
+
+
 # ---------------------------------------------------------------- Backup
 
 class BackupSettingsBase(ORMModel):

@@ -73,6 +73,30 @@ class FormPermission(Base):
     level: Mapped[str] = mapped_column(String(10), default="none")  # none | view | edit
 
 
+class AuditLog(Base):
+    """Immutable application-wide audit trail. Admin-only read access via API."""
+    __tablename__ = "audit_logs"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    username: Mapped[str | None] = mapped_column(String(80), nullable=True, index=True)
+    user_role: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    action: Mapped[str] = mapped_column(String(40), index=True)  # create|update|delete|login|logout|api|...
+    resource: Mapped[str | None] = mapped_column(String(80), nullable=True, index=True)  # table or area
+    resource_id: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
+    method: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    path: Mapped[str | None] = mapped_column(String(400), nullable=True)
+    status_code: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ip_address: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    user_agent: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    summary: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    before_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    after_data: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    changes: Mapped[dict | None] = mapped_column(JSON, nullable=True)  # {field: {old, new}}
+    request_body: Mapped[dict | list | str | None] = mapped_column(JSON, nullable=True)
+    success: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
 class BackupSettings(Base):
     """Single-row table holding the automatic-backup schedule configuration."""
     __tablename__ = "backup_settings"

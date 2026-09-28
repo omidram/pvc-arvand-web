@@ -590,6 +590,33 @@ export interface AppRole {
   user_count: number;
 }
 
+export interface AuditLog {
+  id: number;
+  created_at: string;
+  user_id: number | null;
+  username: string | null;
+  user_role: string | null;
+  action: string;
+  resource: string | null;
+  resource_id: string | null;
+  method: string | null;
+  path: string | null;
+  status_code: number | null;
+  ip_address: string | null;
+  user_agent: string | null;
+  summary: string | null;
+  before_data: unknown;
+  after_data: unknown;
+  changes: unknown;
+  request_body: unknown;
+  success: boolean;
+}
+
+export interface AuditLogListResponse {
+  total: number;
+  items: AuditLog[];
+}
+
 export interface LoginResponse {
   access_token: string;
   token_type: string;

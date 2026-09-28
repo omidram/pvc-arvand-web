@@ -310,6 +310,22 @@ export const rolesApi = {
   },
 };
 
+export const logsApi = {
+  list: async (params?: {
+    q?: string;
+    action?: string;
+    username?: string;
+    resource?: string;
+    success?: boolean;
+    date_from?: string;
+    date_to?: string;
+    skip?: number;
+    limit?: number;
+  }): Promise<T.AuditLogListResponse> => (await apiClient.get("/logs", { params })).data,
+  meta: async (): Promise<{ actions: string[]; resources: string[] }> => (await apiClient.get("/logs/meta")).data,
+  get: async (id: number): Promise<T.AuditLog> => (await apiClient.get(`/logs/${id}`)).data,
+};
+
 export type StorageSummary = {
   counts: { anodes: number; cathodes: number; membranes: number; total: number };
   anodes_by_manufacturer: { manufacturer: string; generation: string; count: number }[];

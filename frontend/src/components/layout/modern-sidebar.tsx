@@ -31,6 +31,7 @@ import {
   SplitSquareVertical,
   Bell,
   Warehouse,
+  ScrollText,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -90,6 +91,7 @@ const NAV_GROUPS: {
     items: [
       { href: "/settings", labelKey: "nav.settings", icon: Settings, formKey: "settings" },
       { href: "/users", labelKey: "nav.users", icon: Users, formKey: "users", adminOnly: true },
+      { href: "/logs", labelKey: "nav.logs", icon: ScrollText, formKey: "logs", adminOnly: true },
     ],
   },
 ];
