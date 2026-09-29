@@ -4,9 +4,11 @@ import { useState } from "react";
 import { remarksApi } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { Remark } from "@/lib/types";
+import { ExportButtons } from "@/components/domain/export-buttons";
 import { AccessHub } from "@/components/layout/access-hub";
 import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
+import { DateInput } from "@/components/ui/date-input";
 
 export default function RemarksPage() {
   const { canEdit } = useAuth();
@@ -25,7 +27,11 @@ export default function RemarksPage() {
   }
 
   return (
-    <AccessHub title={t("remarks.title")} titleBlue>
+    <AccessHub
+      title={t("remarks.title")}
+      titleBlue
+      extraButtons={<ExportButtons prefix="/remarks" filenameBase="remarks" />}
+    >
       <table className="access-cont-table">
         <thead>
           <tr>
@@ -43,8 +49,7 @@ export default function RemarksPage() {
                 <input className="w-14" value={row.id} readOnly />
               </td>
               <td>
-                <input
-                  type="date"
+                <DateInput
                   value={row.date?.slice(0, 10) || ""}
                   onChange={(e) => saveRow(row, { date: e.target.value || null })}
                   disabled={!canEdit("remarks")}
@@ -65,9 +70,8 @@ export default function RemarksPage() {
               <td className="access-selector">{active === "new" ? "*" : "*"}</td>
               <td />
               <td>
-                <input
-                  type="date"
-                  onBlur={(e) => {
+                <DateInput
+                  onChange={(e) => {
                     if (e.target.value) createMutation.mutate({ date: e.target.value, text: "" } as never);
                   }}
                 />

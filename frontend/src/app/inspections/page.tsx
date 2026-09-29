@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { inspectionsApi, inspectionGridsApi } from "@/lib/endpoints";
+import { inspectionsApi, inspectionGridsApi, relationsApi } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { InspectionReport } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
@@ -85,9 +85,23 @@ export default function InspectionsPage() {
     { limit: 500 }
   );
 
+  const elementNumbers = useQuery({ queryKey: ["relations", "element-numbers"], queryFn: () => relationsApi.lookup("element-numbers") });
+  const reasons = useQuery({ queryKey: ["relations", "inspection-reasons"], queryFn: () => relationsApi.lookup("inspection-reasons") });
+
   const fields: FieldDef[] = [
-    { name: "element_nr", label: t("fields.elementNr"), required: true },
-    { name: "inspection_reason", label: t("fields.inspectionReason") },
+    {
+      name: "element_nr",
+      label: t("fields.elementNr"),
+      required: true,
+      type: "select",
+      options: (elementNumbers.data || []).map((value) => ({ label: value, value })),
+    },
+    {
+      name: "inspection_reason",
+      label: t("fields.inspectionReason"),
+      type: "select",
+      options: (reasons.data || []).map((value) => ({ label: value, value })),
+    },
     { name: "inspector_name", label: t("fields.inspectorName") },
     { name: "inspection_date", label: t("fields.inspectionDate"), type: "datetime-local" },
     { name: "blister_anode_area", label: t("fields.blisterAnodeArea") },

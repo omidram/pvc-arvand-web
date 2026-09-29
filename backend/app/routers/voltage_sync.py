@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas, voltage_sync, voltage_sync_scheduler
 from ..database import get_db
+from ..import_jobs import spawn_import
 
 router = APIRouter(prefix="/voltage-sync", tags=["voltage-sync"])
 
@@ -57,37 +58,39 @@ def run_voltage_sync_now(db: Session = Depends(get_db)):
     return schemas.VoltageSyncRunResult(**result)
 
 
-@router.post("/import-file", response_model=schemas.VoltageSyncRunResult)
+@router.post("/import-file")
 async def import_voltage_sync_file(
     file: UploadFile,
-    db: Session = Depends(get_db),
     electrolyzer: str | None = None,
     reading_date: str | None = None,
 ):
     """Manual one-shot upsert of an ARIAORMS Excel export (same logic as the watcher)."""
     content = await file.read()
-    try:
-        info = voltage_sync.apply_excel_bytes(
-            db,
-            content,
-            electrolyzer=electrolyzer,
-            reading_date=reading_date,
-            hint_from_name=file.filename or "",
-        )
-        db.commit()
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:  # noqa: BLE001
-        db.rollback()
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    return schemas.VoltageSyncRunResult(
-        ok=True,
-        files_scanned=1,
-        files_applied=1,
-        rows_upserted=int(info.get("rows_upserted") or 0),
-        message=(
-            f"Upserted {info.get('rows_upserted')} rows for "
-            f"{info.get('electrolyzer')} on {info.get('reading_date')}"
-        ),
-        details=[info],
-    )
+    filename = file.filename or ""
+
+    def work(db: Session, progress):
+        try:
+            info = voltage_sync.apply_excel_bytes(
+                db,
+                content,
+                electrolyzer=electrolyzer,
+                reading_date=reading_date,
+                hint_from_name=filename,
+                progress=progress,
+            )
+            db.commit()
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return {
+            "ok": True,
+            "files_scanned": 1,
+            "files_applied": 1,
+            "rows_upserted": int(info.get("rows_upserted") or 0),
+            "message": (
+                f"Upserted {info.get('rows_upserted')} rows for "
+                f"{info.get('electrolyzer')} on {info.get('reading_date')}"
+            ),
+            "details": [info],
+        }
+
+    return spawn_import(work)

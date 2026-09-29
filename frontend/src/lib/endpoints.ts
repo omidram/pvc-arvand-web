@@ -9,7 +9,7 @@ function resource<TRead, TWrite = Partial<TRead>>(prefix: string) {
       return data;
     },
     get: async (id: string | number): Promise<TRead> => {
-      const { data } = await apiClient.get(`${prefix}/${id}`);
+      const { data } = await apiClient.get(`${prefix}/${encodeURIComponent(String(id))}`);
       return data;
     },
     create: async (payload: TWrite): Promise<TRead> => {
@@ -17,11 +17,11 @@ function resource<TRead, TWrite = Partial<TRead>>(prefix: string) {
       return data;
     },
     update: async (id: string | number, payload: TWrite): Promise<TRead> => {
-      const { data } = await apiClient.put(`${prefix}/${id}`, payload);
+      const { data } = await apiClient.put(`${prefix}/${encodeURIComponent(String(id))}`, payload);
       return data;
     },
     remove: async (id: string | number): Promise<void> => {
-      await apiClient.delete(`${prefix}/${id}`);
+      await apiClient.delete(`${prefix}/${encodeURIComponent(String(id))}`);
     },
   };
 }
@@ -33,6 +33,87 @@ export const fullPlantsApi = resource<T.FullPlant>("/full-plants");
 export const rectifiersApi = resource<T.Rectifier>("/rectifiers");
 export const transformersApi = resource<T.Transformer>("/transformers");
 export const arrangementsApi = resource<T.ElectrolyzerArrangement>("/arrangements");
+
+export type ArrangementBoardCell = {
+  position: number;
+  block: string | null;
+  occupied: boolean;
+  element_nr: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  membrane_type: string | null;
+  assembly_date: string | null;
+  commissioning_date: string | null;
+  decommissioning_date: string | null;
+  element_id: number | null;
+};
+
+export type ArrangementBoard = {
+  electrolyzer: string | null;
+  electrolyzers: string[];
+  blocks: {
+    id: number;
+    name: string | null;
+    block: string | null;
+    sub_plant: string | null;
+    transformer: string | null;
+    rectifier: string | null;
+    start_position: string | null;
+    end_position: string | null;
+  }[];
+  counts: { positions: number; occupied: number; empty: number };
+  cells: ArrangementBoardCell[];
+};
+
+export type CellDossier = {
+  electrolyzer: string;
+  position: number;
+  block: {
+    id: number;
+    block: string | null;
+    sub_plant: string | null;
+    transformer: string | null;
+    rectifier: string | null;
+    start_position: string | null;
+    end_position: string | null;
+  } | null;
+  element: T.Element | null;
+  history: T.Element[];
+  anode: T.Anode | null;
+  cathode: T.Cathode | null;
+  membrane: T.Membrane | null;
+  anode_maintenance: T.AnodeMaintenance[];
+  anode_recoating: T.AnodeRecoating[];
+  anode_coating: T.AnodeCoatingCheck[];
+  cathode_maintenance: T.CathodeMaintenance[];
+  cathode_recoating: T.CathodeRecoating[];
+  cathode_coating: T.CathodeCoatingCheck[];
+  membrane_maintenance: T.MembraneMaintenance[];
+  anode_segregation: T.ElectrodeSegregation[];
+  cathode_segregation: T.ElectrodeSegregation[];
+  inspections: T.InspectionReport[];
+  halfshells: { id: number; element_nr: string | null; grid_type: string; grid_data: Record<string, unknown> }[];
+  voltage: T.VoltageReading[];
+  current_efficiency: T.CurrentEfficiencyEntry[];
+  links: {
+    anode_catalog: boolean;
+    cathode_catalog: boolean;
+    membrane_catalog: boolean;
+    group_catalog: boolean;
+  };
+};
+
+export const arrangementBoardApi = {
+  get: async (electrolyzer?: string): Promise<ArrangementBoard> =>
+    (await apiClient.get("/arrangement-board", { params: { electrolyzer } })).data,
+  cell: async (electrolyzer: string, position: number, elementId?: number | null): Promise<CellDossier> =>
+    (
+      await apiClient.get("/arrangement-board/cell", {
+        params: { electrolyzer, position, element_id: elementId || undefined },
+      })
+    ).data,
+};
 export const reservePositionsApi = resource<T.ReservePosition>("/reserve-positions");
 export const correctionFactorsApi = resource<T.CorrectionFactor>("/correction-factors");
 export const electrodeAreasApi = resource<T.ElectrodeArea>("/electrode-areas");
@@ -60,20 +141,45 @@ export const elementsApi = {
     (await apiClient.get(`/elements/duplicates/${componentType}`)).data,
   groupsOverview: async (): Promise<{ group_nr: string; element_count: number }[]> =>
     (await apiClient.get("/elements/groups/overview")).data,
-  importAssemblyExcel: async (file: File): Promise<{ imported_rows: number }> => {
+  importAssemblyExcel: async (
+    file: File,
+    mode: "assembly" | "disassembly" | "upsert" = "upsert",
+    onProgress?: (progress: ImportProgress) => void
+  ): Promise<{ imported_rows: number; created?: number; updated?: number; skipped?: number; mode?: string }> => {
     const form = new FormData();
     form.append("file", file);
     const { data } = await apiClient.post("/elements/import-assembly-excel", form, {
       headers: { "Content-Type": "multipart/form-data" },
+      params: { mode },
     });
-    return data;
+    return followImport(data, onProgress);
   },
+  match: async (params: {
+    focus: string;
+    element_nr?: string;
+    anode_nr?: string;
+    cathode_nr?: string;
+    membrane_nr?: string;
+    electrolyzer?: string;
+    position?: string;
+    membrane_type?: string;
+    group_nr?: string;
+  }): Promise<T.Element | null> => (await apiClient.get("/elements/match", { params })).data,
 };
 
 export const cellComponentsApi = {
   list: async (): Promise<T.CellComponent[]> => (await apiClient.get("/cell-components")).data,
+  create: async (payload: Partial<T.CellComponent>): Promise<T.CellComponent> =>
+    (await apiClient.post("/cell-components", payload)).data,
   update: async (id: number, payload: Partial<T.CellComponent>): Promise<T.CellComponent> =>
     (await apiClient.put(`/cell-components/${id}`, payload)).data,
+  remove: async (id: number): Promise<void> => {
+    await apiClient.delete(`/cell-components/${id}`);
+  },
+};
+
+export const relationsApi = {
+  lookup: async (name: string): Promise<string[]> => (await apiClient.get(`/relations/lookups/${name}`)).data.values,
 };
 
 // ---------------------------------------------------------------- Anodes / Cathodes / Membranes
@@ -89,6 +195,83 @@ export const cathodeCoatingChecksApi = resource<T.CathodeCoatingCheck>("/cathode
 
 export const membranesApi = resource<T.Membrane>("/membranes");
 export const membraneMaintenanceApi = resource<T.MembraneMaintenance>("/membrane-maintenance");
+
+export type MaintenanceReportKind = "anode" | "cathode" | "membrane";
+
+export type MaintenanceReportFile = {
+  id: number;
+  original_name: string;
+  content_type: string;
+  size_bytes: number;
+};
+
+export type MaintenanceReportRecord = {
+  id: number;
+  kind: MaintenanceReportKind;
+  component_nr: string;
+  report_date: string | null;
+  title: string | null;
+  notes: string | null;
+  files: MaintenanceReportFile[];
+};
+
+export type MaintenanceHistoryRow = {
+  id: number;
+  date: string | null;
+  finding: string | null;
+  action: string | null;
+  dispatch_date: string | null;
+  return_date: string | null;
+  repair_work: string | null;
+};
+
+export const maintenanceReportsApi = {
+  history: async (
+    kind: MaintenanceReportKind,
+    nr: string
+  ): Promise<{
+    kind: MaintenanceReportKind;
+    component_nr: string;
+    maintenance: MaintenanceHistoryRow[];
+    reports: MaintenanceReportRecord[];
+  }> => (await apiClient.get("/maintenance-reports", { params: { kind, nr } })).data,
+  create: async (payload: {
+    kind: MaintenanceReportKind;
+    component_nr: string;
+    report_date?: string;
+    title?: string;
+    notes?: string;
+    files: File[];
+  }): Promise<MaintenanceReportRecord> => {
+    const form = new FormData();
+    form.append("kind", payload.kind);
+    form.append("component_nr", payload.component_nr);
+    if (payload.report_date) form.append("report_date", payload.report_date);
+    if (payload.title) form.append("title", payload.title);
+    if (payload.notes) form.append("notes", payload.notes);
+    for (const file of payload.files) form.append("files", file);
+    const { data } = await apiClient.post("/maintenance-reports", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data;
+  },
+  addFiles: async (reportId: number, files: File[]): Promise<MaintenanceReportRecord> => {
+    const form = new FormData();
+    for (const file of files) form.append("files", file);
+    const { data } = await apiClient.post(`/maintenance-reports/${reportId}/files`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data;
+  },
+  fileBlob: async (reportId: number, fileId: number): Promise<Blob> =>
+    (await apiClient.get(`/maintenance-reports/${reportId}/files/${fileId}`, { responseType: "blob" })).data,
+  removeFile: async (reportId: number, fileId: number): Promise<void> => {
+    await apiClient.delete(`/maintenance-reports/${reportId}/files/${fileId}`);
+  },
+  remove: async (reportId: number): Promise<void> => {
+    await apiClient.delete(`/maintenance-reports/${reportId}`);
+  },
+};
 
 // ---------------------------------------------------------------- Inspections
 export const inspectionsApi = resource<T.InspectionReport>("/inspections");
@@ -134,19 +317,25 @@ export const voltageCalcApi = {
     (await apiClient.get("/voltage/distribution", { params: { electrolyzer } })).data,
   highDeviation: async (params?: { threshold?: number; electrolyzer?: string }): Promise<T.HighDeviation> =>
     (await apiClient.get("/voltage/high-deviation", { params })).data,
-  importCsv: async (file: File, electrolyzer: string, readingDate: string): Promise<{ imported_rows: number }> => {
+  importCsv: async (
+    file: File,
+    electrolyzer: string,
+    readingDate: string,
+    onProgress?: (progress: ImportProgress) => void
+  ): Promise<{ imported_rows: number }> => {
     const form = new FormData();
     form.append("file", file);
     const { data } = await apiClient.post("/voltage/import", form, {
       params: { electrolyzer, reading_date: readingDate },
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return data;
+    return followImport(data, onProgress);
   },
   importExcel: async (
     file: File,
     electrolyzer?: string,
-    readingDate?: string
+    readingDate?: string,
+    onProgress?: (progress: ImportProgress) => void
   ): Promise<{ imported_rows: number; electrolyzer?: string; reading_date?: string }> => {
     const form = new FormData();
     form.append("file", file);
@@ -157,7 +346,7 @@ export const voltageCalcApi = {
       params,
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return data;
+    return followImport(data, onProgress);
   },
 };
 
@@ -182,27 +371,34 @@ export const currentEfficiencyCalcApi = {
 export const analysesApi = {
   ...resource<T.AnalysisSample>("/analyses"),
   meta: async (): Promise<T.AnalysisMeta> => (await apiClient.get("/analyses/meta")).data,
-  importLabExcel: async (file: File): Promise<{ imported_samples: number }> => {
+  importLabExcel: async (
+    file: File,
+    onProgress?: (progress: ImportProgress) => void
+  ): Promise<{ imported_samples: number }> => {
     const form = new FormData();
     form.append("file", file);
     const { data } = await apiClient.post("/analyses/import-lab-excel", form, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return data;
+    return followImport(data, onProgress);
   },
 };
 
 // ---------------------------------------------------------------- Electrode segregation (TAFKIK)
 export const electrodeSegregationsApi = {
   ...resource<T.ElectrodeSegregation>("/electrode-segregations"),
-  importTafkikExcel: async (file: File, sheet?: string): Promise<{ imported_rows: number; sheet?: string }> => {
+  importTafkikExcel: async (
+    file: File,
+    sheet?: string,
+    onProgress?: (progress: ImportProgress) => void
+  ): Promise<{ imported_rows: number; sheet?: string }> => {
     const form = new FormData();
     form.append("file", file);
     const { data } = await apiClient.post("/electrode-segregations/import-tafkik-excel", form, {
       params: sheet ? { sheet } : undefined,
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return data;
+    return followImport(data, onProgress);
   },
 };
 
@@ -211,6 +407,8 @@ export const searchApi = {
   all: async (q: string): Promise<T.SearchResults> => (await apiClient.get("/search", { params: { q } })).data,
   byDate: async (field: string, date: string): Promise<Record<string, unknown>[]> =>
     (await apiClient.get("/search/by-date", { params: { field, date } })).data,
+  byKind: async (kind: string, q?: string): Promise<T.SearchResults & { title?: string; kind?: string }> =>
+    (await apiClient.get(`/search/kind/${encodeURIComponent(kind)}`, { params: { q, limit: 1000 } })).data,
 };
 
 // ---------------------------------------------------------------- Statistics
@@ -248,6 +446,41 @@ export async function downloadExport(
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
+}
+
+export type ImportProgress = { percent: number; processed: number; total: number };
+
+export async function followImport<T>(started: { job_id?: string }, onProgress?: (progress: ImportProgress) => void): Promise<T> {
+  if (!started?.job_id) return started as T;
+  const jobId = started.job_id;
+  const deadline = Date.now() + 30 * 60 * 1000;
+  while (Date.now() < deadline) {
+    const { data } = await apiClient.get(`/imports/${jobId}`);
+    onProgress?.({
+      percent: Number(data.percent ?? 0),
+      processed: Number(data.processed ?? 0),
+      total: Number(data.total ?? 0),
+    });
+    if (data.done) {
+      if (data.error) throw new Error(String(data.error));
+      return data.result as T;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+  throw new Error("Import timed out");
+}
+
+export async function importExcel(
+  prefix: string,
+  file: File,
+  onProgress?: (progress: ImportProgress) => void
+): Promise<{ created: number; updated: number; skipped: number; arranged?: boolean; ignored?: string[]; errors?: string[] }> {
+  const form = new FormData();
+  form.append("file", file);
+  const { data } = await apiClient.post(`${prefix}/import.xlsx`, form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return followImport(data, onProgress);
 }
 
 // ---------------------------------------------------------------- Auth / Users
@@ -333,6 +566,36 @@ export type StorageSummary = {
   membranes_by_type: { membrane_type: string; count: number }[];
 };
 
+export type WarehouseItem = {
+  serial: string;
+  key: string;
+  kind: "anode" | "cathode";
+  bucket: "on_rack" | "out_repair" | "pending" | "ok" | "not_ok";
+  reason: string;
+  electrolyzer: string | null;
+  position: string | null;
+  element_nr: string | null;
+  assembly_date: string | null;
+  commissioning_date: string | null;
+  disassembly_date: string | null;
+  last_dol: number | null;
+  total_dol: number | null;
+  runs: number;
+  remarks: string | null;
+  repair: string | null;
+  repair_dispatch: string | null;
+  repair_return: string | null;
+  coating: string | null;
+  manufacturer: string | null;
+};
+
+export type WarehouseBoard = {
+  kind: string;
+  counts: { on_rack: number; out_repair: number; pending: number; ok: number; not_ok: number; total: number };
+  items: WarehouseItem[];
+  truncated: boolean;
+};
+
 export const storageApi = {
   summary: async (): Promise<StorageSummary> => (await apiClient.get("/storage/summary")).data,
   anodes: async (q?: string): Promise<T.Anode[]> =>
@@ -341,6 +604,16 @@ export const storageApi = {
     (await apiClient.get("/storage/cathodes", { params: { q, limit: 5000 } })).data,
   membranes: async (q?: string): Promise<T.Membrane[]> =>
     (await apiClient.get("/storage/membranes", { params: { q, limit: 5000 } })).data,
+  board: async (kind: "anode" | "cathode", bucket?: string, q?: string): Promise<WarehouseBoard> =>
+    (await apiClient.get("/storage/board", { params: { kind, bucket, q, limit: 2500 } })).data,
+  move: async (payload: {
+    kind: "anode" | "cathode";
+    serial: string;
+    action: "dispatch_maintenance" | "dispatch_recoating" | "return" | "ok" | "not_ok";
+    date?: string;
+    note?: string;
+  }): Promise<{ ok: boolean; already?: boolean; serial: string; action: string }> =>
+    (await apiClient.post("/storage/board/move", payload)).data,
 };
 
 export type DbArchiveTable = {
@@ -403,7 +676,8 @@ export const dataTransferApi = {
   importExcel: async (
     resource: string,
     file: File,
-    mode: "replace" | "merge"
+    mode: "replace" | "merge",
+    onProgress?: (progress: ImportProgress) => void
   ): Promise<{ ok: boolean; imported: number; skipped: number; errors: string[] }> => {
     const form = new FormData();
     form.append("file", file);
@@ -411,7 +685,7 @@ export const dataTransferApi = {
       params: { mode },
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return data;
+    return followImport(data, onProgress);
   },
 };
 
@@ -553,14 +827,18 @@ export const voltageSyncApi = {
     payload: Pick<T.VoltageSyncSettings, "enabled" | "watch_dir" | "poll_seconds" | "source_url">
   ): Promise<T.VoltageSyncSettings> => (await apiClient.put("/voltage-sync/settings", payload)).data,
   runNow: async (): Promise<T.VoltageSyncRunResult> => (await apiClient.post("/voltage-sync/run")).data,
-  importFile: async (file: File, params?: { electrolyzer?: string; reading_date?: string }): Promise<T.VoltageSyncRunResult> => {
+  importFile: async (
+    file: File,
+    params?: { electrolyzer?: string; reading_date?: string },
+    onProgress?: (progress: ImportProgress) => void
+  ): Promise<T.VoltageSyncRunResult> => {
     const form = new FormData();
     form.append("file", file);
     const { data } = await apiClient.post("/voltage-sync/import-file", form, {
       params,
       headers: { "Content-Type": "multipart/form-data" },
     });
-    return data;
+    return followImport(data, onProgress);
   },
 };
 
@@ -590,4 +868,25 @@ export const monitoringApi = {
     (await apiClient.post(`/monitoring/alerts/${id}/resolve`)).data,
   resolveAll: async (severity?: string): Promise<{ ok: boolean; resolved: number }> =>
     (await apiClient.post("/monitoring/alerts/resolve-all", null, { params: { severity } })).data,
+  voltageHistory: async (params: {
+    electrolyzer: string;
+    position?: string;
+    span?: string;
+  }): Promise<{
+    electrolyzer: string;
+    position: string | null;
+    title: string;
+    kind: string;
+    unit: string;
+    span: string;
+    total: number;
+    points: { date: string | null; time: string | null; voltage: number }[];
+    rectifier_points?: { date: string | null; time: string | null; voltage: number }[];
+  }> => (await apiClient.get("/monitoring/voltage-history", { params })).data,
+  importProgress: async (): Promise<{
+    active: boolean;
+    done: number;
+    total: number;
+    names: string[];
+  }> => (await apiClient.get("/monitoring/import-progress")).data,
 };

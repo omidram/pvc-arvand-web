@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..database import get_db
+from ..excel_import import import_excel_bytes, read_xlsx
+from ..import_jobs import spawn_import
 from ..export_utils import export_pdf, export_xlsx, rows_to_dicts
 from ..plant_import import parse_tafkik_excel
 
@@ -71,45 +73,69 @@ def export_pdf_route(q: str | None = None, electrode_kind: str | None = None, db
     return export_pdf(rows, EXPORT_FIELDS, "electrode-segregations")
 
 
+@router.post("/import.xlsx", include_in_schema=False)
+async def import_segregations(file: UploadFile = File(...)):
+    content = await read_xlsx(file)
+    return spawn_import(
+        lambda db, progress: import_excel_bytes(
+            db,
+            models.ElectrodeSegregation,
+            schemas.ElectrodeSegregationBase,
+            content,
+            pk_field="id",
+            progress=progress,
+        )
+    )
+
+
 @router.post("/import-tafkik-excel")
 async def import_tafkik_excel(
     file: UploadFile = File(...),
     sheet: str | None = None,
-    db: Session = Depends(get_db),
 ):
     """Import TAFKIK segregation workbook (workshop warranty / recoating decisions)."""
     content = await file.read()
     parsed = parse_tafkik_excel(content, sheet=sheet)
-    created = 0
-    for item in parsed.get("records") or []:
-        db.add(
-            models.ElectrodeSegregation(
-                serial_nr=item["serial_nr"],
-                electrode_kind=item.get("electrode_kind"),
-                company=item.get("company"),
-                service_life=item.get("service_life"),
-                install_date=_parse_iso_date(item.get("install_date")),
-                dismantle_date=_parse_iso_date(item.get("dismantle_date")),
-                inspection_date=_parse_iso_date(item.get("inspection_date")),
-                xrf=item.get("xrf"),
-                voltage_quality=item.get("voltage_quality"),
-                warranty=item.get("warranty"),
-                coating_quality=item.get("coating_quality"),
-                decision=item.get("decision"),
-                problems=item.get("problems"),
-                segregation=item.get("segregation"),
-                pallet=item.get("pallet"),
+
+    def work(db: Session, progress):
+        records = parsed.get("records") or []
+        total = len(records)
+        if progress:
+            progress(0, total)
+        created = 0
+        for done, item in enumerate(records, start=1):
+            db.add(
+                models.ElectrodeSegregation(
+                    serial_nr=item["serial_nr"],
+                    electrode_kind=item.get("electrode_kind"),
+                    company=item.get("company"),
+                    service_life=item.get("service_life"),
+                    install_date=_parse_iso_date(item.get("install_date")),
+                    dismantle_date=_parse_iso_date(item.get("dismantle_date")),
+                    inspection_date=_parse_iso_date(item.get("inspection_date")),
+                    xrf=item.get("xrf"),
+                    voltage_quality=item.get("voltage_quality"),
+                    warranty=item.get("warranty"),
+                    coating_quality=item.get("coating_quality"),
+                    decision=item.get("decision"),
+                    problems=item.get("problems"),
+                    segregation=item.get("segregation"),
+                    pallet=item.get("pallet"),
+                )
             )
-        )
-        created += 1
-        if created % 500 == 0:
-            db.commit()
-    db.commit()
-    return {
-        "imported_rows": created,
-        "sheet": parsed.get("sheet"),
-        "preview": (parsed.get("records") or [])[:3],
-    }
+            created += 1
+            if created % 500 == 0:
+                db.flush()
+            if progress and (done == total or done % 25 == 0):
+                progress(done, total)
+        db.commit()
+        return {
+            "imported_rows": created,
+            "sheet": parsed.get("sheet"),
+            "preview": records[:3],
+        }
+
+    return spawn_import(work)
 
 
 @router.get("/{item_id}", response_model=schemas.ElectrodeSegregationRead)

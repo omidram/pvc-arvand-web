@@ -171,6 +171,8 @@ def _sheet_rows(wb, sheet_name: str | None = None) -> list[list[Any]]:
 # ---------------------------------------------------------------------------
 
 _CELL_RE = re.compile(r"^(?P<el>[A-Za-z]+\d*)-(?P<pos>\d{1,3})\b")
+_RECT_ITEM_RE = re.compile(r"^(?P<el>[A-Za-z]+\d+)\s*\[(?P<what>[^\]]+)\]", re.I)
+_DATE_ROW_RE = re.compile(r"^\d{4}[./\-]\d{1,2}[./\-]\d{1,2}$")
 _EL_RE = re.compile(r"^(?P<el>[A-Za-z]+\d*)\[", re.I)
 _EL_VOLTAGE_RE = re.compile(r"electrolyzer\s+voltage\s+(?P<el>[A-Za-z]+\d*)", re.I)
 _EL_IN_TEXT_RE = re.compile(r"(?:ELECTROLYZER|EL)\s*(?P<el>[A-Za-z]+\d*)", re.I)
@@ -260,11 +262,28 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
     electrolyzer = None
     readings: list[dict[str, Any]] = []
     totals: dict[str, Any] = {}
+    total_slots: dict[tuple[str, str], dict[str, Any]] = {}
     operators: set[str] = set()
     out_of_range: list[dict[str, Any]] = []
+    _date_row = _DATE_ROW_RE
 
     for row in rows[header_idx + 1 :]:
         if not row or all(c is None or str(c).strip() == "" for c in row):
+            continue
+
+        # ARIAORMS stacks one day per block: a date row, then the same header, then values.
+        first_text = ""
+        for cell in row[:3]:
+            if cell is not None and str(cell).strip():
+                first_text = str(cell).strip()
+                break
+        if _date_row.match(first_text):
+            parsed_day = parse_plant_date(first_text)
+            if parsed_day:
+                reading_date = parsed_day
+            continue
+        header_vals = [str(c).strip().lower() if c is not None else "" for c in row]
+        if "parameter" in header_vals and any(re.match(r"^\d{1,2}:\d{2}$", v) for v in header_vals):
             continue
 
         def _cell(idx: int | None) -> str:
@@ -329,27 +348,30 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
         el_from_label = _detect_electrolyzer(label, tag, parameter, equipment)
         if el_from_label:
             electrolyzer = electrolyzer or el_from_label
+        day_iso = reading_date.isoformat() if reading_date else ""
         for j, tlabel in time_cols.items():
             raw = row[j] if j < len(row) else None
             voltage = parse_float_plant(raw)
             if voltage is None:
                 continue
+            slot = total_slots.setdefault(day_iso + "|" + tlabel, {"date": day_iso or None, "time": tlabel})
             if "electrolyzer voltage" in key or "totale voltage" in key or "total voltage" in key:
-                totals.setdefault(tlabel, {})
                 if "rack a" in key:
-                    totals[tlabel]["rack_a"] = voltage
+                    slot["rack_a"] = voltage
                 elif "rack b" in key:
-                    totals[tlabel]["rack_b"] = voltage
+                    slot["rack_b"] = voltage
                 else:
-                    totals[tlabel]["total"] = voltage
+                    slot["total"] = voltage
+                totals.setdefault(tlabel, {})
+                totals[tlabel].update({k: slot[k] for k in ("rack_a", "rack_b", "total") if k in slot})
             elif "anolyte temperature" in key:
-                totals.setdefault(tlabel, {})["anolyte_temp"] = voltage
+                slot["anolyte_temp"] = voltage
             elif "catholyte temperature" in key:
-                totals.setdefault(tlabel, {})["catholyte_temp"] = voltage
+                slot["catholyte_temp"] = voltage
             elif "catholyte concentration" in key:
-                totals.setdefault(tlabel, {})["catholyte_conc"] = voltage
+                slot["catholyte_conc"] = voltage
             elif key.startswith("load "):
-                totals.setdefault(tlabel, {})["load"] = voltage
+                slot["load"] = voltage
 
     return {
         "sheet": preferred,
@@ -358,10 +380,98 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
         "operators": sorted(operators),
         "readings": readings,
         "totals": totals,
+        "total_slots": list(total_slots.values()),
         "out_of_range": out_of_range,
         "imported_cells": len(readings),
         "times": sorted(set(time_cols.values())),
+        "dates": sorted({r["date"] for r in readings if r.get("date")}),
     }
+
+
+def parse_rectifier_excel(content: bytes) -> dict[str, Any]:
+    """Parse Rectifier Room Train log sheets.
+
+    Keeps only DC bus voltage and current (kA). Status and temperature rows
+    stay out of the cell-voltage tables.
+    """
+    wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
+    preferred = None
+    for name in wb.sheetnames:
+        lower = name.lower()
+        if "siteman" in lower or "whit" in lower:
+            continue
+        preferred = name
+        break
+    if preferred is None:
+        preferred = wb.sheetnames[0]
+    rows = _sheet_rows(wb, preferred)
+    wb.close()
+
+    reading_date: date | None = None
+    time_cols: dict[int, str] = {}
+    param_col = 1
+    header_found = False
+    slots: dict[tuple[str, str, str], dict[str, Any]] = {}
+
+    for row in rows:
+        if not row or all(c is None or str(c).strip() == "" for c in row):
+            continue
+        first_text = ""
+        for cell in row[:3]:
+            if cell is not None and str(cell).strip():
+                first_text = str(cell).strip()
+                break
+        if _DATE_ROW_RE.match(first_text):
+            parsed_day = parse_plant_date(first_text)
+            if parsed_day:
+                reading_date = parsed_day
+            continue
+        vals = [str(c).strip() if c is not None else "" for c in row]
+        vals_lower = [v.lower() for v in vals]
+        if "parameter" in vals_lower and any(re.match(r"^\d{1,2}:\d{2}$", v) for v in vals):
+            found = _col_index(vals_lower, "parameter")
+            if found is not None:
+                param_col = found
+            time_cols = {j: v for j, v in enumerate(vals) if re.match(r"^\d{1,2}:\d{2}$", v)}
+            header_found = bool(time_cols)
+            continue
+        if not header_found or not time_cols or reading_date is None:
+            continue
+        if param_col >= len(row) or row[param_col] is None:
+            continue
+        parameter = str(row[param_col]).strip()
+        match = _RECT_ITEM_RE.match(parameter)
+        if not match:
+            continue
+        what = match.group("what").lower()
+        if "voltage" in what and "vdc" in what:
+            field = "voltage_vdc"
+        elif "current" in what and "ka" in what:
+            field = "current_ka"
+        else:
+            continue
+        electrolyzer = match.group("el").upper()
+        day = reading_date.isoformat()
+        for col, tlabel in time_cols.items():
+            raw = row[col] if col < len(row) else None
+            value = parse_float_plant(raw)
+            if value is None:
+                continue
+            slot = slots.setdefault(
+                (electrolyzer, day, tlabel),
+                {
+                    "electrolyzer": electrolyzer,
+                    "date": day,
+                    "time": tlabel,
+                    "voltage_vdc": None,
+                    "current_ka": None,
+                },
+            )
+            slot[field] = value
+
+    if not header_found:
+        return {"error": "Header row with Parameter/Tag / time columns not found", "rows": []}
+    return {"sheet": preferred, "rows": list(slots.values()), "error": None}
 
 
 # ---------------------------------------------------------------------------
@@ -522,82 +632,203 @@ def parse_lab_analysis_excel(content: bytes) -> dict[str, Any]:
 def _ymd_from_row(row: list[Any], day_i: int, month_i: int, year_i: int) -> date | None:
     if year_i >= len(row):
         return None
-    y, m, d = row[year_i] if year_i < len(row) else None, row[month_i] if month_i < len(row) else None, row[day_i] if day_i < len(row) else None
-    if y is None:
+    y = row[year_i] if year_i < len(row) else None
+    m = row[month_i] if month_i < len(row) else None
+    d = row[day_i] if day_i < len(row) else None
+    if y in (None, "") or m in (None, "") or d in (None, ""):
         return None
     try:
-        yi, mi, di = int(y), int(m or 1), int(d or 1)
+        yi, mi, di = int(y), int(m), int(d)
+    except (TypeError, ValueError):
+        return parse_plant_date(f"{y}/{m}/{d}")
+    if yi <= 0 or mi <= 0 or di <= 0:
+        return None
+    if yi < 100:
+        yi = 1400 + yi if yi <= 80 else 1300 + yi
+    try:
         if yi < 1600:
+            if not 1300 <= yi <= 1500:
+                return None
             return jalali_to_gregorian(yi, mi, di)
+        if not 1990 <= yi <= 2045:
+            return None
         return date(yi, mi, di)
     except Exception:
-        return parse_plant_date(f"{y}/{m}/{d}")
+        return None
 
 
-def parse_assembly_excel(content: bytes) -> dict[str, Any]:
-    wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
-    # Main sheet is first
-    ws = wb[wb.sheetnames[0]]
-    rows = [list(r) for r in ws.iter_rows(values_only=True)]
-    wb.close()
-    if len(rows) < 3:
-        return {"elements": [], "imported": 0, "error": "Empty workbook"}
+def _header_key(value: Any) -> str:
+    text = "" if value is None else str(value)
+    text = text.replace("\u200c", "").replace("ي", "ی").replace("ك", "ک").replace("آ", "ا").replace("أ", "ا")
+    return re.sub(r"\s+", "", text).lower()
 
-    # Column layout from analyzed file (0-based, with leading empty col):
-    # 1 row#, 2 anode, 3 cathode, 4 membrane type, 5 use N/N1/N2, 6 membrane code,
-    # 7 status/source, 8 element_nr, 9/10/11 assembly d/m/y, 12 work order,
-    # 13 electrolyzer, 14 position, 16/17/18 install d/m/y, 20 service status,
-    # 21 dismantle date, 22 remarks
+
+def _clean_code(value: Any) -> str | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, float) and value.is_integer():
+        text = str(int(value))
+    elif isinstance(value, int) and not isinstance(value, bool):
+        text = str(value)
+    else:
+        text = re.sub(r"\s+", " ", str(value)).strip()
+    if not text or text in {"*", "―", "-", "—", "XXXXX", "xxxxx"}:
+        return None
+    return text
+
+
+def _assembly_columns(header: list[Any], sub: list[Any] | None) -> dict[str, Any] | None:
+    keys = [_header_key(cell) for cell in header]
+    blob = " ".join(keys)
+    if "anode" not in blob and "cathode" not in blob:
+        return None
+    if not any(token in blob for token in ("مونتاژ", "شمارهالمنت", "دیمونتاژ", "نصب", "تاریخ")):
+        return None
+
+    def find(pred) -> int | None:
+        for index, key in enumerate(keys):
+            if key and pred(key):
+                return index
+        return None
+
+    def ymd_at(start: int | None) -> tuple[int, int, int] | None:
+        if start is None:
+            return None
+        sub_key = _header_key(sub[start]) if sub and start < len(sub) else ""
+        if sub_key in {"روز", "day"}:
+            return start, start + 1, start + 2
+        return None
+
+    status_cols = [index for index, key in enumerate(keys) if key == "وضعیت"]
+    assembly_at = find(lambda key: "دیمونتاژ" not in key and "مونتاژ" in key and "تاریخ" in key)
+    install_at = find(lambda key: "نصب" in key and "تاریخ" in key)
+    dismantle_at = find(lambda key: "دیمونتاژ" in key or ("دی" in key and "مونتاژ" in key and "تاریخ" in key))
+    columns: dict[str, Any] = {
+        "anode": find(lambda key: key == "anode" or key.startswith("anode")),
+        "cathode": find(lambda key: key == "cathode" or key.startswith("cathode")),
+        "membrane_type": find(lambda key: "نوعممبران" in key or "membranetype" in key),
+        "membrane_use": find(lambda key: "استفاده" in key or "ممبراننو" in key),
+        "membrane_nr": find(lambda key: "کدممبران" in key or "شمارهوکد" in key),
+        "element_nr": find(lambda key: "شمارهالمنت" in key or key in {"elementnr", "element_nr"}),
+        "electrolyzer": find(
+            lambda key: key in {"el", "electrolyzer", "elektrolyseur"}
+            or ("الکترولایزر" in key and "موقعیت" not in key and "تاریخ" not in key)
+        ),
+        "position": find(lambda key: "موقعیت" in key or key in {"position", "p"}),
+        "remarks": find(lambda key: key in {"توضیحات", "ملاحظات", "remarks"}),
+        "assembly_ymd": ymd_at(assembly_at),
+        "install_ymd": ymd_at(install_at),
+        "dismantle": dismantle_at,
+        "source": status_cols[0] if status_cols else None,
+        "site": status_cols[1] if len(status_cols) > 1 else None,
+    }
+    if columns["anode"] is None and columns["element_nr"] is None:
+        return None
+    return columns
+
+
+def _cell(row: list[Any], index: int | None) -> Any:
+    if index is None or index >= len(row):
+        return None
+    return row[index]
+
+
+def _parse_assembly_sheet(rows: list[list[Any]]) -> list[dict[str, Any]] | None:
+    header_at = None
+    columns = None
+    for index, row in enumerate(rows[:12]):
+        sub = rows[index + 1] if index + 1 < len(rows) else None
+        found = _assembly_columns(row, sub)
+        if found:
+            header_at = index
+            columns = found
+            break
+    if columns is None or header_at is None:
+        return None
+
+    data_at = header_at + (2 if columns["assembly_ymd"] or columns["install_ymd"] else 1)
     elements: list[dict[str, Any]] = []
-    for row in rows[2:]:
-        if not row or len(row) < 9:
+    for row in rows[data_at:]:
+        if not row:
             continue
-        anode = str(row[2]).strip() if row[2] else ""
-        cathode = str(row[3]).strip() if len(row) > 3 and row[3] else ""
-        element_nr = str(row[8]).strip() if len(row) > 8 and row[8] else ""
+        anode = _clean_code(_cell(row, columns["anode"]))
+        cathode = _clean_code(_cell(row, columns["cathode"]))
+        element_nr = _clean_code(_cell(row, columns["element_nr"]))
         if not anode and not cathode and not element_nr:
             continue
-        membrane_type = str(row[4]).strip() if len(row) > 4 and row[4] else None
-        membrane_use = str(row[5]).strip() if len(row) > 5 and row[5] else None
-        membrane_nr = str(row[6]).strip() if len(row) > 6 and row[6] else None
-        source_status = str(row[7]).strip() if len(row) > 7 and row[7] else None
-        assembly_date = _ymd_from_row(row, 9, 10, 11)
-        electrolyzer = str(row[13]).strip().upper() if len(row) > 13 and row[13] else None
-        position = str(row[14]).strip() if len(row) > 14 and row[14] else None
-        install_date = _ymd_from_row(row, 16, 17, 18)
-        service_status = str(row[20]).strip() if len(row) > 20 and row[20] else None
-        dismantle = parse_plant_date(row[21]) if len(row) > 21 else None
-        remarks = str(row[22]).strip() if len(row) > 22 and row[22] else None
+        membrane_type = _clean_code(_cell(row, columns["membrane_type"]))
+        membrane_use = _clean_code(_cell(row, columns["membrane_use"]))
+        membrane_nr = _clean_code(_cell(row, columns["membrane_nr"]))
+        source = _clean_code(_cell(row, columns["source"]))
+        site = _clean_code(_cell(row, columns["site"]))
+        electrolyzer = _clean_code(_cell(row, columns["electrolyzer"]))
+        position = _clean_code(_cell(row, columns["position"]))
+        remarks = _clean_code(_cell(row, columns["remarks"]))
+        assembly = _ymd_from_row(row, *columns["assembly_ymd"]) if columns["assembly_ymd"] else None
+        installed = _ymd_from_row(row, *columns["install_ymd"]) if columns["install_ymd"] else None
+        dismantle = parse_plant_date(_cell(row, columns["dismantle"]))
 
-        membrane_info_parts = []
+        info = []
         if membrane_use:
-            membrane_info_parts.append(f"use={membrane_use}")
-        if source_status:
-            membrane_info_parts.append(f"source={source_status}")
-        if service_status:
-            membrane_info_parts.append(f"site={service_status}")
+            info.append(f"use={membrane_use}")
+        if source:
+            info.append(f"source={source}")
+        extra_remarks = []
+        if remarks:
+            extra_remarks.append(remarks)
+        if site and site.upper() not in {"IN SERVICE", "OUT OF SERVICE"}:
+            extra_remarks.append(site)
+        generation = source if source and "نسل" in source else None
 
         elements.append(
             {
-                "element_nr": element_nr or None,
-                "anode_nr": anode or None,
-                "cathode_nr": cathode or None,
+                "element_nr": element_nr,
+                "anode_nr": anode,
+                "cathode_nr": cathode,
                 "membrane_type": membrane_type,
-                "membrane_nr": membrane_nr if membrane_nr not in {"―", "-", "XXXXX"} else None,
-                "membrane_info": "; ".join(membrane_info_parts) or None,
-                "electrolyzer": electrolyzer,
+                "membrane_nr": membrane_nr,
+                "membrane_info": "; ".join(info) or None,
+                "generation": generation,
+                "electrolyzer": electrolyzer.upper() if electrolyzer else None,
                 "position": position,
-                "assembly_date": assembly_date.isoformat() if assembly_date else None,
-                "commissioning_date": install_date.isoformat() if install_date else None,
+                "assembly_date": assembly.isoformat() if assembly else None,
+                "commissioning_date": installed.isoformat() if installed else None,
                 "disassembly_date": dismantle.isoformat() if dismantle else None,
-                "decommissioning_date": dismantle.isoformat() if dismantle else (
-                    install_date.isoformat() if service_status and "OUT OF SERVICE" in service_status.upper() and dismantle is None else None
-                ),
-                "remarks": remarks,
+                "remarks": "\n".join(extra_remarks) or None,
             }
         )
+    return elements
 
-    return {"elements": elements, "imported": len(elements), "sheet": "assembly"}
+
+def parse_assembly_excel(content: bytes) -> dict[str, Any]:
+    """Read the plant montage / demontage workbook into assembly-form fields.
+
+    The sheet keeps Jalali day, month and year in separate columns under
+    تاریخ مونتاژ and تاریخ نصب, plus a single تاریخ دی مونتاژ column.
+    """
+    wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
+    elements: list[dict[str, Any]] = []
+    recognized = False
+    try:
+        for name in wb.sheetnames:
+            rows = [list(r) for r in wb[name].iter_rows(values_only=True)]
+            parsed = _parse_assembly_sheet(rows)
+            if parsed is None:
+                continue
+            recognized = True
+            elements.extend(parsed)
+    finally:
+        wb.close()
+    if not recognized:
+        return {"elements": [], "recognized": False, "imported": 0}
+    if not elements:
+        return {
+            "elements": [],
+            "recognized": True,
+            "imported": 0,
+            "error": "No assembly rows found. هیچ ردیف مونتاژ یا دمونتاژ در فایل پیدا نشد.",
+        }
+    return {"elements": elements, "recognized": True, "imported": len(elements), "sheet": "assembly"}
 
 
 # ---------------------------------------------------------------------------

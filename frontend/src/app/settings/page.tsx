@@ -3,7 +3,6 @@
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Pencil } from "lucide-react";
 import {
   settingsApi,
   electrolyzersApi,
@@ -19,7 +18,6 @@ import {
   groupDefinitionsApi,
   inspectionReasonsApi,
   inspectionFindingsApi,
-  cellComponentsApi,
 } from "@/lib/endpoints";
 import type {
   PlantSettings,
@@ -36,7 +34,6 @@ import type {
   GroupDefinition,
   InspectionReason,
   InspectionFinding,
-  CellComponent,
 } from "@/lib/types";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { Tabs } from "@/components/ui/tabs";
@@ -44,8 +41,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LookupTable } from "@/components/domain/lookup-table";
 import { ResourceForm, type FieldDef } from "@/components/ui/resource-form";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
-import { DataTable } from "@/components/ui/data-table";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { ImportExportTab } from "@/components/domain/import-export-tab";
 import { BackupTab } from "@/components/domain/backup-tab";
@@ -56,9 +51,11 @@ import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useTheme } from "@/lib/theme/context";
 import { useUiStyle } from "@/lib/ui-style/context";
+import { useCalendar } from "@/lib/calendar/context";
+import { formatDate } from "@/lib/utils";
 import type { ThemeColors, ThemePresetId } from "@/lib/theme/presets";
 import { NAMED_PRESETS } from "@/lib/theme/presets";
-import { Sun, Moon, MonitorCog, Contrast, Waves, Trees, Grape, Wheat, Palette, LayoutTemplate, Sparkles } from "lucide-react";
+import { Sun, Moon, MonitorCog, Contrast, Waves, Trees, Grape, Wheat, Palette, LayoutTemplate, Sparkles, CalendarDays } from "lucide-react";
 
 type T = ReturnType<typeof useI18n>["t"];
 
@@ -131,83 +128,6 @@ function PlantInfoTab() {
   );
 }
 
-function CellComponentsTab() {
-  const { t } = useI18n();
-  const { canEdit } = useAuth();
-  const editable = canEdit("settings");
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["cell-components"],
-    queryFn: cellComponentsApi.list,
-  });
-  const [editing, setEditing] = useState<CellComponent | null>(null);
-  const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: Partial<CellComponent> }) =>
-      cellComponentsApi.update(id, payload),
-    onSuccess: () => {
-      setEditing(null);
-      refetch();
-    },
-  });
-
-  const fields: FieldDef[] = [
-    { name: "part_nr", label: t("fields.partNr") },
-    { name: "name", label: t("fields.name") },
-    { name: "drawing_nr", label: t("fields.drawingNr") },
-    { name: "revision", label: t("fields.revision") },
-    { name: "parts_per_element", label: t("fields.partsPerElement"), type: "number", step: "0.01" },
-    { name: "element_count", label: t("fields.elementCount"), type: "number" },
-    { name: "reserve_index", label: t("fields.reserveIndex"), type: "number", step: "0.01" },
-  ];
-
-  if (isLoading) return <LoadingState />;
-  if (isError) return <ErrorState message={(error as Error).message} />;
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("settings.cellComponentsTitle")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="mb-3 text-xs text-[var(--win-muted)]">{t("settings.cellComponentsHelp")}</p>
-        <DataTable
-          columns={[
-            { key: "part_nr", header: t("fields.partNr") },
-            { key: "name", header: t("fields.name") },
-            { key: "drawing_nr", header: t("fields.drawingNr") },
-            { key: "total_parts", header: t("fields.totalParts") },
-            { key: "recommended_spares", header: t("fields.recommendedSpares") },
-            { key: "calculated_spares", header: t("fields.calculatedSpares") },
-          ]}
-          data={data}
-          keyField="id"
-          emptyTitle={t("settings.noCellComponents")}
-          actions={
-            editable
-              ? (row) => (
-                  <Button size="sm" variant="ghost" onClick={() => setEditing(row)}>
-                    <Pencil size={13} />
-                  </Button>
-                )
-              : undefined
-          }
-        />
-      </CardContent>
-      <Modal open={!!editing} onClose={() => setEditing(null)} title={t("settings.editComponent", { name: editing?.name || t("settings.component") })}>
-        {editing && (
-          <ResourceForm<CellComponent>
-            fields={fields}
-            initialValues={editing}
-            onCancel={() => setEditing(null)}
-            submitting={updateMutation.isPending}
-            readOnly={!editable}
-            onSubmit={(values) => updateMutation.mutate({ id: editing.id, payload: values })}
-          />
-        )}
-      </Modal>
-    </Card>
-  );
-}
-
 function numberNameFields(t: T): FieldDef[] {
   return [
     { name: "nr", label: t("fields.number"), type: "number", required: true },
@@ -226,6 +146,8 @@ function AppearanceTab() {
   const { t } = useI18n();
   const { preset, resolvedColors, fontSize, setPreset, setColor, setFontSize, reset } = useTheme();
   const { uiStyle, setUiStyle } = useUiStyle();
+  const { calendar, setCalendar } = useCalendar();
+  const todayIso = new Date().toISOString().slice(0, 10);
 
   function selectUiStyle(style: "access" | "modern") {
     setUiStyle(style);
@@ -294,6 +216,50 @@ function AppearanceTab() {
               </div>
             </button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("appearance.calendar")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4 text-xs text-[var(--win-muted)]">{t("appearance.calendarDesc")}</p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setCalendar("gregorian")}
+              className={
+                calendar === "gregorian"
+                  ? "flex flex-col items-start gap-1.5 border-2 border-[var(--win-navy)] bg-[var(--win-navy)] px-3 py-3 text-start text-white [border-style:inset]"
+                  : "flex flex-col items-start gap-1.5 border-2 border-[var(--win-face)] bg-[var(--win-face)] px-3 py-3 text-start [border-style:outset] hover:bg-[var(--win-face-hi)]"
+              }
+            >
+              <CalendarDays size={20} className={calendar === "gregorian" ? "text-white" : "text-[var(--win-navy)]"} />
+              <div className="text-sm font-bold">{t("appearance.calendarGregorian")}</div>
+              <div className={calendar === "gregorian" ? "text-[11px] text-white/80" : "text-[11px] text-[var(--win-muted)]"}>
+                {t("appearance.calendarGregorianDesc")}
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCalendar("shamsi")}
+              className={
+                calendar === "shamsi"
+                  ? "flex flex-col items-start gap-1.5 border-2 border-[var(--win-navy)] bg-[var(--win-navy)] px-3 py-3 text-start text-white [border-style:inset]"
+                  : "flex flex-col items-start gap-1.5 border-2 border-[var(--win-face)] bg-[var(--win-face)] px-3 py-3 text-start [border-style:outset] hover:bg-[var(--win-face-hi)]"
+              }
+            >
+              <CalendarDays size={20} className={calendar === "shamsi" ? "text-white" : "text-[var(--win-navy)]"} />
+              <div className="text-sm font-bold">{t("appearance.calendarShamsi")}</div>
+              <div className={calendar === "shamsi" ? "text-[11px] text-white/80" : "text-[11px] text-[var(--win-muted)]"}>
+                {t("appearance.calendarShamsiDesc")}
+              </div>
+            </button>
+          </div>
+          <p className="mt-3 text-xs text-[var(--win-muted)]">
+            {t("appearance.calendarToday")}: <span className="font-bold text-[var(--win-text)]">{formatDate(todayIso)}</span>
+          </p>
         </CardContent>
       </Card>
 
@@ -640,7 +606,6 @@ function SettingsPageInner() {
               />
             ),
           },
-          { key: "cell-components", label: t("settings.tabCellComponents"), content: <CellComponentsTab /> },
           { key: "appearance", label: t("appearance.title"), content: <AppearanceTab /> },
           ...(canEdit("import_export")
             ? [{ key: "import-export", label: t("importExport.title"), content: <ImportExportTab /> }]

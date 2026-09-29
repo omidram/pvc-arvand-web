@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
@@ -23,6 +23,7 @@ import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
+import { VoltageHistoryDialog } from "@/components/domain/voltage-history-dialog";
 
 function severityClass(sev: string): string {
   if (sev === "danger") return "is-danger";
@@ -36,14 +37,23 @@ function Kpi({
   value,
   tone,
   icon: Icon,
+  active,
+  onClick,
 }: {
   label: string;
   value: string | number;
   tone: "danger" | "warning" | "ok" | "neutral" | "info";
   icon: typeof Zap;
+  active?: boolean;
+  onClick: () => void;
 }) {
   return (
-    <div className={`mon-kpi mon-kpi-${tone}`}>
+    <button
+      type="button"
+      className={`mon-kpi mon-kpi-${tone}${active ? " is-active" : ""}`}
+      onClick={onClick}
+      aria-pressed={active ? true : false}
+    >
       <div className="mon-kpi-icon">
         <Icon size={18} />
       </div>
@@ -51,7 +61,7 @@ function Kpi({
         <div className="mon-kpi-value">{value}</div>
         <div className="mon-kpi-label">{label}</div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -72,9 +82,11 @@ function CellChip({ cell, onSelect }: { cell: MonitoringCellStatus; onSelect: (c
 function ElectrolyzerCard({
   block,
   onSelect,
+  onOpenTotal,
 }: {
   block: MonitoringElectrolyzerBlock;
   onSelect: (c: MonitoringCellStatus) => void;
+  onOpenTotal: (electrolyzer: string) => void;
 }) {
   const { t } = useI18n();
   const health =
@@ -86,7 +98,9 @@ function ElectrolyzerCard({
     <section className={`mon-el-card ${severityClass(health)}`}>
       <header className="mon-el-head">
         <div>
-          <h3 className="mon-el-title">{block.electrolyzer}</h3>
+          <button type="button" className="mon-el-title mon-history-link" onClick={() => onOpenTotal(block.electrolyzer)}>
+            {block.electrolyzer}
+          </button>
           <p className="mon-el-meta">
             {dateLabel}
             {timeLabel}
@@ -301,17 +315,26 @@ function RulesPanel() {
   );
 }
 
-function OverviewTab() {
+function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
   const { t } = useI18n();
   const { canEdit } = useAuth();
   const qc = useQueryClient();
   const [selected, setSelected] = useState<MonitoringCellStatus | null>(null);
+  const [history, setHistory] = useState<{ electrolyzer: string; position?: string } | null>(null);
   const [elFilter, setElFilter] = useState<string>("all");
+  const [focus, setFocus] = useState<"danger" | "warning" | "ok" | null>(null);
+  const [issuesOpen, setIssuesOpen] = useState(false);
+  const issuesRef = useRef<HTMLElement>(null);
 
   const snapQuery = useQuery({
     queryKey: ["monitoring", "snapshot"],
     queryFn: monitoringApi.snapshot,
     refetchInterval: 20_000,
+  });
+  const progressQuery = useQuery({
+    queryKey: ["monitoring", "import-progress"],
+    queryFn: monitoringApi.importProgress,
+    refetchInterval: 15_000,
   });
 
   const evalMutation = useMutation({
@@ -325,11 +348,58 @@ function OverviewTab() {
     if (elFilter === "all") return data.electrolyzers;
     return data.electrolyzers.filter((e) => e.electrolyzer === elFilter);
   }, [data, elFilter]);
+  const visible = useMemo(() => {
+    if (!focus) return electrolyzers;
+    return electrolyzers
+      .map((block) => {
+        const cells = block.cells.filter((cell) => cell.severity === focus);
+        if (!cells.length) return null;
+        return { ...block, cells };
+      })
+      .filter((block): block is MonitoringElectrolyzerBlock => block !== null);
+  }, [electrolyzers, focus]);
 
   if (snapQuery.isLoading) return <LoadingState label={t("monitoring.loading")} />;
   if (snapQuery.isError || !data) return <ErrorState message={(snapQuery.error as Error)?.message || "Error"} />;
 
   const { summary, voltage } = data;
+  const focusLabel =
+    focus === "danger"
+      ? t("monitoring.openDanger")
+      : focus === "warning"
+        ? t("monitoring.openWarning")
+        : focus === "ok"
+          ? t("monitoring.cellsOk")
+          : "";
+
+  function toggleFocus(next: "danger" | "warning" | "ok") {
+    setFocus((prev) => (prev === next ? null : next));
+  }
+
+  function openHottestCell() {
+    let best: MonitoringCellStatus | null = null;
+    for (const block of data.electrolyzers) {
+      for (const cell of block.cells) {
+        if (cell.voltage == null) continue;
+        if (!best || Number(cell.voltage) > Number(best.voltage)) best = cell;
+      }
+    }
+    if (!best) return;
+    setFocus(null);
+    setElFilter(best.electrolyzer);
+    setSelected(best);
+    setHistory({ electrolyzer: best.electrolyzer, position: best.position });
+  }
+
+  function toggleIssues() {
+    const next = !issuesOpen;
+    setIssuesOpen(next);
+    if (next) {
+      window.setTimeout(() => issuesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 40);
+    }
+  }
+
+  const componentIssues = issuesOpen ? data.component_issues : data.component_issues.slice(0, 30);
 
   return (
     <div className="mon-page">
@@ -362,38 +432,88 @@ function OverviewTab() {
         </div>
       </div>
 
+      {progressQuery.data?.active ? (
+        <p className="mon-import-note">
+          {t("monitoring.importProgress", {
+            done: progressQuery.data.done,
+            total: progressQuery.data.total,
+            names: progressQuery.data.names.join(", ") || "—",
+          })}
+        </p>
+      ) : null}
+
       <div className="mon-kpi-row">
-        <Kpi label={t("monitoring.openDanger")} value={voltage.danger_count} tone="danger" icon={ShieldAlert} />
-        <Kpi label={t("monitoring.openWarning")} value={voltage.warning_count} tone="warning" icon={AlertTriangle} />
-        <Kpi label={t("monitoring.cellsOk")} value={voltage.ok_count} tone="ok" icon={CheckCircle2} />
+        <Kpi
+          label={t("monitoring.openDanger")}
+          value={voltage.danger_count}
+          tone="danger"
+          icon={ShieldAlert}
+          active={focus === "danger"}
+          onClick={() => toggleFocus("danger")}
+        />
+        <Kpi
+          label={t("monitoring.openWarning")}
+          value={voltage.warning_count}
+          tone="warning"
+          icon={AlertTriangle}
+          active={focus === "warning"}
+          onClick={() => toggleFocus("warning")}
+        />
+        <Kpi
+          label={t("monitoring.cellsOk")}
+          value={voltage.ok_count}
+          tone="ok"
+          icon={CheckCircle2}
+          active={focus === "ok"}
+          onClick={() => toggleFocus("ok")}
+        />
         <Kpi
           label={t("monitoring.maxCellV")}
           value={voltage.max_voltage != null ? Number(voltage.max_voltage).toFixed(3) : "—"}
           tone="info"
           icon={Zap}
+          onClick={openHottestCell}
         />
-        <Kpi label={t("monitoring.componentIssues")} value={voltage.component_issue_count} tone="neutral" icon={CircleDot} />
+        <Kpi
+          label={t("monitoring.componentIssues")}
+          value={voltage.component_issue_count}
+          tone="neutral"
+          icon={CircleDot}
+          active={issuesOpen}
+          onClick={toggleIssues}
+        />
         <Kpi
           label={t("monitoring.openInbox")}
           value={summary.open_total}
           tone={summary.open_danger > 0 ? "danger" : summary.open_total > 0 ? "warning" : "neutral"}
           icon={Bell}
+          onClick={onOpenAlerts}
         />
       </div>
+      {focus ? <p className="mon-filter-note">{t("monitoring.filterShowing", { label: focusLabel })}</p> : null}
 
       <div className="mon-legend">
         <span className="mon-legend-item is-ok">{t("monitoring.legendOk")}</span>
         <span className="mon-legend-item is-warning">{t("monitoring.legendWarning")}</span>
         <span className="mon-legend-item is-danger">{t("monitoring.legendDanger")}</span>
-        <span className="mon-legend-item is-unknown">{t("monitoring.legendUnknown")}</span>
-      </div>
+          <span className="mon-legend-item is-unknown">{t("monitoring.legendUnknown")}</span>
+          <span className="text-xs text-[var(--win-muted)]">{t("monitoring.historyHint")}</span>
+        </div>
 
       <div className="mon-el-stack">
-        {electrolyzers.length === 0 ? (
-          <div className="mon-empty">{t("monitoring.noVoltageData")}</div>
+        {visible.length === 0 ? (
+          <div className="mon-empty">{focus ? t("monitoring.noMatchingCells") : t("monitoring.noVoltageData")}</div>
         ) : (
-          electrolyzers.map((block) => (
-            <ElectrolyzerCard key={block.electrolyzer} block={block} onSelect={setSelected} />
+          visible.map((block) => (
+            <ElectrolyzerCard
+              key={block.electrolyzer}
+              block={block}
+              onSelect={(cell) => {
+                setSelected(cell);
+                setHistory({ electrolyzer: cell.electrolyzer, position: cell.position });
+              }}
+              onOpenTotal={(electrolyzer) => setHistory({ electrolyzer })}
+            />
           ))
         )}
       </div>
@@ -406,13 +526,13 @@ function OverviewTab() {
             canEdit={canEdit("monitoring") || canEdit("voltage")}
           />
         </section>
-        <section className="mon-panel">
+        <section ref={issuesRef} className={`mon-panel${issuesOpen ? " is-focus" : ""}`} id="mon-component-issues">
           <h3 className="mon-panel-title">{t("monitoring.anodeCathodeIssues")}</h3>
           {data.component_issues.length === 0 ? (
             <div className="mon-empty">{t("monitoring.noComponentIssues")}</div>
           ) : (
             <div className="mon-issue-list">
-              {data.component_issues.slice(0, 30).map((issue, idx) => (
+              {componentIssues.map((issue, idx) => (
                 <div key={`${issue.kind}-${issue.element_nr}-${idx}`} className={`mon-issue ${severityClass(issue.severity)}`}>
                   <strong>{issue.kind.replaceAll("_", " ")}</strong>
                   <span>
@@ -426,8 +546,21 @@ function OverviewTab() {
               ))}
             </div>
           )}
+          {!issuesOpen && data.component_issues.length > 30 ? (
+            <button type="button" className="mon-history-link mt-2 text-xs" onClick={toggleIssues}>
+              {t("monitoring.showAllIssues", { count: data.component_issues.length })}
+            </button>
+          ) : null}
         </section>
       </div>
+
+      {history ? (
+        <VoltageHistoryDialog
+          electrolyzer={history.electrolyzer}
+          position={history.position}
+          onClose={() => setHistory(null)}
+        />
+      ) : null}
 
       {selected ? (
         <div className="mon-detail">
@@ -493,12 +626,15 @@ function InboxTab() {
 
 export default function MonitoringPage() {
   const { t } = useI18n();
+  const [tab, setTab] = useState("overview");
 
   return (
     <AccessFormWindow caption={t("monitoring.title")} helpKey="monitoring">
       <Tabs
+        activeKey={tab}
+        onChange={setTab}
         tabs={[
-          { key: "overview", label: t("monitoring.tabOverview"), content: <OverviewTab /> },
+          { key: "overview", label: t("monitoring.tabOverview"), content: <OverviewTab onOpenAlerts={() => setTab("alerts")} /> },
           { key: "alerts", label: t("monitoring.tabAlerts"), content: <InboxTab /> },
           { key: "rules", label: t("monitoring.tabRules"), content: <RulesPanel /> },
         ]}

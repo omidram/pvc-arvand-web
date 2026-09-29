@@ -6,6 +6,7 @@ import { I18nProvider } from "@/lib/i18n/context";
 import { AuthProvider } from "@/lib/auth/context";
 import { ThemeProvider } from "@/lib/theme/context";
 import { UiStyleProvider } from "@/lib/ui-style/context";
+import { CalendarProvider } from "@/lib/calendar/context";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -25,9 +26,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <UiStyleProvider>
-          <I18nProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </I18nProvider>
+          <CalendarProvider>
+            <I18nProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </I18nProvider>
+          </CalendarProvider>
         </UiStyleProvider>
       </ThemeProvider>
     </QueryClientProvider>

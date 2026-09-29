@@ -7,15 +7,8 @@ import { useAuth } from "@/lib/auth/context";
 import { UhdeCellBars, UhdeLogoMark } from "@/components/layout/uhde-mark";
 import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
 import { useI18n } from "@/lib/i18n/context";
-
-function accessDate(value: string | null | undefined): string {
-  if (!value) return "";
-  const parsed = new Date(value);
-  if (!Number.isNaN(parsed.getTime()) && /\d{4}-\d{2}-\d{2}/.test(value)) {
-    return `${parsed.getMonth() + 1}/${parsed.getDate()}/${parsed.getFullYear()}`;
-  }
-  return value;
-}
+import { formatDate } from "@/lib/utils";
+import { useCalendar } from "@/lib/calendar/context";
 
 function MenuButton({
   href,
@@ -51,6 +44,7 @@ function MenuButton({
 export function MainMenu() {
   const { canView, isAdmin, logout } = useAuth();
   const { t } = useI18n();
+  useCalendar();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const canSeeVoltage = canView("voltage") || canView("dashboard") || canView("monitoring");
   // Always fetch when the user can see voltage-related UI (incl. Inspector role).
@@ -104,7 +98,7 @@ export function MainMenu() {
               </span>
               <span className="inline-flex items-center gap-1">
                 <span className="font-bold">{t("mainMenu.date")}:</span>
-                <span className="access-field-box">{accessDate(settings?.date) || "—"}</span>
+                <span className="access-field-box">{formatDate(settings?.date)}</span>
               </span>
             </div>
           </div>
@@ -120,17 +114,7 @@ export function MainMenu() {
             ) : null}
           </div>
 
-          <div
-            className="grid min-h-[220px] content-start overflow-x-auto"
-            style={{
-              display: "grid",
-              minWidth: 820,
-              gridTemplateColumns: "154px 154px 128px 128px 128px minmax(24px, 1fr) 140px",
-              gridTemplateRows: "repeat(5, 28px)",
-              columnGap: 12,
-              rowGap: 11,
-            }}
-          >
+          <div className="access-main-grid">
             <MenuButton
               href="/elements"
               label={t("mainMenu.elementAdministration")}
@@ -139,9 +123,9 @@ export function MainMenu() {
               className="col-start-1 row-start-1"
             />
             <MenuButton
-              href="/settings?tab=arrangements"
+              href="/arrangement"
               label={t("mainMenu.cellArrangement")}
-              allowed={canView("settings")}
+              allowed={canView("settings") || canView("elements")}
               className="col-start-1 row-start-2"
             />
             <MenuButton href="/search" label={t("mainMenu.search")} allowed={canView("search")} className="col-start-1 row-start-3" />

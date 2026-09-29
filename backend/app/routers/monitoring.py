@@ -1,7 +1,10 @@
 """Plant monitoring snapshot + configurable alert rules / inbox."""
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .. import alerts_engine, models, schemas
@@ -14,6 +17,34 @@ router = APIRouter(prefix="/monitoring", tags=["monitoring"])
 def monitoring_snapshot(db: Session = Depends(get_db)):
     data = alerts_engine.build_snapshot(db)
     return schemas.MonitoringSnapshot.model_validate(data)
+
+
+@router.get("/import-progress")
+def import_progress():
+    """How many of the 24 electrolyzer x 25 month AriaORMS jobs are stored."""
+    path = Path(__file__).resolve().parents[2] / "instance" / "ariaorms_history_state.json"
+    total = 24 * 25
+    if not path.is_file():
+        return {"active": False, "done": 0, "total": total, "names": []}
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"active": False, "done": 0, "total": total, "names": []}
+    done_map = state.get("done") or {}
+    finished = 0
+    names: set[str] = set()
+    for key, value in done_map.items():
+        text_value = str(value)
+        if text_value == "ok" or "Header row" in text_value:
+            finished += 1
+        if text_value == "ok":
+            names.add(str(key).split("|", 1)[0])
+    return {
+        "active": finished < total,
+        "done": finished,
+        "total": total,
+        "names": sorted(names),
+    }
 
 
 @router.get("/summary", response_model=schemas.AlertSummary)
@@ -125,3 +156,145 @@ def resolve_all_open(db: Session = Depends(get_db), severity: str | None = None)
         count += 1
     db.commit()
     return {"ok": True, "resolved": count}
+
+
+def _rectifier_voltage_points(db: Session, electrolyzer: str) -> list[dict]:
+    exists = db.execute(
+        text("SELECT 1 FROM sqlite_master WHERE type='table' AND name='rectifier_readings'")
+    ).scalar()
+    if not exists:
+        return []
+    rows = db.execute(
+        text(
+            """
+            SELECT date, time, voltage_vdc
+            FROM rectifier_readings
+            WHERE upper(electrolyzer) = :el AND voltage_vdc IS NOT NULL
+            ORDER BY date, time, id
+            """
+        ),
+        {"el": electrolyzer},
+    ).fetchall()
+    points: list[dict] = []
+    for raw_date, raw_time, voltage in rows:
+        if hasattr(raw_date, "date"):
+            iso = raw_date.date().isoformat()
+        elif isinstance(raw_date, str) and raw_date:
+            iso = raw_date[:10]
+        else:
+            iso = None
+        points.append({"date": iso, "time": raw_time, "voltage": voltage})
+    return points
+
+
+def _sample_points(points: list[dict], limit: int) -> list[dict]:
+    if len(points) <= limit:
+        return points
+    if limit < 2:
+        return points[:1]
+    step = (len(points) - 1) / (limit - 1)
+    return [points[round(i * step)] for i in range(limit)]
+
+
+@router.get("/voltage-history")
+def voltage_history(
+    electrolyzer: str,
+    position: str | None = None,
+    span: str = Query(default="30"),
+    db: Session = Depends(get_db),
+):
+    """Cell or electrolyzer voltage history for the monitoring chart.
+
+    span 10 or 30 means the last N readings. 90, 365 and 730 are day windows.
+    """
+    el = (electrolyzer or "").strip().upper()
+    if not el:
+        raise HTTPException(status_code=400, detail="electrolyzer is required")
+    tail = span in {"10", "30"}
+    days = {"90": 90, "365": 365, "730": 730}.get(span, 730 if not tail else 800)
+    since = datetime.utcnow() - timedelta(days=days)
+    pos = None
+    if position:
+        pos = position.strip()
+        if pos.isdigit():
+            pos = pos.lstrip("0") or "0"
+
+    if pos:
+        query = (
+            db.query(models.VoltageReading)
+            .filter(
+                models.VoltageReading.electrolyzer == el,
+                models.VoltageReading.position == pos,
+                models.VoltageReading.voltage.isnot(None),
+            )
+            .order_by(models.VoltageReading.date.asc(), models.VoltageReading.time.asc(), models.VoltageReading.id.asc())
+        )
+        if not tail:
+            query = query.filter(models.VoltageReading.date >= since)
+        rows = query.all()
+        points = [
+            {
+                "date": row.date.date().isoformat() if row.date else None,
+                "time": row.time,
+                "voltage": row.voltage,
+            }
+            for row in rows
+            if row.voltage is not None
+        ]
+        if tail:
+            points = points[-int(span) :]
+        title = f"{el}-{pos.zfill(3)}"
+        kind = "cell"
+    else:
+        query = (
+            db.query(models.ElectrolyzerNormalization)
+            .filter(
+                models.ElectrolyzerNormalization.electrolyzer == el,
+                models.ElectrolyzerNormalization.total_voltage.isnot(None),
+            )
+            .order_by(
+                models.ElectrolyzerNormalization.date.asc(),
+                models.ElectrolyzerNormalization.time.asc(),
+                models.ElectrolyzerNormalization.id.asc(),
+            )
+        )
+        if not tail:
+            query = query.filter(models.ElectrolyzerNormalization.date >= since)
+        rows = query.all()
+        points = [
+            {
+                "date": row.date.date().isoformat() if row.date else None,
+                "time": row.time,
+                "voltage": row.total_voltage,
+            }
+            for row in rows
+            if row.total_voltage is not None
+        ]
+        if tail:
+            points = points[-int(span) :]
+        title = f"Electrolyzer voltage {el}"
+        kind = "total"
+
+    rectifier_points: list[dict] = []
+    if not pos:
+        rectifier_points = _rectifier_voltage_points(db, el)
+        if tail:
+            rectifier_points = rectifier_points[-int(span) :]
+        else:
+            cutoff = since.date().isoformat()
+            rectifier_points = [point for point in rectifier_points if (point.get("date") or "") >= cutoff]
+            rectifier_points = _sample_points(rectifier_points, 360)
+
+    total = len(points)
+    shown = points if tail else _sample_points(points, 360)
+    return {
+        "electrolyzer": el,
+        "position": pos,
+        "title": title,
+        "kind": kind,
+        "unit": "V",
+        "span": span,
+        "total": total,
+        "points": shown,
+        "rectifier_points": rectifier_points,
+    }

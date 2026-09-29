@@ -1,9 +1,10 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn, formatDisplayedDate } from "@/lib/utils";
 import { EmptyState } from "./empty-state";
 import { LoadingState } from "./spinner";
 import { useI18n } from "@/lib/i18n/context";
+import { useCalendar } from "@/lib/calendar/context";
 
 export interface Column<T> {
   key: string;
@@ -34,12 +35,13 @@ export function DataTable<T extends object>({
   actions?: (row: T) => React.ReactNode;
 }) {
   const { t } = useI18n();
+  useCalendar();
   if (isLoading) return <LoadingState />;
   if (!data || data.length === 0) return <EmptyState title={emptyTitle ?? t("common.noRecordsFound")} description={emptyDescription} />;
 
   return (
-    <div className="ui-table-wrap overflow-x-auto border-2 border-[var(--win-border-shadow)] [border-style:inset] bg-[var(--win-input)]">
-      <table className="ui-table w-full min-w-max border-collapse text-start text-xs">
+    <div className="ui-table-wrap max-w-full overflow-auto border-2 border-[var(--win-border-shadow)] [border-style:inset] bg-[var(--win-input)]">
+      <table className="ui-table w-max min-w-full border-collapse text-start text-xs">
         <thead>
           <tr className="bg-[var(--win-face)]">
             {columns.map((col) => (
@@ -84,7 +86,7 @@ export function DataTable<T extends object>({
                     key={col.key}
                     className={cn("whitespace-nowrap border border-[var(--win-face-dark)] px-2 py-1", col.className)}
                   >
-                    {col.render ? col.render(row) : String(raw[col.key] ?? "—")}
+                    {col.render ? col.render(row) : formatDisplayedDate(raw[col.key]) || "—"}
                   </td>
                 ))}
                 {actions && (

@@ -73,7 +73,7 @@ export const ALL_TABLES_REGISTRY: TableRegistryCategory[] = [
       { key: "group-definitions", endpoint: "/group-definitions", formKey: "settings", titleKey: "settings.group", linkHref: "/settings" },
       { key: "inspection-reasons", endpoint: "/inspection-reasons", formKey: "settings", titleKey: "settings.inspectionReason", linkHref: "/settings" },
       { key: "inspection-findings", endpoint: "/inspection-findings", formKey: "settings", titleKey: "settings.inspectionFinding", linkHref: "/settings" },
-      { key: "cell-components", endpoint: "/cell-components", formKey: "settings", titleKey: "settings.cellComponentsTitle", linkHref: "/settings" },
+      { key: "cell-components", endpoint: "/cell-components", formKey: "elements", titleKey: "cellComponents.title", linkHref: "/elements/components" },
     ],
   },
   {

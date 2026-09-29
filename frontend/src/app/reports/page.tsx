@@ -25,13 +25,15 @@ import { DataTable } from "@/components/ui/data-table";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useI18n } from "@/lib/i18n/context";
-import { formatDateTime, formatNumber, orDash } from "@/lib/utils";
+import { useCalendar } from "@/lib/calendar/context";
+import { formatDateTime, formatDisplayedDate, formatNumber, orDash } from "@/lib/utils";
 import type { Column } from "@/components/ui/data-table";
 
 const TOOLTIP_STYLE = { background: "#ffffff", border: "1px solid #808080", borderRadius: 0, fontSize: 12, color: "#000" };
 
 export default function ReportsPage() {
   const { t } = useI18n();
+  useCalendar();
   const [electrolyzer, setElectrolyzer] = useState("");
   const [exporting, setExporting] = useState<"xlsx" | "pdf" | null>(null);
   const filter = electrolyzer || undefined;
@@ -141,9 +143,9 @@ export default function ReportsPage() {
                   <ResponsiveContainer width="100%" height={280}>
                     <LineChart data={trendsQuery.data.voltage_trend}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#b8b5ad" />
-                      <XAxis dataKey="period" stroke="#3f3f3f" fontSize={11} />
+                      <XAxis dataKey="period" stroke="#3f3f3f" fontSize={11} tickFormatter={(value) => formatDisplayedDate(value)} />
                       <YAxis stroke="#3f3f3f" fontSize={11} domain={["auto", "auto"]} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={(value) => formatDisplayedDate(value)} />
                       <Legend wrapperStyle={{ fontSize: 12 }} />
                       <Line type="monotone" dataKey="avg_voltage" name={t("reports.avgStandardizedVoltage")} stroke="#0a246a" strokeWidth={2} dot={false} />
                     </LineChart>
@@ -163,9 +165,9 @@ export default function ReportsPage() {
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart data={trendsQuery.data.shutdown_trend}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#b8b5ad" />
-                      <XAxis dataKey="period" stroke="#3f3f3f" fontSize={11} />
+                      <XAxis dataKey="period" stroke="#3f3f3f" fontSize={11} tickFormatter={(value) => formatDisplayedDate(value)} />
                       <YAxis stroke="#3f3f3f" fontSize={11} />
-                      <Tooltip contentStyle={TOOLTIP_STYLE} />
+                      <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={(value) => formatDisplayedDate(value)} />
                       <Legend wrapperStyle={{ fontSize: 12 }} />
                       <Bar dataKey="count" name={t("fields.count")} fill="#c99a3f" />
                       <Bar dataKey="total_hours" name={t("reports.totalShutdownHours")} fill="#0a246a" />

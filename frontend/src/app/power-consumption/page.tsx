@@ -45,7 +45,7 @@ export default function PowerConsumptionPage() {
   return (
     <AccessHub title={t("mainMenu.powerConsumption")}>
       <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
-      <div className="grid grid-cols-1 gap-2 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
         <ReportColumn
           title={t("menus.totalPlant")}
           values={plant.values}
@@ -137,8 +137,8 @@ export default function PowerConsumptionPage() {
               legend: t("menus.tableUn"),
               name: "tableUn",
               options: [
-                { value: "all-elements", label: t("menus.allElementsPerEl") },
                 { value: "groups", label: t("menus.groups") },
+                { value: "all-elements", label: t("menus.allElementsPerEl") },
               ],
             },
             {
@@ -182,8 +182,8 @@ export default function PowerConsumptionPage() {
               legend: t("menus.tableUn"),
               name: "tableUn",
               options: [
-                { value: "all-elements", label: t("menus.allElementsPerEl") },
                 { value: "individual", label: t("menus.individualElement") },
+                { value: "all-elements", label: t("menus.allElementsPerEl") },
               ],
             },
             {

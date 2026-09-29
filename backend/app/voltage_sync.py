@@ -15,6 +15,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from . import models
@@ -22,6 +23,7 @@ from .config import DATA_DIR
 from .plant_import import parse_voltage_excel
 
 logger = logging.getLogger("pvc_arvand.voltage_sync")
+_voltage_indexes_ready = False
 
 DEFAULT_WATCH_SUBDIR = "ariaorms_exports"
 _EXCEL_SUFFIXES = {".xlsx", ".xls", ".xlsm"}
@@ -66,16 +68,115 @@ def _save_state(db: Session, row: models.VoltageSyncSettings, state: dict[str, A
     db.add(row)
 
 
+def ensure_voltage_indexes(db: Session) -> None:
+    """One row per electrolyzer + position + day + time, so history imports can upsert."""
+    conn = db.connection()
+    conn.execute(
+        text(
+            """
+            DELETE FROM voltage_readings
+            WHERE id NOT IN (
+                SELECT MAX(id) FROM voltage_readings
+                GROUP BY electrolyzer, position, date, time
+            )
+            """
+        )
+    )
+    conn.execute(
+        text(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_voltage_slot "
+            "ON voltage_readings (electrolyzer, position, date, time)"
+        )
+    )
+    conn.execute(
+        text(
+            """
+            DELETE FROM electrolyzer_normalizations
+            WHERE id NOT IN (
+                SELECT MAX(id) FROM electrolyzer_normalizations
+                GROUP BY electrolyzer, date, time
+            )
+            """
+        )
+    )
+    conn.execute(
+        text(
+            "CREATE UNIQUE INDEX IF NOT EXISTS uq_norm_slot "
+            "ON electrolyzer_normalizations (electrolyzer, date, time)"
+        )
+    )
+    db.commit()
+
+
+def _as_midnight(value: str | datetime | None, fallback: datetime) -> str:
+    if isinstance(value, datetime):
+        day = value
+    elif isinstance(value, str) and value.strip():
+        day = datetime.fromisoformat(value.strip()[:10])
+    else:
+        day = fallback
+    return datetime(day.year, day.month, day.day).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _bulk_upsert_readings(db: Session, rows: list[dict[str, Any]]) -> int:
+    if not rows:
+        return 0
+    stmt = text(
+        """
+        INSERT INTO voltage_readings (electrolyzer, position, element_nr, date, time, voltage)
+        VALUES (:electrolyzer, :position, :element_nr, :date, :time, :voltage)
+        ON CONFLICT(electrolyzer, position, date, time) DO UPDATE SET
+            voltage = excluded.voltage,
+            element_nr = COALESCE(excluded.element_nr, voltage_readings.element_nr)
+        """
+    )
+    conn = db.connection()
+    for start in range(0, len(rows), 800):
+        conn.execute(stmt, rows[start : start + 800])
+    return len(rows)
+
+
+def _bulk_upsert_totals(db: Session, rows: list[dict[str, Any]]) -> None:
+    if not rows:
+        return
+    stmt = text(
+        """
+        INSERT INTO electrolyzer_normalizations (
+            electrolyzer, date, time, total_voltage, element_count,
+            anolyte_temp, catholyte_temp, total_current
+        )
+        VALUES (
+            :electrolyzer, :date, :time, :total_voltage, :element_count,
+            :anolyte_temp, :catholyte_temp, :total_current
+        )
+        ON CONFLICT(electrolyzer, date, time) DO UPDATE SET
+            total_voltage = COALESCE(excluded.total_voltage, electrolyzer_normalizations.total_voltage),
+            element_count = COALESCE(excluded.element_count, electrolyzer_normalizations.element_count),
+            anolyte_temp = COALESCE(excluded.anolyte_temp, electrolyzer_normalizations.anolyte_temp),
+            catholyte_temp = COALESCE(excluded.catholyte_temp, electrolyzer_normalizations.catholyte_temp),
+            total_current = COALESCE(excluded.total_current, electrolyzer_normalizations.total_current)
+        """
+    )
+    db.connection().execute(stmt, rows)
+
+
 def apply_parsed_voltage(
     db: Session,
     parsed: dict[str, Any],
     *,
     electrolyzer: str | None = None,
     reading_date: str | None = None,
+    progress=None,
+    evaluate_alerts: bool = True,
 ) -> dict[str, Any]:
     """Upsert parsed ARIAORMS/SiteMan readings by electrolyzer+date+time+position."""
     if parsed.get("error"):
         raise ValueError(parsed["error"])
+
+    global _voltage_indexes_ready
+    if not _voltage_indexes_ready:
+        ensure_voltage_indexes(db)
+        _voltage_indexes_ready = True
 
     el = (electrolyzer or parsed.get("electrolyzer") or "").strip().upper()
     if not el:
@@ -91,104 +192,86 @@ def apply_parsed_voltage(
     # Normalize to midnight datetime for consistent matching
     date_val = datetime(date_val.year, date_val.month, date_val.day)
 
-    times_in_file = {item.get("time") for item in (parsed.get("readings") or []) if item.get("time")}
-    times_in_file |= set((parsed.get("totals") or {}).keys())
-
-    upserted = 0
-    for item in parsed.get("readings") or []:
+    readings = parsed.get("readings") or []
+    row_payload: list[dict[str, Any]] = []
+    counts: dict[tuple[str, str], int] = {}
+    times_in_file: set[str] = set()
+    dates_in_file: set[str] = set()
+    total = len(readings)
+    if progress:
+        progress(0, total)
+    for done, item in enumerate(readings, start=1):
         item_el = (item.get("electrolyzer") or el).strip().upper()
         pos = str(item.get("position") or "").strip()
         tlabel = item.get("time")
         voltage = item.get("voltage")
         if not pos or not tlabel or voltage is None:
             continue
-
-        existing = (
-            db.query(models.VoltageReading)
-            .filter(
-                models.VoltageReading.electrolyzer == item_el,
-                models.VoltageReading.date == date_val,
-                models.VoltageReading.time == tlabel,
-                models.VoltageReading.position == pos,
-            )
-            .first()
+        stamp = _as_midnight(item.get("date"), date_val)
+        row_payload.append(
+            {
+                "electrolyzer": item_el,
+                "position": pos,
+                "element_nr": item.get("element_nr"),
+                "date": stamp,
+                "time": tlabel,
+                "voltage": float(voltage),
+            }
         )
-        if existing:
-            existing.voltage = float(voltage)
-            existing.element_nr = item.get("element_nr") or existing.element_nr
-        else:
-            db.add(
-                models.VoltageReading(
-                    electrolyzer=item_el,
-                    position=pos,
-                    element_nr=item.get("element_nr"),
-                    date=date_val,
-                    time=tlabel,
-                    voltage=float(voltage),
-                )
-            )
-        upserted += 1
+        counts[(stamp, tlabel)] = counts.get((stamp, tlabel), 0) + 1
+        times_in_file.add(tlabel)
+        dates_in_file.add(stamp[:10])
+        if progress and (done == total or done % 400 == 0):
+            progress(done, total)
 
-    # Per time-slot normalization header from totals
-    totals = parsed.get("totals") or {}
-    counts_by_time: dict[str, int] = {}
-    for item in parsed.get("readings") or []:
-        t = item.get("time")
-        if t:
-            counts_by_time[t] = counts_by_time.get(t, 0) + 1
+    upserted = _bulk_upsert_readings(db, row_payload)
 
-    for tlabel, tvals in totals.items():
-        total_v = tvals.get("total")
-        if total_v is None and tvals.get("rack_a") is not None and tvals.get("rack_b") is not None:
-            total_v = float(tvals["rack_a"]) + float(tvals["rack_b"])
-        if total_v is None:
+    slots = parsed.get("total_slots") or []
+    if not slots:
+        for tlabel, tvals in (parsed.get("totals") or {}).items():
+            slots.append({"date": date_val.date().isoformat(), "time": tlabel, **tvals})
+    norm_rows: list[dict[str, Any]] = []
+    for slot in slots:
+        tlabel = slot.get("time")
+        if not tlabel:
             continue
-        existing_n = (
-            db.query(models.ElectrolyzerNormalization)
-            .filter(
-                models.ElectrolyzerNormalization.electrolyzer == el,
-                models.ElectrolyzerNormalization.date == date_val,
-                models.ElectrolyzerNormalization.time == tlabel,
-            )
-            .first()
+        total_v = slot.get("total")
+        if total_v is None and slot.get("rack_a") is not None and slot.get("rack_b") is not None:
+            total_v = float(slot["rack_a"]) + float(slot["rack_b"])
+        if total_v is None and slot.get("anolyte_temp") is None and slot.get("load") is None:
+            continue
+        stamp = _as_midnight(slot.get("date"), date_val)
+        times_in_file.add(tlabel)
+        dates_in_file.add(stamp[:10])
+        norm_rows.append(
+            {
+                "electrolyzer": el,
+                "date": stamp,
+                "time": tlabel,
+                "total_voltage": float(total_v) if total_v is not None else None,
+                "element_count": counts.get((stamp, tlabel)),
+                "anolyte_temp": slot.get("anolyte_temp"),
+                "catholyte_temp": slot.get("catholyte_temp"),
+                "total_current": slot.get("load"),
+            }
         )
-        if existing_n:
-            existing_n.total_voltage = float(total_v)
-            existing_n.element_count = counts_by_time.get(tlabel) or existing_n.element_count
-            if tvals.get("anolyte_temp") is not None:
-                existing_n.anolyte_temp = tvals.get("anolyte_temp")
-            if tvals.get("catholyte_temp") is not None:
-                existing_n.catholyte_temp = tvals.get("catholyte_temp")
-            if tvals.get("load") is not None:
-                existing_n.total_current = tvals.get("load")
-        else:
-            db.add(
-                models.ElectrolyzerNormalization(
-                    electrolyzer=el,
-                    date=date_val,
-                    time=tlabel,
-                    total_voltage=float(total_v),
-                    element_count=counts_by_time.get(tlabel),
-                    anolyte_temp=tvals.get("anolyte_temp"),
-                    catholyte_temp=tvals.get("catholyte_temp"),
-                    total_current=tvals.get("load"),
-                )
-            )
-
+    _bulk_upsert_totals(db, norm_rows)
     db.flush()
-    # Re-evaluate voltage alert rules so monitoring inbox stays in sync
-    try:
-        from . import alerts_engine
 
-        alerts_engine.ensure_default_rules(db)
-        alerts_engine.evaluate_voltage_rules(db)
-    except Exception:  # noqa: BLE001
-        logger.exception("Alert evaluation after voltage import failed")
+    if evaluate_alerts:
+        try:
+            from . import alerts_engine
+
+            alerts_engine.ensure_default_rules(db)
+            alerts_engine.evaluate_voltage_rules(db)
+        except Exception:  # noqa: BLE001
+            logger.exception("Alert evaluation after voltage import failed")
 
     return {
         "electrolyzer": el,
         "reading_date": date_val.date().isoformat(),
-        "times": sorted(t for t in times_in_file if t),
+        "dates": sorted(dates_in_file),
+        "times": sorted(times_in_file),
         "rows_upserted": upserted,
         "out_of_range_count": len(parsed.get("out_of_range") or []),
         "operators": parsed.get("operators") or [],
@@ -203,6 +286,8 @@ def apply_excel_bytes(
     electrolyzer: str | None = None,
     reading_date: str | None = None,
     hint_from_name: str | None = None,
+    progress=None,
+    evaluate_alerts: bool = True,
 ) -> dict[str, Any]:
     parsed = parse_voltage_excel(content)
     el = electrolyzer
@@ -210,7 +295,14 @@ def apply_excel_bytes(
         m = _EL_FROM_NAME.search(hint_from_name)
         if m:
             el = m.group("el").upper()
-    return apply_parsed_voltage(db, parsed, electrolyzer=el, reading_date=reading_date)
+    return apply_parsed_voltage(
+        db,
+        parsed,
+        electrolyzer=el,
+        reading_date=reading_date,
+        progress=progress,
+        evaluate_alerts=evaluate_alerts,
+    )
 
 
 def scan_and_apply(db: Session, row: models.VoltageSyncSettings | None = None) -> dict[str, Any]:

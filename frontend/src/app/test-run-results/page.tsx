@@ -5,9 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { performanceTestsApi, settingsApi } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { PerformanceTest } from "@/lib/types";
+import { ExportButtons } from "@/components/domain/export-buttons";
 import { AccessHub } from "@/components/layout/access-hub";
 import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
+import { DateInput } from "@/components/ui/date-input";
 
 export default function TestRunResultsPage() {
   const { canEdit } = useAuth();
@@ -28,7 +30,11 @@ export default function TestRunResultsPage() {
   }
 
   return (
-    <AccessHub title={t("menus.performanceTests")} titleBlue>
+    <AccessHub
+      title={t("menus.performanceTests")}
+      titleBlue
+      extraButtons={<ExportButtons prefix="/performance-tests" filenameBase="performance-tests" />}
+    >
       <div className="access-plant-bar">
         <span>{s?.customer || "PVC Arvand"}</span>
         <span>{s?.plant_type === "KOH" ? t("menus.kohElectrolysis") : t("menus.naclElectrolysis")}</span>
@@ -49,8 +55,7 @@ export default function TestRunResultsPage() {
             <tr key={row.id} onClick={() => setActive(row.id)}>
               <td className="access-selector">{active === row.id ? "►" : ""}</td>
               <td>
-                <input
-                  type="date"
+                <DateInput
                   value={row.date?.slice(0, 10) || ""}
                   onChange={(e) => save(row, { date: e.target.value || null })}
                   disabled={!canEdit("voltage")}
@@ -90,9 +95,8 @@ export default function TestRunResultsPage() {
             <tr onClick={() => setActive("new")}>
               <td className="access-selector">*</td>
               <td>
-                <input
-                  type="date"
-                  onBlur={(e) => {
+                <DateInput
+                  onChange={(e) => {
                     if (e.target.value) createMutation.mutate({ date: e.target.value } as never);
                   }}
                 />

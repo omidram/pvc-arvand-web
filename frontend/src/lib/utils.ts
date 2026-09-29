@@ -1,35 +1,21 @@
 import { clsx, type ClassValue } from "clsx";
+import { formatDateTimeWithCalendar, formatDateWithCalendar, formatDisplayedDate as formatDisplayedDateWithCalendar } from "@/lib/calendar/format";
+import { getCalendar } from "@/lib/calendar/runtime";
 
 export function cn(...inputs: ClassValue[]) {
   return clsx(inputs);
 }
 
 export function formatDate(value: string | null | undefined): string {
-  if (!value) return "—";
-  try {
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return value;
-    return d.toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "2-digit" });
-  } catch {
-    return value;
-  }
+  return formatDateWithCalendar(value, getCalendar());
 }
 
 export function formatDateTime(value: string | null | undefined): string {
-  if (!value) return "—";
-  try {
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return value;
-    return d.toLocaleString("en-GB", {
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return value;
-  }
+  return formatDateTimeWithCalendar(value, getCalendar());
+}
+
+export function formatDisplayedDate(value: unknown): string {
+  return formatDisplayedDateWithCalendar(value, getCalendar());
 }
 
 export function formatNumber(value: number | null | undefined, digits = 2): string {

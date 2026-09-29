@@ -1,8 +1,11 @@
 "use client";
 
-import { membranesApi } from "@/lib/endpoints";
+import { Suspense } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { membraneMaintenanceApi, membranesApi } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
-import type { Membrane } from "@/lib/types";
+import type { Membrane, MembraneMaintenance } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
 import { MembraneRelations } from "@/components/domain/access-relations";
 import type { FieldDef } from "@/components/ui/resource-form";
@@ -10,8 +13,9 @@ import type { Column } from "@/components/ui/data-table";
 import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
+import { LoadingState } from "@/components/ui/spinner";
 
-export default function MembranesPage() {
+function MembranesDetails() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Membrane>(
@@ -59,5 +63,66 @@ export default function MembranesPage() {
       filenameBase="membranes"
       related={(row) => <MembraneRelations membraneNr={row.membrane_nr} />}
     />
+  );
+}
+
+function MembraneMaintenanceTab() {
+  const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<MembraneMaintenance>(
+    "membrane-maintenance",
+    membraneMaintenanceApi,
+    { limit: 2000 }
+  );
+  const fields: FieldDef[] = [
+    { name: "membrane_nr", label: t("fields.membraneNr"), required: true },
+    { name: "date", label: t("fields.date"), type: "date" },
+    { name: "repair_work", label: t("fields.repairWork"), type: "textarea", span: 2 },
+  ];
+  const columns: Column<MembraneMaintenance>[] = [
+    { key: "membrane_nr", header: t("fields.membraneNr") },
+    { key: "date", header: t("fields.date"), render: (r) => formatDate(r.date) },
+    { key: "repair_work", header: t("fields.repairWork") },
+  ];
+  return (
+    <AccessWorkspace<MembraneMaintenance>
+      caption={t("menus.membraneMaintenance")}
+      helpKey="membranes"
+      backHref="/elements"
+      backLabel={t("elements.title")}
+      records={listQuery.data}
+      isLoading={listQuery.isLoading}
+      error={listQuery.error as Error | null}
+      fields={fields}
+      columns={columns}
+      idField="id"
+      canEdit={canEdit("membranes")}
+      onSave={(id, values) => updateMutation.mutate({ id, payload: values })}
+      onCreate={(values) => createMutation.mutate(values as never)}
+      onDelete={(id) => removeMutation.mutate(id)}
+      confirmDelete={() => t("common.confirmDeleteGeneric")}
+      submitting={createMutation.isPending || updateMutation.isPending}
+      exportPrefix="/membrane-maintenance"
+      filenameBase="membrane-maintenance"
+      commands={
+        <Link href="/maintenance-reports?kind=membrane" className="access-menu-btn">
+          {t("menus.maintenanceReport")}
+        </Link>
+      }
+    />
+  );
+}
+
+function MembranesPageInner() {
+  const tab = useSearchParams().get("tab");
+  if (tab === "maintenance") return <MembraneMaintenanceTab />;
+  return <MembranesDetails />;
+}
+
+export default function MembranesPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <MembranesPageInner />
+    </Suspense>
   );
 }

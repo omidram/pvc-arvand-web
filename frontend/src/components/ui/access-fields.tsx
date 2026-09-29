@@ -36,18 +36,20 @@ export function AccessFields({
   fields,
   values,
   onChange,
+  onCommit,
   readOnly,
   columns = 2,
 }: {
   fields: FieldDef[];
   values: Record<string, unknown>;
   onChange: (name: string, value: unknown) => void;
+  onCommit?: (name: string, value: unknown) => void;
   readOnly?: boolean;
   columns?: 1 | 2 | 3;
 }) {
   return (
     <div
-      className="grid gap-x-4 gap-y-1"
+      className="access-fields grid gap-x-4 gap-y-1"
       style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
     >
       {fields.map((f) => (
@@ -76,6 +78,7 @@ export function AccessFields({
                     required={f.required}
                     value={String(values[f.name] ?? "")}
                     onChange={(e) => onChange(f.name, e.target.value)}
+                    onBlur={(e) => onCommit?.(f.name, e.target.value)}
                     disabled={readOnly}
                     className="py-0.5 text-[11px]"
                   />
@@ -83,11 +86,18 @@ export function AccessFields({
                   <Select
                     required={f.required}
                     value={String(values[f.name] ?? "")}
-                    onChange={(e) => onChange(f.name, e.target.value)}
+                    onChange={(e) => {
+                      onChange(f.name, e.target.value);
+                      onCommit?.(f.name, e.target.value);
+                    }}
                     disabled={readOnly}
                     className="h-[22px] py-0 text-[11px]"
                   >
                     <option value="">—</option>
+                    {String(values[f.name] ?? "") &&
+                    !f.options?.some((opt) => opt.value === String(values[f.name] ?? "")) ? (
+                      <option value={String(values[f.name])}>{String(values[f.name])}</option>
+                    ) : null}
                     {f.options?.map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
@@ -100,7 +110,22 @@ export function AccessFields({
                     step={f.step}
                     required={f.required}
                     value={String(values[f.name] ?? "")}
-                    onChange={(e) => onChange(f.name, e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      onChange(f.name, value);
+                      if (!onCommit) return;
+                      const el = e.currentTarget;
+                      window.clearTimeout(el.dataset.lookupTimer ? Number(el.dataset.lookupTimer) : undefined);
+                      const timer = window.setTimeout(() => onCommit(f.name, value), 400);
+                      el.dataset.lookupTimer = String(timer);
+                    }}
+                    onBlur={(e) => {
+                      window.clearTimeout(Number(e.currentTarget.dataset.lookupTimer || 0));
+                      onCommit?.(f.name, e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") e.currentTarget.blur();
+                    }}
                     disabled={readOnly}
                     className="h-[22px] py-0 text-[11px]"
                   />

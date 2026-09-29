@@ -1,11 +1,13 @@
 """Generic CRUD router factory used for straightforward lookup/entity tables."""
 from typing import Any, Type
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from .database import get_db
+from .excel_import import import_excel_bytes, read_xlsx
+from .import_jobs import spawn_import
 from .export_utils import export_pdf, export_xlsx, rows_to_dicts
 
 
@@ -67,6 +69,17 @@ def build_crud_router(
         items = _query_list(q, skip, limit, db)
         rows = rows_to_dicts(items, export_fields)
         return export_pdf(rows, export_fields, prefix.strip("/"))
+
+    @router.post("/import.xlsx", include_in_schema=False)
+    async def import_items(file: UploadFile = File(...)):
+        content = await read_xlsx(file)
+
+        def work(db: Session, progress):
+            return import_excel_bytes(
+                db, model, write_schema, content, pk_field=pk_field, progress=progress
+            )
+
+        return spawn_import(work)
 
     @router.get("/{item_id}", response_model=read_schema)
     def get_item(item_id: Any, db: Session = Depends(get_db)):

@@ -3,7 +3,8 @@
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Save, Play, Upload, RefreshCw } from "lucide-react";
-import { voltageSyncApi } from "@/lib/endpoints";
+import { voltageSyncApi, type ImportProgress } from "@/lib/endpoints";
+import { ImportProgressBar } from "@/components/domain/import-progress";
 import type { VoltageSyncRunResult, VoltageSyncSettings } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
   const [sourceUrl, setSourceUrl] = useState(initial.source_url || "");
   const [saved, setSaved] = useState(false);
   const [lastResult, setLastResult] = useState<VoltageSyncRunResult | null>(null);
+  const [progress, setProgress] = useState<ImportProgress | null>(null);
 
   const saveMutation = useMutation({
     mutationFn: () =>
@@ -48,7 +50,10 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
   });
 
   const uploadMutation = useMutation({
-    mutationFn: (file: File) => voltageSyncApi.importFile(file),
+    mutationFn: (file: File) => {
+      setProgress({ percent: 0, processed: 0, total: 0 });
+      return voltageSyncApi.importFile(file, undefined, setProgress);
+    },
     onSuccess: (data) => {
       setLastResult(data);
       queryClient.invalidateQueries({ queryKey: ["voltage-sync-settings"] });
@@ -139,6 +144,7 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
         />
       </div>
 
+      {progress && uploadMutation.isPending ? <ImportProgressBar progress={progress} wide /> : null}
       {lastResult ? (
         <div className="rounded border border-[var(--win-shadow)] p-3 text-sm">
           <div className="font-semibold">{lastResult.ok ? t("voltageSync.statusSuccess") : t("voltageSync.statusError")}</div>

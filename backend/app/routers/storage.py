@@ -1,20 +1,26 @@
 """
-Lagerbestand (stock inventory) — mirrors Access forms:
-  frmLagerbestandAnoden / qryLagerbestandAnoden(+2)
-  frmLagerbestandKathoden / qryLagerbestandKathoden(+2)
-  frmLagerbestandMembranen / qryLagerbestandMembranen(+2)
+Warehouse for anodes and cathodes, plus the Access membrane stock list.
 
-Stock = component still usable (no decommission date) and NOT mounted on an
-active assembly (element with null disassembly_date).
+Anode/cathode status is computed live from the latest assembly row and from
+maintenance, recoating and coating-check records. Membrane stock stays the
+usable, not-mounted list.
 """
 from collections import Counter
+from datetime import date as Date
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from .. import models
 from ..auth import require_any_form_access
 from ..database import get_db
+from ..excel_import import read_xlsx
+from ..export_utils import export_pdf, export_xlsx
+from ..import_jobs import spawn_import
+from ..plant_import import parse_assembly_excel
+from ..routers.elements import _apply_assembly_import
+from ..warehouse import apply_move, build_board, import_contractor_repairs
 
 router = APIRouter(prefix="/storage", tags=["storage"])
 
@@ -219,3 +225,109 @@ def stock_membranes(
         ]
     items.sort(key=lambda i: (i.get("membrane_nr") or ""))
     return items[:limit]
+
+
+class WarehouseMove(BaseModel):
+    kind: str
+    serial: str
+    action: str
+    date: Date | None = None
+    note: str | None = None
+
+
+_BOARD_FIELDS = [
+    "serial",
+    "bucket",
+    "reason",
+    "electrolyzer",
+    "position",
+    "element_nr",
+    "assembly_date",
+    "commissioning_date",
+    "disassembly_date",
+    "last_dol",
+    "total_dol",
+    "runs",
+    "remarks",
+    "repair",
+    "repair_dispatch",
+    "repair_return",
+    "coating",
+    "manufacturer",
+]
+
+
+def _board_or_400(db: Session, kind: str, bucket: str | None, q: str | None, limit: int) -> dict:
+    if kind not in {"anode", "cathode"}:
+        raise HTTPException(status_code=400, detail="kind must be anode or cathode")
+    return build_board(db, kind, bucket=bucket, q=q, limit=limit)
+
+
+@router.get("/board")
+def warehouse_board(
+    kind: str = Query(default="anode"),
+    bucket: str | None = Query(default="warehouse"),
+    q: str | None = None,
+    limit: int = Query(default=2500, ge=1, le=20000),
+    db: Session = Depends(get_db),
+    _: models.User = Depends(require_any_form_access("storage", "anodes", "cathodes")),
+):
+    return _board_or_400(db, kind, bucket, q, limit)
+
+
+@router.get("/board/export.xlsx", include_in_schema=False)
+def warehouse_export_xlsx(
+    kind: str = Query(default="anode"),
+    bucket: str | None = Query(default="warehouse"),
+    q: str | None = None,
+    db: Session = Depends(get_db),
+    _: models.User = Depends(require_any_form_access("storage", "anodes", "cathodes")),
+):
+    board = _board_or_400(db, kind, bucket, q, 20000)
+    return export_xlsx(board["items"], _BOARD_FIELDS, "warehouse")
+
+
+@router.get("/board/export.pdf", include_in_schema=False)
+def warehouse_export_pdf(
+    kind: str = Query(default="anode"),
+    bucket: str | None = Query(default="warehouse"),
+    q: str | None = None,
+    db: Session = Depends(get_db),
+    _: models.User = Depends(require_any_form_access("storage", "anodes", "cathodes")),
+):
+    board = _board_or_400(db, kind, bucket, q, 1500)
+    return export_pdf(board["items"], _BOARD_FIELDS, "warehouse")
+
+
+@router.post("/board/import.xlsx", include_in_schema=False)
+async def warehouse_import(file: UploadFile = File(...)):
+    """Montage / demontage workbook. Assembly rows, DOL and catalog stubs update together."""
+    content = await read_xlsx(file)
+    parsed = parse_assembly_excel(content)
+    if not parsed.get("recognized"):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "This Excel file does not match the montage / demontage sheet. "
+                "فایل با برگه مونتاژ و دمونتاژ جور نیست."
+            ),
+        )
+
+    def work(db: Session, progress):
+        result = _apply_assembly_import(db, parsed, "upsert", progress)
+        result["contractor_repairs"] = import_contractor_repairs(db, content)
+        return result
+
+    return spawn_import(work)
+
+
+@router.post("/board/move")
+def warehouse_move(
+    payload: WarehouseMove,
+    db: Session = Depends(get_db),
+    _: models.User = Depends(require_any_form_access("storage", "anodes", "cathodes")),
+):
+    try:
+        return apply_move(db, payload.kind, payload.serial, payload.action, payload.date, payload.note)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc

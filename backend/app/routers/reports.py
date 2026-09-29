@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
 from .. import models
-from ..calculations import days_on_line
+from ..calculations import installation_dol
 from ..database import get_db
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -100,7 +100,7 @@ def _build_summary(db: Session, electrolyzer: str | None) -> dict:
     active_elements = elements_q.filter(models.Element.disassembly_date.is_(None)).count()
     dol_values = [
         d for e in elements_q.all()
-        if (d := days_on_line(e.commissioning_date, e.decommissioning_date)) is not None
+        if (d := installation_dol(e.assembly_date, e.commissioning_date, e.disassembly_date, e.decommissioning_date)) is not None
     ]
 
     recent_shutdowns = sorted(

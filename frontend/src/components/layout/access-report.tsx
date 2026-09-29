@@ -3,7 +3,9 @@
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AccessBtn, AccessGroup, AccessRadio } from "@/components/layout/access-hub";
+import { formatDisplayedDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
+import { useCalendar } from "@/lib/calendar/context";
 
 export type RadioGroupDef = {
   legend: string;
@@ -69,6 +71,7 @@ export function ResultsPane({
   yLabel: string;
 }) {
   const { t } = useI18n();
+  useCalendar();
   if (rows.length === 0) {
     return <div className="access-sunken mt-3 p-3 text-[12px]">{t("menus.noRecordsPeriod")}</div>;
   }
@@ -79,9 +82,9 @@ export function ResultsPane({
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={rows}>
             <CartesianGrid strokeDasharray="3 3" stroke="#808080" />
-            <XAxis dataKey={xKey} stroke="#000" fontSize={11} />
+            <XAxis dataKey={xKey} stroke="#000" fontSize={11} tickFormatter={(value) => formatDisplayedDate(value)} />
             <YAxis stroke="#000" fontSize={11} />
-            <Tooltip />
+            <Tooltip labelFormatter={(value) => formatDisplayedDate(value)} />
             <Bar dataKey={yKey} name={yLabel} fill="#0a246a" />
           </BarChart>
         </ResponsiveContainer>
@@ -96,7 +99,7 @@ export function ResultsPane({
           <tbody>
             {rows.map((row, i) => (
               <tr key={i}>
-                <td>{String(row[xKey] ?? "")}</td>
+                <td>{formatDisplayedDate(row[xKey])}</td>
                 <td>{row[yKey] == null ? "" : String(row[yKey])}</td>
               </tr>
             ))}

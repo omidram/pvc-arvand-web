@@ -12,10 +12,13 @@ import {
 } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { Shutdown, ShutdownCategory, ShutdownCause } from "@/lib/types";
+import { ExportButtons } from "@/components/domain/export-buttons";
 import { AccessBtn, AccessHub } from "@/components/layout/access-hub";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
-import { formatNumber } from "@/lib/utils";
+import { formatDate, formatNumber } from "@/lib/utils";
+import { useCalendar } from "@/lib/calendar/context";
+import { DateInput } from "@/components/ui/date-input";
 
 function toLocalInput(value: string | null | undefined): string {
   if (!value) return "";
@@ -43,6 +46,7 @@ function durationHours(row: Shutdown): string {
 
 function PlantBar() {
   const { t } = useI18n();
+  useCalendar();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const s = settingsQuery.data;
   return (
@@ -50,7 +54,7 @@ function PlantBar() {
       <span>{s?.customer || "PVC Arvand"}</span>
       <span>{s?.plant_type === "KOH" ? t("menus.kohElectrolysis") : t("menus.naclElectrolysis")}</span>
       <span>{s?.uan || "E0-3031"}</span>
-      <span>{s?.version || s?.date?.slice(0, 10) || ""}</span>
+      <span>{s?.version || (s?.date ? formatDate(s.date) : "")}</span>
     </div>
   );
 }
@@ -71,9 +75,9 @@ function ShutdownMenu() {
         <div>
           <div className="mb-2 text-[12px] font-bold">{t("menus.results")}</div>
           <div className="access-sunken flex w-[220px] flex-col gap-2">
-            <AccessBtn href="/shutdowns?form=summary-reason">{t("menus.shutdownReasons")}</AccessBtn>
-            <AccessBtn href="/shutdowns?form=period">{t("menus.timePeriod")}</AccessBtn>
+            <AccessBtn href="/shutdowns?form=summary-reason">{t("fields.reason")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=summary-category">{t("menus.category")}</AccessBtn>
+            <AccessBtn href="/shutdowns?form=period">{t("menus.timePeriod")}</AccessBtn>
           </div>
         </div>
       </div>
@@ -135,17 +139,18 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       titleBlue
       backHref="/shutdowns"
       backLabel={t("mainMenu.shutDown")}
+      extraButtons={<ExportButtons prefix="/shutdowns" params={listParams} filenameBase="shutdowns" />}
     >
       <PlantBar />
       {showPeriodFilter ? (
         <div className="mb-3 flex flex-wrap items-end gap-3 text-[12px]">
           <label className="flex flex-col gap-1">
             <span>{t("menus.from")}</span>
-            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <DateInput className="access-inset-field" value={from} onChange={(e) => setFrom(e.target.value)} />
           </label>
           <label className="flex flex-col gap-1">
             <span>{t("menus.till")}</span>
-            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            <DateInput className="access-inset-field" value={to} onChange={(e) => setTo(e.target.value)} />
           </label>
           <div className="font-bold">
             {t("shutdowns.totalDuration")}: {formatNumber(totalHours)} h &nbsp;·&nbsp; {t("shutdowns.totalShutdowns")}:{" "}
@@ -185,7 +190,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   />
                 </td>
                 <td>
-                  <input
+                  <DateInput
                     type="datetime-local"
                     value={toLocalInput(row.shutdown_time)}
                     onChange={(e) => save(row, { shutdown_time: fromLocalInput(e.target.value) })}
@@ -193,7 +198,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   />
                 </td>
                 <td>
-                  <input
+                  <DateInput
                     type="datetime-local"
                     value={toLocalInput(row.startup_time)}
                     onChange={(e) => save(row, { startup_time: fromLocalInput(e.target.value) })}
@@ -312,7 +317,13 @@ function ReasonsForm() {
   }
 
   return (
-    <AccessHub title={t("shutdowns.reasonsTitle")} titleBlue backHref="/shutdowns" backLabel={t("mainMenu.shutDown")}>
+    <AccessHub
+      title={t("shutdowns.reasonsTitle")}
+      titleBlue
+      backHref="/shutdowns"
+      backLabel={t("mainMenu.shutDown")}
+      extraButtons={<ExportButtons prefix="/shutdown-causes" filenameBase="shutdown-causes" />}
+    >
       <table className="access-cont-table max-w-3xl">
         <thead>
           <tr>
@@ -396,7 +407,13 @@ function CategoriesForm() {
   }
 
   return (
-    <AccessHub title={t("menus.shutdownCategories")} titleBlue backHref="/shutdowns" backLabel={t("mainMenu.shutDown")}>
+    <AccessHub
+      title={t("menus.shutdownCategories")}
+      titleBlue
+      backHref="/shutdowns"
+      backLabel={t("mainMenu.shutDown")}
+      extraButtons={<ExportButtons prefix="/shutdown-categories" filenameBase="shutdown-categories" />}
+    >
       <table className="access-cont-table max-w-md">
         <thead>
           <tr>

@@ -1,12 +1,14 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
 from ..crud import build_crud_router
 from ..database import get_db
+from ..excel_import import import_excel_bytes, read_xlsx
+from ..import_jobs import spawn_import
 from ..export_utils import export_pdf, export_xlsx, rows_to_dicts
 
 router = APIRouter(prefix="/shutdowns", tags=["shutdowns"])
@@ -66,6 +68,16 @@ def export_shutdowns_pdf(
     items = list_shutdowns(q=q, date_from=date_from, date_to=date_to, limit=2000, db=db)
     rows = rows_to_dicts(items, SHUTDOWN_EXPORT_FIELDS)
     return export_pdf(rows, SHUTDOWN_EXPORT_FIELDS, "shutdowns")
+
+
+@router.post("/import.xlsx", include_in_schema=False)
+async def import_shutdowns(file: UploadFile = File(...)):
+    content = await read_xlsx(file)
+    return spawn_import(
+        lambda db, progress: import_excel_bytes(
+            db, models.Shutdown, schemas.ShutdownBase, content, pk_field="nr", progress=progress
+        )
+    )
 
 
 @router.get("/{nr}", response_model=schemas.ShutdownRead)

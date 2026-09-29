@@ -68,9 +68,9 @@ function StatisticsMenu() {
         <div className="access-sunken">
           <div className="access-col-title">{t("menus.groups")}</div>
           <div className="mt-6 flex flex-col gap-2">
-            <AccessBtn href="/statistics?form=groups">{t("menus.unGroupsByDate")}</AccessBtn>
-            <AccessBtn href="/statistics?form=groups">{t("menus.unGroupsByElDate")}</AccessBtn>
-            <AccessBtn href="/statistics?form=groups">{t("menus.unGroupsInEl")}</AccessBtn>
+            <AccessBtn href="/statistics?form=groups">{t("menus.groupAvgByDate")}</AccessBtn>
+            <AccessBtn href="/statistics?form=groups">{t("menus.groupByDate")}</AccessBtn>
+            <AccessBtn href="/statistics?form=groups">{t("menus.groupAvgByElDate")}</AccessBtn>
           </div>
         </div>
       </div>

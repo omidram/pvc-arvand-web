@@ -9,6 +9,7 @@ from .. import models, schemas
 from ..calculations import standardized_voltage
 from ..crud import build_crud_router
 from ..database import get_db
+from ..import_jobs import spawn_import
 
 normalizations_router = build_crud_router(
     model=models.ElectrolyzerNormalization,
@@ -129,7 +130,6 @@ async def import_voltage_csv(
     file: UploadFile,
     electrolyzer: str,
     reading_date: str,
-    db: Session = Depends(get_db),
 ):
     """
     Bulk import of per-position voltage readings from a CSV file with columns
@@ -137,35 +137,43 @@ async def import_voltage_csv(
     """
     content = await file.read()
     text = content.decode("utf-8-sig", errors="ignore")
-    reader = csv.DictReader(io.StringIO(text))
-    date_val = datetime.fromisoformat(reading_date)
-    created = 0
-    for row in reader:
-        position = row.get("position") or row.get("Position")
-        voltage = row.get("voltage") or row.get("Voltage") or row.get("Ui")
-        if position is None or voltage in (None, ""):
-            continue
-        try:
-            voltage_f = float(voltage)
-        except ValueError:
-            continue
-        db.add(
-            models.VoltageReading(
-                electrolyzer=electrolyzer,
-                position=position,
-                date=date_val,
-                voltage=voltage_f,
-            )
-        )
-        created += 1
-    db.commit()
-    return {"imported_rows": created}
+    rows = list(csv.DictReader(io.StringIO(text)))
+
+    def work(db: Session, progress):
+        date_val = datetime.fromisoformat(reading_date)
+        created = 0
+        total = len(rows)
+        if progress:
+            progress(0, total)
+        for done, row in enumerate(rows, start=1):
+            position = row.get("position") or row.get("Position")
+            voltage = row.get("voltage") or row.get("Voltage") or row.get("Ui")
+            if position is not None and voltage not in (None, ""):
+                try:
+                    voltage_f = float(voltage)
+                except ValueError:
+                    voltage_f = None
+                if voltage_f is not None:
+                    db.add(
+                        models.VoltageReading(
+                            electrolyzer=electrolyzer,
+                            position=position,
+                            date=date_val,
+                            voltage=voltage_f,
+                        )
+                    )
+                    created += 1
+            if progress and (done == total or done % 25 == 0):
+                progress(done, total)
+        db.commit()
+        return {"imported_rows": created}
+
+    return spawn_import(work)
 
 
 @calc_router.post("/import-excel")
 async def import_voltage_excel(
     file: UploadFile,
-    db: Session = Depends(get_db),
     electrolyzer: str | None = None,
     reading_date: str | None = None,
 ):
@@ -173,28 +181,33 @@ async def import_voltage_excel(
     from .. import voltage_sync
 
     content = await file.read()
-    try:
-        info = voltage_sync.apply_excel_bytes(
-            db,
-            content,
-            electrolyzer=electrolyzer,
-            reading_date=reading_date,
-            hint_from_name=file.filename or "",
-        )
-        db.commit()
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    filename = file.filename or ""
 
-    return {
-        "imported_rows": info.get("rows_upserted"),
-        "electrolyzer": info.get("electrolyzer"),
-        "reading_date": info.get("reading_date"),
-        "times": info.get("times") or [],
-        "operators": info.get("operators") or [],
-        "sheet": info.get("sheet"),
-        "out_of_range_count": info.get("out_of_range_count") or 0,
-        "mode": "upsert",
-    }
+    def work(db: Session, progress):
+        try:
+            info = voltage_sync.apply_excel_bytes(
+                db,
+                content,
+                electrolyzer=electrolyzer,
+                reading_date=reading_date,
+                hint_from_name=filename,
+                progress=progress,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        db.commit()
+        return {
+            "imported_rows": info.get("rows_upserted"),
+            "electrolyzer": info.get("electrolyzer"),
+            "reading_date": info.get("reading_date"),
+            "times": info.get("times") or [],
+            "operators": info.get("operators") or [],
+            "sheet": info.get("sheet"),
+            "out_of_range_count": info.get("out_of_range_count") or 0,
+            "mode": "upsert",
+        }
+
+    return spawn_import(work)
 
 
 current_efficiency_router = build_crud_router(

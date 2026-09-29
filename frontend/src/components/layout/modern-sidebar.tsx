@@ -107,15 +107,17 @@ function NavLink({
   icon: Icon,
   label,
   badge,
+  onNavigate,
 }: {
   href: string;
   active: boolean;
   icon: typeof LayoutDashboard;
   label: string;
   badge?: number;
+  onNavigate?: () => void;
 }) {
   return (
-    <Link href={href} className={cn("ms-nav-link", active && "is-active")}>
+    <Link href={href} className={cn("ms-nav-link", active && "is-active")} onClick={onNavigate}>
       <Icon size={15} className="ms-nav-icon" />
       <span className="truncate">{label}</span>
       {badge && badge > 0 ? <span className="ms-badge">{badge > 99 ? "99+" : badge}</span> : null}
@@ -123,7 +125,7 @@ function NavLink({
   );
 }
 
-export function ModernSidebar() {
+export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
   const { t, locale, setLocale } = useI18n();
   const { user, isAdmin, canView, logout } = useAuth();
@@ -138,7 +140,7 @@ export function ModernSidebar() {
   const openAlerts = alertSummary.data?.open_total ?? 0;
 
   return (
-    <aside className="modern-sidebar">
+    <aside className={cn("modern-sidebar", open && "is-open")}>
       <div className="ms-brand">
         <div className="ms-logo-well">
           <Image
@@ -180,8 +182,8 @@ export function ModernSidebar() {
 
       <nav className="ms-nav">
         <div className="ms-nav-block">
-          <NavLink href="/tables" active={navActive(pathname, "/tables")} icon={Database} label={t("nav.databaseTables")} />
-          <NavLink href="/all-tables" active={navActive(pathname, "/all-tables")} icon={Table2} label={t("nav.allTables")} />
+          <NavLink href="/tables" active={navActive(pathname, "/tables")} icon={Database} label={t("nav.databaseTables")} onNavigate={onNavigate} />
+          <NavLink href="/all-tables" active={navActive(pathname, "/all-tables")} icon={Table2} label={t("nav.allTables")} onNavigate={onNavigate} />
         </div>
 
         {NAV_GROUPS.map((group) => {
@@ -202,6 +204,7 @@ export function ModernSidebar() {
                   icon={item.icon}
                   label={t(item.labelKey)}
                   badge={item.href === "/monitoring" ? openAlerts : undefined}
+                  onNavigate={onNavigate}
                 />
               ))}
             </div>
@@ -220,7 +223,7 @@ export function ModernSidebar() {
       ) : null}
 
       <div className="ms-footer-block">
-        <NavLink href="/about" active={navActive(pathname, "/about")} icon={Info} label={t("nav.about")} />
+        <NavLink href="/about" active={navActive(pathname, "/about")} icon={Info} label={t("nav.about")} onNavigate={onNavigate} />
         <div className="ms-footnote">{t("app.footer")}</div>
       </div>
     </aside>

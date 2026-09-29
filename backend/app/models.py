@@ -477,6 +477,30 @@ class Membrane(Base):
     batch: Mapped[str | None] = mapped_column(String(50))
 
 
+class MaintenanceReport(Base):
+    """Uploaded maintenance report for an anode, cathode, or membrane."""
+
+    __tablename__ = "maintenance_reports"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    kind: Mapped[str] = mapped_column(String(20), index=True)
+    component_nr: Mapped[str] = mapped_column(String(50), index=True)
+    report_date: Mapped[datetime | None] = mapped_column(DateTime)
+    title: Mapped[str | None] = mapped_column(String(200))
+    notes: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class MaintenanceReportFile(Base):
+    __tablename__ = "maintenance_report_files"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    report_id: Mapped[int] = mapped_column(Integer, index=True)
+    original_name: Mapped[str] = mapped_column(String(255))
+    stored_name: Mapped[str] = mapped_column(String(80))
+    content_type: Mapped[str] = mapped_column(String(80))
+    size_bytes: Mapped[int] = mapped_column(Integer)
+    uploaded_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
 class AnodeMaintenance(Base):
     __tablename__ = "anode_maintenance"  # was: tblAnodeninstandhaltung
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

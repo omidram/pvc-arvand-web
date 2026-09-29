@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from .. import models
 from ..auth import require_any_form_access, require_form_access
-from ..calculations import days_on_line
+from ..calculations import installation_dol
 from ..database import get_db
 
 router = APIRouter(prefix="/statistics", tags=["statistics"])
@@ -57,7 +57,7 @@ def dol_by_membrane_type(db: Session = Depends(get_db)):
         entry = grouped.setdefault(key, {"membrane_type": key, "active": 0, "passive": 0, "total_dol_days": 0})
         active = e.disassembly_date is None
         entry["active" if active else "passive"] += 1
-        dol = days_on_line(e.commissioning_date, e.decommissioning_date)
+        dol = installation_dol(e.assembly_date, e.commissioning_date, e.disassembly_date, e.decommissioning_date)
         if dol:
             entry["total_dol_days"] += dol
     return list(grouped.values())

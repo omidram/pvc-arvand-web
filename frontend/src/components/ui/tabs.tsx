@@ -6,20 +6,30 @@ import { cn } from "@/lib/utils";
 export function Tabs({
   tabs,
   defaultTab,
+  activeKey,
+  onChange,
 }: {
   tabs: { key: string; label: string; content: React.ReactNode }[];
   defaultTab?: string;
+  activeKey?: string;
+  onChange?: (key: string) => void;
 }) {
-  const [active, setActive] = useState(defaultTab || tabs[0]?.key);
+  const [internal, setInternal] = useState(activeKey || defaultTab || tabs[0]?.key);
+  const active = activeKey || internal;
   const activeTab = tabs.find((tab) => tab.key === active) || tabs[0];
 
   useEffect(() => {
-    if (defaultTab && tabs.some((tab) => tab.key === defaultTab)) {
-      setActive(defaultTab);
+    if (!activeKey && defaultTab && tabs.some((tab) => tab.key === defaultTab)) {
+      setInternal(defaultTab);
     }
     // tabs is a new array each render; only open the requested tab when the query changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultTab]);
+  }, [defaultTab, activeKey]);
+
+  function select(key: string) {
+    setInternal(key);
+    onChange?.(key);
+  }
 
   return (
     <div className="ui-tabs">
@@ -27,7 +37,8 @@ export function Tabs({
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActive(tab.key)}
+            type="button"
+            onClick={() => select(tab.key)}
             data-active={active === tab.key ? "true" : undefined}
             className={cn(
               "ui-tab relative z-0 border-2 border-b-0 px-3 py-1.5 text-xs font-bold [border-style:outset]",

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { electrodeSegregationsApi } from "@/lib/endpoints";
+import { electrodeSegregationsApi, type ImportProgress } from "@/lib/endpoints";
+import { ImportProgressBar } from "@/components/domain/import-progress";
 import { useCrudResource } from "@/lib/use-resource";
 import type { ElectrodeSegregation } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
@@ -105,8 +106,12 @@ function ImportTafkikModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ImportProgress | null>(null);
   const mutation = useMutation({
-    mutationFn: () => electrodeSegregationsApi.importTafkikExcel(file!),
+    mutationFn: () => {
+      setProgress({ percent: 0, processed: 0, total: 0 });
+      return electrodeSegregationsApi.importTafkikExcel(file!, undefined, setProgress);
+    },
     onSuccess: (data) => {
       setResult(t("segregation.importedRows", { n: data.imported_rows }));
       queryClient.invalidateQueries({ queryKey: ["electrode-segregations"] });
@@ -126,6 +131,7 @@ function ImportTafkikModal({ onClose }: { onClose: () => void }) {
             className="text-sm"
           />
         </div>
+        {progress && mutation.isPending ? <ImportProgressBar progress={progress} wide /> : null}
         {result && (
           <div className="border-2 border-[#5fa85f] bg-[#d9f0d9] px-3 py-2 text-sm font-semibold text-[#0d5c0d]">
             {result}

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { UploadCloud } from "lucide-react";
-import { dataTransferApi } from "@/lib/endpoints";
+import { dataTransferApi, type ImportProgress } from "@/lib/endpoints";
+import { ImportProgressBar } from "@/components/domain/import-progress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label, Select } from "@/components/ui/input";
@@ -84,10 +85,14 @@ function ImportExcelCard() {
   const [resource, setResource] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [mode, setMode] = useState<ImportMode>("merge");
+  const [progress, setProgress] = useState<ImportProgress | null>(null);
 
   const resourcesQuery = useQuery({ queryKey: ["data", "importable-resources"], queryFn: dataTransferApi.importableResources });
   const mutation = useMutation({
-    mutationFn: () => dataTransferApi.importExcel(resource, file!, mode),
+    mutationFn: () => {
+      setProgress({ percent: 0, processed: 0, total: 0 });
+      return dataTransferApi.importExcel(resource, file!, mode, setProgress);
+    },
   });
 
   const options = resourcesQuery.data || [];
@@ -128,6 +133,11 @@ function ImportExcelCard() {
             </Select>
           </div>
         </div>
+        {progress && mutation.isPending ? (
+          <div className="mt-4">
+            <ImportProgressBar progress={progress} wide />
+          </div>
+        ) : null}
         <div className="mt-4">
           <Button onClick={() => mutation.mutate()} disabled={!file || !activeResource || mutation.isPending}>
             <UploadCloud size={16} /> {mutation.isPending ? t("common.importing") : t("importExport.startImport")}

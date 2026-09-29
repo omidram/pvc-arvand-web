@@ -6,6 +6,8 @@ import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, X
 import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { currentEfficiencyEntriesApi, electrolyzersApi, voltageNormalizationsApi, voltageReadingsApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
+import { useCalendar } from "@/lib/calendar/context";
+import { formatDisplayedDate } from "@/lib/utils";
 
 function avg(vals: number[]): number | undefined {
   if (!vals.length) return undefined;
@@ -14,6 +16,7 @@ function avg(vals: number[]): number | undefined {
 
 export default function UnCePage() {
   const { t } = useI18n();
+  useCalendar();
   const [from, setFrom] = useState("");
   const [till, setTill] = useState("");
   const [elNr, setElNr] = useState("");
@@ -104,11 +107,15 @@ export default function UnCePage() {
   return (
     <AccessHub title={t("mainMenu.unCe")} titleBlue>
       <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
-      <div className="flex flex-wrap items-start gap-10">
-        <div className="min-w-[200px]">
-          <div className="mb-2 text-[12px] font-bold">{t("menus.electrolyzer")}</div>
+      {/* Single stacked column — matches the real Access "Un / CE" form: an
+          Electrolyzer picker + Graph button, directly above an All Electrolyzers
+          + Graph button, both at the same left position (not side by side). */}
+      <div className="access-col flex max-w-[240px] flex-col">
+        <div className="access-col-title">{t("mainMenu.unCe")}</div>
+        <div className="access-group">
+          <div className="mb-1 text-[12px] font-bold">{t("menus.electrolyzer")}</div>
           <select
-            className="access-inset-field mb-3 w-40"
+            className="access-inset-field mb-3 w-full"
             value={elNr}
             onChange={(e) => {
               setElNr(e.target.value);
@@ -120,20 +127,13 @@ export default function UnCePage() {
               <option key={n}>{n}</option>
             ))}
           </select>
-          <AccessBtn
-            className="!w-[140px]"
-            onClick={() => setMode("one")}
-            disabled={!elNr}
-          >
+          <AccessBtn onClick={() => setMode("one")} disabled={!elNr}>
             {t("menus.graph")}
           </AccessBtn>
         </div>
-        <div className="min-w-[200px]">
+        <div className="access-group">
           <div className="mb-2 text-[12px] font-bold">{t("menus.allElectrolyzers")}</div>
-          <div className="mb-3 h-[26px]" />
-          <AccessBtn className="!w-[140px]" onClick={() => setMode("all")}>
-            {t("menus.graph")}
-          </AccessBtn>
+          <AccessBtn onClick={() => setMode("all")}>{t("menus.graph")}</AccessBtn>
         </div>
       </div>
 
@@ -148,7 +148,7 @@ export default function UnCePage() {
             <ResponsiveContainer width="100%" height={340}>
               <LineChart data={rows}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#808080" />
-                <XAxis dataKey="date" stroke="#000" fontSize={11} />
+                <XAxis dataKey="date" stroke="#000" fontSize={11} tickFormatter={(value) => formatDisplayedDate(value)} />
                 <YAxis
                   yAxisId="left"
                   stroke="#0a246a"
@@ -162,7 +162,7 @@ export default function UnCePage() {
                   fontSize={11}
                   label={{ value: t("menus.graphCe"), angle: 90, position: "insideRight", style: { fontSize: 11 } }}
                 />
-                <Tooltip />
+                <Tooltip labelFormatter={(value) => formatDisplayedDate(value)} />
                 <Legend />
                 <Line yAxisId="left" type="monotone" dataKey="un" name={t("menus.graphUn")} stroke="#0a246a" dot={false} connectNulls />
                 <Line yAxisId="right" type="monotone" dataKey="ce" name={t("menus.graphCe")} stroke="#c41212" dot={false} connectNulls />

@@ -4,6 +4,9 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, Calculator, Upload } from "lucide-react";
+import Link from "next/link";
+import { ImportProgressBar } from "@/components/domain/import-progress";
+import type { ImportProgress } from "@/lib/endpoints";
 import {
   voltageNormalizationsApi,
   voltageReadingsApi,
@@ -11,12 +14,16 @@ import {
   currentEfficiencyEntriesApi,
   currentEfficiencyCalcApi,
   electrolyzersApi,
+  subPlantsApi,
+  arrangementsApi,
+  correctionFactorsApi,
+  elementsApi,
 } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { ElectrolyzerNormalization, VoltageReading, CurrentEfficiencyEntry } from "@/lib/types";
 import { AccessFormWindow } from "@/components/layout/access-form";
-import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
-import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
+import { AccessBtn, AccessPeriod } from "@/components/layout/access-hub";
+import { ReportColumn, ResultsPane, useColumnState, type RadioGroupDef } from "@/components/layout/access-report";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
@@ -189,14 +196,19 @@ function ReadingsTab() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
   const editable = canEdit("voltage");
+  const searchParams = useSearchParams();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<VoltageReading | null>(null);
-  const [showImport, setShowImport] = useState(false);
+  const [showImport, setShowImport] = useState(() => searchParams.get("import") === "1");
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<VoltageReading>(
     "voltage-readings",
     voltageReadingsApi,
     { limit: 500 }
   );
+
+  useEffect(() => {
+    if (searchParams.get("import") === "1") setShowImport(true);
+  }, [searchParams]);
 
   const columns: Column<VoltageReading>[] = [
     { key: "electrolyzer", header: t("fields.electrolyzer") },
@@ -295,16 +307,18 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   const [readingDate, setReadingDate] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [progress, setProgress] = useState<ImportProgress | null>(null);
 
   const isExcel = !!file && /\.xlsx?$/i.test(file.name);
 
   const importMutation = useMutation({
     mutationFn: async () => {
       if (!file) throw new Error("No file");
+      setProgress({ percent: 0, processed: 0, total: 0 });
       if (isExcel) {
-        return voltageCalcApi.importExcel(file, electrolyzer || undefined, readingDate || undefined);
+        return voltageCalcApi.importExcel(file, electrolyzer || undefined, readingDate || undefined, setProgress);
       }
-      return voltageCalcApi.importCsv(file, electrolyzer, readingDate);
+      return voltageCalcApi.importCsv(file, electrolyzer, readingDate, setProgress);
     },
     onSuccess: (data) => {
       setResult(t("voltage.importedRows", { n: data.imported_rows }));
@@ -338,6 +352,7 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
             className="text-sm text-[var(--win-text)]"
           />
         </div>
+        {progress && importMutation.isPending ? <ImportProgressBar progress={progress} wide /> : null}
         {result && <div className="border-2 border-[#5fa85f] bg-[#d9f0d9] px-3 py-2 text-sm font-semibold text-[#0d5c0d]">{result}</div>}
         {importMutation.isError && <ErrorState message={(importMutation.error as Error).message} />}
         <div className="flex justify-end gap-2 border-t-2 border-[var(--win-face-dark)] pt-3">
@@ -656,168 +671,222 @@ function CurrentEfficiencyTab() {
   );
 }
 
-function VoltageMenu() {
-  const { t } = useI18n();
-  return (
-    <AccessHub title={t("mainMenu.standardizedVoltage")} titleBlue>
-      <div className="mb-4 access-sunken inline-block px-3 py-2">
-        <div className="mb-2 text-[12px] font-bold">{t("menus.dataInput")}</div>
-        <div className="flex flex-wrap gap-2">
-          <AccessBtn className="!w-auto px-3" href="/voltage?form=input-electrolyzer">
-            {t("menus.dataInputElectrolyzers")}
-          </AccessBtn>
-          <AccessBtn className="!w-auto px-3" href="/voltage?form=input-elements">
-            {t("menus.dataInputElements")}
-          </AccessBtn>
-          <AccessBtn className="!w-auto px-3" href="/voltage?form=input-elements&import=1">
-            {t("menus.readFromFile")}
-          </AccessBtn>
-          <AccessBtn className="!w-auto px-3" href="/voltage?form=input-single">
-            {t("menus.inputSingleElement")}
-          </AccessBtn>
-          <AccessBtn className="!w-auto px-3" href="/voltage?form=input-group">
-            {t("menus.inputGroup")}
-          </AccessBtn>
-        </div>
-      </div>
-      <div className="grid max-w-[760px] grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="access-sunken">
-          <div className="access-col-title">{t("menus.tablesDiagrams")}</div>
-          <div className="mt-2 flex flex-col gap-2">
-            <AccessBtn href="/voltage?form=tables&scope=plant">{t("menus.totalPlant")}</AccessBtn>
-            <AccessBtn href="/voltage?form=tables&scope=train">{t("menus.train")}</AccessBtn>
-            <AccessBtn href="/voltage?form=tables&scope=electrolyzer">{t("menus.electrolyzer")}</AccessBtn>
-            <AccessBtn href="/voltage?form=tables&scope=groups">{t("menus.groups")}</AccessBtn>
-            <AccessBtn href="/voltage?form=tables&scope=elements">{t("menus.elements")}</AccessBtn>
-          </div>
-        </div>
-        <div className="access-sunken">
-          <div className="access-col-title">{t("menus.singleElements")}</div>
-          <div className="mt-2 flex flex-col gap-2">
-            <AccessBtn href="/voltage?form=tables&scope=single">{t("menus.tablesOrDiagrams")}</AccessBtn>
-            <AccessBtn href="/voltage?form=distribution">{t("menus.distributionUn")}</AccessBtn>
-          </div>
-        </div>
-        <div className="access-sunken">
-          <div className="access-col-title">{t("menus.groups")}</div>
-          <div className="mt-2 flex flex-col gap-2">
-            <AccessBtn href="/voltage?form=tables&scope=group-tables">{t("menus.tablesOrDiagrams")}</AccessBtn>
-            <AccessBtn href="/statistics?form=groups">{t("menus.unGroupsByDate")}</AccessBtn>
-          </div>
-        </div>
-      </div>
-    </AccessHub>
-  );
+/**
+ * Standardized Voltage main menu — a faithful reconstruction of the real Access
+ * "Betriebsdaten" form: title + time period + reference current density header,
+ * a Data Input row, and 5 side-by-side report columns (Total Plant / Train /
+ * Electrolyzers / Groups / Elements), each with "Used Table" / "Calculation for"
+ * (absent for Total Plant) / "Results as" and a "Display Results" button.
+ * The actual computation reuses the app's generic aggregation engine instead of
+ * the ~50 separate static Access report forms the original buttons opened.
+ */
+function parseList(csv: string): string[] {
+  return csv
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
-function UnTablesForm({ scope }: { scope: string }) {
+function avgByKey(
+  rows: { key: string | null | undefined; value: number | null | undefined }[]
+): { label: string; value: number }[] {
+  const byKey: Record<string, { sum: number; n: number }> = {};
+  for (const r of rows) {
+    if (r.value == null || !r.key) continue;
+    byKey[r.key] = byKey[r.key] || { sum: 0, n: 0 };
+    byKey[r.key].sum += r.value;
+    byKey[r.key].n += 1;
+  }
+  return Object.entries(byKey)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([label, v]) => ({ label, value: Number((v.sum / v.n).toFixed(3)) }));
+}
+
+function StandardizedVoltageBoard() {
   const { t } = useI18n();
   const [from, setFrom] = useState("2006-06-01");
   const [till, setTill] = useState("2016-10-04");
+  const [refDensity, setRefDensity] = useState("");
   const [shown, setShown] = useState<{ title: string; mode: "chart" | "table"; key: string } | null>(null);
-  const plant = useColumnState({ result: "chart" });
-  const train = useColumnState({ result: "chart" });
-  const el = useColumnState({ calc: "individual", result: "chart" });
-  const group = useColumnState({ calc: "individual", result: "chart" });
-  const element = useColumnState({ calc: "all", result: "chart" });
+
+  const plant = useColumnState({ usedTable: "electrolyzers", result: "chart" });
+  const train = useColumnState({ usedTable: "electrolyzers", calc: "individual", result: "chart" });
+  const el = useColumnState({ usedTable: "electrolyzers", calc: "individual", result: "chart" });
+  const group = useColumnState({ usedTable: "allElements", calc: "individual", result: "chart" });
+  const element = useColumnState({ usedTable: "allElements", calc: "individual", result: "chart" });
+
   const [elNr, setElNr] = useState("");
+  const [severalEl, setSeveralEl] = useState("");
+  const [trainNr, setTrainNr] = useState("");
   const [groupNr, setGroupNr] = useState("1");
+  const [severalGroups, setSeveralGroups] = useState("");
+  const [severalElements, setSeveralElements] = useState("");
 
   const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
+  const subPlantsQuery = useQuery({ queryKey: ["sub-plants"], queryFn: () => subPlantsApi.list() });
+  const arrangementsQuery = useQuery({ queryKey: ["arrangements"], queryFn: () => arrangementsApi.list() });
+  const densityQuery = useQuery({ queryKey: ["correction-factors"], queryFn: () => correctionFactorsApi.list() });
   const readingsQuery = useQuery({
-    queryKey: ["voltage-readings", "tables", shown?.key],
+    queryKey: ["voltage-readings", "board"],
     queryFn: () => voltageReadingsApi.list({ limit: 5000 }),
     enabled: Boolean(shown),
   });
   const normsQuery = useQuery({
-    queryKey: ["voltage-normalizations", "tables"],
+    queryKey: ["voltage-normalizations", "board"],
     queryFn: () => voltageNormalizationsApi.list({ limit: 2000 }),
     enabled: Boolean(shown),
   });
+  const elementsMapQuery = useQuery({
+    queryKey: ["elements", "group-map"],
+    queryFn: () => elementsApi.list({ limit: 5000 }),
+    enabled: shown?.key === "groups",
+  });
 
   const elNames = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean);
+  const trainNames = (subPlantsQuery.data || []).map((p) => p.name || String(p.nr)).filter(Boolean);
+  const densities = Array.from(
+    new Set((densityQuery.data || []).map((d) => d.reference_current_density).filter((v): v is number => v != null))
+  ).sort((a, b) => a - b);
+
   useEffect(() => {
     if (!elNr && elNames[0]) setElNr(elNames[0]);
   }, [elNr, elNames]);
+  useEffect(() => {
+    if (!trainNr && trainNames[0]) setTrainNr(trainNames[0]);
+  }, [trainNr, trainNames]);
+  useEffect(() => {
+    if (!refDensity && densities[0] != null) setRefDensity(String(densities[0]));
+  }, [refDensity, densities]);
+
+  const trainOfElectrolyzer = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const a of arrangementsQuery.data || []) {
+      if (a.name) map[a.name] = a.sub_plant || "—";
+    }
+    return map;
+  }, [arrangementsQuery.data]);
+
+  const groupOfElement = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const e of elementsMapQuery.data || []) {
+      if (e.element_nr) map[e.element_nr] = e.group_nr || "—";
+    }
+    return map;
+  }, [elementsMapQuery.data]);
+
+  const inPeriod = (d: string | null | undefined) => {
+    const day = d?.slice(0, 10) || "";
+    if (from && day && day < from) return false;
+    if (till && day && day > till) return false;
+    return true;
+  };
+  const normValue = (r: ElectrolyzerNormalization) =>
+    r.total_voltage != null && r.element_count ? r.total_voltage / Math.max(r.element_count, 1) : null;
+  const readingValue = (r: VoltageReading) => r.standardized_voltage ?? r.voltage;
+  // Reads either row shape; VoltageReading uniquely has a `voltage` field.
+  const anyValue = (r: VoltageReading | ElectrolyzerNormalization): number | null =>
+    "voltage" in r ? readingValue(r) : normValue(r);
 
   const rows = useMemo(() => {
     if (!shown) return [];
-    const inPeriod = (d: string | null | undefined) => {
-      const day = d?.slice(0, 10) || "";
-      if (from && day && day < from) return false;
-      if (till && day && day > till) return false;
-      return true;
-    };
+    const norms = (normsQuery.data || []).filter((r) => inPeriod(r.date));
+    const readings = (readingsQuery.data || []).filter((r) => inPeriod(r.date));
 
-    if (shown.key === "plant" || shown.key === "train") {
-      const byDate: Record<string, { sum: number; n: number }> = {};
-      for (const r of normsQuery.data || []) {
-        if (!inPeriod(r.date)) continue;
-        const day = r.date!.slice(0, 10);
-        const u = r.total_voltage != null && r.element_count ? r.total_voltage / Math.max(r.element_count, 1) : null;
-        if (u == null) continue;
-        byDate[day] = byDate[day] || { sum: 0, n: 0 };
-        byDate[day].sum += u;
-        byDate[day].n += 1;
+    switch (shown.key) {
+      case "plant": {
+        const useReadings = plant.values.usedTable === "allElements";
+        return useReadings
+          ? avgByKey(readings.map((r) => ({ key: r.date?.slice(0, 10), value: readingValue(r) })))
+          : avgByKey(norms.map((r) => ({ key: r.date?.slice(0, 10), value: normValue(r) })));
       }
-      return Object.entries(byDate)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([date, v]) => ({ label: date, value: Number((v.sum / v.n).toFixed(3)) }));
-    }
-
-    if (shown.key === "electrolyzer" || shown.key === "groups" || shown.key === "group-tables") {
-      const byKey: Record<string, { sum: number; n: number }> = {};
-      for (const r of normsQuery.data || []) {
-        if (!inPeriod(r.date)) continue;
-        if (shown.key === "electrolyzer" && el.values.calc === "individual" && elNr && r.electrolyzer !== elNr) continue;
-        const u = r.total_voltage != null && r.element_count ? r.total_voltage / Math.max(r.element_count, 1) : null;
-        if (u == null) continue;
-        const key =
-          shown.key === "groups" || shown.key === "group-tables"
-            ? r.electrolyzer || "—"
-            : el.values.calc === "all"
-              ? r.electrolyzer || "—"
-              : r.date?.slice(0, 10) || "—";
-        byKey[key] = byKey[key] || { sum: 0, n: 0 };
-        byKey[key].sum += u;
-        byKey[key].n += 1;
+      case "train": {
+        const useReadings = train.values.usedTable === "allElements";
+        const source: (VoltageReading | ElectrolyzerNormalization)[] = useReadings ? readings : norms;
+        if (train.values.calc === "individual" && trainNr) {
+          return avgByKey(
+            source
+              .filter((r) => trainOfElectrolyzer[r.electrolyzer || ""] === trainNr)
+              .map((r) => ({ key: r.date?.slice(0, 10), value: anyValue(r) }))
+          );
+        }
+        return avgByKey(
+          source.map((r) => ({ key: trainOfElectrolyzer[r.electrolyzer || ""] || "—", value: anyValue(r) }))
+        );
       }
-      return Object.entries(byKey)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([label, v]) => ({ label, value: Number((v.sum / v.n).toFixed(3)) }));
+      case "electrolyzer": {
+        const useReadings = el.values.usedTable === "allElements";
+        const source: (VoltageReading | ElectrolyzerNormalization)[] = useReadings ? readings : norms;
+        if (el.values.calc === "individual" && elNr) {
+          return avgByKey(
+            source.filter((r) => r.electrolyzer === elNr).map((r) => ({ key: r.date?.slice(0, 10), value: anyValue(r) }))
+          );
+        }
+        if (el.values.calc === "several") {
+          const list = parseList(severalEl);
+          return avgByKey(
+            source
+              .filter((r) => list.length === 0 || list.includes(r.electrolyzer || ""))
+              .map((r) => ({ key: r.electrolyzer, value: anyValue(r) }))
+          );
+        }
+        return avgByKey(source.map((r) => ({ key: r.electrolyzer, value: anyValue(r) })));
+      }
+      case "groups": {
+        const byGroup = group.values.usedTable === "groups";
+        let list = readings;
+        if (group.values.calc === "individual" && groupNr) {
+          list = list.filter((r) => groupOfElement[r.element_nr || ""] === groupNr);
+        } else if (group.values.calc === "several") {
+          const wanted = parseList(severalGroups);
+          if (wanted.length) list = list.filter((r) => wanted.includes(groupOfElement[r.element_nr || ""] || ""));
+        }
+        return avgByKey(
+          list.map((r) => ({
+            key: byGroup ? groupOfElement[r.element_nr || ""] || "—" : r.electrolyzer,
+            value: readingValue(r),
+          }))
+        );
+      }
+      default: {
+        // elements
+        let list = readings;
+        if (element.values.calc === "individual" && elNr) {
+          list = list.filter((r) => r.electrolyzer === elNr);
+          return avgByKey(list.map((r) => ({ key: r.position || r.element_nr || String(r.id), value: readingValue(r) })));
+        }
+        if (element.values.calc === "several") {
+          const wanted = parseList(severalElements);
+          if (wanted.length) list = list.filter((r) => wanted.includes(r.electrolyzer || ""));
+          return avgByKey(list.map((r) => ({ key: r.electrolyzer, value: readingValue(r) })));
+        }
+        return avgByKey(list.map((r) => ({ key: r.electrolyzer || r.date?.slice(0, 10), value: readingValue(r) })));
+      }
     }
+  }, [
+    shown,
+    normsQuery.data,
+    readingsQuery.data,
+    from,
+    till,
+    elNr,
+    severalEl,
+    trainNr,
+    groupNr,
+    severalGroups,
+    severalElements,
+    plant.values.usedTable,
+    train.values.usedTable,
+    train.values.calc,
+    el.values.usedTable,
+    el.values.calc,
+    group.values.usedTable,
+    group.values.calc,
+    element.values.calc,
+    trainOfElectrolyzer,
+    groupOfElement,
+  ]);
 
-    // elements / single
-    const byKey: Record<string, { sum: number; n: number }> = {};
-    for (const r of readingsQuery.data || []) {
-      if (!inPeriod(r.date)) continue;
-      if (elNr && (shown.key === "single" || element.values.calc === "individual") && r.electrolyzer !== elNr) continue;
-      const u = r.standardized_voltage ?? r.voltage;
-      if (u == null) continue;
-      const key =
-        shown.key === "single" || element.values.calc === "individual"
-          ? r.position || r.element_nr || String(r.id)
-          : r.electrolyzer || r.date?.slice(0, 10) || "—";
-      byKey[key] = byKey[key] || { sum: 0, n: 0 };
-      byKey[key].sum += u;
-      byKey[key].n += 1;
-    }
-    return Object.entries(byKey)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([label, v]) => ({ label, value: Number((v.sum / v.n).toFixed(3)) }));
-  }, [shown, normsQuery.data, readingsQuery.data, from, till, elNr, el.values.calc, element.values.calc]);
-
-  const titleMap: Record<string, string> = {
-    plant: t("menus.totalPlant"),
-    train: t("menus.train"),
-    electrolyzer: t("menus.electrolyzer"),
-    groups: t("menus.groups"),
-    elements: t("menus.elements"),
-    single: t("menus.singleElements"),
-    "group-tables": t("menus.groups"),
-  };
-
-  const resultGroup = {
+  const resultGroup: RadioGroupDef = {
     legend: t("menus.resultsAs"),
     name: "result",
     options: [
@@ -825,121 +894,211 @@ function UnTablesForm({ scope }: { scope: string }) {
       { value: "table", label: t("menus.table") },
     ],
   };
+  const usedTableElGroup: RadioGroupDef = {
+    legend: t("menus.usedTable"),
+    name: "usedTable",
+    options: [
+      { value: "electrolyzers", label: t("menus.electrolyzers") },
+      { value: "allElements", label: t("menus.allElementsPerEl") },
+    ],
+  };
+  const usedTableGroupsGroup: RadioGroupDef = {
+    legend: t("menus.usedTable"),
+    name: "usedTable",
+    options: [
+      { value: "allElements", label: t("menus.allElementsPerEl") },
+      { value: "groups", label: t("menus.groups") },
+    ],
+  };
+  const usedTableElementsGroup: RadioGroupDef = {
+    legend: t("menus.usedTable"),
+    name: "usedTable",
+    options: [
+      { value: "allElements", label: t("menus.allElementsPerEl") },
+      { value: "individual", label: t("menus.individualElement") },
+    ],
+  };
 
-  const showPlant = scope === "plant";
-  const showTrain = scope === "train";
-  const showEl = scope === "electrolyzer";
-  const showGroups = scope === "groups" || scope === "group-tables";
-  const showElements = scope === "elements" || scope === "single";
+  const displayModeFor = (values: Record<string, string>) => (values.result === "table" ? "table" : "chart");
 
   return (
-    <AccessHub title={`${t("mainMenu.standardizedVoltage")} — ${titleMap[scope] || scope}`} titleBlue backHref="/voltage" backLabel={t("mainMenu.standardizedVoltage")}>
-      <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
-      <div className="grid grid-cols-1 gap-2 overflow-x-auto sm:grid-cols-2 lg:grid-cols-3">
-        {showPlant ? (
-          <ReportColumn
-            title={t("menus.totalPlant")}
-            values={plant.values}
-            onChange={plant.onChange}
-            onDisplay={() => setShown({ title: t("menus.totalPlant"), mode: plant.values.result === "table" ? "table" : "chart", key: "plant" })}
-            groups={[resultGroup]}
-          />
-        ) : null}
-        {showTrain ? (
-          <ReportColumn
-            title={t("menus.train")}
-            values={train.values}
-            onChange={train.onChange}
-            onDisplay={() => setShown({ title: t("menus.train"), mode: train.values.result === "table" ? "table" : "chart", key: "train" })}
-            groups={[resultGroup]}
-          />
-        ) : null}
-        {showEl ? (
-          <ReportColumn
-            title={t("menus.electrolyzer")}
-            values={el.values}
-            onChange={el.onChange}
-            onDisplay={() => setShown({ title: t("menus.electrolyzer"), mode: el.values.result === "table" ? "table" : "chart", key: "electrolyzer" })}
-            groups={[
-              {
-                legend: t("menus.calculationFor"),
-                name: "calc",
-                options: [
-                  { value: "individual", label: t("menus.individualEl") },
-                  { value: "all", label: t("menus.allElectrolyzers") },
-                ],
-                extra: (v) =>
-                  v === "individual" ? (
-                    <select className="access-inset-field mt-1 w-full" value={elNr} onChange={(e) => setElNr(e.target.value)}>
-                      {(elNames.length ? elNames : ["1G"]).map((n) => (
-                        <option key={n}>{n}</option>
-                      ))}
-                    </select>
-                  ) : null,
-              },
-              resultGroup,
-            ]}
-          />
-        ) : null}
-        {showGroups ? (
-          <ReportColumn
-            title={t("menus.groups")}
-            values={group.values}
-            onChange={group.onChange}
-            onDisplay={() => setShown({ title: t("menus.groups"), mode: group.values.result === "table" ? "table" : "chart", key: scope })}
-            groups={[
-              {
-                legend: t("menus.calculationFor"),
-                name: "calc",
-                options: [
-                  { value: "individual", label: t("menus.individualGroup") },
-                  { value: "all", label: t("menus.allGroups") },
-                ],
-                extra: (v) =>
-                  v === "individual" ? (
-                    <input className="access-inset-field mt-1 w-16" value={groupNr} onChange={(e) => setGroupNr(e.target.value)} />
-                  ) : null,
-              },
-              resultGroup,
-            ]}
-          />
-        ) : null}
-        {showElements ? (
-          <ReportColumn
-            title={scope === "single" ? t("menus.singleElements") : t("menus.elements")}
-            values={element.values}
-            onChange={element.onChange}
-            onDisplay={() =>
-              setShown({
-                title: scope === "single" ? t("menus.singleElements") : t("menus.elements"),
-                mode: element.values.result === "table" ? "table" : "chart",
-                key: scope === "single" ? "single" : "elements",
-              })
-            }
-            groups={[
-              {
-                legend: t("menus.calculationFor"),
-                name: "calc",
-                options: [
-                  { value: "individual", label: t("menus.individualElement") },
-                  { value: "all", label: t("menus.allElements") },
-                ],
-                extra: (v) =>
-                  v === "individual" || scope === "single" ? (
-                    <select className="access-inset-field mt-1 w-full" value={elNr} onChange={(e) => setElNr(e.target.value)}>
-                      {(elNames.length ? elNames : ["1G"]).map((n) => (
-                        <option key={n}>{n}</option>
-                      ))}
-                    </select>
-                  ) : null,
-              },
-              resultGroup,
-            ]}
-          />
-        ) : null}
+    <div className="access-hub" dir="ltr">
+      <div className="access-hub-head">
+        <div className="access-hub-title is-blue">{t("mainMenu.standardizedVoltage")}</div>
+        <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
+      </div>
+
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+        <div className="access-sunken inline-block px-3 py-2">
+          <div className="mb-2 text-[12px] font-bold">{t("menus.dataInput")}</div>
+          <div className="flex flex-wrap gap-2">
+            <AccessBtn className="!w-auto px-3" href="/voltage?form=input-electrolyzer">
+              {t("menus.dataInputElectrolyzers")}
+            </AccessBtn>
+            <AccessBtn className="!w-auto px-3" href="/voltage?form=input-elements">
+              {t("menus.dataInputElements")}
+            </AccessBtn>
+            <AccessBtn className="!w-auto px-3" href="/voltage?form=input-group">
+              {t("menus.inputGroup")}
+            </AccessBtn>
+            <AccessBtn className="!w-auto px-3" href="/voltage?form=input-single">
+              {t("menus.inputSingleElement")}
+            </AccessBtn>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="access-sunken flex items-center gap-2 px-3 py-2 text-[12px]">
+            <span className="font-bold">{t("fields.referenceCurrentDensity")}</span>
+            <select className="access-inset-field w-20" value={refDensity} onChange={(e) => setRefDensity(e.target.value)}>
+              {(densities.length ? densities : [6]).map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+            <span>kA/m²</span>
+          </div>
+          <Link href="/" className="access-menu-btn access-hub-menu-btn">
+            {t("common.mainMenu")}
+          </Link>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
+        <ReportColumn
+          title={t("menus.totalPlant")}
+          values={plant.values}
+          onChange={plant.onChange}
+          onDisplay={() => setShown({ title: t("menus.totalPlant"), mode: displayModeFor(plant.values), key: "plant" })}
+          groups={[usedTableElGroup, resultGroup]}
+        />
+        <ReportColumn
+          title={t("menus.train")}
+          values={train.values}
+          onChange={train.onChange}
+          onDisplay={() => setShown({ title: t("menus.train"), mode: displayModeFor(train.values), key: "train" })}
+          groups={[
+            usedTableElGroup,
+            {
+              legend: t("menus.calculationFor"),
+              name: "calc",
+              options: [
+                { value: "individual", label: t("menus.individualTrain") },
+                { value: "all", label: t("menus.allTrains") },
+              ],
+              extra: (v) =>
+                v === "individual" ? (
+                  <select className="access-inset-field mt-1 w-full" value={trainNr} onChange={(e) => setTrainNr(e.target.value)}>
+                    {(trainNames.length ? trainNames : ["1"]).map((n) => (
+                      <option key={n}>{n}</option>
+                    ))}
+                  </select>
+                ) : null,
+            },
+            resultGroup,
+          ]}
+        />
+        <ReportColumn
+          title={t("menus.electrolyzer")}
+          values={el.values}
+          onChange={el.onChange}
+          onDisplay={() => setShown({ title: t("menus.electrolyzer"), mode: displayModeFor(el.values), key: "electrolyzer" })}
+          groups={[
+            usedTableElGroup,
+            {
+              legend: t("menus.calculationFor"),
+              name: "calc",
+              options: [
+                { value: "individual", label: t("menus.individualEl") },
+                { value: "several", label: t("menus.severalElectrolyzers") },
+                { value: "all", label: t("menus.allElectrolyzers") },
+              ],
+              extra: (v) =>
+                v === "individual" ? (
+                  <select className="access-inset-field mt-1 w-full" value={elNr} onChange={(e) => setElNr(e.target.value)}>
+                    {(elNames.length ? elNames : ["1G"]).map((n) => (
+                      <option key={n}>{n}</option>
+                    ))}
+                  </select>
+                ) : v === "several" ? (
+                  <input
+                    className="access-inset-field mt-1 w-full"
+                    placeholder="1G, 2G, ..."
+                    value={severalEl}
+                    onChange={(e) => setSeveralEl(e.target.value)}
+                  />
+                ) : null,
+            },
+            resultGroup,
+          ]}
+        />
+        <ReportColumn
+          title={t("menus.groups")}
+          values={group.values}
+          onChange={group.onChange}
+          onDisplay={() => setShown({ title: t("menus.groups"), mode: displayModeFor(group.values), key: "groups" })}
+          groups={[
+            usedTableGroupsGroup,
+            {
+              legend: t("menus.calculationFor"),
+              name: "calc",
+              options: [
+                { value: "individual", label: t("menus.individualGroup") },
+                { value: "several", label: t("menus.severalGroups") },
+                { value: "all", label: t("menus.allGroups") },
+              ],
+              extra: (v) =>
+                v === "individual" ? (
+                  <input className="access-inset-field mt-1 w-16" value={groupNr} onChange={(e) => setGroupNr(e.target.value)} />
+                ) : v === "several" ? (
+                  <input
+                    className="access-inset-field mt-1 w-full"
+                    placeholder="1, 2, ..."
+                    value={severalGroups}
+                    onChange={(e) => setSeveralGroups(e.target.value)}
+                  />
+                ) : null,
+            },
+            resultGroup,
+          ]}
+        />
+        <ReportColumn
+          title={t("menus.elements")}
+          values={element.values}
+          onChange={element.onChange}
+          onDisplay={() => setShown({ title: t("menus.elements"), mode: displayModeFor(element.values), key: "elements" })}
+          groups={[
+            usedTableElementsGroup,
+            {
+              legend: t("menus.calculationFor"),
+              name: "calc",
+              options: [
+                { value: "individual", label: t("menus.individualElement") },
+                { value: "several", label: t("menus.severalElements") },
+                { value: "all", label: t("menus.allElements") },
+              ],
+              extra: (v) =>
+                v === "individual" ? (
+                  <select className="access-inset-field mt-1 w-full" value={elNr} onChange={(e) => setElNr(e.target.value)}>
+                    {(elNames.length ? elNames : ["1G"]).map((n) => (
+                      <option key={n}>{n}</option>
+                    ))}
+                  </select>
+                ) : v === "several" ? (
+                  <input
+                    className="access-inset-field mt-1 w-full"
+                    placeholder="1G, 2G, ..."
+                    value={severalElements}
+                    onChange={(e) => setSeveralElements(e.target.value)}
+                  />
+                ) : null,
+            },
+            resultGroup,
+          ]}
+        />
       </div>
       {shown ? <ResultsPane mode={shown.mode} title={shown.title} rows={rows} xKey="label" yKey="value" yLabel="Un [V]" /> : null}
-    </AccessHub>
+    </div>
   );
 }
 
@@ -947,10 +1106,8 @@ function VoltagePageInner() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
   const form = searchParams.get("form") || searchParams.get("tab") || undefined;
-  const scope = searchParams.get("scope") || "plant";
 
-  if (!form) return <VoltageMenu />;
-  if (form === "tables") return <UnTablesForm scope={scope} />;
+  if (!form || form === "tables") return <StandardizedVoltageBoard />;
 
   const caption =
     form === "input-electrolyzer" || form === "normalizations"

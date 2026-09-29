@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AccessFields, accessPayload, valuesFromRecord } from "@/components/ui/access-fields";
 import type { FieldDef } from "@/components/ui/resource-form";
@@ -30,6 +30,7 @@ export function AccessWorkspace<T extends object>({
   exportPrefix,
   exportParams,
   filenameBase,
+  onLookup,
   confirmDelete,
   submitting,
   framed = true,
@@ -56,6 +57,7 @@ export function AccessWorkspace<T extends object>({
   exportPrefix?: string;
   exportParams?: Record<string, unknown>;
   filenameBase?: string;
+  onLookup?: (name: string, value: unknown, values: Record<string, unknown>) => Promise<T | null>;
   confirmDelete?: (row: T) => string;
   submitting?: boolean;
   framed?: boolean;
@@ -65,8 +67,19 @@ export function AccessWorkspace<T extends object>({
 }) {
   const { t } = useI18n();
   const router = useRouter();
-  const rows = records ?? [];
-  const readId = getId ?? ((row: T) => (row as Record<string, unknown>)[idField as string] as string | number);
+  const readId = useCallback(
+    (row: T) => (getId ? getId(row) : ((row as Record<string, unknown>)[idField as string] as string | number)),
+    [getId, idField]
+  );
+  const [extra, setExtra] = useState<T | null>(null);
+  const lookupSeq = useRef(0);
+  const skipUrlSync = useRef(false);
+  const baseRows = records ?? [];
+  const rows = useMemo(() => {
+    if (!extra) return baseRows;
+    const extraId = String(readId(extra));
+    return [extra, ...baseRows.filter((row) => String(readId(row)) !== extraId)];
+  }, [extra, baseRows, readId]);
   const paramName = recordParam ?? String(idField);
   const [view, setView] = useState<"form" | "datasheet">("form");
   const [index, setIndex] = useState(0);
@@ -77,6 +90,10 @@ export function AccessWorkspace<T extends object>({
   const current = !isNew && rows[index] ? rows[index] : null;
 
   useEffect(() => {
+    if (skipUrlSync.current) {
+      skipUrlSync.current = false;
+      return;
+    }
     const wanted = new URLSearchParams(window.location.search).get(paramName);
     if (!wanted || rows.length === 0) return;
     const found = rows.findIndex((row) => {
@@ -120,6 +137,23 @@ export function AccessWorkspace<T extends object>({
       Object.values(row as Record<string, unknown>).some((v) => v != null && String(v).toLowerCase().includes(needle))
     );
     if (found >= 0) go(found);
+  }
+
+  async function handleCommit(name: string, value: unknown) {
+    if (!onLookup) return;
+    if (!String(value ?? "").trim()) return;
+    const seq = ++lookupSeq.current;
+    try {
+      const found = await onLookup(name, value, { ...values, [name]: value });
+      if (seq !== lookupSeq.current || !found) return;
+      skipUrlSync.current = true;
+      setValues(valuesFromRecord(fields, found));
+      setExtra(found);
+      setIsNew(false);
+      setIndex(0);
+    } catch {
+      // Keep the value the user typed when the lookup is unavailable.
+    }
   }
 
   function handleSave() {
@@ -167,6 +201,7 @@ export function AccessWorkspace<T extends object>({
             fields={fields}
             values={values}
             onChange={(name, value) => setValues((v) => ({ ...v, [name]: value }))}
+            onCommit={onLookup ? handleCommit : undefined}
             readOnly={!canEdit}
           />
           {current && related ? related(current) : null}
@@ -184,6 +219,7 @@ export function AccessWorkspace<T extends object>({
           onNext={() => go(index + 1)}
           onLast={() => go(rows.length - 1)}
           onNew={() => {
+            setExtra(null);
             setIsNew(true);
             setValues(valuesFromRecord(fields, null));
           }}

@@ -38,7 +38,7 @@ export function SessionControls({ classic }: { classic?: boolean }) {
         {resolvedTheme === "dark" ? <Sun size={12} /> : <Moon size={12} />}
       </button>
       {user && (
-        <span className={cn("ms-1 max-w-[140px] truncate text-[11px]", classic ? "text-black" : "text-[var(--win-text)]")}>
+        <span className={cn("app-topbar-user ms-1 max-w-[140px] truncate text-[11px]", classic ? "text-black" : "text-[var(--win-text)]")}>
           {user.full_name || user.username}
         </span>
       )}

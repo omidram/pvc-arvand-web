@@ -1,7 +1,7 @@
 """Browse every archived Access table (the original 126 plant tables)."""
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -16,6 +16,8 @@ from ..access_archive import (
 )
 from ..auth import LEVEL_RANK, get_current_user, user_permission_map
 from ..database import get_db
+from ..excel_import import parse_sheet, read_xlsx
+from ..import_jobs import spawn_import
 from ..export_utils import export_pdf, export_xlsx
 
 router = APIRouter(prefix="/db-tables", tags=["database-tables"])
@@ -155,3 +157,38 @@ def export_table_pdf(
     _, rows, _ = query_archive_rows(slug, q=q, column=column, value=value, skip=0, limit=2000)
     fields = meta["columns"]
     return export_pdf(rows, fields, meta["name"][:80] or slug)
+
+
+@router.post("/{slug}/import.xlsx", include_in_schema=False)
+async def import_table_xlsx(
+    slug: str,
+    file: UploadFile = File(...),
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    meta = _require_table(slug, user, db, write=True)
+    content = await read_xlsx(file)
+    columns = [col for col in meta["columns"] if col not in {"_id", "_rowid"}]
+
+    def work(_db: Session, progress):
+        mapping, data_rows, arranged, ignored = parse_sheet(content, columns)
+        created = 0
+        total = len(data_rows)
+        if progress:
+            progress(0, total)
+        for done, row in enumerate(data_rows, start=1):
+            values = {}
+            for index, field in mapping.items():
+                if index >= len(row) or row[index] is None or row[index] == "":
+                    continue
+                values[field] = row[index]
+            if values:
+                insert_archive_row(slug, values)
+                created += 1
+            if progress and (done == total or done % 25 == 0):
+                progress(done, total)
+        if created == 0:
+            raise HTTPException(status_code=400, detail="No rows were imported.")
+        return {"ok": True, "created": created, "updated": 0, "skipped": 0, "arranged": arranged, "ignored": ignored}
+
+    return spawn_import(work)

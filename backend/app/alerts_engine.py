@@ -150,29 +150,67 @@ def _upsert_alert(db: Session, payload: dict[str, Any]) -> models.AlertEvent:
 
 
 def _latest_voltage_rows(db: Session) -> list[models.VoltageReading]:
-    """Latest reading per electrolyzer+position (by date then time)."""
-    rows = (
-        db.query(models.VoltageReading)
-        .filter(models.VoltageReading.voltage.isnot(None))
-        .order_by(
-            models.VoltageReading.electrolyzer.asc(),
-            models.VoltageReading.position.asc(),
-            models.VoltageReading.date.desc(),
-            models.VoltageReading.time.desc(),
-            models.VoltageReading.id.desc(),
+    """Latest reading per electrolyzer+position, without loading the full history."""
+    from sqlalchemy import func
+
+    ranked = (
+        db.query(
+            models.VoltageReading.id.label("id"),
+            func.row_number()
+            .over(
+                partition_by=(models.VoltageReading.electrolyzer, models.VoltageReading.position),
+                order_by=(
+                    models.VoltageReading.date.desc(),
+                    models.VoltageReading.time.desc(),
+                    models.VoltageReading.id.desc(),
+                ),
+            )
+            .label("rn"),
         )
+        .filter(
+            models.VoltageReading.voltage.isnot(None),
+            models.VoltageReading.electrolyzer.isnot(None),
+            models.VoltageReading.position.isnot(None),
+            models.VoltageReading.position != "",
+        )
+        .subquery()
+    )
+    return (
+        db.query(models.VoltageReading)
+        .join(ranked, models.VoltageReading.id == ranked.c.id)
+        .filter(ranked.c.rn == 1)
         .all()
     )
-    latest: dict[tuple[str, str], models.VoltageReading] = {}
-    for row in rows:
-        el = (row.electrolyzer or "").strip().upper()
-        pos = (row.position or "").strip()
-        if not el or not pos:
-            continue
-        key = (el, pos)
-        if key not in latest:
-            latest[key] = row
-    return list(latest.values())
+
+
+def _latest_normalizations(db: Session) -> dict[tuple[str, str], models.ElectrolyzerNormalization]:
+    """Latest total-voltage batch per electrolyzer (history stays in the table)."""
+    from sqlalchemy import func
+
+    ranked = (
+        db.query(
+            models.ElectrolyzerNormalization.id.label("id"),
+            func.row_number()
+            .over(
+                partition_by=models.ElectrolyzerNormalization.electrolyzer,
+                order_by=(
+                    models.ElectrolyzerNormalization.date.desc(),
+                    models.ElectrolyzerNormalization.time.desc(),
+                    models.ElectrolyzerNormalization.id.desc(),
+                ),
+            )
+            .label("rn"),
+        )
+        .filter(models.ElectrolyzerNormalization.total_voltage.isnot(None))
+        .subquery()
+    )
+    rows = (
+        db.query(models.ElectrolyzerNormalization)
+        .join(ranked, models.ElectrolyzerNormalization.id == ranked.c.id)
+        .filter(ranked.c.rn == 1)
+        .all()
+    )
+    return {((row.electrolyzer or "").upper(), row.time or ""): row for row in rows}
 
 
 def evaluate_voltage_rules(db: Session, rules: list[models.AlertRule] | None = None) -> int:
@@ -186,10 +224,7 @@ def evaluate_voltage_rules(db: Session, rules: list[models.AlertRule] | None = N
 
     created = 0
     readings = _latest_voltage_rows(db)
-    norms = {
-        ((n.electrolyzer or "").upper(), n.time or ""): n
-        for n in db.query(models.ElectrolyzerNormalization).all()
-    }
+    norms = _latest_normalizations(db)
 
     for rule in rules:
         el_filter = (rule.electrolyzer or "").strip().upper() or None

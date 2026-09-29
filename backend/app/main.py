@@ -7,12 +7,13 @@ from sqlalchemy import inspect, text
 
 from . import alerts_engine, audit, backup_scheduler, models, voltage_sync_scheduler
 from .audit_middleware import AuditMiddleware
-from .auth import require_form_access, seed_default_admin
+from .auth import require_any_form_access, require_form_access, seed_default_admin
 from .config import settings
 from .database import Base, SessionLocal, engine
 from .paths import static_dir
 from .routers import (
     analyses,
+    arrangement_board as arrangement_board_router_module,
     auth as auth_router_module,
     backup as backup_router_module,
     components,
@@ -22,9 +23,12 @@ from .routers import (
     db_tables,
     directory as directory_router_module,
     elements,
+    imports as imports_router_module,
     inspections,
     logs as logs_router_module,
+    maintenance_reports as maintenance_reports_router_module,
     monitoring as monitoring_router_module,
+    relations as relations_router_module,
     remarks,
     reports,
     roles as roles_router_module,
@@ -148,6 +152,7 @@ def _api(router, **kwargs):
 
 # --- Auth & Users (auth is public; users/roles/logs are admin-only in their routers) ---
 _api(auth_router_module.router)
+_api(imports_router_module.router)
 _api(users_router_module.router)
 _api(roles_router_module.router)
 _api(logs_router_module.router)
@@ -159,6 +164,7 @@ _api(config_router.full_plants_router, dependencies=_perm("settings"))
 _api(config_router.rectifiers_router, dependencies=_perm("settings"))
 _api(config_router.transformers_router, dependencies=_perm("settings"))
 _api(config_router.arrangements_router, dependencies=_perm("settings"))
+_api(arrangement_board_router_module.router)
 _api(config_router.reserve_positions_router, dependencies=_perm("settings"))
 _api(config_router.correction_factors_router, dependencies=_perm("settings"))
 _api(config_router.electrode_areas_router, dependencies=_perm("settings"))
@@ -170,7 +176,24 @@ _api(elements.router, dependencies=_perm("elements"))
 _api(elements.group_definitions_router, dependencies=_perm("settings"))
 _api(elements.inspection_reasons_router, dependencies=_perm("settings"))
 _api(elements.inspection_findings_router, dependencies=_perm("settings"))
-_api(elements.cell_components_router, dependencies=_perm("settings"))
+_api(elements.cell_components_router, dependencies=_perm("elements"))
+_api(
+    relations_router_module.router,
+    dependencies=[
+        Depends(
+            require_any_form_access(
+                "elements",
+                "anodes",
+                "cathodes",
+                "membranes",
+                "inspections",
+                "shutdowns",
+                "voltage",
+                "settings",
+            )
+        )
+    ],
+)
 
 # --- Anodes / cathodes / membranes ---
 _api(components.anodes_router, dependencies=_perm("anodes"))
@@ -183,6 +206,10 @@ _api(components.cathode_recoating_router, dependencies=_perm("cathodes"))
 _api(components.cathode_coating_checks_router, dependencies=_perm("cathodes"))
 _api(components.membranes_router, dependencies=_perm("membranes"))
 _api(components.membrane_maintenance_router, dependencies=_perm("membranes"))
+_api(
+    maintenance_reports_router_module.router,
+    dependencies=[Depends(require_any_form_access("anodes", "cathodes", "membranes"))],
+)
 
 # --- TAFKIK electrode segregation (shared anode/cathode workshop decisions) ---
 _api(segregation.router, dependencies=_perm("anodes"))

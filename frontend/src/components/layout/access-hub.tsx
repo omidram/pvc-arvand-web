@@ -3,6 +3,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { useI18n } from "@/lib/i18n/context";
+import { useCalendar } from "@/lib/calendar/context";
+import { DateInput } from "@/components/ui/date-input";
 
 export function AccessHub({
   title,
@@ -21,6 +23,7 @@ export function AccessHub({
 }) {
   const { t } = useI18n();
   const back = backLabel || t("common.mainMenu");
+  useCalendar();
   return (
     <div className="access-hub" dir="ltr">
       <div className="access-hub-head">
@@ -112,11 +115,11 @@ export function AccessPeriod({
       <span className="font-bold">{t("menus.timePeriodFrom")}</span>
       <label className="inline-flex items-center gap-1">
         {t("menus.from")}
-        <input type="date" className="access-inset-field w-[118px]" value={from} onChange={(e) => onFrom(e.target.value)} />
+        <DateInput className="access-inset-field w-[118px]" value={from} onChange={(e) => onFrom(e.target.value)} />
       </label>
       <label className="inline-flex items-center gap-1">
         {t("menus.till")}
-        <input type="date" className="access-inset-field w-[118px]" value={till} onChange={(e) => onTill(e.target.value)} />
+        <DateInput className="access-inset-field w-[118px]" value={till} onChange={(e) => onTill(e.target.value)} />
       </label>
     </div>
   );

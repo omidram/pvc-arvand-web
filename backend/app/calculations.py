@@ -161,14 +161,42 @@ def current_efficiency(
     )
 
 
+def _as_date(value):
+    from datetime import date as date_cls
+    from datetime import datetime as datetime_cls
+
+    if value is None:
+        return None
+    if isinstance(value, datetime_cls):
+        value = value.date()
+    if isinstance(value, date_cls):
+        if value.year < 1990 or value.year > 2045:
+            return None
+        return value
+    return None
+
+
 def days_on_line(commissioning_date, decommissioning_date, reference_today=None) -> int | None:
     from datetime import date as date_cls
 
-    if not commissioning_date:
+    start = _as_date(commissioning_date)
+    if not start:
         return None
-    end = decommissioning_date or reference_today or date_cls.today()
-    if hasattr(commissioning_date, "date"):
-        commissioning_date = commissioning_date.date()
-    if hasattr(end, "date"):
-        end = end.date()
-    return (end - commissioning_date).days
+    end = _as_date(decommissioning_date) or reference_today or date_cls.today()
+    return (end - start).days
+
+
+def installation_dol(assembly_date, commissioning_date, disassembly_date, decommissioning_date=None, reference_today=None) -> int | None:
+    """Days on line from installation (or assembly, if it was never dated separately) until dismantle.
+
+    End is the dismantle date, otherwise the shutdown date, otherwise today while the cell is still in.
+    """
+    from datetime import date as date_cls
+
+    start = _as_date(commissioning_date) or _as_date(assembly_date)
+    if not start:
+        return None
+    end = _as_date(disassembly_date) or _as_date(decommissioning_date) or reference_today or date_cls.today()
+    if end < start:
+        return 0
+    return (end - start).days
