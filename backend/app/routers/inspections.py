@@ -11,7 +11,7 @@ router = build_crud_router(
     write_schema=schemas.InspectionReportBase,
     prefix="/inspections",
     tags=["inspections"],
-    search_fields=["element_nr", "inspector_name"],
+    search_fields=["element_nr", "inspector_name", "anode_nr", "cathode_nr", "membrane_nr", "client", "electrolyzer"],
     default_order="inspection_date",
 )
 

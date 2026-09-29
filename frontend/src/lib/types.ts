@@ -179,6 +179,31 @@ export interface InspectionReport {
   inspector_name: string | null;
   inspection_date: string | null;
   general_remarks: string | null;
+  client: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  membrane_type: string | null;
+  electrolyzer: string | null;
+  position: string | null;
+  operation_days: string | null;
+  electrode_nr_anode: string | null;
+  electrode_nr_cathode: string | null;
+  deformation_pan: string | null;
+  deformation_electrode: string | null;
+  coloured_area: string | null;
+  coloured_electrode: string | null;
+  coloured_pan: string | null;
+  deposits: string | null;
+  leakage_pan: string | null;
+  leakage_web: string | null;
+  leakage_corner: string | null;
+  leakage_outlet: string | null;
+  leakage_inlet: string | null;
+  signature: string | null;
+  sample_cathode_note: string | null;
+  sample_anode_note: string | null;
+  sample_membrane_note: string | null;
 }
 
 export interface InspectionHalfshellGrid {
@@ -720,6 +745,8 @@ export interface MonitoringCellStatus {
   element_nr: string | null;
   anode_nr: string | null;
   cathode_nr: string | null;
+  membrane_nr?: string | null;
+  membrane_type?: string | null;
   voltage: number | null;
   standardized_voltage: number | null;
   reading_date: string | null;

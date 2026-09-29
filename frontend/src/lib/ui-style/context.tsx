@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { applyThemeToDocument, loadStoredTheme, resolvePresetColors } from "@/lib/theme/presets";
 
 export type UiStyle = "access" | "modern";
 
@@ -28,6 +29,13 @@ function readStored(): UiStyle {
 function applyToDocument(style: UiStyle) {
   if (typeof document === "undefined") return;
   document.documentElement.setAttribute("data-ui", style);
+  try {
+    const stored = loadStoredTheme();
+    const systemDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches ?? false;
+    applyThemeToDocument(resolvePresetColors(stored.preset, stored.colors, systemDark), stored.fontSize);
+  } catch {
+    /* theme context will apply on mount */
+  }
 }
 
 export function UiStyleProvider({ children }: { children: React.ReactNode }) {

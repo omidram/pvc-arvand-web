@@ -1,7 +1,7 @@
 """Evaluate plant alert rules against voltage readings and anode/cathode status."""
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -532,15 +532,35 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     }
 
 
-def build_snapshot(db: Session) -> dict[str, Any]:
+def _norm_pos(value) -> str:
+    text = "" if value is None else str(value).strip()
+    if not text:
+        return ""
+    try:
+        return str(int(float(text)))
+    except (TypeError, ValueError):
+        return text
+
+
+def _prefer_element(current: models.Element, candidate: models.Element) -> models.Element:
+    def rank(row: models.Element):
+        active = 1 if row.disassembly_date is None else 0
+        stamp = row.commissioning_date or row.assembly_date or date.min
+        return (active, stamp, row.id or 0)
+
+    return candidate if rank(candidate) >= rank(current) else current
+
+
+def build_snapshot(db: Session, *, evaluate: bool = True) -> dict[str, Any]:
     ensure_default_rules(db)
     # Keep alert inbox severities aligned with current thresholds / readings
-    try:
-        evaluate_voltage_rules(db)
-        evaluate_component_rules(db)
-        db.commit()
-    except Exception:
-        db.rollback()
+    if evaluate:
+        try:
+            evaluate_voltage_rules(db)
+            evaluate_component_rules(db)
+            db.commit()
+        except Exception:
+            db.rollback()
 
     rules = db.query(models.AlertRule).filter(models.AlertRule.enabled.is_(True)).all()
     voltage_rules = [r for r in rules if r.metric in {"cell_voltage", "standardized_voltage"}]
@@ -554,14 +574,16 @@ def build_snapshot(db: Session) -> dict[str, Any]:
     )
     el_map: dict[tuple[str, str], models.Element] = {}
     for e in elements:
-        key = ((e.electrolyzer or "").strip().upper(), (e.position or "").strip())
-        if key[0] and key[1]:
-            el_map[key] = e
+        key = ((e.electrolyzer or "").strip().upper(), _norm_pos(e.position))
+        if not key[0] or not key[1]:
+            continue
+        prev = el_map.get(key)
+        el_map[key] = e if prev is None else _prefer_element(prev, e)
 
     by_el: dict[str, list[dict[str, Any]]] = {}
     for row in readings:
         el = (row.electrolyzer or "").strip().upper()
-        pos = (row.position or "").strip()
+        pos = _norm_pos(row.position)
         sev, thr = cell_severity(row.voltage, voltage_rules, "cell_voltage")
         if row.standardized_voltage is not None:
             sev2, thr2 = cell_severity(row.standardized_voltage, voltage_rules, "standardized_voltage")
@@ -575,6 +597,8 @@ def build_snapshot(db: Session) -> dict[str, Any]:
             "element_nr": row.element_nr or (asm.element_nr if asm else None),
             "anode_nr": asm.anode_nr if asm else None,
             "cathode_nr": asm.cathode_nr if asm else None,
+            "membrane_nr": asm.membrane_nr if asm else None,
+            "membrane_type": asm.membrane_type if asm else None,
             "voltage": row.voltage,
             "standardized_voltage": row.standardized_voltage,
             "reading_date": _sanitize_reading_dt(row.date),

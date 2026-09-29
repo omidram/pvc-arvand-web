@@ -26,12 +26,19 @@ const THEME_INIT_SCRIPT = `
     var classic = {navy:"#0a246a",face:"#d4d0c8",panel:"#ece9e2",text:"#000000",muted:"#3f3f3f",input:"#ffffff",danger:"#a10000",border:"#808080"};
     var dark = {navy:"#2f5aa8",face:"#3a3a3a",panel:"#232323",text:"#eae8e3",muted:"#b7b4ac",input:"#262626",danger:"#ff6b60",border:"#1a1a1a"};
     var modernLight = {navy:"#1d4ed8",face:"#ffffff",panel:"#f1f5f9",text:"#0f172a",muted:"#64748b",input:"#ffffff",danger:"#dc2626",border:"#e2e8f0"};
+    var modernDark = {navy:"#3b82f6",face:"#0f172a",panel:"#111827",text:"#f8fafc",muted:"#94a3b8",input:"#1e293b",danger:"#f87171",border:"#334155"};
     var presets = {classic:classic,dark:dark};
     var colors = theme && theme.colors ? theme.colors : null;
-    if (preset === "dark") colors = dark;
-    else if (preset === "system") colors = systemDark ? dark : (ui === "modern" ? modernLight : classic);
+    if (preset === "dark") colors = ui === "modern" ? modernDark : dark;
+    else if (preset === "system") colors = systemDark ? (ui === "modern" ? modernDark : dark) : (ui === "modern" ? modernLight : classic);
     else if (preset && presets[preset]) colors = presets[preset];
     else if (!colors) colors = ui === "modern" ? modernLight : classic;
+    if (ui === "modern" && colors && colors.face) {
+      var probe = colors.face.replace("#","");
+      if (probe.length === 3) probe = probe[0]+probe[0]+probe[1]+probe[1]+probe[2]+probe[2];
+      var pr = parseInt(probe.slice(0,2),16), pg = parseInt(probe.slice(2,4),16), pb = parseInt(probe.slice(4,6),16);
+      if ((pr*299+pg*587+pb*114)/1000 < 145) colors = modernDark;
+    }
     var face = colors.face || classic.face;
     var rgb = face.replace("#","");
     if (rgb.length === 3) rgb = rgb[0]+rgb[0]+rgb[1]+rgb[1]+rgb[2]+rgb[2];

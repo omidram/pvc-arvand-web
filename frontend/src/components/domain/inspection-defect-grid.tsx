@@ -29,9 +29,13 @@ type Props = {
   onChange: (next: Record<string, unknown>) => void;
   disabled?: boolean;
   title?: string;
+  /** Hide the colour key. The paper form shows that hint once. */
+  legend?: boolean;
+  /** Smaller cells for the printed CZ-03 sheet. */
+  dense?: boolean;
 };
 
-export function InspectionDefectGrid({ value, onChange, disabled, title }: Props) {
+export function InspectionDefectGrid({ value, onChange, disabled, title, legend = true, dense = false }: Props) {
   const map = useMemo(() => {
     const out: Record<string, string> = {};
     for (const [k, v] of Object.entries(value || {})) {
@@ -53,16 +57,20 @@ export function InspectionDefectGrid({ value, onChange, disabled, title }: Props
 
   const filled = Object.keys(map).length;
 
+  const cell = dense ? "flex h-[14px] w-[15px] items-center justify-center border border-[#111] bg-white text-[8px] font-bold uppercase text-[#111] disabled:cursor-default" : "flex h-[16px] w-[18px] items-center justify-center border border-[#a0a0a0] bg-white text-[8px] font-bold uppercase disabled:cursor-default";
+  const head = dense ? "w-[15px] p-0 text-center text-[9px] font-bold text-[#111]" : "w-[18px] p-0.5 text-center font-normal text-[var(--win-muted)]";
+  const rowHead = dense ? "p-0 text-center text-[9px] font-bold text-[#111]" : "p-0.5 text-center font-bold text-[var(--win-muted)]";
+
   return (
-    <div className="space-y-1">
+    <div className={legend ? "space-y-1" : undefined}>
       {title ? <div className="text-[11px] font-bold">{title}</div> : null}
       <div className="overflow-x-auto">
         <table className="border-collapse text-[9px] leading-none">
           <thead>
             <tr>
-              <th className="w-4 p-0.5 text-[var(--win-muted)]" />
+              <th className={dense ? "w-4 p-0" : "w-4 p-0.5 text-[var(--win-muted)]"} />
               {COLS.map((c) => (
-                <th key={c} className="w-[18px] p-0.5 text-center font-normal text-[var(--win-muted)]">
+                <th key={c} className={head}>
                   {c}
                 </th>
               ))}
@@ -71,7 +79,7 @@ export function InspectionDefectGrid({ value, onChange, disabled, title }: Props
           <tbody>
             {ROWS.map((row) => (
               <tr key={row}>
-                <td className="p-0.5 text-center font-bold text-[var(--win-muted)]">{row}</td>
+                <td className={rowHead}>{row}</td>
                 {COLS.map((col) => {
                   const key = cellKey(row, col);
                   const code = map[key] || "";
@@ -82,7 +90,7 @@ export function InspectionDefectGrid({ value, onChange, disabled, title }: Props
                         title={`${key}${code ? `: ${code}` : ""} — click to cycle w / pm / vh / T`}
                         disabled={disabled}
                         onClick={() => setCell(key)}
-                        className="flex h-[16px] w-[18px] items-center justify-center border border-[#a0a0a0] bg-white text-[8px] font-bold uppercase disabled:cursor-default"
+                        className={cell}
                         style={code ? { background: CODE_COLORS[code] || "#dfe6e9" } : undefined}
                       >
                         {code}
@@ -95,6 +103,7 @@ export function InspectionDefectGrid({ value, onChange, disabled, title }: Props
           </tbody>
         </table>
       </div>
+      {legend ? (
       <div className="flex flex-wrap items-center gap-2 text-[10px] text-[var(--win-muted)]">
         <span>CZ-03 codes:</span>
         <span className="inline-flex items-center gap-1">
@@ -111,6 +120,7 @@ export function InspectionDefectGrid({ value, onChange, disabled, title }: Props
         </span>
         <span className="ms-auto">{filled} marked</span>
       </div>
+      ) : null}
     </div>
   );
 }

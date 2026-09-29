@@ -30,7 +30,7 @@ export function Modal({
   return createPortal(
     <div className="ui-modal-backdrop fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-10">
       <div
-        className={`ui-modal w-full ${wide ? "max-w-3xl" : "max-w-lg"} border-2 border-[var(--win-face)] [border-style:outset] bg-[var(--win-face)] shadow-2xl`}
+        className={`ui-modal w-full ${wide ? "max-w-5xl" : "max-w-lg"} border-2 border-[var(--win-face)] [border-style:outset] bg-[var(--win-face)] shadow-2xl`}
       >
         <div className="ui-modal-header flex items-center justify-between gap-3 bg-gradient-to-r from-[var(--win-navy)] to-[var(--win-navy-mid)] px-3 py-1.5">
           <h3 className="truncate text-sm font-bold text-white">{title}</h3>

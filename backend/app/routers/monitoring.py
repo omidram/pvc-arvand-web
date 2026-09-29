@@ -1,14 +1,18 @@
 """Plant monitoring snapshot + configurable alert rules / inbox."""
 import json
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import text
+from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 
 from .. import alerts_engine, models, schemas
+from ..calculations import installation_dol
 from ..database import get_db
+from ..export_utils import export_pdf, export_xlsx
+from ..plant_topology import arrangement_name, rack_of, train_of
+from ..warehouse import compact_nr
 
 router = APIRouter(prefix="/monitoring", tags=["monitoring"])
 
@@ -45,6 +49,229 @@ def import_progress():
         "total": total,
         "names": sorted(names),
     }
+
+
+def _export_date(value):
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    text = str(value).strip()
+    return text[:10] if text else None
+
+
+def _monitoring_export_pack(
+    db: Session,
+    *,
+    scope: str,
+    train: str | None,
+    electrolyzer: str | None,
+    position: str | None,
+    status: str | None,
+    span: str,
+) -> tuple[list[dict], list[str], str]:
+    kind = (scope or "plant").strip().lower()
+    el = (electrolyzer or "").strip().upper() or None
+    train_id = (train or "").strip() or (train_of(el) if el else None)
+
+    if kind == "rules":
+        alerts_engine.ensure_default_rules(db)
+        rows = [
+            {
+                "name": row.name,
+                "metric": row.metric,
+                "operator": row.operator,
+                "warning_threshold": row.warning_threshold,
+                "danger_threshold": row.danger_threshold,
+                "electrolyzer": row.electrolyzer,
+                "enabled": row.enabled,
+                "notify": row.notify,
+                "description": row.description,
+            }
+            for row in db.query(models.AlertRule).order_by(models.AlertRule.id.asc()).all()
+        ]
+        return rows, list(rows[0].keys()) if rows else ["name"], "monitoring-thresholds"
+
+    if kind == "alerts":
+        query = db.query(models.AlertEvent)
+        if status and status != "all":
+            query = query.filter(models.AlertEvent.status == status)
+        items = query.order_by(models.AlertEvent.created_at.desc()).limit(5000).all()
+        rows = [
+            {
+                "id": row.id,
+                "severity": row.severity,
+                "status": row.status,
+                "title": row.title,
+                "message": row.message,
+                "electrolyzer": row.electrolyzer,
+                "position": row.position,
+                "element_nr": row.element_nr,
+                "component_ref": row.component_ref,
+                "value": row.value,
+                "threshold": row.threshold,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+            }
+            for row in items
+        ]
+        fields = [
+            "id",
+            "severity",
+            "status",
+            "title",
+            "message",
+            "electrolyzer",
+            "position",
+            "element_nr",
+            "component_ref",
+            "value",
+            "threshold",
+            "created_at",
+        ]
+        return rows, fields, f"monitoring-alerts-{status or 'all'}"
+
+    if kind == "history":
+        if not el:
+            raise HTTPException(status_code=400, detail="electrolyzer is required")
+        history = voltage_history(el, position, span, db)
+        rows = [
+            {"date": point.get("date"), "time": point.get("time"), "voltage": point.get("voltage"), "series": "cell"}
+            for point in history.get("points") or []
+        ]
+        for point in history.get("rectifier_points") or []:
+            rows.append(
+                {"date": point.get("date"), "time": point.get("time"), "voltage": point.get("voltage"), "series": "rectifier"}
+            )
+        title = str(history.get("title") or el).replace(" ", "")
+        return rows, ["date", "time", "voltage", "series"], f"monitoring-history-{title}"
+
+    data = alerts_engine.build_snapshot(db, evaluate=False)
+    blocks = data.get("electrolyzers") or []
+    if kind == "train" and train_id in {"1", "2"}:
+        blocks = [block for block in blocks if train_of(block.get("electrolyzer") or "") == train_id]
+    if kind in {"electrolyzer", "cells"} and el:
+        blocks = [block for block in blocks if str(block.get("electrolyzer") or "").upper() == el]
+
+    if kind == "issues":
+        issues = data.get("component_issues") or []
+        if train_id in {"1", "2"}:
+            issues = [row for row in issues if train_of(row.get("electrolyzer") or "") == train_id]
+        if el:
+            issues = [row for row in issues if str(row.get("electrolyzer") or "").upper() == el]
+        rows = [
+            {
+                "kind": row.get("kind"),
+                "severity": row.get("severity"),
+                "electrolyzer": row.get("electrolyzer"),
+                "position": row.get("position"),
+                "element_nr": row.get("element_nr"),
+                "component_ref": row.get("component_ref"),
+                "detail": row.get("detail"),
+            }
+            for row in issues
+        ]
+        return rows, ["kind", "severity", "electrolyzer", "position", "element_nr", "component_ref", "detail"], "monitoring-issues"
+
+    if kind in {"electrolyzer", "cells"}:
+        rows = []
+        for block in blocks:
+            for cell in block.get("cells") or []:
+                rows.append(
+                    {
+                        "electrolyzer": cell.get("electrolyzer") or block.get("electrolyzer"),
+                        "position": cell.get("position"),
+                        "voltage": cell.get("voltage"),
+                        "severity": cell.get("severity"),
+                        "element_nr": cell.get("element_nr"),
+                        "anode_nr": cell.get("anode_nr"),
+                        "cathode_nr": cell.get("cathode_nr"),
+                        "membrane_nr": cell.get("membrane_nr"),
+                        "membrane_type": cell.get("membrane_type"),
+                        "reading_date": _export_date(cell.get("reading_date")),
+                        "reading_time": cell.get("reading_time"),
+                    }
+                )
+        fields = [
+            "electrolyzer",
+            "position",
+            "voltage",
+            "severity",
+            "element_nr",
+            "anode_nr",
+            "cathode_nr",
+            "membrane_nr",
+            "membrane_type",
+            "reading_date",
+            "reading_time",
+        ]
+        label = el or train_id or "all"
+        return rows, fields, f"monitoring-cells-{label}"
+
+    rows = [
+        {
+            "electrolyzer": block.get("electrolyzer"),
+            "train": train_of(block.get("electrolyzer") or "") or "",
+            "cell_count": block.get("cell_count"),
+            "ok_count": block.get("ok_count"),
+            "warning_count": block.get("warning_count"),
+            "danger_count": block.get("danger_count"),
+            "avg_voltage": block.get("avg_voltage"),
+            "max_voltage": block.get("max_voltage"),
+            "total_voltage": block.get("total_voltage"),
+            "reading_date": _export_date(block.get("reading_date")),
+            "reading_time": block.get("reading_time"),
+        }
+        for block in blocks
+    ]
+    fields = [
+        "electrolyzer",
+        "train",
+        "cell_count",
+        "ok_count",
+        "warning_count",
+        "danger_count",
+        "avg_voltage",
+        "max_voltage",
+        "total_voltage",
+        "reading_date",
+        "reading_time",
+    ]
+    label = f"train{train_id}" if kind == "train" and train_id else "plant"
+    return rows, fields, f"monitoring-{label}"
+
+
+@router.get("/export.xlsx", include_in_schema=False)
+def export_monitoring_xlsx(
+    db: Session = Depends(get_db),
+    scope: str = Query(default="plant"),
+    train: str | None = None,
+    electrolyzer: str | None = None,
+    position: str | None = None,
+    status: str | None = Query(default="open"),
+    span: str = Query(default="30"),
+):
+    rows, fields, title = _monitoring_export_pack(
+        db, scope=scope, train=train, electrolyzer=electrolyzer, position=position, status=status, span=span
+    )
+    return export_xlsx(rows, fields, title)
+
+
+@router.get("/export.pdf", include_in_schema=False)
+def export_monitoring_pdf(
+    db: Session = Depends(get_db),
+    scope: str = Query(default="plant"),
+    train: str | None = None,
+    electrolyzer: str | None = None,
+    position: str | None = None,
+    status: str | None = Query(default="open"),
+    span: str = Query(default="30"),
+):
+    rows, fields, title = _monitoring_export_pack(
+        db, scope=scope, train=train, electrolyzer=electrolyzer, position=position, status=status, span=span
+    )
+    return export_pdf(rows[:2000], fields, title)
 
 
 @router.get("/summary", response_model=schemas.AlertSummary)
@@ -297,4 +524,261 @@ def voltage_history(
         "total": total,
         "points": shown,
         "rectifier_points": rectifier_points,
+    }
+
+
+def _stamp(value):
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, date):
+        return datetime.combine(value, datetime.min.time())
+    return datetime.min
+
+
+def _iso(value):
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date().isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    return None
+
+
+def _element_brief(row: models.Element) -> dict:
+    pos = alerts_engine._norm_pos(row.position)
+    rack = rack_of(pos)
+    return {
+        "id": row.id,
+        "element_nr": row.element_nr,
+        "electrolyzer": (row.electrolyzer or "").strip().upper() or None,
+        "position": pos or None,
+        "train": train_of(row.electrolyzer or ""),
+        "rack": rack["id"] if rack else None,
+        "anode_nr": row.anode_nr,
+        "cathode_nr": row.cathode_nr,
+        "membrane_nr": row.membrane_nr,
+        "membrane_type": row.membrane_type,
+        "assembly_date": _iso(row.assembly_date),
+        "commissioning_date": _iso(row.commissioning_date),
+        "disassembly_date": _iso(row.disassembly_date),
+        "dol_days": installation_dol(
+            row.assembly_date,
+            row.commissioning_date,
+            row.disassembly_date,
+            row.decommissioning_date,
+        ),
+        "active": row.disassembly_date is None,
+        "anode_coating": row.anode_coating,
+        "cathode_coating": row.cathode_coating,
+        "gap_mm": row.gap_mm,
+        "remarks": row.remarks,
+    }
+
+
+@router.get("/cell")
+def cell_properties(
+    electrolyzer: str,
+    position: str,
+    db: Session = Depends(get_db),
+):
+    """Mounted element and earlier installations for one cell slot."""
+    el = (electrolyzer or "").strip().upper()
+    pos = alerts_engine._norm_pos(position)
+    if not el or not pos:
+        raise HTTPException(status_code=400, detail="electrolyzer and position are required")
+    rows = (
+        db.query(models.Element)
+        .filter(func.upper(models.Element.electrolyzer) == el)
+        .all()
+    )
+    matched = [row for row in rows if alerts_engine._norm_pos(row.position) == pos]
+    matched.sort(
+        key=lambda row: (
+            _stamp(row.commissioning_date or row.assembly_date),
+            row.id or 0,
+        ),
+        reverse=True,
+    )
+    current = next((row for row in matched if row.disassembly_date is None), None)
+    rack = rack_of(pos)
+    return {
+        "electrolyzer": el,
+        "position": pos,
+        "position_label": pos.zfill(3),
+        "train": train_of(el),
+        "arrangement": arrangement_name(el),
+        "rack": rack["id"] if rack else None,
+        "rack_start": rack["start"] if rack else None,
+        "rack_end": rack["end"] if rack else None,
+        "current": _element_brief(current) if current else None,
+        "history": [_element_brief(row) for row in matched],
+    }
+
+
+_PARTS = {
+    "anode": (models.Anode, "anode_nr", models.AnodeMaintenance, "anode_nr", models.Element.anode_nr),
+    "cathode": (models.Cathode, "cathode_nr", models.CathodeMaintenance, "cathode_nr", models.Element.cathode_nr),
+    "membrane": (models.Membrane, "membrane_nr", models.MembraneMaintenance, "membrane_nr", models.Element.membrane_nr),
+}
+
+
+def _same_serial(column, key: str):
+    return func.replace(func.upper(column), " ", "") == key
+
+
+def _catalog_brief(kind: str, row) -> dict | None:
+    if row is None:
+        return None
+    if kind == "membrane":
+        return {
+            "nr": row.membrane_nr,
+            "membrane_type": row.membrane_type,
+            "manufacturer": None,
+            "coating": None,
+            "batch": row.batch,
+            "generation": None,
+            "received_date": _iso(row.received_date),
+            "decommission_date": _iso(row.decommission_date),
+            "remarks": row.remarks,
+        }
+    return {
+        "nr": getattr(row, "anode_nr", None) or getattr(row, "cathode_nr", None),
+        "membrane_type": None,
+        "manufacturer": row.manufacturer,
+        "coating": row.coating,
+        "batch": row.batch,
+        "generation": row.generation,
+        "received_date": _iso(row.received_date),
+        "decommission_date": _iso(row.decommission_date),
+        "remarks": row.remarks,
+    }
+
+
+def _maintenance_brief(kind: str, row) -> dict:
+    if kind == "membrane":
+        return {
+            "id": row.id,
+            "date": _iso(row.date),
+            "finding": None,
+            "action": row.repair_work,
+            "dispatch_date": None,
+            "return_date": None,
+        }
+    return {
+        "id": row.id,
+        "date": _iso(row.date),
+        "finding": row.finding,
+        "action": row.action,
+        "dispatch_date": _iso(row.dispatch_date),
+        "return_date": _iso(row.return_date),
+    }
+
+
+@router.get("/component")
+def component_dossier(
+    kind: str,
+    nr: str,
+    db: Session = Depends(get_db),
+):
+    """Catalog, place, installations, maintenance and uploaded reports for one part."""
+    kind = (kind or "").strip().lower()
+    if kind not in _PARTS:
+        raise HTTPException(status_code=400, detail="kind must be anode, cathode or membrane")
+    key = compact_nr(nr)
+    if not key:
+        raise HTTPException(status_code=400, detail="nr is required")
+    model, pk, maint_model, maint_field, element_field = _PARTS[kind]
+    catalog = db.query(model).filter(_same_serial(getattr(model, pk), key)).first()
+    installations = (
+        db.query(models.Element)
+        .filter(_same_serial(element_field, key))
+        .all()
+    )
+    installations.sort(
+        key=lambda row: (
+            _stamp(row.commissioning_date or row.assembly_date),
+            row.id or 0,
+        ),
+        reverse=True,
+    )
+    maintenance = (
+        db.query(maint_model)
+        .filter(_same_serial(getattr(maint_model, maint_field), key))
+        .all()
+    )
+    maintenance.sort(key=lambda row: (_stamp(row.date), row.id or 0), reverse=True)
+    reports = (
+        db.query(models.MaintenanceReport)
+        .filter(
+            models.MaintenanceReport.kind == kind,
+            _same_serial(models.MaintenanceReport.component_nr, key),
+        )
+        .order_by(models.MaintenanceReport.report_date.desc(), models.MaintenanceReport.id.desc())
+        .all()
+    )
+    file_counts: dict[int, int] = {}
+    if reports:
+        counted = (
+            db.query(models.MaintenanceReportFile.report_id, func.count())
+            .filter(models.MaintenanceReportFile.report_id.in_([row.id for row in reports]))
+            .group_by(models.MaintenanceReportFile.report_id)
+            .all()
+        )
+        file_counts = {report_id: count for report_id, count in counted}
+
+    latest = installations[0] if installations else None
+    active = next((row for row in installations if row.disassembly_date is None and (row.electrolyzer or "").strip()), None)
+    open_job = next(
+        (
+            row
+            for row in maintenance
+            if kind != "membrane" and row.dispatch_date is not None and row.return_date is None
+        ),
+        None,
+    )
+    if catalog is not None and catalog.decommission_date is not None:
+        status = "decommissioned"
+    elif active is not None:
+        status = "mounted"
+    elif open_job is not None:
+        status = "repair"
+    elif latest is not None:
+        status = "dismantled"
+    else:
+        status = "spare"
+    place_row = active or (latest if status == "dismantled" else None)
+    place = None
+    if place_row is not None:
+        brief = _element_brief(place_row)
+        place = {
+            "electrolyzer": brief["electrolyzer"],
+            "position": brief["position"],
+            "train": brief["train"],
+            "rack": brief["rack"],
+            "active": brief["active"],
+        }
+    shown = catalog.anode_nr if kind == "anode" and catalog else None
+    if kind == "cathode" and catalog:
+        shown = catalog.cathode_nr
+    if kind == "membrane" and catalog:
+        shown = catalog.membrane_nr
+    return {
+        "kind": kind,
+        "nr": shown or (nr or "").strip(),
+        "status": status,
+        "place": place,
+        "catalog": _catalog_brief(kind, catalog),
+        "installations": [_element_brief(row) for row in installations[:40]],
+        "maintenance": [_maintenance_brief(kind, row) for row in maintenance[:40]],
+        "reports": [
+            {
+                "id": row.id,
+                "report_date": _iso(row.report_date),
+                "title": row.title,
+                "notes": row.notes,
+                "file_count": file_counts.get(row.id, 0),
+            }
+            for row in reports[:40]
+        ],
     }

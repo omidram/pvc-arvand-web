@@ -67,8 +67,52 @@ def _ensure_user_role_id() -> None:
         conn.execute(text("ALTER TABLE users ADD COLUMN role_id INTEGER"))
 
 
+_INSPECTION_SHEET_COLUMNS = {
+    "client": "TEXT",
+    "anode_nr": "TEXT",
+    "cathode_nr": "TEXT",
+    "membrane_nr": "TEXT",
+    "membrane_type": "TEXT",
+    "electrolyzer": "TEXT",
+    "position": "TEXT",
+    "operation_days": "TEXT",
+    "electrode_nr_anode": "TEXT",
+    "electrode_nr_cathode": "TEXT",
+    "deformation_pan": "TEXT",
+    "deformation_electrode": "TEXT",
+    "coloured_area": "TEXT",
+    "coloured_electrode": "TEXT",
+    "coloured_pan": "TEXT",
+    "deposits": "TEXT",
+    "leakage_pan": "TEXT",
+    "leakage_web": "TEXT",
+    "leakage_corner": "TEXT",
+    "leakage_outlet": "TEXT",
+    "leakage_inlet": "TEXT",
+    "signature": "TEXT",
+    "sample_cathode_note": "TEXT",
+    "sample_anode_note": "TEXT",
+    "sample_membrane_note": "TEXT",
+}
+
+
+def _ensure_inspection_sheet_columns() -> None:
+    """create_all does not add columns to a table that already exists."""
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("inspection_reports")}
+    except Exception:
+        return
+    missing = [name for name in _INSPECTION_SHEET_COLUMNS if name not in present]
+    if not missing:
+        return
+    with engine.begin() as conn:
+        for name in missing:
+            conn.execute(text(f"ALTER TABLE inspection_reports ADD COLUMN {name} {_INSPECTION_SHEET_COLUMNS[name]}"))
+
+
 _ensure_user_auth_source()
 _ensure_user_role_id()
+_ensure_inspection_sheet_columns()
 
 with SessionLocal() as _db:
     seed_default_admin(_db)

@@ -843,6 +843,69 @@ export const voltageSyncApi = {
 };
 
 // ---------------------------------------------------------------- Monitoring / alerts
+export interface CellElementBrief {
+  id: number;
+  element_nr: string | null;
+  electrolyzer: string | null;
+  position: string | null;
+  train: string | null;
+  rack: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  membrane_type: string | null;
+  assembly_date: string | null;
+  commissioning_date: string | null;
+  disassembly_date: string | null;
+  dol_days: number | null;
+  active: boolean;
+  anode_coating: string | null;
+  cathode_coating: string | null;
+  gap_mm: string | null;
+  remarks: string | null;
+}
+
+export interface CellProperties {
+  electrolyzer: string;
+  position: string;
+  position_label: string;
+  train: string | null;
+  arrangement: string | null;
+  rack: string | null;
+  rack_start: number | null;
+  rack_end: number | null;
+  current: CellElementBrief | null;
+  history: CellElementBrief[];
+}
+
+export interface ComponentDossier {
+  kind: "anode" | "cathode" | "membrane";
+  nr: string;
+  status: "mounted" | "spare" | "repair" | "decommissioned" | "dismantled";
+  place: { electrolyzer: string | null; position: string | null; train: string | null; rack: string | null; active: boolean } | null;
+  catalog: {
+    nr: string | null;
+    membrane_type: string | null;
+    manufacturer: string | null;
+    coating: string | null;
+    batch: string | null;
+    generation: string | null;
+    received_date: string | null;
+    decommission_date: string | null;
+    remarks: string | null;
+  } | null;
+  installations: CellElementBrief[];
+  maintenance: {
+    id: number;
+    date: string | null;
+    finding: string | null;
+    action: string | null;
+    dispatch_date: string | null;
+    return_date: string | null;
+  }[];
+  reports: { id: number; report_date: string | null; title: string | null; notes: string | null; file_count: number }[];
+}
+
 export const monitoringApi = {
   snapshot: async (): Promise<T.MonitoringSnapshot> => (await apiClient.get("/monitoring/snapshot")).data,
   summary: async (): Promise<T.AlertSummary> => (await apiClient.get("/monitoring/summary")).data,
@@ -868,6 +931,10 @@ export const monitoringApi = {
     (await apiClient.post(`/monitoring/alerts/${id}/resolve`)).data,
   resolveAll: async (severity?: string): Promise<{ ok: boolean; resolved: number }> =>
     (await apiClient.post("/monitoring/alerts/resolve-all", null, { params: { severity } })).data,
+  cell: async (params: { electrolyzer: string; position: string }): Promise<CellProperties> =>
+    (await apiClient.get("/monitoring/cell", { params })).data,
+  component: async (params: { kind: "anode" | "cathode" | "membrane"; nr: string }): Promise<ComponentDossier> =>
+    (await apiClient.get("/monitoring/component", { params })).data,
   voltageHistory: async (params: {
     electrolyzer: string;
     position?: string;

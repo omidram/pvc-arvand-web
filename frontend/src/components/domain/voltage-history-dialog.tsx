@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { monitoringApi } from "@/lib/endpoints";
@@ -9,6 +9,8 @@ import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { formatDate } from "@/lib/utils";
+import { CellPropertiesPanel } from "@/components/domain/cell-dossier";
+import { MonitoringExport } from "@/components/domain/export-buttons";
 
 const SPANS = [
   { id: "10", labelKey: "monitoring.last10" },
@@ -29,7 +31,11 @@ export function VoltageHistoryDialog({
 }) {
   const { t } = useI18n();
   const [span, setSpan] = useState("30");
+  const [showProps, setShowProps] = useState(false);
   useCalendar();
+  useEffect(() => {
+    setShowProps(false);
+  }, [electrolyzer, position]);
   const query = useQuery({
     queryKey: ["monitoring", "history", electrolyzer, position || "", span],
     queryFn: () => monitoringApi.voltageHistory({ electrolyzer, position: position || undefined, span }),
@@ -61,7 +67,7 @@ export function VoltageHistoryDialog({
 
   return (
     <Modal open title={data?.title || electrolyzer} onClose={onClose} wide>
-      <div className="mb-3 flex flex-wrap gap-1">
+      <div className="mb-3 flex flex-wrap items-center gap-1">
         {SPANS.map((item) => (
           <button
             key={item.id}
@@ -72,7 +78,24 @@ export function VoltageHistoryDialog({
             {t(item.labelKey)}
           </button>
         ))}
+        {position ? (
+          <button
+            type="button"
+            className={`mon-filter-chip psm-prop-btn${showProps ? " is-active" : ""}`}
+            onClick={() => setShowProps((open) => !open)}
+          >
+            {t("monitoring.properties")}
+          </button>
+        ) : null}
+        <MonitoringExport
+          scope="history"
+          electrolyzer={electrolyzer}
+          position={position || undefined}
+          span={span}
+          filenameBase={`monitoring-history-${electrolyzer}${position ? `-${position}` : ""}`}
+        />
       </div>
+      {showProps && position ? <CellPropertiesPanel electrolyzer={electrolyzer} position={position} /> : null}
       {query.isLoading ? <LoadingState /> : null}
       {query.isError ? <ErrorState message={(query.error as Error).message} /> : null}
       {data && chartRows.length === 0 ? <div className="mon-empty">{t("monitoring.noHistory")}</div> : null}
@@ -83,7 +106,7 @@ export function VoltageHistoryDialog({
             {hasRectifier ? ` · ${t("monitoring.rectifierSeries")}` : ""}
           </p>
           <div className="rounded bg-[#0c1848] px-1 py-2">
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={360}>
               <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 0, bottom: 8 }}>
                 <CartesianGrid stroke="#243056" />
                 <XAxis dataKey="label" stroke="#cbd5e1" tick={{ fontSize: 10 }} minTickGap={28} />

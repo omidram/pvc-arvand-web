@@ -23,7 +23,7 @@ function isCurrentForm(href: string, pathname: string, query: string): boolean {
   return search.split("&").every((part) => query.includes(part));
 }
 
-export function AllFormsPane() {
+export function AllFormsPane({ onCollapse }: { onCollapse?: () => void }) {
   const { t } = useI18n();
   const { canView } = useAuth();
   const pathname = usePathname();
@@ -45,7 +45,20 @@ export function AllFormsPane() {
     <aside className="access-forms-pane min-h-0 self-stretch" dir="ltr">
       <div className="access-forms-pane-header">
         <span>{t("menus.allForms")}</span>
-        <span className="access-forms-pane-count">{filtered.length}</span>
+        <span className="access-forms-pane-tools">
+          <span className="access-forms-pane-count">{filtered.length}</span>
+          {onCollapse ? (
+            <button
+              type="button"
+              className="access-forms-collapse"
+              onClick={onCollapse}
+              title={t("menus.collapseForms")}
+              aria-label={t("menus.collapseForms")}
+            >
+              ›
+            </button>
+          ) : null}
+        </span>
       </div>
       <div className="access-forms-search">
         <input

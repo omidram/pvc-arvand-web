@@ -33,6 +33,7 @@ export function AccessWorkspace<T extends object>({
   onLookup,
   confirmDelete,
   submitting,
+  formBody,
   framed = true,
   backHref,
   backLabel,
@@ -60,6 +61,15 @@ export function AccessWorkspace<T extends object>({
   onLookup?: (name: string, value: unknown, values: Record<string, unknown>) => Promise<T | null>;
   confirmDelete?: (row: T) => string;
   submitting?: boolean;
+  /** Replaces the generic field list. Used by the printed inspection sheet. */
+  formBody?: (ctx: {
+    values: Record<string, unknown>;
+    onChange: (name: string, value: unknown) => void;
+    onPatch: (patch: Record<string, unknown>) => void;
+    readOnly: boolean;
+    recordId: string | number | null;
+    isNew: boolean;
+  }) => React.ReactNode;
   framed?: boolean;
   backHref?: string;
   backLabel?: string;
@@ -90,6 +100,11 @@ export function AccessWorkspace<T extends object>({
   const current = !isNew && rows[index] ? rows[index] : null;
 
   useEffect(() => {
+    if (isNew || rows.length === 0) return;
+    if (index > rows.length - 1) setIndex(rows.length - 1);
+  }, [rows.length, index, isNew]);
+
+  useEffect(() => {
     if (skipUrlSync.current) {
       skipUrlSync.current = false;
       return;
@@ -111,6 +126,19 @@ export function AccessWorkspace<T extends object>({
 
   const currentId = current ? String(readId(current)) : isNew ? "__new__" : "";
   useEffect(() => {
+    if (formBody) {
+      if (!current) {
+        setValues({});
+        return;
+      }
+      const copy: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(current as Record<string, unknown>)) {
+        if (value !== null && typeof value === "object") continue;
+        copy[key] = value;
+      }
+      setValues(copy);
+      return;
+    }
     setValues(valuesFromRecord(fields, current));
     // Reset draft only when the record changes, not when field defs are rebuilt.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -157,7 +185,7 @@ export function AccessWorkspace<T extends object>({
   }
 
   function handleSave() {
-    const payload = accessPayload(fields, values);
+    const payload = formBody ? values : accessPayload(fields, values);
     if (isNew || !current) onCreate(payload);
     else onSave(readId(current), payload);
   }
@@ -197,13 +225,24 @@ export function AccessWorkspace<T extends object>({
         />
       ) : (
         <>
-          <AccessFields
-            fields={fields}
-            values={values}
-            onChange={(name, value) => setValues((v) => ({ ...v, [name]: value }))}
-            onCommit={onLookup ? handleCommit : undefined}
-            readOnly={!canEdit}
-          />
+          {formBody ? (
+            formBody({
+              values,
+              onChange: (name, value) => setValues((v) => ({ ...v, [name]: value })),
+              onPatch: (patch) => setValues((v) => ({ ...v, ...patch })),
+              readOnly: !canEdit,
+              recordId: current ? readId(current) : null,
+              isNew,
+            })
+          ) : (
+            <AccessFields
+              fields={fields}
+              values={values}
+              onChange={(name, value) => setValues((v) => ({ ...v, [name]: value }))}
+              onCommit={onLookup ? handleCommit : undefined}
+              readOnly={!canEdit}
+            />
+          )}
           {current && related ? related(current) : null}
         </>
       );
@@ -221,7 +260,7 @@ export function AccessWorkspace<T extends object>({
           onNew={() => {
             setExtra(null);
             setIsNew(true);
-            setValues(valuesFromRecord(fields, null));
+            setValues(formBody ? {} : valuesFromRecord(fields, null));
           }}
           onSave={handleSave}
           onDelete={handleDelete}

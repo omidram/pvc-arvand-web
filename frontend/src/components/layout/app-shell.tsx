@@ -23,13 +23,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
-    setFormsOpen(false);
     setNavOpen(false);
+    if (typeof window !== "undefined" && window.innerWidth <= 1100) setFormsOpen(false);
   }, [pathname]);
 
   useEffect(() => {
     function onResize() {
-      if (window.innerWidth > 1100) setFormsOpen(false);
       if (window.innerWidth > 900) setNavOpen(false);
     }
     window.addEventListener("resize", onResize);
@@ -54,7 +53,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {navOpen ? <button type="button" className="app-drawer-backdrop" aria-label={t("common.mainMenu")} onClick={() => setNavOpen(false)} /> : null}
         <ModernSidebar open={navOpen} onNavigate={() => setNavOpen(false)} />
         <main className="modern-main min-w-0 flex-1 overflow-y-auto">
-          <div className="modern-content mx-auto w-full max-w-7xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8">
+          <div className="modern-content mx-auto w-full max-w-[1760px] px-3 py-4 sm:px-5 sm:py-5 lg:px-7">
             <button type="button" className="modern-nav-toggle" onClick={() => setNavOpen(true)}>
               {t("common.mainMenu")}
             </button>
@@ -82,7 +81,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {t("common.mainMenu")}
         </Link>
         <div className="app-topbar-actions flex min-w-0 flex-wrap items-center justify-end gap-1">
-          <button type="button" className="app-forms-toggle access-toolbar-btn h-[22px] px-2 text-[11px]" onClick={() => setFormsOpen((open) => !open)}>
+          <button
+            type="button"
+            className="app-forms-toggle access-toolbar-btn h-[22px] px-2 text-[11px]"
+            onClick={() => setFormsOpen((open) => !open)}
+          >
             {t("menus.allForms")}
           </button>
           <SessionControls classic={isMainMenu} />
@@ -93,7 +96,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <div className="flex min-h-0 min-w-0 flex-1">
         <main className="min-h-0 min-w-0 flex-1 overflow-auto">{children}</main>
-        {formsOpen ? <button type="button" className="app-drawer-backdrop" aria-label={t("menus.allForms")} onClick={() => setFormsOpen(false)} /> : null}
+        {formsOpen ? (
+          <button type="button" className="app-drawer-backdrop" aria-label={t("menus.collapseForms")} onClick={() => setFormsOpen(false)} />
+        ) : (
+          <button
+            type="button"
+            className="access-forms-expand"
+            onClick={() => setFormsOpen(true)}
+            title={t("menus.expandForms")}
+            aria-label={t("menus.expandForms")}
+            aria-expanded={false}
+          >
+            <span className="access-forms-expand-chevron" aria-hidden>
+              ‹
+            </span>
+            <span className="access-forms-expand-label">{t("menus.allForms")}</span>
+          </button>
+        )}
         <div className={`access-forms-slot ${formsOpen ? "is-open" : ""}`}>
         <Suspense
           fallback={
@@ -104,7 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </aside>
           }
         >
-          <AllFormsPane />
+          <AllFormsPane onCollapse={() => setFormsOpen(false)} />
         </Suspense>
         </div>
       </div>

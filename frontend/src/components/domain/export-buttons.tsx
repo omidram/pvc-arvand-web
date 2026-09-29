@@ -13,10 +13,12 @@ export function ExportButtons({
   prefix,
   params,
   filenameBase,
+  allowImport = true,
 }: {
   prefix: string;
   params?: Record<string, unknown>;
   filenameBase?: string;
+  allowImport?: boolean;
 }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
@@ -61,12 +63,15 @@ export function ExportButtons({
       <Button type="button" variant="secondary" size="sm" onClick={() => handle("xlsx")} disabled={busy !== null}>
         <FileSpreadsheet size={14} /> {busy === "xlsx" ? t("common.exporting") : t("common.exportExcel")}
       </Button>
-      <Button type="button" variant="secondary" size="sm" onClick={() => fileRef.current?.click()} disabled={busy !== null}>
-        <FileUp size={14} /> {busy === "import" ? t("common.importing") : t("common.importExcel")}
-      </Button>
+      {allowImport ? (
+        <Button type="button" variant="secondary" size="sm" onClick={() => fileRef.current?.click()} disabled={busy !== null}>
+          <FileUp size={14} /> {busy === "import" ? t("common.importing") : t("common.importExcel")}
+        </Button>
+      ) : null}
       <Button type="button" variant="secondary" size="sm" onClick={() => handle("pdf")} disabled={busy !== null}>
         <FileText size={14} /> {busy === "pdf" ? t("common.exporting") : t("common.exportPdf")}
       </Button>
+      {allowImport ? (
       <input
         ref={fileRef}
         type="file"
@@ -74,8 +79,32 @@ export function ExportButtons({
         className="hidden"
         onChange={(e) => onFile(e.target.files?.[0])}
       />
+      ) : null}
       {progress ? <ImportProgressBar progress={progress} /> : null}
       {note ? <span className="access-import-note">{note}</span> : null}
     </>
+  );
+}
+
+/** Excel / PDF for the current monitoring view. Does not import. */
+export function MonitoringExport(props: {
+  scope: "plant" | "train" | "electrolyzer" | "cells" | "alerts" | "rules" | "issues" | "history";
+  train?: string;
+  electrolyzer?: string;
+  position?: string;
+  status?: string;
+  span?: string;
+  filenameBase?: string;
+}) {
+  const params: Record<string, unknown> = { scope: props.scope };
+  if (props.train) params.train = props.train;
+  if (props.electrolyzer) params.electrolyzer = props.electrolyzer;
+  if (props.position) params.position = props.position;
+  if (props.status) params.status = props.status;
+  if (props.span) params.span = props.span;
+  return (
+    <span className="mon-export">
+      <ExportButtons prefix="/monitoring" params={params} filenameBase={props.filenameBase || `monitoring-${props.scope}`} allowImport={false} />
+    </span>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
@@ -14,7 +14,7 @@ import {
   Zap,
 } from "lucide-react";
 import { monitoringApi } from "@/lib/endpoints";
-import type { AlertEvent, AlertRule, MonitoringCellStatus, MonitoringElectrolyzerBlock } from "@/lib/types";
+import type { AlertEvent, AlertRule, MonitoringCellStatus } from "@/lib/types";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -22,8 +22,22 @@ import { Tabs } from "@/components/ui/tabs";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
-import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import { VoltageHistoryDialog } from "@/components/domain/voltage-history-dialog";
+import { PlantSchematic } from "@/components/domain/plant-schematic";
+import { MonitoringExport } from "@/components/domain/export-buttons";
+import { trainOf, type TrainId } from "@/lib/plant-topology";
+
+function MonitoringLoad({ label }: { label: string }) {
+  return (
+    <div className="mon-load" role="status" aria-live="polite">
+      <div className="mon-load-track" role="progressbar" aria-label={label}>
+        <div className="mon-load-bar" />
+      </div>
+      <p>{label}</p>
+    </div>
+  );
+}
 
 function severityClass(sev: string): string {
   if (sev === "danger") return "is-danger";
@@ -62,68 +76,6 @@ function Kpi({
         <div className="mon-kpi-label">{label}</div>
       </div>
     </button>
-  );
-}
-
-function CellChip({ cell, onSelect }: { cell: MonitoringCellStatus; onSelect: (c: MonitoringCellStatus) => void }) {
-  return (
-    <button
-      type="button"
-      className={`mon-cell ${severityClass(cell.severity)}`}
-      title={`${cell.electrolyzer}-${cell.position}: ${cell.voltage ?? "—"} V`}
-      onClick={() => onSelect(cell)}
-    >
-      <span className="mon-cell-pos">{cell.position}</span>
-      <span className="mon-cell-v">{cell.voltage != null ? Number(cell.voltage).toFixed(2) : "—"}</span>
-    </button>
-  );
-}
-
-function ElectrolyzerCard({
-  block,
-  onSelect,
-  onOpenTotal,
-}: {
-  block: MonitoringElectrolyzerBlock;
-  onSelect: (c: MonitoringCellStatus) => void;
-  onOpenTotal: (electrolyzer: string) => void;
-}) {
-  const { t } = useI18n();
-  const health =
-    block.danger_count > 0 ? "danger" : block.warning_count > 0 ? "warning" : block.cell_count ? "ok" : "unknown";
-  const dateLabel = block.reading_date ? formatDate(block.reading_date) : "—";
-  const timeLabel =
-    block.reading_time && !String(block.reading_time).includes("1899") ? ` · ${block.reading_time}` : "";
-  return (
-    <section className={`mon-el-card ${severityClass(health)}`}>
-      <header className="mon-el-head">
-        <div>
-          <button type="button" className="mon-el-title mon-history-link" onClick={() => onOpenTotal(block.electrolyzer)}>
-            {block.electrolyzer}
-          </button>
-          <p className="mon-el-meta">
-            {dateLabel}
-            {timeLabel}
-          </p>
-        </div>
-        <div className="mon-el-stats">
-          <span>
-            {t("monitoring.maxV")}: <strong>{formatNumber(block.max_voltage, 3)}</strong>
-          </span>
-          <span>
-            {t("monitoring.avgV")}: <strong>{formatNumber(block.avg_voltage, 3)}</strong>
-          </span>
-          <span className="mon-pill is-danger">{block.danger_count}</span>
-          <span className="mon-pill is-warning">{block.warning_count}</span>
-          <span className="mon-pill is-ok">{block.ok_count}</span>
-        </div>
-      </header>
-      <div className="mon-cell-grid">
-        {block.cells.map((cell) => (
-          <CellChip key={`${cell.electrolyzer}-${cell.position}`} cell={cell} onSelect={onSelect} />
-        ))}
-      </div>
-    </section>
   );
 }
 
@@ -229,7 +181,10 @@ function RulesPanel() {
 
   return (
     <div className="space-y-4">
-      <p className="mon-help">{t("monitoring.rulesHelp")}</p>
+      <div className="mon-panel-head">
+        <p className="mon-help">{t("monitoring.rulesHelp")}</p>
+        <MonitoringExport scope="rules" filenameBase="monitoring-thresholds" />
+      </div>
       <div className="mon-rules">
         {Object.values(drafts).map((rule) => (
           <div key={rule.id} className="mon-rule-row">
@@ -319,8 +274,10 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
   const { t } = useI18n();
   const { canEdit } = useAuth();
   const qc = useQueryClient();
-  const [selected, setSelected] = useState<MonitoringCellStatus | null>(null);
   const [history, setHistory] = useState<{ electrolyzer: string; position?: string } | null>(null);
+  const [plantView, setPlantView] = useState<
+    { level: "plant" } | { level: "train"; train: TrainId } | { level: "electrolyzer"; train: TrainId; name: string }
+  >({ level: "plant" });
   const [elFilter, setElFilter] = useState<string>("all");
   const [focus, setFocus] = useState<"danger" | "warning" | "ok" | null>(null);
   const [issuesOpen, setIssuesOpen] = useState(false);
@@ -343,23 +300,8 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
   });
 
   const data = snapQuery.data;
-  const electrolyzers = useMemo(() => {
-    if (!data) return [];
-    if (elFilter === "all") return data.electrolyzers;
-    return data.electrolyzers.filter((e) => e.electrolyzer === elFilter);
-  }, [data, elFilter]);
-  const visible = useMemo(() => {
-    if (!focus) return electrolyzers;
-    return electrolyzers
-      .map((block) => {
-        const cells = block.cells.filter((cell) => cell.severity === focus);
-        if (!cells.length) return null;
-        return { ...block, cells };
-      })
-      .filter((block): block is MonitoringElectrolyzerBlock => block !== null);
-  }, [electrolyzers, focus]);
 
-  if (snapQuery.isLoading) return <LoadingState label={t("monitoring.loading")} />;
+  if (snapQuery.isLoading) return <MonitoringLoad label={t("monitoring.loading")} />;
   if (snapQuery.isError || !data) return <ErrorState message={(snapQuery.error as Error)?.message || "Error"} />;
 
   const { summary, voltage } = data;
@@ -387,7 +329,8 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
     if (!best) return;
     setFocus(null);
     setElFilter(best.electrolyzer);
-    setSelected(best);
+    const train = trainOf(best.electrolyzer);
+    if (train) setPlantView({ level: "electrolyzer", train, name: best.electrolyzer });
     setHistory({ electrolyzer: best.electrolyzer, position: best.position });
   }
 
@@ -411,7 +354,17 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <select className="mon-select" value={elFilter} onChange={(e) => setElFilter(e.target.value)}>
+          <select
+            className="mon-select"
+            value={elFilter}
+            onChange={(e) => {
+              const value = e.target.value;
+              setElFilter(value);
+              const train = trainOf(value);
+              if (value !== "all" && train) setPlantView({ level: "electrolyzer", train, name: value });
+              if (value === "all") setPlantView({ level: "plant" });
+            }}
+          >
             <option value="all">{t("monitoring.allElectrolyzers")}</option>
             {data.electrolyzers.map((e) => (
               <option key={e.electrolyzer} value={e.electrolyzer}>
@@ -429,6 +382,18 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
               {evalMutation.isPending ? t("monitoring.evaluating") : t("monitoring.evaluateNow")}
             </Button>
           ) : null}
+          <MonitoringExport
+            scope={plantView.level === "electrolyzer" ? "electrolyzer" : plantView.level === "train" ? "train" : "plant"}
+            train={plantView.level === "plant" ? undefined : plantView.train}
+            electrolyzer={plantView.level === "electrolyzer" ? plantView.name : undefined}
+            filenameBase={
+              plantView.level === "electrolyzer"
+                ? `monitoring-${plantView.name}`
+                : plantView.level === "train"
+                  ? `monitoring-train-${plantView.train}`
+                  : "monitoring-plant"
+            }
+          />
         </div>
       </div>
 
@@ -443,6 +408,13 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
       ) : null}
 
       <div className="mon-kpi-row">
+        <Kpi
+          label={t("monitoring.totalCells")}
+          value={voltage.cell_count}
+          tone="info"
+          icon={Activity}
+          onClick={() => setFocus(null)}
+        />
         <Kpi
           label={t("monitoring.openDanger")}
           value={voltage.danger_count}
@@ -500,34 +472,38 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
           <span className="text-xs text-[var(--win-muted)]">{t("monitoring.historyHint")}</span>
         </div>
 
-      <div className="mon-el-stack">
-        {visible.length === 0 ? (
-          <div className="mon-empty">{focus ? t("monitoring.noMatchingCells") : t("monitoring.noVoltageData")}</div>
-        ) : (
-          visible.map((block) => (
-            <ElectrolyzerCard
-              key={block.electrolyzer}
-              block={block}
-              onSelect={(cell) => {
-                setSelected(cell);
-                setHistory({ electrolyzer: cell.electrolyzer, position: cell.position });
-              }}
-              onOpenTotal={(electrolyzer) => setHistory({ electrolyzer })}
-            />
-          ))
-        )}
-      </div>
+      {data.electrolyzers.length === 0 ? (
+        <div className="mon-empty">{t("monitoring.noVoltageData")}</div>
+      ) : (
+        <PlantSchematic
+          blocks={data.electrolyzers}
+          focus={focus}
+          view={plantView}
+          onView={(next) => {
+            setPlantView(next);
+            setElFilter(next.level === "electrolyzer" ? next.name : "all");
+          }}
+          onOpenCell={(cell) => setHistory({ electrolyzer: cell.electrolyzer, position: cell.position })}
+          onOpenTotal={(electrolyzer) => setHistory({ electrolyzer })}
+        />
+      )}
 
       <div className="mon-split">
         <section className="mon-panel">
-          <h3 className="mon-panel-title">{t("monitoring.recentAlerts")}</h3>
+          <div className="mon-panel-head">
+            <h3 className="mon-panel-title">{t("monitoring.recentAlerts")}</h3>
+            <MonitoringExport scope="alerts" status="open" filenameBase="monitoring-alerts-open" />
+          </div>
           <AlertsPanel
             alerts={data.recent_alerts.filter((a) => a.status !== "resolved").slice(0, 12)}
             canEdit={canEdit("monitoring") || canEdit("voltage")}
           />
         </section>
         <section ref={issuesRef} className={`mon-panel${issuesOpen ? " is-focus" : ""}`} id="mon-component-issues">
-          <h3 className="mon-panel-title">{t("monitoring.anodeCathodeIssues")}</h3>
+          <div className="mon-panel-head">
+            <h3 className="mon-panel-title">{t("monitoring.anodeCathodeIssues")}</h3>
+            <MonitoringExport scope="issues" filenameBase="monitoring-issues" />
+          </div>
           {data.component_issues.length === 0 ? (
             <div className="mon-empty">{t("monitoring.noComponentIssues")}</div>
           ) : (
@@ -561,30 +537,6 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
           onClose={() => setHistory(null)}
         />
       ) : null}
-
-      {selected ? (
-        <div className="mon-detail">
-          <strong>
-            {selected.electrolyzer}-{selected.position}
-          </strong>
-          <span>
-            {t("fields.voltage")}: {formatNumber(selected.voltage, 3)} V
-          </span>
-          <span>
-            Un: {formatNumber(selected.standardized_voltage, 3)}
-          </span>
-          <span>
-            {t("nav.anodes")}: {selected.anode_nr || "—"}
-          </span>
-          <span>
-            {t("nav.cathodes")}: {selected.cathode_nr || "—"}
-          </span>
-          <span className={`mon-sev-badge ${severityClass(selected.severity)}`}>{selected.severity}</span>
-          <button type="button" className="mon-detail-close" onClick={() => setSelected(null)}>
-            ×
-          </button>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -601,7 +553,8 @@ function InboxTab() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
+      <div className="mon-panel-head">
+        <div className="flex flex-wrap gap-2">
         {(["open", "acknowledged", "resolved", "all"] as const).map((s) => (
           <button
             key={s}
@@ -612,6 +565,8 @@ function InboxTab() {
             {t(`monitoring.status.${s}`)}
           </button>
         ))}
+        </div>
+        <MonitoringExport scope="alerts" status={status} filenameBase={`monitoring-alerts-${status}`} />
       </div>
       {alertsQuery.isLoading ? (
         <LoadingState />

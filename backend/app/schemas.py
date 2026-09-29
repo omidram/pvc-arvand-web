@@ -245,6 +245,8 @@ class MonitoringCellStatus(BaseModel):
     element_nr: str | None = None
     anode_nr: str | None = None
     cathode_nr: str | None = None
+    membrane_nr: str | None = None
+    membrane_type: str | None = None
     voltage: float | None = None
     standardized_voltage: float | None = None
     reading_date: datetime | None = None
@@ -503,6 +505,31 @@ class InspectionReportBase(ORMModel):
     inspector_name: str | None = None
     inspection_date: datetime | None = None
     general_remarks: str | None = None
+    client: str | None = None
+    anode_nr: str | None = None
+    cathode_nr: str | None = None
+    membrane_nr: str | None = None
+    membrane_type: str | None = None
+    electrolyzer: str | None = None
+    position: str | None = None
+    operation_days: str | None = None
+    electrode_nr_anode: str | None = None
+    electrode_nr_cathode: str | None = None
+    deformation_pan: str | None = None
+    deformation_electrode: str | None = None
+    coloured_area: str | None = None
+    coloured_electrode: str | None = None
+    coloured_pan: str | None = None
+    deposits: str | None = None
+    leakage_pan: str | None = None
+    leakage_web: str | None = None
+    leakage_corner: str | None = None
+    leakage_outlet: str | None = None
+    leakage_inlet: str | None = None
+    signature: str | None = None
+    sample_cathode_note: str | None = None
+    sample_anode_note: str | None = None
+    sample_membrane_note: str | None = None
 
 
 class InspectionReportRead(InspectionReportBase):

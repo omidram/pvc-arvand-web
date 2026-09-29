@@ -151,26 +151,40 @@ export function applyThemeToDocument(colors: ThemeColors, fontSize: number) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   const dark = isDarkFace(colors.face);
-  root.style.setProperty("--win-navy", colors.navy);
-  root.style.setProperty("--win-navy-dark", darken(colors.navy, 0.35));
-  root.style.setProperty("--win-navy-mid", lighten(colors.navy, 0.22));
-  root.style.setProperty("--win-face", colors.face);
-  root.style.setProperty("--win-face-hi", lighten(colors.face, dark ? 0.12 : 0.08));
-  root.style.setProperty("--win-face-dark", darken(colors.face, 0.12));
-  root.style.setProperty("--win-panel", colors.panel);
-  root.style.setProperty("--win-text", colors.text);
-  root.style.setProperty("--win-muted", colors.muted);
-  root.style.setProperty("--win-input", colors.input);
-  root.style.setProperty("--win-danger", colors.danger);
-  root.style.setProperty("--win-border-shadow", colors.border);
-  root.style.setProperty("--win-border-dark", darken(colors.border, 0.35));
-  root.style.setProperty("--win-border-light", dark ? lighten(colors.face, 0.28) : "#ffffff");
-  root.style.setProperty("--win-row-alt", mix(colors.panel, colors.face, 0.4));
+  const modernDark = root.getAttribute("data-ui") === "modern" && dark;
+  const palette: ThemeColors = modernDark
+    ? {
+        navy: "#3b82f6",
+        face: "#0f172a",
+        panel: "#111827",
+        text: "#f8fafc",
+        muted: "#94a3b8",
+        input: "#1e293b",
+        danger: "#f87171",
+        border: "#334155",
+      }
+    : colors;
+  const appliedDark = isDarkFace(palette.face);
+  root.style.setProperty("--win-navy", palette.navy);
+  root.style.setProperty("--win-navy-dark", darken(palette.navy, 0.35));
+  root.style.setProperty("--win-navy-mid", lighten(palette.navy, 0.22));
+  root.style.setProperty("--win-face", palette.face);
+  root.style.setProperty("--win-face-hi", lighten(palette.face, appliedDark ? 0.12 : 0.08));
+  root.style.setProperty("--win-face-dark", darken(palette.face, 0.12));
+  root.style.setProperty("--win-panel", palette.panel);
+  root.style.setProperty("--win-text", palette.text);
+  root.style.setProperty("--win-muted", palette.muted);
+  root.style.setProperty("--win-input", palette.input);
+  root.style.setProperty("--win-danger", palette.danger);
+  root.style.setProperty("--win-border-shadow", palette.border);
+  root.style.setProperty("--win-border-dark", darken(palette.border, 0.35));
+  root.style.setProperty("--win-border-light", appliedDark ? lighten(palette.face, 0.28) : "#ffffff");
+  root.style.setProperty("--win-row-alt", mix(palette.panel, palette.face, 0.4));
   root.style.setProperty("--win-logo-bg", "#ffffff");
-  root.style.setProperty("--background", colors.face);
-  root.style.setProperty("--foreground", colors.text);
+  root.style.setProperty("--background", palette.face);
+  root.style.setProperty("--foreground", palette.text);
   root.style.setProperty("--app-font-size", `${fontSize}px`);
-  root.setAttribute("data-theme", dark ? "dark" : "light");
+  root.setAttribute("data-theme", appliedDark ? "dark" : "light");
 }
 
 export function loadStoredTheme(): StoredTheme {
