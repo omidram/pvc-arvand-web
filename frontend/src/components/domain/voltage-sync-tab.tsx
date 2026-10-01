@@ -122,7 +122,7 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
               <Button
                 key={n}
                 type="button"
-                variant={lookbackDays === n ? "default" : "secondary"}
+                variant={lookbackDays === n ? "primary" : "secondary"}
                 className="h-7 px-2 text-xs"
                 onClick={() => setLookbackDays(n)}
               >
