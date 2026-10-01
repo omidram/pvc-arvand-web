@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { monitoringApi } from "@/lib/endpoints";
@@ -22,10 +22,70 @@ const SPANS = [
   { id: "custom", labelKey: "monitoring.customRange" },
 ] as const;
 
+type ChartRow = {
+  label: string;
+  sort: string;
+  date?: string | null;
+  time?: string | null;
+  voltage?: number;
+  rectifier?: number;
+  current_ka?: number | null;
+  prev_day_ka?: number | null;
+  prev2_day_ka?: number | null;
+};
+
 function defaultCustomFrom() {
   const d = new Date();
   d.setDate(d.getDate() - 30);
   return d.toISOString().slice(0, 10);
+}
+
+function shiftIsoDay(iso: string, days: number): string {
+  const d = new Date(`${iso}T12:00:00`);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function HistoryTooltip({
+  active,
+  payload,
+  title,
+  t,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: ChartRow }>;
+  title: string;
+  t: (key: string, vars?: Record<string, string>) => string;
+}) {
+  if (!active || !payload?.length) return null;
+  const row = payload[0]?.payload;
+  if (!row) return null;
+  const voltage = row.voltage;
+  return (
+    <div className="vh-tip">
+      <div className="vh-tip-time">{row.label}</div>
+      {voltage != null ? (
+        <div className="vh-tip-v">
+          {title} : {Number(voltage).toFixed(3)} V
+        </div>
+      ) : null}
+      {row.current_ka != null ? (
+        <div className="vh-tip-i">
+          {t("monitoring.tipLoadToday")}: {Number(row.current_ka).toFixed(2)} kA
+        </div>
+      ) : null}
+      {row.prev_day_ka != null ? (
+        <div className="vh-tip-i is-prev">
+          {t("monitoring.tipLoadPrevDay")}: {Number(row.prev_day_ka).toFixed(2)} kA
+        </div>
+      ) : null}
+      {row.prev2_day_ka != null ? (
+        <div className="vh-tip-i is-prev">
+          {t("monitoring.tipLoadPrev2Day")}: {Number(row.prev2_day_ka).toFixed(2)} kA
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export function VoltageHistoryDialog({
@@ -61,15 +121,24 @@ export function VoltageHistoryDialog({
     enabled: !custom || Boolean(dateFrom || dateTo),
   });
   const data = query.data;
-  const chartRows = (() => {
-    const byKey = new Map<string, { label: string; sort: string; voltage?: number; rectifier?: number }>();
+  const chartRows = useMemo(() => {
+    const byKey = new Map<string, ChartRow>();
+    const loadBySlot = new Map<string, number>();
     for (const point of data?.points || []) {
       const sort = `${point.date || ""} ${point.time || ""}`;
       const row = byKey.get(sort) || {
         label: `${formatDate(point.date)}${point.time ? ` ${point.time}` : ""}`,
         sort,
+        date: point.date,
+        time: point.time,
       };
       row.voltage = point.voltage;
+      if (point.current_ka != null) {
+        row.current_ka = point.current_ka;
+        loadBySlot.set(`${point.date || ""}|${(point.time || "").trim()}`, point.current_ka);
+      }
+      if (point.prev_day_ka != null) row.prev_day_ka = point.prev_day_ka;
+      if (point.prev2_day_ka != null) row.prev2_day_ka = point.prev2_day_ka;
       byKey.set(sort, row);
     }
     for (const point of data?.rectifier_points || []) {
@@ -77,12 +146,30 @@ export function VoltageHistoryDialog({
       const row = byKey.get(sort) || {
         label: `${formatDate(point.date)}${point.time ? ` ${point.time}` : ""}`,
         sort,
+        date: point.date,
+        time: point.time,
       };
       row.rectifier = point.voltage;
       byKey.set(sort, row);
     }
-    return [...byKey.values()].sort((a, b) => a.sort.localeCompare(b.sort));
-  })();
+    const rows = [...byKey.values()].sort((a, b) => a.sort.localeCompare(b.sort));
+    for (const row of rows) {
+      if (!row.date) continue;
+      const time = (row.time || "").trim();
+      const prev = shiftIsoDay(row.date, -1);
+      const prev2 = shiftIsoDay(row.date, -2);
+      if (row.prev_day_ka == null) {
+        row.prev_day_ka = loadBySlot.get(`${prev}|${time}`) ?? null;
+      }
+      if (row.prev2_day_ka == null) {
+        row.prev2_day_ka = loadBySlot.get(`${prev2}|${time}`) ?? null;
+      }
+      if (row.current_ka == null) {
+        row.current_ka = loadBySlot.get(`${row.date}|${time}`) ?? null;
+      }
+    }
+    return rows;
+  }, [data]);
   const hasRectifier = (data?.rectifier_points || []).length > 0;
 
   return (
@@ -143,10 +230,7 @@ export function VoltageHistoryDialog({
                 <CartesianGrid stroke="#243056" />
                 <XAxis dataKey="label" stroke="#cbd5e1" tick={{ fontSize: 10 }} minTickGap={28} />
                 <YAxis stroke="#cbd5e1" tick={{ fontSize: 10 }} domain={["auto", "auto"]} width={48} />
-                <Tooltip
-                  contentStyle={{ background: "#0f172a", border: "1px solid #334155", color: "#f8fafc" }}
-                  formatter={(value, name) => [`${Number(value).toFixed(3)} V`, name]}
-                />
+                <Tooltip content={<HistoryTooltip title={data.title} t={t} />} />
                 <Line type="monotone" dataKey="voltage" stroke="#d6e35a" strokeWidth={2} dot={{ r: 2 }} connectNulls name={data.title} />
                 {hasRectifier ? (
                   <Line
@@ -168,15 +252,15 @@ export function VoltageHistoryDialog({
                 <tr>
                   <th className="px-2 py-1 text-start">{t("monitoring.historyTime")}</th>
                   <th className="px-2 py-1 text-start">{t("monitoring.historyValue")}</th>
+                  <th className="px-2 py-1 text-start">{t("monitoring.loadKa")}</th>
                 </tr>
               </thead>
               <tbody>
-                {[...data.points].reverse().slice(0, 40).map((point, idx) => (
-                  <tr key={`${point.date}-${point.time}-${idx}`} className={idx % 2 ? "bg-[var(--win-row-alt)]" : ""}>
-                    <td className="px-2 py-1">
-                      {formatDate(point.date)} {point.time || ""}
-                    </td>
-                    <td className="px-2 py-1">{Number(point.voltage).toFixed(3)}</td>
+                {[...chartRows].reverse().slice(0, 40).map((point, idx) => (
+                  <tr key={`${point.sort}-${idx}`} className={idx % 2 ? "bg-[var(--win-row-alt)]" : ""}>
+                    <td className="px-2 py-1">{point.label}</td>
+                    <td className="px-2 py-1">{point.voltage != null ? Number(point.voltage).toFixed(3) : "—"}</td>
+                    <td className="px-2 py-1">{point.current_ka != null ? Number(point.current_ka).toFixed(2) : "—"}</td>
                   </tr>
                 ))}
               </tbody>

@@ -4,8 +4,8 @@
 
 const en = {
   app: {
-    name: "PVC Arvand",
-    subtitle: "Electrolyzer Management Program",
+    name: "Arvand Electrolyzer Management Program",
+    subtitle: "Arvand Petrochemical Company",
     footer: "Data migrated from Uhde Administrator",
   },
   common: {
@@ -594,6 +594,9 @@ const en = {
   },
   auth: {
     loginTitle: "Sign in",
+    loginCreditIt: "Arvand Petrochemical IT",
+    loginCreditVendor: "Vefaq Sharif Co.",
+    loginCopyright: "© All rights reserved",
     username: "Username",
     password: "Password",
     signIn: "Sign in",
@@ -1097,8 +1100,8 @@ type DeepPartialStrings<T> = { [K in keyof T]: T[K] extends string ? string : De
 
 const fa: DeepPartialStrings<typeof en> = {
   app: {
-    name: "پی‌وی‌سی اروند",
-    subtitle: "برنامه مدیریت الکترولایزر",
+    name: "Arvand Electrolyzer Management Program",
+    subtitle: "شرکت پتروشیمی اروند",
     footer: "داده‌ها از نرم‌افزار Uhde Administrator منتقل شده‌اند",
   },
   common: {
@@ -1687,6 +1690,9 @@ const fa: DeepPartialStrings<typeof en> = {
   },
   auth: {
     loginTitle: "ورود به سیستم",
+    loginCreditIt: "فناوری و اطلاعات پتروشیمی اروند",
+    loginCreditVendor: "شرکت وفاق شریف",
+    loginCopyright: "© تمام حقوق محفوظ است",
     username: "نام کاربری",
     password: "رمز عبور",
     signIn: "ورود",

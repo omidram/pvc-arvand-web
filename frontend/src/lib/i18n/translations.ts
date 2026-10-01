@@ -4,8 +4,8 @@
 
 const en = {
   app: {
-    name: "PVC Arvand",
-    subtitle: "Electrolyzer Management Program",
+    name: "Arvand Electrolyzer Management Program",
+    subtitle: "Arvand Petrochemical Company",
     footer: "Data migrated from Uhde Administrator",
   },
   common: {
@@ -147,7 +147,7 @@ const en = {
     databaseTables: "All tables",
   },
   mainMenu: {
-    programTitle: "Element Administration Program",
+    programTitle: "Arvand Electrolyzer Management Program",
     client: "Client",
     typeOfPlant: "Type of Plant",
     uan: "UAN",
@@ -693,6 +693,9 @@ const en = {
     pointCount: "{shown} of {total} readings",
     historyTime: "Time",
     historyValue: "Value",
+    tipLoadToday: "Current (same day)",
+    tipLoadPrevDay: "Current (previous day)",
+    tipLoadPrev2Day: "Current (2 days ago)",
     filterShowing: "Showing {label}. Click the same card again to show every cell.",
     noMatchingCells: "No cells match this card.",
     showAllIssues: "Show all {count}",
@@ -1350,6 +1353,9 @@ const en = {
   },
   auth: {
     loginTitle: "Sign in",
+    loginCreditIt: "Arvand Petrochemical IT",
+    loginCreditVendor: "Vefaq Sharif Co.",
+    loginCopyright: "© All rights reserved",
     username: "Username",
     password: "Password",
     signIn: "Sign in",
@@ -1932,8 +1938,8 @@ type DeepPartialStrings<T> = { [K in keyof T]: T[K] extends string ? string : De
 
 const fa: DeepPartialStrings<typeof en> = {
   app: {
-    name: "پی‌وی‌سی اروند",
-    subtitle: "برنامه مدیریت الکترولایزر",
+    name: "Arvand Electrolyzer Management Program",
+    subtitle: "شرکت پتروشیمی اروند",
     footer: "داده‌ها از نرم‌افزار Uhde Administrator منتقل شده‌اند",
   },
   common: {
@@ -2075,7 +2081,7 @@ const fa: DeepPartialStrings<typeof en> = {
     databaseTables: "همه جدول‌ها",
   },
   mainMenu: {
-    programTitle: "برنامه مدیریت المان",
+    programTitle: "Arvand Electrolyzer Management Program",
     client: "کارفرما",
     typeOfPlant: "نوع واحد",
     uan: "UAN",
@@ -2621,6 +2627,9 @@ const fa: DeepPartialStrings<typeof en> = {
     pointCount: "{shown} از {total} قرائت",
     historyTime: "زمان",
     historyValue: "مقدار",
+    tipLoadToday: "آمپر (همان روز)",
+    tipLoadPrevDay: "آمپر (روز قبل)",
+    tipLoadPrev2Day: "آمپر (دو روز قبل)",
     filterShowing: "فقط {label} نشان داده می‌شود. برای دیدن همه سلول‌ها دوباره روی همان کارت بزنید.",
     noMatchingCells: "سلولی با این وضعیت نیست.",
     showAllIssues: "نمایش همه ({count})",
@@ -3278,6 +3287,9 @@ const fa: DeepPartialStrings<typeof en> = {
   },
   auth: {
     loginTitle: "ورود به سیستم",
+    loginCreditIt: "فناوری و اطلاعات پتروشیمی اروند",
+    loginCreditVendor: "شرکت وفاق شریف",
+    loginCopyright: "© تمام حقوق محفوظ است",
     username: "نام کاربری",
     password: "رمز عبور",
     signIn: "ورود",

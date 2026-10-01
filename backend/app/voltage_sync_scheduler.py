@@ -35,7 +35,7 @@ def _default_settings() -> models.VoltageSyncSettings:
         username=DEFAULT_USERNAME,
         password=DEFAULT_PASSWORD,
         daily_time="00:00",
-        lookback_days=1,
+        lookback_days=7,
     )
 
 
@@ -124,6 +124,9 @@ def init_scheduler_from_db() -> None:
                 changed = True
             if not (row.daily_time or "").strip():
                 row.daily_time = "00:00"
+                changed = True
+            if not row.lookback_days or int(row.lookback_days) < 1:
+                row.lookback_days = 7
                 changed = True
             if not row.source_url:
                 row.source_url = DEFAULT_SOURCE

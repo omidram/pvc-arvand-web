@@ -367,51 +367,6 @@ function ElectrolyzerMimic({
             <sub>{name.slice(-1)}</sub>
           </h3>
         </div>
-        <div className="psm-elo-stats">
-          <span className="psm-elo-stat">
-            <small>{last.stale ? t("monitoring.lastReading") : t("monitoring.liveCells")}</small>
-            <b>{last.stale ? last.lastCount : (block?.cell_count ?? 0)}</b>
-          </span>
-          <span className="psm-elo-stat">
-            <small>{t("monitoring.avgV")}</small>
-            <b>{formatNumber(block?.avg_voltage ?? last.avg, 3)}</b>
-          </span>
-          <span className="psm-elo-stat">
-            <small>{t("monitoring.maxV")}</small>
-            <b>{formatNumber(block?.max_voltage ?? last.max, 3)}</b>
-          </span>
-          <span className="psm-elo-stat is-load">
-            <small>{t("monitoring.loadKa")}</small>
-            <b>{formatNumber(block?.current_ka, 2)}</b>
-          </span>
-          <span className="psm-elo-stat is-power">
-            <small>{t("monitoring.powerKw")}</small>
-            <b>{formatNumber(block?.power_kw, 0)}</b>
-          </span>
-          <span className="psm-elo-stat is-energy">
-            <small>{t("monitoring.energyKwh24h")}</small>
-            <b>{formatNumber(block?.energy_kwh_24h, 0)}</b>
-          </span>
-          <span className="psm-count is-danger">{block?.danger_count ?? 0}</span>
-          <span className="psm-count is-warning">{block?.warning_count ?? 0}</span>
-          <span className="psm-count is-ok">{block?.ok_count ?? 0}</span>
-          {healthSummary ? (
-            <span className="psm-elo-health-legend" title={t("monitoring.healthTitle")}>
-              <span className="ch-count-pill is-ok" title={t("monitoring.healthOk")}>
-                {healthSummary.ok}
-              </span>
-              <span className="ch-count-pill is-watch" title={t("monitoring.healthWatch")}>
-                {healthSummary.watch}
-              </span>
-              <span className="ch-count-pill is-investigate" title={t("monitoring.healthInvestigate")}>
-                {healthSummary.investigate}
-              </span>
-              <span className="ch-count-pill is-critical" title={t("monitoring.healthCritical")}>
-                {healthSummary.critical}
-              </span>
-            </span>
-          ) : null}
-        </div>
         <div className="psm-elo-actions">
           <button type="button" className="psm-enter" onClick={onOpenTotal}>
             {t("monitoring.electrolyzerHistory")}
@@ -421,10 +376,6 @@ function ElectrolyzerMimic({
           </button>
         </div>
       </header>
-      <div className="psm-train-export">
-        <MonitoringExport scope="electrolyzer" electrolyzer={name} filenameBase={`monitoring-${name}`} />
-      </div>
-      <ElectrolyzerPropertiesPanel name={name} />
       <div className="psm-flow">
         <span>{t("monitoring.flowRectifier")}</span>
         <i />
@@ -494,6 +445,55 @@ function ElectrolyzerMimic({
           );
         })}
       </div>
+      <div className="psm-elo-stats psm-elo-stats-below">
+        <span className="psm-elo-stat">
+          <small>{last.stale ? t("monitoring.lastReading") : t("monitoring.liveCells")}</small>
+          <b>{last.stale ? last.lastCount : (block?.cell_count ?? 0)}</b>
+        </span>
+        <span className="psm-elo-stat">
+          <small>{t("monitoring.avgV")}</small>
+          <b>{formatNumber(block?.avg_voltage ?? last.avg, 3)}</b>
+        </span>
+        <span className="psm-elo-stat">
+          <small>{t("monitoring.maxV")}</small>
+          <b>{formatNumber(block?.max_voltage ?? last.max, 3)}</b>
+        </span>
+        <span className="psm-elo-stat is-load">
+          <small>{t("monitoring.loadKa")}</small>
+          <b>{formatNumber(block?.current_ka, 2)}</b>
+        </span>
+        <span className="psm-elo-stat is-power">
+          <small>{t("monitoring.powerKw")}</small>
+          <b>{formatNumber(block?.power_kw, 0)}</b>
+        </span>
+        <span className="psm-elo-stat is-energy">
+          <small>{t("monitoring.energyKwh24h")}</small>
+          <b>{formatNumber(block?.energy_kwh_24h, 0)}</b>
+        </span>
+        <span className="psm-count is-danger">{block?.danger_count ?? 0}</span>
+        <span className="psm-count is-warning">{block?.warning_count ?? 0}</span>
+        <span className="psm-count is-ok">{block?.ok_count ?? 0}</span>
+        {healthSummary ? (
+          <span className="psm-elo-health-legend" title={t("monitoring.healthTitle")}>
+            <span className="ch-count-pill is-ok" title={t("monitoring.healthOk")}>
+              {healthSummary.ok}
+            </span>
+            <span className="ch-count-pill is-watch" title={t("monitoring.healthWatch")}>
+              {healthSummary.watch}
+            </span>
+            <span className="ch-count-pill is-investigate" title={t("monitoring.healthInvestigate")}>
+              {healthSummary.investigate}
+            </span>
+            <span className="ch-count-pill is-critical" title={t("monitoring.healthCritical")}>
+              {healthSummary.critical}
+            </span>
+          </span>
+        ) : null}
+      </div>
+      <div className="psm-train-export">
+        <MonitoringExport scope="electrolyzer" electrolyzer={name} filenameBase={`monitoring-${name}`} />
+      </div>
+      <ElectrolyzerPropertiesPanel name={name} />
     </article>
   );
 }

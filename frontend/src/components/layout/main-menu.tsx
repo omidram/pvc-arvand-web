@@ -81,7 +81,15 @@ export function MainMenu() {
 
         <section className="flex min-w-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-1">
           <div className="access-header-sunken mb-3 px-4 pb-3 pt-2">
-            <h1 className="mb-3 text-center text-[22px] font-bold leading-tight text-black">{t("mainMenu.programTitle")}</h1>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h1 className="min-w-0 flex-1 text-start text-[20px] font-bold leading-tight text-black">
+                {t("mainMenu.programTitle")}
+              </h1>
+              <div className="flex h-14 w-36 shrink-0 items-center justify-center bg-transparent p-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-arvand.png" alt="Arvand Petrochemical Company" className="h-full w-auto object-contain" />
+              </div>
+            </div>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-black">
               <span>
                 <span className="font-bold">{t("mainMenu.client")}:</span> {settings?.customer || "—"}

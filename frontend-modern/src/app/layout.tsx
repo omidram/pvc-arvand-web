@@ -4,12 +4,12 @@ import { Providers } from "@/components/providers";
 import { AppShell } from "@/components/layout/app-shell";
 
 export const metadata: Metadata = {
-  title: "PVC Arvand | Uhde Administrator",
-  description: "Plant configuration, element administration, and data analysis for the PVC Arvand electrolysis plant",
+  title: "Arvand Electrolyzer Management Program",
+  description: "Plant configuration, element administration, and data analysis for the Arvand electrolysis plant",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 

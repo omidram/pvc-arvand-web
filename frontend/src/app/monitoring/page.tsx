@@ -408,6 +408,22 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
         </p>
       ) : null}
 
+      {data.electrolyzers.length === 0 ? (
+        <div className="mon-empty">{t("monitoring.noVoltageData")}</div>
+      ) : (
+        <PlantSchematic
+          blocks={data.electrolyzers}
+          focus={focus}
+          view={plantView}
+          onView={(next) => {
+            setPlantView(next);
+            setElFilter(next.level === "electrolyzer" ? next.name : "all");
+          }}
+          onOpenCell={(cell) => setHistory({ electrolyzer: cell.electrolyzer, position: cell.position })}
+          onOpenTotal={(electrolyzer) => setHistory({ electrolyzer })}
+        />
+      )}
+
       <div className="mon-kpi-row">
         <Kpi
           label={t("monitoring.totalCells")}
@@ -493,22 +509,6 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
           <span className="mon-legend-item is-unknown">{t("monitoring.legendUnknown")}</span>
           <span className="text-xs text-[var(--win-muted)]">{t("monitoring.historyHint")}</span>
         </div>
-
-      {data.electrolyzers.length === 0 ? (
-        <div className="mon-empty">{t("monitoring.noVoltageData")}</div>
-      ) : (
-        <PlantSchematic
-          blocks={data.electrolyzers}
-          focus={focus}
-          view={plantView}
-          onView={(next) => {
-            setPlantView(next);
-            setElFilter(next.level === "electrolyzer" ? next.name : "all");
-          }}
-          onOpenCell={(cell) => setHistory({ electrolyzer: cell.electrolyzer, position: cell.position })}
-          onOpenTotal={(electrolyzer) => setHistory({ electrolyzer })}
-        />
-      )}
 
       <div className="mon-split">
         <section className="mon-panel">

@@ -1176,7 +1176,14 @@ export const monitoringApi = {
     date_from?: string | null;
     date_to?: string | null;
     total: number;
-    points: { date: string | null; time: string | null; voltage: number }[];
+    points: {
+      date: string | null;
+      time: string | null;
+      voltage: number;
+      current_ka?: number | null;
+      prev_day_ka?: number | null;
+      prev2_day_ka?: number | null;
+    }[];
     rectifier_points?: { date: string | null; time: string | null; voltage: number }[];
   }> => (await apiClient.get("/monitoring/voltage-history", { params })).data,
   importProgress: async (): Promise<{

@@ -212,11 +212,27 @@ def _sheet_rows(wb, sheet_name: str | None = None) -> list[list[Any]]:
 # ---------------------------------------------------------------------------
 
 _CELL_RE = re.compile(r"^(?P<el>[A-Za-z]+\d*)-(?P<pos>\d{1,3})\b")
+# BlueStar / L2-M2 AriaORMS tags look like: 1-002[L2-001]
+_CELL_BRACKET_RE = re.compile(r"\[(?P<el>[A-Za-z]+\d*)-(?P<pos>\d{1,3})\]")
 _RECT_ITEM_RE = re.compile(r"^(?P<el>[A-Za-z]+\d+)\s*\[(?P<what>[^\]]+)\]", re.I)
 _DATE_ROW_RE = re.compile(r"^\d{4}[./\-]\d{1,2}[./\-]\d{1,2}")
 _EL_RE = re.compile(r"^(?P<el>[A-Za-z]+\d*)\[", re.I)
 _EL_VOLTAGE_RE = re.compile(r"electrolyzer\s+voltage\s+(?P<el>[A-Za-z]+\d*)", re.I)
 _EL_IN_TEXT_RE = re.compile(r"(?:ELECTROLYZER|EL)\s*(?P<el>[A-Za-z]+\d*)", re.I)
+
+
+def _match_cell_tag(*texts: str):
+    """Match cell tags like K2-001 or BlueStar 1-002[L2-001]."""
+    for text in texts:
+        if not text:
+            continue
+        m = _CELL_BRACKET_RE.search(text)
+        if m:
+            return m
+        m = _CELL_RE.match(text)
+        if m:
+            return m
+    return None
 
 
 def _col_index(vals_lower: list[str], *names: str) -> int | None:
@@ -353,7 +369,7 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
                 if op:
                     operators.add(op)
 
-        cell_m = _CELL_RE.match(label) or _CELL_RE.match(tag) or _CELL_RE.match(parameter)
+        cell_m = _match_cell_tag(label, tag, parameter)
         if cell_m:
             pos_raw = cell_m.group("pos")
             el = cell_m.group("el").upper()
@@ -370,7 +386,7 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
                 entry = {
                     "electrolyzer": el,
                     "position": pos,
-                    "element_nr": f"{el}-{pos_raw}",
+                    "element_nr": f"{el}-{pos_raw.zfill(3) if pos_raw.isdigit() else pos_raw}",
                     "time": tlabel,
                     "voltage": voltage,
                     "date": reading_date.isoformat() if reading_date else None,
@@ -422,6 +438,7 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
             elif key.startswith("load ") or key.startswith("load["):
                 slot["load"] = voltage
 
+    slot_dates = {s.get("date") for s in total_slots.values() if s.get("date")}
     return {
         "sheet": preferred,
         "electrolyzer": electrolyzer,
@@ -433,7 +450,7 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
         "out_of_range": out_of_range,
         "imported_cells": len(readings),
         "times": sorted(set(time_cols.values())),
-        "dates": sorted({r["date"] for r in readings if r.get("date")}),
+        "dates": sorted({r["date"] for r in readings if r.get("date")} | slot_dates),
     }
 
 

@@ -143,19 +143,21 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
   return (
     <aside className={cn("modern-sidebar", open && "is-open")}>
       <div className="ms-brand">
-        <div className="ms-logo-well">
-          <Image
-            src="/logo.png"
-            alt="Arvand Petrochemical Company"
-            width={210}
-            height={70}
-            className="h-full w-auto object-contain"
-            priority
-          />
-        </div>
-        <div className="min-w-0 text-center">
-          <div className="ms-brand-title">{t("app.name")}</div>
-          <div className="ms-brand-sub">{t("app.subtitle")}</div>
+        <div className="ms-brand-row">
+          <div className="min-w-0 flex-1 text-start">
+            <div className="ms-brand-title">{t("app.name")}</div>
+            <div className="ms-brand-sub">{t("app.subtitle")}</div>
+          </div>
+          <div className="ms-logo-well ms-logo-side">
+            <Image
+              src="/logo-arvand.png"
+              alt="Arvand Petrochemical Company"
+              width={210}
+              height={70}
+              className="h-full w-auto object-contain"
+              priority
+            />
+          </div>
         </div>
       </div>
 

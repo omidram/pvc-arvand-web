@@ -224,7 +224,7 @@ with SessionLocal() as _db:
     persist_industrial_names(_db)
     persist_industrial_reasons(_db)
 
-app = FastAPI(title="PVC Arvand - Electrolyzer Management System", version="1.0.0")
+app = FastAPI(title="Arvand Electrolyzer Management Program", version="1.0.0")
 
 # Register SQLAlchemy audit listeners (imported for side effects).
 _ = audit

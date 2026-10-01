@@ -552,6 +552,7 @@ def voltage_history(
                 "date": row.date.date().isoformat() if row.date else None,
                 "time": row.time,
                 "voltage": row.total_voltage,
+                "current_ka": float(row.total_current) if row.total_current is not None else None,
             }
             for row in rows
             if row.total_voltage is not None
@@ -560,6 +561,59 @@ def voltage_history(
             points = points[-int(span) :]
         title = f"Electrolyzer voltage {el}"
         kind = "total"
+
+    # Attach electrolyzer load (kA) to every point (same date+time) for cell tooltips.
+    # Include two days before the first point so "previous day" tooltip values resolve.
+    load_by_slot: dict[tuple[str, str], float] = {}
+    if points:
+        day_keys = sorted({p["date"] for p in points if p.get("date")})
+        if day_keys:
+            first_day = datetime.fromisoformat(day_keys[0]).date() - timedelta(days=2)
+            last_day = datetime.fromisoformat(day_keys[-1]).date()
+            norm_q = (
+                db.query(models.ElectrolyzerNormalization)
+                .filter(
+                    models.ElectrolyzerNormalization.electrolyzer == el,
+                    models.ElectrolyzerNormalization.total_current.isnot(None),
+                    models.ElectrolyzerNormalization.date
+                    >= datetime.combine(first_day, datetime.min.time()),
+                    models.ElectrolyzerNormalization.date
+                    <= datetime.combine(last_day, datetime.max.time()),
+                )
+            )
+            for row in norm_q.all():
+                if row.date is None or row.total_current is None:
+                    continue
+                day = row.date.date().isoformat() if isinstance(row.date, datetime) else str(row.date)[:10]
+                tlabel = (row.time or "").strip()
+                load_by_slot[(day, tlabel)] = float(row.total_current)
+        for point in points:
+            day = point.get("date") or ""
+            tlabel = (point.get("time") or "").strip()
+            if point.get("current_ka") is None:
+                if (day, tlabel) in load_by_slot:
+                    point["current_ka"] = load_by_slot[(day, tlabel)]
+                else:
+                    day_loads = [v for (d, _t), v in load_by_slot.items() if d == day]
+                    if day_loads:
+                        point["current_ka"] = day_loads[-1]
+            # Previous calendar days at the same clock slot (for chart tooltip).
+            if day:
+                try:
+                    base = datetime.fromisoformat(day).date()
+                except ValueError:
+                    base = None
+                if base is not None:
+                    prev = (base - timedelta(days=1)).isoformat()
+                    prev2 = (base - timedelta(days=2)).isoformat()
+                    point["prev_day_ka"] = load_by_slot.get((prev, tlabel))
+                    point["prev2_day_ka"] = load_by_slot.get((prev2, tlabel))
+                    if point["prev_day_ka"] is None:
+                        day_loads = [v for (d, _t), v in load_by_slot.items() if d == prev]
+                        point["prev_day_ka"] = day_loads[-1] if day_loads else None
+                    if point["prev2_day_ka"] is None:
+                        day_loads = [v for (d, _t), v in load_by_slot.items() if d == prev2]
+                        point["prev2_day_ka"] = day_loads[-1] if day_loads else None
 
     rectifier_points: list[dict] = []
     if not pos:

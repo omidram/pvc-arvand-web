@@ -1013,11 +1013,17 @@ html[data-theme="dark"][data-ui="modern"] .modern-sidebar {
 .modern-sidebar .ms-brand {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 0.5rem;
   padding: 1rem;
   background: linear-gradient(145deg, #0f172a 0%, #1e3a8a 55%, #1d4ed8 100%);
   border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.modern-sidebar .ms-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
 }
 
 .modern-sidebar .ms-logo-well {
@@ -1027,17 +1033,26 @@ html[data-theme="dark"][data-ui="modern"] .modern-sidebar {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-radius: 0.75rem;
-  background: #ffffff;
-  padding: 0.5rem;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+.modern-sidebar .ms-logo-side {
+  width: 7.5rem;
+  height: 3.4rem;
+  flex-shrink: 0;
+  background: transparent;
 }
 
 .modern-sidebar .ms-brand-title {
-  font-size: 0.875rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   color: #ffffff;
+  text-align: start;
+  white-space: normal;
 }
 
 .modern-sidebar .ms-brand-sub {
@@ -2027,6 +2042,56 @@ button.mon-kpi.is-active {
 }
 html[data-theme="dark"] .vh-custom-range {
   background: color-mix(in srgb, var(--win-face) 88%, black);
+}
+
+.vh-tip {
+  min-width: 10rem;
+  max-width: 16rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #334155;
+  border-radius: 0.4rem;
+  background: #0b1a3d;
+  color: #f8fafc;
+  font-size: 11px;
+  line-height: 1.35;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.35);
+}
+.vh-tip-time {
+  margin-bottom: 0.2rem;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+.vh-tip-v {
+  color: #d6e35a;
+  font-weight: 700;
+}
+.vh-tip-i {
+  margin-top: 0.15rem;
+  color: #7dd3fc;
+  font-weight: 600;
+}
+.vh-tip-i.is-prev {
+  color: #a5b4fc;
+  font-weight: 500;
+}
+
+.login-koku-footer {
+  font-family: "Koku", "Vazirmatn", Tahoma, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--win-muted);
+}
+.login-koku-footer .login-koku-copy {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  opacity: 0.9;
+}
+
+.psm-elo-stats-below {
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid color-mix(in srgb, var(--win-navy) 12%, var(--win-face-dark));
 }
 
 .mon-el-stack {
@@ -3367,7 +3432,15 @@ html[data-theme="dark"] .mon-cell.is-danger {
 .psm-chip-muted { background: #f1f5f9; color: #64748b; }
 .psm-chip.is-danger { background: #fee2e2; color: #991b1b; }
 .psm-chip.is-warning { background: #fef3c7; color: #92400e; }
-.psm-elo-stats { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0.45rem; }
+.psm-elo-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.45rem;
+}
+.psm-elo-stats-below {
+  justify-content: flex-start;
+}
 .psm-elo-stat {
   display: flex;
   flex-direction: column;

@@ -47,21 +47,35 @@ export function LoginScreen() {
         onClick={toggleTheme}
         title={t(resolvedTheme === "dark" ? "common.switchToLight" : "common.switchToDark")}
         aria-label={t(resolvedTheme === "dark" ? "common.switchToLight" : "common.switchToDark")}
-        className="absolute end-4 top-4 flex h-8 w-8 items-center justify-center border-2 border-[var(--win-face)] bg-[var(--win-face)] text-[var(--win-text)] rounded-lg hover:bg-[var(--win-face-hi)]"
+        className="absolute end-4 top-4 flex h-8 w-8 items-center justify-center border-2 border-[var(--win-face)] bg-[var(--win-face)] text-[var(--win-text)] [border-style:outset] hover:bg-[var(--win-face-hi)] active:[border-style:inset]"
       >
         {resolvedTheme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
       </button>
-      <div className="flex h-24 w-72 shrink-0 items-center justify-center overflow-hidden border-2 border-[var(--win-border-light)] rounded-lg bg-[var(--win-logo-bg)] p-3 shadow-lg">
-        <Image src="/logo.png" alt="Arvand Petrochemical Company" width={288} height={96} className="h-full w-full object-contain" priority />
+      <div className="flex h-28 w-[min(100%,22rem)] shrink-0 items-center justify-center bg-transparent p-1">
+        <Image
+          src="/logo-arvand.png"
+          alt="Arvand Petrochemical Company"
+          width={360}
+          height={120}
+          className="h-full w-auto max-w-full object-contain"
+          priority
+          loading="eager"
+        />
       </div>
-      <div className="w-full max-w-sm border-2 border-[var(--win-border-light)] rounded-lg bg-[var(--win-face)] shadow-lg">
-        <div className="flex items-center gap-3 border-b-2 border-[var(--win-border-shadow)] bg-gradient-to-r from-[var(--win-navy)] to-[var(--win-navy-mid)] px-4 py-3">
-          <div className="flex h-11 w-32 shrink-0 items-center justify-center overflow-hidden border-2 border-white/40 rounded-lg bg-[var(--win-logo-bg)] p-1">
-            <Image src="/logo.png" alt="Arvand Petrochemical Company" width={128} height={44} className="h-full w-full object-contain" />
+      <div className="w-full max-w-md border-2 border-[var(--win-border-light)] [border-style:outset] bg-[var(--win-face)] shadow-lg">
+        <div className="flex items-center justify-between gap-3 border-b-2 border-[var(--win-border-shadow)] bg-gradient-to-r from-[var(--win-navy)] to-[var(--win-navy-mid)] px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-bold leading-snug text-white">{t("app.name")}</div>
+            <div className="text-[10px] text-cyan-100">{t("app.subtitle")}</div>
           </div>
-          <div className="min-w-0">
-            <div className="truncate text-sm font-bold leading-tight text-white">{t("app.name")}</div>
-            <div className="truncate text-[10px] text-cyan-100">{t("app.subtitle")}</div>
+          <div className="flex h-12 w-28 shrink-0 items-center justify-center bg-transparent p-0">
+            <Image
+              src="/logo-arvand.png"
+              alt="Arvand Petrochemical Company"
+              width={120}
+              height={48}
+              className="h-full w-auto object-contain"
+            />
           </div>
         </div>
 
@@ -85,7 +99,7 @@ export function LoginScreen() {
           </div>
 
           {error && (
-            <div className="border-2 border-[var(--win-danger)] rounded-lg bg-red-50 px-2 py-1.5 text-xs text-[var(--win-danger)]">
+            <div className="border-2 border-[var(--win-danger)] [border-style:inset] bg-red-50 px-2 py-1.5 text-xs text-[var(--win-danger)]">
               {error}
             </div>
           )}
@@ -101,9 +115,9 @@ export function LoginScreen() {
                 type="button"
                 onClick={() => setLocale(loc)}
                 className={cn(
-                  "border-2 px-2 py-1 text-xs font-bold rounded-lg",
+                  "border-2 px-2 py-1 text-xs font-bold [border-style:outset]",
                   locale === loc
-                    ? "border-[var(--win-navy)] bg-[var(--win-navy)] text-white rounded-lg"
+                    ? "border-[var(--win-navy)] bg-[var(--win-navy)] text-white [border-style:inset]"
                     : "bg-[var(--win-face)] text-[var(--win-text)] hover:bg-[var(--win-face-hi)]"
                 )}
               >
@@ -113,6 +127,12 @@ export function LoginScreen() {
           </div>
         </form>
       </div>
+
+      <footer className="login-koku-footer max-w-md text-center">
+        <div>{t("auth.loginCreditIt")}</div>
+        <div>{t("auth.loginCreditVendor")}</div>
+        <div className="login-koku-copy">{t("auth.loginCopyright")}</div>
+      </footer>
     </div>
   );
 }

@@ -87,13 +87,13 @@ export function Sidebar() {
   return (
     <aside className="flex w-64 shrink-0 flex-col border-e border-slate-200 bg-white">
       <div className="border-b border-white/10 bg-gradient-to-br from-slate-900 to-blue-800 px-4 py-4">
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex h-16 w-full items-center justify-center overflow-hidden rounded-xl bg-white p-2 shadow-md">
-            <Image src="/logo.png" alt="Arvand Petrochemical Company" width={210} height={70} className="h-full w-auto object-contain" priority />
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1 text-start">
+            <div className="text-xs font-bold leading-snug text-white">{t("app.name")}</div>
+            <div className="text-[10px] text-cyan-100">{t("app.subtitle")}</div>
           </div>
-          <div className="min-w-0 text-center">
-            <div className="truncate text-sm font-bold leading-tight text-white">{t("app.name")}</div>
-            <div className="truncate text-[10px] text-cyan-100">{t("app.subtitle")}</div>
+          <div className="flex h-12 w-28 shrink-0 items-center justify-center bg-transparent p-0">
+            <Image src="/logo-arvand.png" alt="Arvand Petrochemical Company" width={120} height={48} className="h-full w-auto object-contain" priority />
           </div>
         </div>
       </div>
