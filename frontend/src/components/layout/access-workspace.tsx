@@ -2,13 +2,26 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AccessFields, accessPayload, valuesFromRecord } from "@/components/ui/access-fields";
+import { AccessFields, accessPayload, valuesFromRecord, toAccessValue } from "@/components/ui/access-fields";
 import type { FieldDef } from "@/components/ui/resource-form";
-import { DataTable, type Column } from "@/components/ui/data-table";
+import type { Column } from "@/components/ui/data-table";
+import { DatasheetPane } from "@/components/ui/datasheet-pane";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { AccessFormWindow, AccessNav } from "@/components/layout/access-form";
 import { useI18n } from "@/lib/i18n/context";
 import { ExportButtons } from "@/components/domain/export-buttons";
+import { formatDate, humanizeKey, sameNr } from "@/lib/utils";
+
+const HIDDEN_SHEET_KEYS = new Set(["sign_insp_image", "sign_maint_image", "sign_proc_image", "signature"]);
+
+function fieldPlain(field: FieldDef, row: object, yes: string, no: string): string {
+  const raw = (row as Record<string, unknown>)[field.name];
+  if (raw == null || raw === "") return "";
+  if (field.type === "select") return field.options?.find((option) => option.value === String(raw))?.label ?? String(raw);
+  if (field.type === "checkbox") return raw ? yes : no;
+  if (field.type === "date" || field.type === "datetime-local") return formatDate(String(raw));
+  return String(raw);
+}
 
 export function AccessWorkspace<T extends object>({
   caption,
@@ -31,6 +44,7 @@ export function AccessWorkspace<T extends object>({
   exportParams,
   filenameBase,
   onLookup,
+  onSuggest,
   confirmDelete,
   submitting,
   formBody,
@@ -38,6 +52,11 @@ export function AccessWorkspace<T extends object>({
   backHref,
   backLabel,
   titleBlue,
+  newDefaults,
+  newDefaultsKey,
+  validate,
+  /** "summary" = only the table `columns` in datasheet (faster for large lists). */
+  sheetMode = "fields",
 }: {
   caption: string;
   helpKey?: string;
@@ -50,8 +69,8 @@ export function AccessWorkspace<T extends object>({
   getId?: (row: T) => string | number;
   recordParam?: string;
   canEdit: boolean;
-  onSave: (id: string | number, values: Record<string, unknown>) => void;
-  onCreate: (values: Record<string, unknown>) => void;
+  onSave: (id: string | number, values: Record<string, unknown>) => void | Promise<void>;
+  onCreate: (values: Record<string, unknown>) => void | Promise<void>;
   onDelete: (id: string | number) => void;
   related?: (row: T) => React.ReactNode;
   commands?: React.ReactNode;
@@ -59,6 +78,12 @@ export function AccessWorkspace<T extends object>({
   exportParams?: Record<string, unknown>;
   filenameBase?: string;
   onLookup?: (name: string, value: unknown, values: Record<string, unknown>) => Promise<T | null>;
+  /** Patch form fields from a live lookup (e.g. serial → Assembly fill) without changing the current record. */
+  onSuggest?: (
+    name: string,
+    value: unknown,
+    values: Record<string, unknown>
+  ) => Promise<Record<string, unknown> | null>;
   confirmDelete?: (row: T) => string;
   submitting?: boolean;
   /** Replaces the generic field list. Used by the printed inspection sheet. */
@@ -74,6 +99,10 @@ export function AccessWorkspace<T extends object>({
   backHref?: string;
   backLabel?: string;
   titleBlue?: boolean;
+  newDefaults?: () => Record<string, unknown>;
+  newDefaultsKey?: string;
+  validate?: (values: Record<string, unknown>, ctx: { isNew: boolean }) => string | null;
+  sheetMode?: "fields" | "summary";
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -95,6 +124,7 @@ export function AccessWorkspace<T extends object>({
   const [index, setIndex] = useState(0);
   const [isNew, setIsNew] = useState(false);
   const [findValue, setFindValue] = useState("");
+  const [saveError, setSaveError] = useState("");
   const [values, setValues] = useState<Record<string, unknown>>(() => valuesFromRecord(fields, null));
 
   const current = !isNew && rows[index] ? rows[index] : null;
@@ -114,7 +144,8 @@ export function AccessWorkspace<T extends object>({
     const found = rows.findIndex((row) => {
       if (String(readId(row)) === String(wanted)) return true;
       const named = (row as Record<string, unknown>)[paramName];
-      return named != null && String(named) === String(wanted);
+      if (named != null && String(named) === String(wanted)) return true;
+      return named != null && sameNr(String(named), wanted);
     });
     if (found >= 0) {
       setIsNew(false);
@@ -126,9 +157,11 @@ export function AccessWorkspace<T extends object>({
 
   const currentId = current ? String(readId(current)) : isNew ? "__new__" : "";
   useEffect(() => {
+    const defaults = newDefaults?.() ?? {};
     if (formBody) {
       if (!current) {
-        setValues({});
+        setValues({ ...defaults });
+        setSaveError("");
         return;
       }
       const copy: Record<string, unknown> = {};
@@ -137,12 +170,32 @@ export function AccessWorkspace<T extends object>({
         copy[key] = value;
       }
       setValues(copy);
+      setSaveError("");
       return;
     }
-    setValues(valuesFromRecord(fields, current));
+    if (isNew) {
+      setValues({ ...valuesFromRecord(fields, null), ...defaults });
+    } else {
+      setValues(valuesFromRecord(fields, current));
+    }
+    setSaveError("");
     // Reset draft only when the record changes, not when field defs are rebuilt.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentId, isNew]);
+
+  useEffect(() => {
+    if (!isNew) return;
+    const defaults = newDefaults?.() ?? {};
+    setValues((current) => {
+      const next = { ...current };
+      for (const [key, value] of Object.entries(defaults)) {
+        if (value == null || value === "") continue;
+        if (!String(next[key] ?? "").trim()) next[key] = value;
+      }
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isNew, newDefaultsKey]);
 
   function go(nextIndex: number) {
     const clamped = Math.max(0, Math.min(nextIndex, Math.max(rows.length - 1, 0)));
@@ -168,11 +221,34 @@ export function AccessWorkspace<T extends object>({
   }
 
   async function handleCommit(name: string, value: unknown) {
-    if (!onLookup) return;
     if (!String(value ?? "").trim()) return;
+    const nextValues = { ...values, [name]: value };
     const seq = ++lookupSeq.current;
+
+    if (onSuggest) {
+      try {
+        const patch = await onSuggest(name, value, nextValues);
+        if (seq !== lookupSeq.current) return;
+        if (patch) {
+          setValues((prev) => {
+            const merged: Record<string, unknown> = { ...prev, [name]: value };
+            for (const [key, raw] of Object.entries(patch)) {
+              if (key === name) continue;
+              const field = fields.find((f) => f.name === key);
+              merged[key] = field ? toAccessValue(field.type, raw) : raw ?? "";
+            }
+            return merged;
+          });
+          return;
+        }
+      } catch {
+        // Fall through to onLookup when suggest fails.
+      }
+    }
+
+    if (!onLookup) return;
     try {
-      const found = await onLookup(name, value, { ...values, [name]: value });
+      const found = await onLookup(name, value, nextValues);
       if (seq !== lookupSeq.current || !found) return;
       skipUrlSync.current = true;
       setValues(valuesFromRecord(fields, found));
@@ -184,10 +260,20 @@ export function AccessWorkspace<T extends object>({
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
     const payload = formBody ? values : accessPayload(fields, values);
-    if (isNew || !current) onCreate(payload);
-    else onSave(readId(current), payload);
+    const message = validate?.(payload, { isNew: isNew || !current });
+    if (message) {
+      setSaveError(message);
+      return;
+    }
+    setSaveError("");
+    try {
+      if (isNew || !current) await onCreate(payload);
+      else await onSave(readId(current), payload);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : String(err));
+    }
   }
 
   function handleDelete() {
@@ -196,32 +282,87 @@ export function AccessWorkspace<T extends object>({
     if (confirm(msg)) onDelete(readId(current));
   }
 
-  const filtered = useMemo(() => {
-    if (!findValue || view !== "datasheet") return rows;
-    const needle = findValue.toLowerCase();
-    return rows.filter((row) =>
-      Object.values(row as Record<string, unknown>).some((v) => v != null && String(v).toLowerCase().includes(needle))
-    );
-  }, [rows, findValue, view]);
+  const yes = t("common.yes");
+  const no = t("common.no");
+  const sheetColumns = useMemo(() => {
+    if (sheetMode === "summary" && columns.length) return columns;
+    const used = new Set<string>();
+    const out: Column<T>[] = [];
+    if (fields.length) {
+      for (const field of fields) {
+        used.add(field.name);
+        const summary = columns.find((column) => column.key === field.name);
+        out.push({
+          key: field.name,
+          header: field.label,
+          className: field.type === "textarea" ? "max-w-[18rem] whitespace-normal" : undefined,
+          render: summary?.render ?? ((row) => fieldPlain(field, row, yes, no) || "—"),
+          filterText: (row) => {
+            const shown = fieldPlain(field, row, yes, no);
+            const raw = (row as Record<string, unknown>)[field.name];
+            const plain = raw == null ? "" : String(raw);
+            return shown && plain && shown !== plain ? `${shown} ${plain}` : shown || plain;
+          },
+        });
+      }
+      for (const column of columns) {
+        if (used.has(column.key)) continue;
+        used.add(column.key);
+        out.push(column);
+      }
+    } else {
+      for (const column of columns) {
+        used.add(column.key);
+        out.push(column);
+      }
+      for (const row of rows.slice(0, 40)) {
+        for (const [key, value] of Object.entries(row as Record<string, unknown>)) {
+          if (used.has(key) || HIDDEN_SHEET_KEYS.has(key)) continue;
+          if (value !== null && typeof value === "object") continue;
+          if (typeof value === "string" && (value.startsWith("data:") || value.length > 400)) continue;
+          used.add(key);
+          out.push({ key, header: humanizeKey(key) });
+        }
+      }
+    }
+    return out;
+  }, [fields, columns, rows, yes, no, sheetMode]);
+
+  function locate(row: T) {
+    return rows.findIndex((item) => String(readId(item)) === String(readId(row)));
+  }
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState message={error.message} />;
 
   const body =
     view === "datasheet" ? (
-        <DataTable
-          columns={columns}
-          data={filtered}
+        <DatasheetPane
+          columns={sheetColumns}
+          rows={rows}
           keyField={idField}
           selectedKey={current ? readId(current) : null}
-          onRowClick={(row) => {
-            const found = rows.findIndex((r) => String(readId(r)) === String(readId(row)));
+          canEdit={canEdit}
+          emptyTitle={t("common.noRecordsFound")}
+          onSelect={(row) => {
+            const found = locate(row);
+            if (found >= 0) go(found);
+          }}
+          onOpen={(row) => {
+            const found = locate(row);
             if (found >= 0) {
               go(found);
               setView("form");
             }
           }}
-          emptyTitle={t("common.noRecordsFound")}
+          onDelete={
+            canEdit
+              ? (row) => {
+                  const msg = confirmDelete ? confirmDelete(row) : t("common.confirmDeleteGeneric");
+                  if (confirm(msg)) onDelete(readId(row));
+                }
+              : undefined
+          }
         />
       ) : (
         <>
@@ -239,10 +380,15 @@ export function AccessWorkspace<T extends object>({
               fields={fields}
               values={values}
               onChange={(name, value) => setValues((v) => ({ ...v, [name]: value }))}
-              onCommit={onLookup ? handleCommit : undefined}
+              onCommit={onLookup || onSuggest ? handleCommit : undefined}
               readOnly={!canEdit}
             />
           )}
+          {saveError ? (
+            <p className="mt-2 border-2 border-[#b54a4a] bg-[#fde8e8] px-2 py-1 text-[11px] font-semibold text-[#8a1f1f]">
+              {saveError}
+            </p>
+          ) : null}
           {current && related ? related(current) : null}
         </>
       );
@@ -260,7 +406,11 @@ export function AccessWorkspace<T extends object>({
           onNew={() => {
             setExtra(null);
             setIsNew(true);
-            setValues(formBody ? {} : valuesFromRecord(fields, null));
+            setSaveError("");
+            setValues({
+              ...(formBody ? {} : valuesFromRecord(fields, null)),
+              ...(newDefaults?.() ?? {}),
+            });
           }}
           onSave={handleSave}
           onDelete={handleDelete}
@@ -269,6 +419,7 @@ export function AccessWorkspace<T extends object>({
           saving={submitting}
           view={view}
           onView={setView}
+          hideFind={view === "datasheet"}
         />
   );
 
@@ -290,7 +441,16 @@ export function AccessWorkspace<T extends object>({
       titleBlue={titleBlue}
       commands={
         <>
-          {exportPrefix ? <ExportButtons prefix={exportPrefix} params={exportParams} filenameBase={filenameBase} /> : null}
+          {exportPrefix ? (
+            <ExportButtons
+              prefix={exportPrefix}
+              params={{ ...exportParams, ...(current && !isNew ? { id: readId(current) } : {}) }}
+              filenameBase={filenameBase}
+              exportColumns={fields
+                .filter((f) => !HIDDEN_SHEET_KEYS.has(f.name))
+                .map((f) => ({ key: f.name, label: f.label }))}
+            />
+          ) : null}
           {commands}
         </>
       }

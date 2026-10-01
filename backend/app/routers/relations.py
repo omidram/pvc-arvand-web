@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from .. import models
 from ..database import get_db
+from ..inspection_reason_names import industrial_reason
 
 router = APIRouter(prefix="/relations", tags=["relations"])
 
@@ -34,6 +35,10 @@ LINKS = [
     {"name": "shutdown-category", "parent": "shutdown_categories.category", "child": "shutdowns.category", "access": "tblAbschaltungskategorien"},
     {"name": "voltage-position", "parent": "elements.electrolyzer+position", "child": "voltage_readings.electrolyzer+position", "access": "Montage INNER JOIN Spannungen"},
     {"name": "normalization-voltage", "parent": "normalizations.id", "child": "voltage_readings.normalization_id", "access": "subfrmSpannung LinkMasterFields=Normierung"},
+    {"name": "anode-segregation", "parent": "anodes.anode_nr", "child": "electrode_segregations.serial_nr", "access": "TAFKIK"},
+    {"name": "cathode-segregation", "parent": "cathodes.cathode_nr", "child": "electrode_segregations.serial_nr", "access": "TAFKIK"},
+    {"name": "element-anode-segregation", "parent": "elements.anode_nr", "child": "electrode_segregations.serial_nr", "access": "Assembly Data / TAFKIK"},
+    {"name": "element-cathode-segregation", "parent": "elements.cathode_nr", "child": "electrode_segregations.serial_nr", "access": "Assembly Data / TAFKIK"},
 ]
 
 
@@ -89,14 +94,29 @@ def lookup(name: str, db: Session = Depends(get_db)):
     elif name == "sub-plants":
         values = _values(db.query(models.SubPlant.name).distinct().all())
     elif name == "inspection-reasons":
-        values = _values(
+        raw = _values(
             db.query(models.InspectionReason.reason).distinct().all(),
             db.query(models.InspectionReport.inspection_reason).distinct().all(),
         )
+        values: list[str] = []
+        seen: set[str] = set()
+        for text in raw:
+            translated = industrial_reason(text) or text
+            if translated not in seen:
+                seen.add(translated)
+                values.append(translated)
     elif name == "shutdown-causes":
         values = _values(db.query(models.ShutdownCause.cause).distinct().all())
     elif name == "shutdown-categories":
         values = _values(db.query(models.ShutdownCategory.category).distinct().all())
+    elif name == "decommission-reasons":
+        values = _values(db.query(models.Element.decommission_reason).distinct().all())
+    elif name == "generations":
+        values = _values(
+            db.query(models.Element.generation).distinct().all(),
+            db.query(models.Anode.generation).distinct().all(),
+            db.query(models.Cathode.generation).distinct().all(),
+        )
     else:
         raise HTTPException(status_code=404, detail=f"Unknown lookup '{name}'")
     return {"name": name, "values": values}

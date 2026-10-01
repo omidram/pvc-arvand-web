@@ -53,7 +53,7 @@ def parse_plant_date(value: Any) -> date | None:
         return value.date()
     if isinstance(value, date):
         return value
-    text = str(value).strip()
+    text = re.sub(r"\.{2,}", ".", str(value).strip().strip("."))
     if not text or text in {"*", "―", "-", "—"}:
         return None
     # Excel serial number
@@ -77,7 +77,7 @@ def parse_plant_date(value: Any) -> date | None:
             except Exception:
                 return None
     # YY.MM.DD Jalali short (e.g. 00.11.18 → 1400/11/18 if yy<=80 else 13yy)
-    m = re.match(r"^(\d{2})[./\-](\d{1,2})[./\-](\d{1,2})$", text)
+    m = re.match(r"^(\d{1,2})[./\-](\d{1,2})[./\-](\d{1,2})$", text)
     if m:
         yy, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
         y = 1400 + yy if yy <= 80 else 1300 + yy
@@ -172,7 +172,7 @@ def _sheet_rows(wb, sheet_name: str | None = None) -> list[list[Any]]:
 
 _CELL_RE = re.compile(r"^(?P<el>[A-Za-z]+\d*)-(?P<pos>\d{1,3})\b")
 _RECT_ITEM_RE = re.compile(r"^(?P<el>[A-Za-z]+\d+)\s*\[(?P<what>[^\]]+)\]", re.I)
-_DATE_ROW_RE = re.compile(r"^\d{4}[./\-]\d{1,2}[./\-]\d{1,2}$")
+_DATE_ROW_RE = re.compile(r"^\d{4}[./\-]\d{1,2}[./\-]\d{1,2}")
 _EL_RE = re.compile(r"^(?P<el>[A-Za-z]+\d*)\[", re.I)
 _EL_VOLTAGE_RE = re.compile(r"electrolyzer\s+voltage\s+(?P<el>[A-Za-z]+\d*)", re.I)
 _EL_IN_TEXT_RE = re.compile(r"(?:ELECTROLYZER|EL)\s*(?P<el>[A-Za-z]+\d*)", re.I)
@@ -272,11 +272,14 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
             continue
 
         # ARIAORMS stacks one day per block: a date row, then the same header, then values.
-        first_text = ""
-        for cell in row[:3]:
-            if cell is not None and str(cell).strip():
-                first_text = str(cell).strip()
-                break
+        first_cell = next((cell for cell in row[:3] if cell is not None and str(cell).strip()), None)
+        if isinstance(first_cell, datetime):
+            reading_date = first_cell.date()
+            continue
+        if isinstance(first_cell, date) and not isinstance(first_cell, datetime):
+            reading_date = first_cell
+            continue
+        first_text = str(first_cell).strip() if first_cell is not None else ""
         if _date_row.match(first_text):
             parsed_day = parse_plant_date(first_text)
             if parsed_day:
@@ -364,13 +367,18 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
                     slot["total"] = voltage
                 totals.setdefault(tlabel, {})
                 totals[tlabel].update({k: slot[k] for k in ("rack_a", "rack_b", "total") if k in slot})
+            elif "average rack" in key:
+                if re.search(r"rack\s*a\b", key):
+                    slot["rack_a_avg"] = voltage
+                elif re.search(r"rack\s*b\b", key):
+                    slot["rack_b_avg"] = voltage
             elif "anolyte temperature" in key:
                 slot["anolyte_temp"] = voltage
             elif "catholyte temperature" in key:
                 slot["catholyte_temp"] = voltage
             elif "catholyte concentration" in key:
                 slot["catholyte_conc"] = voltage
-            elif key.startswith("load "):
+            elif key.startswith("load ") or key.startswith("load["):
                 slot["load"] = voltage
 
     return {
@@ -657,7 +665,90 @@ def _ymd_from_row(row: list[Any], day_i: int, month_i: int, year_i: int) -> date
         return None
 
 
-def _header_key(value: Any) -> str:
+ASSEMBLY_FROM_YEAR = 1395  # Jalali; plant asked to load C90 dates from 95 onward
+DENORA_SHELL = "دنوار(ایتالیا)"
+BLUESTAR_SHELL = "بلو استار (چین)"
+BLUESTAR_ELECTROLYZERS = {"M2", "L2"}
+_COATING_SHARED_RE = re.compile(r"^آند\s*و\s*کاتد\s*(.*)$")
+_COATING_SPLIT_RE = re.compile(
+    r"^(آند|کاتد)\s+(.+?)\s*(?:-|–|ـ|و)\s*(آند|کاتد)\s*(.+)$"
+)
+
+
+def _fold_coating(text: str) -> str:
+    text = text.replace("ي", "ی").replace("ك", "ک").replace("کاند", "کاتد")
+    text = text.replace("وکاتد", "و کاتد").replace("وآند", "و آند")
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def split_coating_company(value: Any) -> tuple[str | None, str | None]:
+    """Map «شرکت پوشش دهنده» onto Anode Coating / Cathode Coating.
+
+    A shared phrase «آند و کاتد تعمیراتی دنورا» becomes «آند تعمیراتی دنورا»
+    on the anode and «کاتد تعمیراتی دنورا» on the cathode. Mixed phrases
+    (آند دنورا - کاتد آنکان) stay on the matching electrode.
+    """
+    raw = _clean_code(value)
+    if not raw:
+        return None, None
+    text = _fold_coating(raw)
+
+    def clip(part: str | None) -> str | None:
+        part = (part or "").strip(" -/")
+        return part[:100] or None
+
+    shared = _COATING_SHARED_RE.match(text)
+    if shared and not re.match(r"^(آند|کاتد)\b", shared.group(1).strip()):
+        rest = shared.group(1).strip()
+        return clip(f"آند {rest}".strip()), clip(f"کاتد {rest}".strip())
+    matched = _COATING_SPLIT_RE.match(text)
+    if matched and matched.group(1) != matched.group(3):
+        parts = {
+            matched.group(1): clip(matched.group(2)),
+            matched.group(3): clip(matched.group(4)),
+        }
+        return parts.get("آند"), parts.get("کاتد")
+    both = clip(text)
+    return both, both
+
+
+def shell_for_electrolyzer(electrolyzer: str | None) -> str | None:
+    if not electrolyzer:
+        return None
+    code = str(electrolyzer).strip().upper()
+    if not code or code in {"0", "NO", "REJ", "―", "-", "—"}:
+        return None
+    if code in BLUESTAR_ELECTROLYZERS:
+        return BLUESTAR_SHELL
+    return DENORA_SHELL
+
+
+def _jalali_year_cell(row: list[Any], ymd: tuple[int, int, int] | None) -> int | None:
+    if not ymd:
+        return None
+    year_i = ymd[2]
+    if year_i >= len(row):
+        return None
+    try:
+        year = int(row[year_i])
+    except (TypeError, ValueError):
+        return None
+    if year < 100:
+        year = 1400 + year if year <= 80 else 1300 + year
+    return year
+
+
+def _pad_cell_position(value: Any) -> str | None:
+    text = _clean_code(value)
+    if text and re.fullmatch(r"\d{1,3}", text):
+        number = int(text)
+        if 1 <= number <= 168:
+            return f"{number:03d}"
+    return text
+
+
+def _compact_header(value: Any) -> str:
+    """Header match key with spaces removed. Assembly column names rely on this."""
     text = "" if value is None else str(value)
     text = text.replace("\u200c", "").replace("ي", "ی").replace("ك", "ک").replace("آ", "ا").replace("أ", "ا")
     return re.sub(r"\s+", "", text).lower()
@@ -678,7 +769,7 @@ def _clean_code(value: Any) -> str | None:
 
 
 def _assembly_columns(header: list[Any], sub: list[Any] | None) -> dict[str, Any] | None:
-    keys = [_header_key(cell) for cell in header]
+    keys = [_compact_header(cell) for cell in header]
     blob = " ".join(keys)
     if "anode" not in blob and "cathode" not in blob:
         return None
@@ -694,20 +785,23 @@ def _assembly_columns(header: list[Any], sub: list[Any] | None) -> dict[str, Any
     def ymd_at(start: int | None) -> tuple[int, int, int] | None:
         if start is None:
             return None
-        sub_key = _header_key(sub[start]) if sub and start < len(sub) else ""
+        sub_key = _compact_header(sub[start]) if sub and start < len(sub) else ""
         if sub_key in {"روز", "day"}:
             return start, start + 1, start + 2
         return None
 
     status_cols = [index for index, key in enumerate(keys) if key == "وضعیت"]
-    assembly_at = find(lambda key: "دیمونتاژ" not in key and "مونتاژ" in key and "تاریخ" in key)
-    install_at = find(lambda key: "نصب" in key and "تاریخ" in key)
+    # C90 workshop date is stored as «تاریخ مونتاژ در C90» (user: تاریخ نصب در C90).
+    c90_at = find(lambda key: "c90" in key and "تاریخ" in key) or find(
+        lambda key: "دیمونتاژ" not in key and "مونتاژ" in key and "تاریخ" in key
+    )
+    install_at = find(lambda key: "نصب" in key and "تاریخ" in key and "c90" not in key)
     dismantle_at = find(lambda key: "دیمونتاژ" in key or ("دی" in key and "مونتاژ" in key and "تاریخ" in key))
     columns: dict[str, Any] = {
         "anode": find(lambda key: key == "anode" or key.startswith("anode")),
         "cathode": find(lambda key: key == "cathode" or key.startswith("cathode")),
         "membrane_type": find(lambda key: "نوعممبران" in key or "membranetype" in key),
-        "membrane_use": find(lambda key: "استفاده" in key or "ممبراننو" in key),
+        "membrane_use": find(lambda key: "استفاده" in key or "اسفاده" in key or "ممبراننو" in key),
         "membrane_nr": find(lambda key: "کدممبران" in key or "شمارهوکد" in key),
         "element_nr": find(lambda key: "شمارهالمنت" in key or key in {"elementnr", "element_nr"}),
         "electrolyzer": find(
@@ -715,8 +809,10 @@ def _assembly_columns(header: list[Any], sub: list[Any] | None) -> dict[str, Any
             or ("الکترولایزر" in key and "موقعیت" not in key and "تاریخ" not in key)
         ),
         "position": find(lambda key: "موقعیت" in key or key in {"position", "p"}),
-        "remarks": find(lambda key: key in {"توضیحات", "ملاحظات", "remarks"}),
-        "assembly_ymd": ymd_at(assembly_at),
+        "coating": find(lambda key: "پوشش" in key),
+        "status": find(lambda key: "وضعیتفعلی" in key or key in {"وضعیتفعلیالمان", "status"}),
+        "notes": find(lambda key: key in {"توضیحات", "ملاحظات"} or "دلیل" in key),
+        "assembly_ymd": ymd_at(c90_at),
         "install_ymd": ymd_at(install_at),
         "dismantle": dismantle_at,
         "source": status_cols[0] if status_cols else None,
@@ -733,7 +829,7 @@ def _cell(row: list[Any], index: int | None) -> Any:
     return row[index]
 
 
-def _parse_assembly_sheet(rows: list[list[Any]]) -> list[dict[str, Any]] | None:
+def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSEMBLY_FROM_YEAR) -> list[dict[str, Any]] | None:
     header_at = None
     columns = None
     for index, row in enumerate(rows[:12]):
@@ -756,29 +852,26 @@ def _parse_assembly_sheet(rows: list[list[Any]]) -> list[dict[str, Any]] | None:
         element_nr = _clean_code(_cell(row, columns["element_nr"]))
         if not anode and not cathode and not element_nr:
             continue
+        if from_year is not None:
+            c90_year = _jalali_year_cell(row, columns["assembly_ymd"])
+            if c90_year is None or c90_year < from_year:
+                continue
         membrane_type = _clean_code(_cell(row, columns["membrane_type"]))
         membrane_use = _clean_code(_cell(row, columns["membrane_use"]))
         membrane_nr = _clean_code(_cell(row, columns["membrane_nr"]))
-        source = _clean_code(_cell(row, columns["source"]))
-        site = _clean_code(_cell(row, columns["site"]))
         electrolyzer = _clean_code(_cell(row, columns["electrolyzer"]))
-        position = _clean_code(_cell(row, columns["position"]))
-        remarks = _clean_code(_cell(row, columns["remarks"]))
+        if electrolyzer:
+            electrolyzer = electrolyzer.upper()
+        position = _pad_cell_position(_cell(row, columns["position"]))
+        anode_coating, cathode_coating = split_coating_company(_cell(row, columns.get("coating")))
+        shell = shell_for_electrolyzer(electrolyzer)
         assembly = _ymd_from_row(row, *columns["assembly_ymd"]) if columns["assembly_ymd"] else None
         installed = _ymd_from_row(row, *columns["install_ymd"]) if columns["install_ymd"] else None
         dismantle = parse_plant_date(_cell(row, columns["dismantle"]))
-
-        info = []
-        if membrane_use:
-            info.append(f"use={membrane_use}")
-        if source:
-            info.append(f"source={source}")
-        extra_remarks = []
-        if remarks:
-            extra_remarks.append(remarks)
-        if site and site.upper() not in {"IN SERVICE", "OUT OF SERVICE"}:
-            extra_remarks.append(site)
-        generation = source if source and "نسل" in source else None
+        status = _clean_code(_cell(row, columns.get("status")))
+        notes = _clean_code(_cell(row, columns.get("notes")))
+        if notes and len(notes) > 200:
+            notes = notes[:200]
 
         elements.append(
             {
@@ -787,24 +880,35 @@ def _parse_assembly_sheet(rows: list[list[Any]]) -> list[dict[str, Any]] | None:
                 "cathode_nr": cathode,
                 "membrane_type": membrane_type,
                 "membrane_nr": membrane_nr,
-                "membrane_info": "; ".join(info) or None,
-                "generation": generation,
-                "electrolyzer": electrolyzer.upper() if electrolyzer else None,
+                "membrane_remark": membrane_use,
+                "membrane_info": None,
+                "electrolyzer": electrolyzer,
                 "position": position,
                 "assembly_date": assembly.isoformat() if assembly else None,
                 "commissioning_date": installed.isoformat() if installed else None,
+                "decommissioning_date": dismantle.isoformat() if dismantle else None,
                 "disassembly_date": dismantle.isoformat() if dismantle else None,
-                "remarks": "\n".join(extra_remarks) or None,
+                "decommission_reason": notes,
+                "remarks": status,
+                "anode_coating": anode_coating,
+                "cathode_coating": cathode_coating,
+                "anode_shell": shell,
+                "cathode_shell": shell,
+                "coating_split": bool(
+                    anode_coating and cathode_coating and anode_coating != cathode_coating
+                ),
             }
         )
     return elements
 
 
-def parse_assembly_excel(content: bytes) -> dict[str, Any]:
+def parse_assembly_excel(content: bytes, *, from_year: int | None = ASSEMBLY_FROM_YEAR) -> dict[str, Any]:
     """Read the plant montage / demontage workbook into assembly-form fields.
 
-    The sheet keeps Jalali day, month and year in separate columns under
-    تاریخ مونتاژ and تاریخ نصب, plus a single تاریخ دی مونتاژ column.
+    C90 day/month/year (تاریخ مونتاژ در C90) is Assembly Date. The default
+    keeps Jalali years from 1395 onward. Pass from_year=None to keep every row.
+    Site install is commissioning. Dismantle date fills both decommissioning
+    and disassembly.
     """
     wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
     elements: list[dict[str, Any]] = []
@@ -812,7 +916,7 @@ def parse_assembly_excel(content: bytes) -> dict[str, Any]:
     try:
         for name in wb.sheetnames:
             rows = [list(r) for r in wb[name].iter_rows(values_only=True)]
-            parsed = _parse_assembly_sheet(rows)
+            parsed = _parse_assembly_sheet(rows, from_year=from_year)
             if parsed is None:
                 continue
             recognized = True
@@ -835,59 +939,246 @@ def parse_assembly_excel(content: bytes) -> dict[str, Any]:
 # 4) TAFKIK segregation Excel
 # ---------------------------------------------------------------------------
 
-def parse_tafkik_excel(content: bytes, sheet: str | None = None) -> dict[str, Any]:
-    wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
-    name = sheet if sheet and sheet in wb.sheetnames else wb.sheetnames[0]
-    rows = _sheet_rows(wb, name)
-    wb.close()
-    if len(rows) < 3:
-        return {"records": [], "imported": 0}
+def _header_key(value: Any) -> str:
+    text = re.sub(r"\s+", " ", str(value or "").strip().lower())
+    return text.replace("ي", "ی").replace("ك", "ک")
+
+
+def _tafkik_text(value: Any) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, float):
+        if value != value:
+            return None
+        if value == int(value) and abs(value) < 1e12:
+            return str(int(value))
+        return format(value, "g")
+    if isinstance(value, int):
+        return str(value)
+    text = str(value).strip()
+    if not text or text in {"*", "―", "-", "—"}:
+        return None
+    return text
+
+
+def _tafkik_date_and_note(value: Any) -> tuple[date | None, str | None]:
+    parsed = parse_plant_date(value)
+    if parsed is not None:
+        return parsed, None
+    note = _tafkik_text(value)
+    if note and re.fullmatch(r"[\d./\-]+", note):
+        return None, None
+    return None, note
+
+
+def _tafkik_kind(serial: str) -> str:
+    if "کاتد" in serial or "cathode" in serial.lower():
+        return "cathode"
+    if "آند" in serial or "اند" in serial or "anode" in serial.lower():
+        return "anode"
+    compact = serial.upper().replace(" ", "")
+    if compact.startswith(("UA", "DA", "PA", "LA", "HA")):
+        return "anode"
+    if compact.startswith(("UC", "DC", "PC", "LC", "HC")):
+        return "cathode"
+    if compact.startswith("A"):
+        return "anode"
+    if compact.startswith("C"):
+        return "cathode"
+    return "unknown"
+
+
+def _tafkik_columns(header: list[Any], sub: list[Any] | None) -> dict[str, int] | None:
+    keys = [_header_key(cell) for cell in header]
+
+    def find(*needles: str, exclude: tuple[str, ...] = ()) -> int | None:
+        for index, key in enumerate(keys):
+            if exclude and any(ex in key for ex in exclude):
+                continue
+            if any(needle in key for needle in needles):
+                return index
+        return None
+
+    serial = find("شماره سریال", "serial", exclude=("زوج", "فرم", "بازرسی"))
+    if serial is None:
+        serial = find("شماره سریال", "serial")
+    if serial is None:
+        return None
+    cols = {
+        "serial": serial,
+        "company": find("شرکت", "company"),
+        "service_life": find("کارکرد", "service"),
+        "install": find("تاریخ نصب", "install"),
+        "decommission": find("discomission", "decomission", "decommission", "تاریخ خارج"),
+        "dismantle": find("تاریخ دمونتاژ", "dismantle", "demontage", "disassemble"),
+        "xrf": find("xrf", exclude=("زوج",)),
+        "pair_serial": find("الکترود زوج", "زوج"),
+        "pair_xrf": find("xrf الکترود زوج", "xrf زوج"),
+        "decomm_v": find("ولتاژدر زمان", "ولتاژ در زمان"),
+        "decomm_ka": find("ka در زمان", "kaدر زمان"),
+        "decomm_temp": find("دما در زمان"),
+        "voltage": find("تفسیر ولتاژ"),
+        "warranty": find("گارانتی", "warranty"),
+        "coating": find("کیفیت پوشش", "coating"),
+        "decision": find("آخرین تصمیم", "decision"),
+        "problems": find("مشکل"),
+        "remarks": find("تفکیک در حضور"),
+        "pallet": find("پالت", "pallet"),
+        "inspection_form": find("سریال فرم بازرسی", "فرم بازرسی"),
+    }
+    # Fallback: bare "ولتاژ" only when تفسیر ولتاژ is missing (legacy Sheet2).
+    if cols["voltage"] is None:
+        cols["voltage"] = find("ولتاژ", "voltage", exclude=("زمان", "تفسیر"))
+    insp = find("تاریخ بازرسی", "inspection")
+    if insp is not None:
+        cols["insp_day"] = insp
+        cols["insp_month"] = insp + 1
+        cols["insp_year"] = insp + 2
+        if sub:
+            for index, key in enumerate(_header_key(cell) for cell in sub):
+                if key == "روز":
+                    cols["insp_day"] = index
+                elif key == "ماه":
+                    cols["insp_month"] = index
+                elif key == "سال":
+                    cols["insp_year"] = index
+    return cols
+
+
+def _tafkik_cell(row: list[Any], index: int | None) -> Any:
+    if index is None or index >= len(row):
+        return None
+    return row[index]
+
+
+def _tafkik_inspection(row: list[Any], cols: dict[str, int]) -> date | None:
+    year = _tafkik_cell(row, cols.get("insp_year"))
+    if year is None or str(year).strip() == "":
+        return None
+    try:
+        return jalali_to_gregorian(
+            int(year),
+            int(_tafkik_cell(row, cols.get("insp_month")) or 1),
+            int(_tafkik_cell(row, cols.get("insp_day")) or 1),
+        )
+    except Exception:
+        return None
+
+
+def _tafkik_float(value: Any) -> float | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, (int, float)) and value == value:
+        return float(value)
+    text = str(value).strip().replace(",", ".")
+    if not text:
+        return None
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def _parse_tafkik_sheet(rows: list[list[Any]]) -> list[dict[str, Any]]:
+    header_at = None
+    columns = None
+    for index, row in enumerate(rows[:8]):
+        found = _tafkik_columns(row, rows[index + 1] if index + 1 < len(rows) else None)
+        if found:
+            header_at = index
+            columns = found
+            break
+    if columns is None or header_at is None:
+        return []
+
+    start = header_at + 1
+    if start < len(rows):
+        sub_keys = {_header_key(cell) for cell in rows[start]}
+        if sub_keys & {"روز", "ماه", "سال"}:
+            start += 1
 
     records: list[dict[str, Any]] = []
-    for row in rows[2:]:
-        if not row or row[1] is None:
-            continue
-        serial = str(row[1]).strip()
+    for row in rows[start:]:
+        serial = _tafkik_text(_tafkik_cell(row, columns["serial"]))
         if not serial:
             continue
-        # inspection date from day/month/year cols 6,7,8
-        insp = None
-        try:
-            if len(row) > 8 and row[8] is not None:
-                insp = jalali_to_gregorian(int(row[8]), int(row[7] or 1), int(row[6] or 1))
-        except Exception:
-            insp = None
-
-        # Infer electrode kind from serial prefix
-        compact = serial.upper().replace(" ", "")
-        if compact.startswith(("UA", "DA", "PA", "LA", "HA")) or (compact.startswith("A") and not compact.startswith("UC")):
-            kind = "anode"
-        elif compact.startswith(("UC", "DC", "PC", "LC", "HC")) or compact.startswith("C"):
-            kind = "cathode"
-        else:
-            kind = "unknown"
-
-        install = parse_plant_date(row[4]) if len(row) > 4 else None
-        dismantle = parse_plant_date(row[5]) if len(row) > 5 else None
-
+        install, install_note = _tafkik_date_and_note(_tafkik_cell(row, columns.get("install")))
+        decommission, decommission_note = _tafkik_date_and_note(_tafkik_cell(row, columns.get("decommission")))
+        dismantle, dismantle_note = _tafkik_date_and_note(_tafkik_cell(row, columns.get("dismantle")))
+        inspector_remarks = _tafkik_text(_tafkik_cell(row, columns.get("remarks")))
+        notes = " | ".join(
+            part for part in (install_note, decommission_note, dismantle_note) if part
+        ) or None
+        remarks = inspector_remarks or notes
+        if inspector_remarks and notes:
+            remarks = f"{inspector_remarks} | {notes}"
+        inspection = _tafkik_inspection(row, columns)
         records.append(
             {
                 "serial_nr": serial,
-                "electrode_kind": kind,
-                "company": str(row[2]).strip() if len(row) > 2 and row[2] else None,
-                "service_life": str(row[3]).strip() if len(row) > 3 and row[3] else None,
+                "electrode_kind": _tafkik_kind(serial),
+                "company": _tafkik_text(_tafkik_cell(row, columns.get("company"))),
+                "service_life": _tafkik_text(_tafkik_cell(row, columns.get("service_life"))),
                 "install_date": install.isoformat() if install else None,
-                "dismantle_date": dismantle.isoformat() if dismantle else None,
-                "inspection_date": insp.isoformat() if insp else None,
-                "xrf": str(row[9]).strip() if len(row) > 9 and row[9] else None,
-                "voltage_quality": str(row[10]).strip() if len(row) > 10 and row[10] else None,
-                "warranty": str(row[11]).strip() if len(row) > 11 and row[11] else None,
-                "coating_quality": str(row[12]).strip() if len(row) > 12 and row[12] else None,
-                "decision": str(row[13]).strip() if len(row) > 13 and row[13] else None,
-                "problems": str(row[14]).strip() if len(row) > 14 and row[14] else None,
-                "segregation": str(row[15]).strip() if len(row) > 15 and row[15] else None,
-                "pallet": str(row[16]).strip() if len(row) > 16 and row[16] else None,
+                "decommission_date": decommission.isoformat() if decommission else None,
+                "disassemble_date": dismantle.isoformat() if dismantle else None,
+                "inspection_date": inspection.isoformat() if inspection else None,
+                "xrf": _tafkik_text(_tafkik_cell(row, columns.get("xrf"))),
+                "pair_serial_nr": _tafkik_text(_tafkik_cell(row, columns.get("pair_serial"))),
+                "pair_xrf": _tafkik_text(_tafkik_cell(row, columns.get("pair_xrf"))),
+                "decommission_voltage": _tafkik_float(_tafkik_cell(row, columns.get("decomm_v"))),
+                "decommission_ka": _tafkik_float(_tafkik_cell(row, columns.get("decomm_ka"))),
+                "decommission_temp": _tafkik_float(_tafkik_cell(row, columns.get("decomm_temp"))),
+                "voltage_quality": _tafkik_text(_tafkik_cell(row, columns.get("voltage"))),
+                "warranty": _tafkik_text(_tafkik_cell(row, columns.get("warranty"))),
+                "coating_quality": _tafkik_text(_tafkik_cell(row, columns.get("coating"))),
+                "decision": _tafkik_text(_tafkik_cell(row, columns.get("decision"))),
+                "problems": _tafkik_text(_tafkik_cell(row, columns.get("problems"))),
+                "pallet": _tafkik_text(_tafkik_cell(row, columns.get("pallet"))),
+                "inspection_form_serial": _tafkik_text(_tafkik_cell(row, columns.get("inspection_form"))),
+                "remarks": remarks,
             }
         )
+    return records
 
-    return {"records": records, "imported": len(records), "sheet": name}
+
+def parse_tafkik_excel(content: bytes, sheet: str | None = None) -> dict[str, Any]:
+    wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
+    names = [sheet] if sheet and sheet in wb.sheetnames else list(wb.sheetnames)
+    records: list[dict[str, Any]] = []
+    seen: set[tuple] = set()
+    previous_sheet_keys: set[tuple] = set()
+    used_sheets: list[str] = []
+    try:
+        for name in names:
+            parsed = _parse_tafkik_sheet(_sheet_rows(wb, name))
+            if not parsed:
+                continue
+            used_sheets.append(name)
+            sheet_keys: set[tuple] = set()
+            for item in parsed:
+                identity = (
+                    item["serial_nr"],
+                    item.get("inspection_date"),
+                    item.get("decision"),
+                    item.get("problems"),
+                    item.get("remarks"),
+                    item.get("pallet"),
+                )
+                serial_insp = (item["serial_nr"], item.get("inspection_date"))
+                if identity in seen or serial_insp in previous_sheet_keys:
+                    continue
+                seen.add(identity)
+                sheet_keys.add(serial_insp)
+                records.append(item)
+            previous_sheet_keys |= sheet_keys
+    finally:
+        wb.close()
+    return {
+        "records": records,
+        "imported": len(records),
+        "sheet": ", ".join(used_sheets),
+        "sheets": used_sheets,
+    }

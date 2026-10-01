@@ -4,8 +4,15 @@ import { useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { FileSpreadsheet, FileText, FileUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { downloadExport, importExcel, type ImportProgress } from "@/lib/endpoints";
+import {
+  ExportExcelDialog,
+  buildExportQueryParams,
+  type ExportColumnOption,
+  type ExportExcelOptions,
+} from "@/components/domain/export-excel-dialog";
 import { ImportProgressBar } from "@/components/domain/import-progress";
+import { downloadExport, importExcel, type ImportProgress } from "@/lib/endpoints";
+import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
 
 /** Excel export, Excel import, and PDF export for the form the user is in. */
@@ -14,24 +21,36 @@ export function ExportButtons({
   params,
   filenameBase,
   allowImport = true,
+  exportColumns,
 }: {
   prefix: string;
   params?: Record<string, unknown>;
   filenameBase?: string;
   allowImport?: boolean;
+  /** Optional column labels when export.meta is unavailable. */
+  exportColumns?: ExportColumnOption[];
 }) {
   const { t } = useI18n();
+  const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<"xlsx" | "pdf" | "import" | null>(null);
   const [note, setNote] = useState("");
   const [progress, setProgress] = useState<ImportProgress | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const canImport = allowImport && isAdmin;
 
-  async function handle(format: "xlsx" | "pdf") {
+  async function runExport(format: "xlsx" | "pdf", excelOptions?: ExportExcelOptions) {
     setBusy(format);
     setNote("");
     try {
-      await downloadExport(prefix, format, params, filenameBase ? `${filenameBase}.${format}` : undefined);
+      const filterParams = format === "xlsx" && excelOptions ? buildExportQueryParams(excelOptions) : {};
+      await downloadExport(
+        prefix,
+        format,
+        { ...params, ...filterParams },
+        filenameBase ? `${filenameBase}.${format}` : undefined
+      );
     } catch (err) {
       setNote(err instanceof Error ? err.message : t("common.export"));
     } finally {
@@ -40,7 +59,7 @@ export function ExportButtons({
   }
 
   async function onFile(file: File | undefined) {
-    if (!file) return;
+    if (!file || !canImport) return;
     setBusy("import");
     setNote("");
     setProgress({ percent: 0, processed: 0, total: 0 });
@@ -60,28 +79,39 @@ export function ExportButtons({
 
   return (
     <>
-      <Button type="button" variant="secondary" size="sm" onClick={() => handle("xlsx")} disabled={busy !== null}>
+      <Button type="button" variant="secondary" size="sm" onClick={() => setExportOpen(true)} disabled={busy !== null}>
         <FileSpreadsheet size={14} /> {busy === "xlsx" ? t("common.exporting") : t("common.exportExcel")}
       </Button>
-      {allowImport ? (
+      {canImport ? (
         <Button type="button" variant="secondary" size="sm" onClick={() => fileRef.current?.click()} disabled={busy !== null}>
           <FileUp size={14} /> {busy === "import" ? t("common.importing") : t("common.importExcel")}
         </Button>
       ) : null}
-      <Button type="button" variant="secondary" size="sm" onClick={() => handle("pdf")} disabled={busy !== null}>
+      <Button type="button" variant="secondary" size="sm" onClick={() => runExport("pdf")} disabled={busy !== null}>
         <FileText size={14} /> {busy === "pdf" ? t("common.exporting") : t("common.exportPdf")}
       </Button>
-      {allowImport ? (
-      <input
-        ref={fileRef}
-        type="file"
-        accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        className="hidden"
-        onChange={(e) => onFile(e.target.files?.[0])}
-      />
+      {canImport ? (
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          className="hidden"
+          onChange={(e) => onFile(e.target.files?.[0])}
+        />
       ) : null}
       {progress ? <ImportProgressBar progress={progress} /> : null}
       {note ? <span className="access-import-note">{note}</span> : null}
+      <ExportExcelDialog
+        open={exportOpen}
+        prefix={prefix}
+        params={params}
+        columnHints={exportColumns}
+        onClose={() => setExportOpen(false)}
+        onConfirm={(options) => {
+          setExportOpen(false);
+          void runExport("xlsx", options);
+        }}
+      />
     </>
   );
 }

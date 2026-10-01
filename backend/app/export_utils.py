@@ -3,6 +3,7 @@ import io
 from datetime import date, datetime
 from typing import Any
 
+from fastapi import Query
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
@@ -19,6 +20,110 @@ def _cell_value(value: Any) -> Any:
     if isinstance(value, (dict, list)):
         return str(value)
     return value
+
+
+def infer_date_fields(fields: list[str]) -> list[str]:
+    out: list[str] = []
+    for f in fields:
+        low = f.lower()
+        if low.endswith("_date") or low.endswith("_time") or low in ("date", "timestamp", "created_at", "updated_at"):
+            out.append(f)
+    return out
+
+
+def build_export_meta(all_fields: list[str]) -> dict[str, list[str]]:
+    return {"fields": all_fields, "date_fields": infer_date_fields(all_fields)}
+
+
+def pick_export_fields(all_fields: list[str], columns: str | None) -> list[str]:
+    if not columns or not str(columns).strip():
+        return all_fields
+    requested = [c.strip() for c in str(columns).split(",") if c.strip()]
+    picked = [f for f in requested if f in all_fields]
+    return picked or all_fields
+
+
+def _parse_row_date(value: Any) -> date | None:
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    text = str(value).strip()
+    if not text:
+        return None
+    if "T" in text:
+        text = text.split("T", 1)[0]
+    if " " in text and len(text) > 10:
+        text = text.split(" ", 1)[0]
+    try:
+        return date.fromisoformat(text[:10])
+    except ValueError:
+        return None
+
+
+def filter_rows_by_date(
+    rows: list[dict[str, Any]],
+    date_field: str | None,
+    date_from: date | None,
+    date_to: date | None,
+) -> list[dict[str, Any]]:
+    if not date_field or (date_from is None and date_to is None):
+        return rows
+    if date_field not in (rows[0].keys() if rows else []):
+        return rows
+    out: list[dict[str, Any]] = []
+    for row in rows:
+        row_date = _parse_row_date(row.get(date_field))
+        if row_date is None:
+            continue
+        if date_from is not None and row_date < date_from:
+            continue
+        if date_to is not None and row_date > date_to:
+            continue
+        out.append(row)
+    return out
+
+
+def apply_export_filters(
+    rows: list[dict[str, Any]],
+    all_fields: list[str],
+    *,
+    columns: str | None = None,
+    date_field: str | None = None,
+    date_from: date | None = None,
+    date_to: date | None = None,
+) -> tuple[list[dict[str, Any]], list[str]]:
+    fields = pick_export_fields(all_fields, columns)
+    filtered = filter_rows_by_date(rows, date_field, date_from, date_to)
+    return filtered, fields
+
+
+class ExportFilters:
+    """Shared query params for Excel/PDF export endpoints."""
+
+    def __init__(
+        self,
+        columns: str | None = Query(default=None, description="Comma-separated export column keys"),
+        date_field: str | None = Query(default=None),
+        date_from: date | None = Query(default=None),
+        date_to: date | None = Query(default=None),
+    ):
+        self.columns = columns
+        self.date_field = date_field
+        self.date_from = date_from
+        self.date_to = date_to
+
+    def apply(self, rows: list[dict[str, Any]], all_fields: list[str]) -> tuple[list[dict[str, Any]], list[str]]:
+        return apply_export_filters(
+            rows,
+            all_fields,
+            columns=self.columns,
+            date_field=self.date_field,
+            date_from=self.date_from,
+            date_to=self.date_to,
+        )
 
 
 def rows_to_dicts(items: list, fields: list[str]) -> list[dict[str, Any]]:

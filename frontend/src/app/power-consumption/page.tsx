@@ -4,61 +4,65 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
-import { electrolyzersApi, reportsApi, statisticsApi } from "@/lib/endpoints";
+import { statisticsApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
+import { formatNumber } from "@/lib/utils";
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function twoYearsAgoIso() {
+  const day = new Date();
+  day.setFullYear(day.getFullYear() - 2);
+  return day.toISOString().slice(0, 10);
+}
 
 export default function PowerConsumptionPage() {
   const { t } = useI18n();
-  const [from, setFrom] = useState("2006-06-01");
-  const [till, setTill] = useState("2016-10-04");
-  const [shown, setShown] = useState<{ title: string; mode: "chart" | "table" } | null>(null);
-  const plant = useColumnState({ result: "chart" });
-  const train = useColumnState({ result: "chart" });
-  const el = useColumnState({ tableUn: "all-elements", basis: "naoh", calc: "individual", result: "chart" });
-  const group = useColumnState({ tableUn: "groups", basis: "anod", calc: "individual", result: "chart" });
-  const element = useColumnState({ tableUn: "all-elements", basis: "anod", calc: "individual", result: "chart" });
-  const [elNr, setElNr] = useState("2C");
-  const [groupNr, setGroupNr] = useState("1");
+  const [from, setFrom] = useState(twoYearsAgoIso);
+  const [till, setTill] = useState(todayIso);
+  const [group, setGroup] = useState<"plant" | "train" | "electrolyzer" | "rack">("electrolyzer");
+  const plant = useColumnState({ result: "table" });
+  const train = useColumnState({ result: "table" });
+  const el = useColumnState({ result: "table" });
+  const rack = useColumnState({ result: "table" });
 
-  const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
   const powerQuery = useQuery({
-    queryKey: ["statistics", "power-consumption", shown?.title],
-    queryFn: () => statisticsApi.powerConsumption(shown?.title === "Electrolyzers" ? elNr : undefined),
-    enabled: Boolean(shown),
-  });
-  const trendsQuery = useQuery({
-    queryKey: ["reports", "trends"],
-    queryFn: () => reportsApi.trends(),
-    enabled: Boolean(shown),
+    queryKey: ["statistics", "power-consumption", group, from, till],
+    queryFn: () => statisticsApi.powerConsumption({ group, date_from: from, date_till: till }),
   });
 
-  const elNames = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean);
-  const rows = useMemo(() => {
-    const trend = (trendsQuery.data as { dates?: string[]; spc?: number[] } | undefined) || {};
-    if (Array.isArray(trend.dates) && Array.isArray(trend.spc)) {
-      return trend.dates.map((d, i) => ({ label: d, value: trend.spc?.[i] }));
-    }
-    const raw = powerQuery.data || {};
-    return Object.entries(raw).map(([k, v]) => ({ label: k, value: typeof v === "number" ? v : Number(v) || 0 }));
-  }, [powerQuery.data, trendsQuery.data]);
+  const rows = useMemo(
+    () =>
+      (powerQuery.data?.rows || []).map((row) => ({
+        label: row.key,
+        value: formatNumber(row.energy_kwh, 1),
+        current: row.current_ka,
+        power: row.avg_kw,
+        hours: row.hours,
+      })),
+    [powerQuery.data]
+  );
 
   return (
     <AccessHub title={t("mainMenu.powerConsumption")}>
       <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
-      <div className="grid grid-cols-1 gap-3 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
+      <p className="mb-2 text-[11px] text-[var(--win-muted)]">
+        {powerQuery.data?.formula || "kWh = V_total × I_kA × hours"}
+        {powerQuery.data?.total_kwh != null ? ` · ${t("monitoring.energyKwh")} ${formatNumber(powerQuery.data.total_kwh, 0)}` : ""}
+      </p>
+      <div className="grid grid-cols-1 gap-3 overflow-x-auto sm:grid-cols-2 lg:grid-cols-4">
         <ReportColumn
           title={t("menus.totalPlant")}
           values={plant.values}
           onChange={plant.onChange}
-          onDisplay={() => setShown({ title: "Total Plant", mode: plant.values.result === "table" ? "table" : "chart" })}
+          onDisplay={() => setGroup("plant")}
           groups={[
             {
               legend: t("menus.resultsAs"),
               name: "result",
-              options: [
-                { value: "chart", label: t("menus.chart") },
-                { value: "table", label: t("menus.table") },
-              ],
+              options: [{ value: "table", label: t("menus.table") }],
             },
           ]}
         />
@@ -66,15 +70,12 @@ export default function PowerConsumptionPage() {
           title={t("menus.train")}
           values={train.values}
           onChange={train.onChange}
-          onDisplay={() => setShown({ title: "Train", mode: train.values.result === "table" ? "table" : "chart" })}
+          onDisplay={() => setGroup("train")}
           groups={[
             {
               legend: t("menus.resultsAs"),
               name: "result",
-              options: [
-                { value: "chart", label: t("menus.chart") },
-                { value: "table", label: t("menus.table") },
-              ],
+              options: [{ value: "table", label: t("menus.table") }],
             },
           ]}
         />
@@ -82,141 +83,38 @@ export default function PowerConsumptionPage() {
           title={t("menus.electrolyzers")}
           values={el.values}
           onChange={el.onChange}
-          onDisplay={() => setShown({ title: "Electrolyzers", mode: el.values.result === "table" ? "table" : "chart" })}
+          onDisplay={() => setGroup("electrolyzer")}
           groups={[
-            {
-              legend: t("menus.tableUn"),
-              name: "tableUn",
-              options: [
-                { value: "electrolyzers", label: t("menus.electrolyzers") },
-                { value: "all-elements", label: t("menus.allElementsPerEl") },
-              ],
-            },
-            {
-              legend: t("menus.basisCe"),
-              name: "basis",
-              options: [
-                { value: "anod", label: t("menus.anodBalEl") },
-                { value: "naoh", label: t("menus.naohEl") },
-              ],
-            },
-            {
-              legend: t("menus.calculationFor"),
-              name: "calc",
-              options: [
-                { value: "individual", label: t("menus.individualEl") },
-                { value: "several", label: t("menus.severalElectrolyzers") },
-                { value: "all", label: t("menus.allElectrolyzers") },
-              ],
-              extra: (v) =>
-                v === "individual" ? (
-                  <select className="access-inset-field mt-1 w-full" value={elNr} onChange={(e) => setElNr(e.target.value)}>
-                    {(elNames.length ? elNames : ["2C"]).map((n) => (
-                      <option key={n}>{n}</option>
-                    ))}
-                  </select>
-                ) : null,
-            },
             {
               legend: t("menus.resultsAs"),
               name: "result",
-              options: [
-                { value: "chart", label: t("menus.chart") },
-                { value: "table", label: t("menus.table") },
-              ],
+              options: [{ value: "table", label: t("menus.table") }],
             },
           ]}
         />
         <ReportColumn
-          title={t("menus.groups")}
-          values={group.values}
-          onChange={group.onChange}
-          onDisplay={() => setShown({ title: "Groups", mode: group.values.result === "table" ? "table" : "chart" })}
+          title={`${t("monitoring.rack1")} / ${t("monitoring.rack2")}`}
+          values={rack.values}
+          onChange={rack.onChange}
+          onDisplay={() => setGroup("rack")}
           groups={[
-            {
-              legend: t("menus.tableUn"),
-              name: "tableUn",
-              options: [
-                { value: "groups", label: t("menus.groups") },
-                { value: "all-elements", label: t("menus.allElementsPerEl") },
-              ],
-            },
-            {
-              legend: t("menus.basisCe"),
-              name: "basis",
-              options: [
-                { value: "anod", label: t("menus.anodBalGroup") },
-                { value: "naoh", label: t("menus.naohGroup") },
-              ],
-            },
-            {
-              legend: t("menus.calculationFor"),
-              name: "calc",
-              options: [
-                { value: "individual", label: t("menus.individualGroup") },
-                { value: "several", label: t("menus.severalGroups") },
-                { value: "all", label: t("menus.allGroups") },
-              ],
-              extra: (v) =>
-                v === "individual" ? (
-                  <input className="access-inset-field mt-1 w-16" value={groupNr} onChange={(e) => setGroupNr(e.target.value)} />
-                ) : null,
-            },
             {
               legend: t("menus.resultsAs"),
               name: "result",
-              options: [
-                { value: "chart", label: t("menus.chart") },
-                { value: "table", label: t("menus.table") },
-              ],
-            },
-          ]}
-        />
-        <ReportColumn
-          title={t("menus.elements")}
-          values={element.values}
-          onChange={element.onChange}
-          onDisplay={() => setShown({ title: "Elements", mode: element.values.result === "table" ? "table" : "chart" })}
-          groups={[
-            {
-              legend: t("menus.tableUn"),
-              name: "tableUn",
-              options: [
-                { value: "individual", label: t("menus.individualElement") },
-                { value: "all-elements", label: t("menus.allElementsPerEl") },
-              ],
-            },
-            {
-              legend: t("menus.basisCe"),
-              name: "basis",
-              options: [
-                { value: "anod", label: t("menus.anodBalElement") },
-                { value: "naoh", label: t("menus.naohElement") },
-              ],
-            },
-            {
-              legend: t("menus.calculationFor"),
-              name: "calc",
-              options: [
-                { value: "individual", label: t("menus.individualElement") },
-                { value: "several", label: t("menus.severalElements") },
-                { value: "all", label: t("menus.allElements") },
-              ],
-            },
-            {
-              legend: t("menus.resultsAs"),
-              name: "result",
-              options: [
-                { value: "chart", label: t("menus.chart") },
-                { value: "table", label: t("menus.table") },
-              ],
+              options: [{ value: "table", label: t("menus.table") }],
             },
           ]}
         />
       </div>
-      {shown ? (
-        <ResultsPane mode={shown.mode} title={shown.title} rows={rows} xKey="label" yKey="value" yLabel="SPC [kWh/t NaOH]" />
-      ) : null}
+      <ResultsPane
+        mode="table"
+        title={`${t("monitoring.energyKwh")} · ${group}`}
+        rows={rows}
+        xKey="label"
+        yKey="value"
+        yLabel="kWh"
+      />
+      {powerQuery.isFetching ? <p className="mt-2 text-[11px]">{t("common.loading")}</p> : null}
     </AccessHub>
   );
 }

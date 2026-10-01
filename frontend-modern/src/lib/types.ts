@@ -136,6 +136,7 @@ export interface Element {
   cathode_electrode: string | null;
   cathode_shell: string | null;
   membrane_info: string | null;
+  membrane_remark: string | null;
   remarks: string | null;
   computed_dol_days: number | null;
   status: "active" | "disassembled" | "decommissioned" | "planned" | null;
@@ -407,9 +408,15 @@ export interface ElectrodeSegregation {
   company: string | null;
   service_life: string | null;
   install_date: string | null;
-  dismantle_date: string | null;
+  decommission_date: string | null;
+  disassemble_date: string | null;
   inspection_date: string | null;
   xrf: string | null;
+  pair_serial_nr: string | null;
+  pair_xrf: string | null;
+  decommission_voltage: number | null;
+  decommission_ka: number | null;
+  decommission_temp: number | null;
   voltage_quality: string | null;
   warranty: string | null;
   coating_quality: string | null;
@@ -417,6 +424,7 @@ export interface ElectrodeSegregation {
   problems: string | null;
   segregation: string | null;
   pallet: string | null;
+  inspection_form_serial: string | null;
   remarks: string | null;
 }
 

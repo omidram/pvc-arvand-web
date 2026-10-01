@@ -9,7 +9,8 @@ from ..crud import build_crud_router
 from ..database import get_db
 from ..excel_import import import_excel_bytes, read_xlsx
 from ..import_jobs import spawn_import
-from ..export_utils import export_pdf, export_xlsx, rows_to_dicts
+from ..auth import require_admin
+from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx, rows_to_dicts
 
 router = APIRouter(prefix="/shutdowns", tags=["shutdowns"])
 
@@ -46,16 +47,23 @@ def list_shutdowns(
     return [_enrich(i) for i in items]
 
 
+@router.get("/export.meta", include_in_schema=False)
+def export_shutdowns_meta():
+    return build_export_meta(SHUTDOWN_EXPORT_FIELDS)
+
+
 @router.get("/export.xlsx", include_in_schema=False)
 def export_shutdowns_xlsx(
     q: str | None = None,
     date_from: datetime | None = None,
     date_to: datetime | None = None,
+    filters: ExportFilters = Depends(),
     db: Session = Depends(get_db),
 ):
     items = list_shutdowns(q=q, date_from=date_from, date_to=date_to, limit=20000, db=db)
     rows = rows_to_dicts(items, SHUTDOWN_EXPORT_FIELDS)
-    return export_xlsx(rows, SHUTDOWN_EXPORT_FIELDS, "shutdowns")
+    rows, fields = filters.apply(rows, SHUTDOWN_EXPORT_FIELDS)
+    return export_xlsx(rows, fields, "shutdowns")
 
 
 @router.get("/export.pdf", include_in_schema=False)
@@ -63,15 +71,17 @@ def export_shutdowns_pdf(
     q: str | None = None,
     date_from: datetime | None = None,
     date_to: datetime | None = None,
+    filters: ExportFilters = Depends(),
     db: Session = Depends(get_db),
 ):
     items = list_shutdowns(q=q, date_from=date_from, date_to=date_to, limit=2000, db=db)
     rows = rows_to_dicts(items, SHUTDOWN_EXPORT_FIELDS)
-    return export_pdf(rows, SHUTDOWN_EXPORT_FIELDS, "shutdowns")
+    rows, fields = filters.apply(rows, SHUTDOWN_EXPORT_FIELDS)
+    return export_pdf(rows, fields, "shutdowns")
 
 
 @router.post("/import.xlsx", include_in_schema=False)
-async def import_shutdowns(file: UploadFile = File(...)):
+async def import_shutdowns(_admin=Depends(require_admin), file: UploadFile = File(...)):
     content = await read_xlsx(file)
     return spawn_import(
         lambda db, progress: import_excel_bytes(

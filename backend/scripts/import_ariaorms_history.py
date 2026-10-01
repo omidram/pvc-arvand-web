@@ -35,6 +35,10 @@ ELECTROLYZERS = [
     ("A2", 182), ("B2", 183), ("C2", 184), ("D2", 185), ("E2", 186), ("F2", 187),
     ("G2", 188), ("H2", 189), ("J2", 190), ("K2", 191), ("L2", 192), ("M2", 193),
 ]
+ONLY = {item.strip().upper() for item in os.environ.get("ARIA_ONLY", "").split(",") if item.strip()}
+FORCE = os.environ.get("ARIA_FORCE", "").strip().lower() in {"1", "true", "yes"}
+if ONLY:
+    ELECTROLYZERS = [item for item in ELECTROLYZERS if item[0] in ONLY]
 
 
 def month_ranges() -> list[tuple[str, str, str]]:
@@ -49,7 +53,7 @@ def month_ranges() -> list[tuple[str, str, str]]:
         else:
             last = 29
         if (year, month) == (1405, 7):
-            last = 7
+            last = 8
         start = f"{year}-{month}-1"
         end = f"{year}-{month}-{last}"
         ranges.append((f"{year}-{month}", start, end))
@@ -112,8 +116,8 @@ def main() -> None:
     done: dict = state.setdefault("done", {})
     ranges = month_ranges()
     jobs = [(name, log_id, key, start, end) for name, log_id in ELECTROLYZERS for key, start, end in ranges]
-    pending = [job for job in jobs if done.get(f"{job[0]}|{job[2]}") != "ok"]
-    print(f"jobs {len(jobs)} pending {len(pending)}", flush=True)
+    pending = [job for job in jobs if FORCE or done.get(f"{job[0]}|{job[2]}") != "ok"]
+    print(f"jobs {len(jobs)} pending {len(pending)} force={FORCE} only={sorted(ONLY) or 'all'}", flush=True)
 
     def fetch(job):
         name, log_id, _key, start, end = job
@@ -173,9 +177,12 @@ def main() -> None:
                     print(f"  ERROR {exc}", flush=True)
                     traceback.print_exc()
         alerts_engine.ensure_default_rules(db)
-        created = alerts_engine.evaluate_voltage_rules(db)
-        db.commit()
-        print(f"alerts evaluated, new {created}", flush=True)
+        if os.environ.get("ARIA_SKIP_ALERTS", "").strip().lower() not in {"1", "true", "yes"}:
+            created = alerts_engine.evaluate_voltage_rules(db)
+            db.commit()
+            print(f"alerts evaluated, new {created}", flush=True)
+        else:
+            print("alerts skipped", flush=True)
 
 
 if __name__ == "__main__":

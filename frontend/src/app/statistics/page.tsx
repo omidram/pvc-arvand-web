@@ -14,6 +14,7 @@ import { Input, Label } from "@/components/ui/input";
 import { StatCard } from "@/components/ui/stat-card";
 import { Zap } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
+import { formatNumber } from "@/lib/utils";
 import {
   Bar,
   BarChart,
@@ -88,7 +89,7 @@ function StatisticsDetails() {
   const [electrolyzer, setElectrolyzer] = useState(preEl);
   const powerQuery = useQuery({
     queryKey: ["statistics", "power-consumption", electrolyzer],
-    queryFn: () => statisticsApi.powerConsumption(electrolyzer || undefined),
+    queryFn: () => statisticsApi.powerConsumption({ electrolyzer: electrolyzer || undefined, group: "electrolyzer" }),
   });
   const distQuery = useQuery({
     queryKey: ["voltage", "distribution", electrolyzer],
@@ -160,19 +161,13 @@ function StatisticsDetails() {
               <div className="space-y-3">
                 <StatCard
                   label={t("statistics.recordsAnalyzed")}
-                  value={(powerQuery.data?.records as number) ?? 0}
+                  value={powerQuery.data?.rows?.length ?? 0}
                   icon={Zap}
                   accent="cyan"
                 />
                 <StatCard
-                  label={t("statistics.avgSpecificPower")}
-                  value={
-                    powerQuery.data?.average_specific_power_kwh_per_kA_h
-                      ? t("statistics.avgCellVoltage", {
-                          value: powerQuery.data.average_specific_power_kwh_per_kA_h as number,
-                        })
-                      : "—"
-                  }
+                  label={t("monitoring.energyKwh")}
+                  value={powerQuery.data?.total_kwh != null ? formatNumber(powerQuery.data.total_kwh, 0) : "—"}
                   icon={Zap}
                   accent="amber"
                 />

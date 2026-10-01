@@ -1,11 +1,11 @@
 """Pydantic schemas. One Base (create/update body) + Read (adds id) per model."""
 from datetime import date, datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
 
 class ORMModel(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 # ---------------------------------------------------------------- Auth / Users
@@ -253,6 +253,19 @@ class MonitoringCellStatus(BaseModel):
     reading_time: str | None = None
     severity: str = "ok"  # ok | warning | danger | unknown
     threshold: float | None = None
+    live: bool = True
+
+
+class MonitoringRackEnergy(BaseModel):
+    id: str
+    start: int
+    end: int
+    cell_count: int = 0
+    total_voltage: float | None = None
+    avg_voltage: float | None = None
+    power_kw: float | None = None
+    energy_kwh_24h: float | None = None
+    energy_kwh_30d: float | None = None
 
 
 class MonitoringElectrolyzerBlock(BaseModel):
@@ -266,6 +279,12 @@ class MonitoringElectrolyzerBlock(BaseModel):
     max_voltage: float | None = None
     avg_voltage: float | None = None
     total_voltage: float | None = None
+    current_ka: float | None = None
+    power_kw: float | None = None
+    energy_kwh_24h: float | None = None
+    energy_kwh_30d: float | None = None
+    online: bool | None = None
+    racks: list[MonitoringRackEnergy] = []
     cells: list[MonitoringCellStatus] = []
 
 
@@ -467,6 +486,7 @@ class ElementBase(ORMModel):
     cathode_electrode: str | None = None
     cathode_shell: str | None = None
     membrane_info: str | None = None
+    membrane_remark: str | None = None
     remarks: str | None = None
 
 
@@ -530,6 +550,17 @@ class InspectionReportBase(ORMModel):
     sample_cathode_note: str | None = None
     sample_anode_note: str | None = None
     sample_membrane_note: str | None = None
+    xrf_anode: str | None = None
+    xrf_cathode: str | None = None
+    sign_insp_name: str | None = None
+    sign_insp_image: str | None = Field(default=None, max_length=1_200_000)
+    sign_insp_at: str | None = None
+    sign_maint_name: str | None = None
+    sign_maint_image: str | None = Field(default=None, max_length=1_200_000)
+    sign_maint_at: str | None = None
+    sign_proc_name: str | None = None
+    sign_proc_image: str | None = Field(default=None, max_length=1_200_000)
+    sign_proc_at: str | None = None
 
 
 class InspectionReportRead(InspectionReportBase):
@@ -764,6 +795,9 @@ class ElectrolyzerNormalizationBase(ORMModel):
     zero_voltage: float | None = None
     total_voltage: float | None = None
     element_count: int | None = None
+    rack_a_avg: float | None = None
+    rack_b_avg: float | None = None
+    catholyte_conc: float | None = None
     cl2_pct: float | None = None
     h2_pct: float | None = None
     delta_p: float | None = None
@@ -825,9 +859,15 @@ class ElectrodeSegregationBase(ORMModel):
     company: str | None = None
     service_life: str | None = None
     install_date: date | None = None
-    dismantle_date: date | None = None
+    decommission_date: date | None = None
+    disassemble_date: date | None = Field(default=None, validation_alias=AliasChoices("disassemble_date", "dismantle_date"))
     inspection_date: date | None = None
     xrf: str | None = None
+    pair_serial_nr: str | None = None
+    pair_xrf: str | None = None
+    decommission_voltage: float | None = None
+    decommission_ka: float | None = None
+    decommission_temp: float | None = None
     voltage_quality: str | None = None
     warranty: str | None = None
     coating_quality: str | None = None
@@ -835,6 +875,7 @@ class ElectrodeSegregationBase(ORMModel):
     problems: str | None = None
     segregation: str | None = None
     pallet: str | None = None
+    inspection_form_serial: str | None = None
     remarks: str | None = None
 
 

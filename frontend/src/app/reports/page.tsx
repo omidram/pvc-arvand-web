@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { FileSpreadsheet, FileText, Activity, Boxes, PowerOff, Zap, Clock, Gauge } from "lucide-react";
+import { Activity, Boxes, PowerOff, Zap, Clock, Gauge } from "lucide-react";
+import { ExportButtons } from "@/components/domain/export-buttons";
 import {
   Bar,
   BarChart,
@@ -15,7 +16,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { downloadExport, reportsApi } from "@/lib/endpoints";
+import { reportsApi } from "@/lib/endpoints";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,6 @@ export default function ReportsPage() {
   const { t } = useI18n();
   useCalendar();
   const [electrolyzer, setElectrolyzer] = useState("");
-  const [exporting, setExporting] = useState<"xlsx" | "pdf" | null>(null);
   const filter = electrolyzer || undefined;
 
   const summaryQuery = useQuery({
@@ -46,15 +46,6 @@ export default function ReportsPage() {
     queryKey: ["reports", "trends", filter],
     queryFn: () => reportsApi.trends(filter),
   });
-
-  async function handleExport(format: "xlsx" | "pdf") {
-    setExporting(format);
-    try {
-      await downloadExport("/reports", format, { electrolyzer: filter }, `report.${format}`);
-    } finally {
-      setExporting(null);
-    }
-  }
 
   const summary = summaryQuery.data;
 
@@ -83,14 +74,12 @@ export default function ReportsPage() {
       caption={t("reports.title")}
       helpKey="reports"
       commands={
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => handleExport("xlsx")} disabled={exporting !== null}>
-            <FileSpreadsheet size={16} /> {exporting === "xlsx" ? t("common.exporting") : t("reports.exportExcel")}
-          </Button>
-          <Button variant="secondary" onClick={() => handleExport("pdf")} disabled={exporting !== null}>
-            <FileText size={16} /> {exporting === "pdf" ? t("common.exporting") : t("reports.exportPdf")}
-          </Button>
-        </div>
+        <ExportButtons
+          prefix="/reports"
+          params={{ electrolyzer: filter }}
+          filenameBase={`report-${filter || "plant"}`}
+          allowImport={false}
+        />
       }
     >
 

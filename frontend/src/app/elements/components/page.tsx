@@ -12,6 +12,7 @@ import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useCalendar } from "@/lib/calendar/context";
+import { cellComponentLabel } from "@/lib/cell-component-names";
 
 function num(value: string): number | null {
   if (value.trim() === "") return null;
@@ -38,7 +39,7 @@ function totals(row: CellComponent, elementNo: number | null, spareNo: number | 
 }
 
 export default function CellComponentsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { canEdit } = useAuth();
   const editable = canEdit("elements");
   useCalendar();
@@ -117,6 +118,7 @@ export default function CellComponentsPage() {
             <tbody>
               {rows.map((row) => {
                 const calc = totals(row, elementCount, spareCount);
+                const description = cellComponentLabel(row, t);
                 return (
                   <tr key={row.id} className={active === row.id ? "is-active" : undefined} onClick={() => setActive(row.id)}>
                     <td className="access-selector">{active === row.id ? "►" : ""}</td>
@@ -130,10 +132,15 @@ export default function CellComponentsPage() {
                     </td>
                     <td>
                       <input
+                        key={`${row.id}-${locale}-${row.name || ""}`}
                         className="w-full min-w-[180px]"
-                        defaultValue={row.name || ""}
+                        defaultValue={description}
                         disabled={!editable}
-                        onBlur={(e) => e.target.value !== (row.name || "") && patch(row, { name: e.target.value })}
+                        onBlur={(e) => {
+                          const next = e.target.value.trim();
+                          if (next === description || next === (row.name || "")) return;
+                          patch(row, { name: e.target.value });
+                        }}
                       />
                     </td>
                     <td>

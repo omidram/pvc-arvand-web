@@ -12,6 +12,8 @@ import type { Column } from "@/components/ui/data-table";
 import { formatDateTime } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
+import { canWorkInspections } from "@/lib/inspection-access";
+import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
 
 function saveError(err: unknown): string {
   const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
@@ -23,6 +25,7 @@ function saveError(err: unknown): string {
 export default function InspectionsPage() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
+  const editable = canWorkInspections(canEdit);
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const { listQuery, removeMutation } = useCrudResource<InspectionReport>("inspections", inspectionsApi, { limit: 500 });
@@ -34,7 +37,7 @@ export default function InspectionsPage() {
     { key: "membrane_nr", header: t("fields.membraneNr") },
     { key: "electrolyzer", header: t("fields.electrolyzer") },
     { key: "position", header: t("fields.position") },
-    { key: "inspection_reason", header: t("inspections.reason") },
+    { key: "inspection_reason", header: t("inspections.reason"), render: (row) => inspectionReasonLabel(row.inspection_reason, t) },
     { key: "inspector_name", header: t("fields.inspector") },
     { key: "inspection_date", header: t("fields.date"), render: (row) => formatDateTime(row.inspection_date) },
   ];
@@ -73,7 +76,7 @@ export default function InspectionsPage() {
       fields={[]}
       columns={columns}
       idField="id"
-      canEdit={canEdit("inspections")}
+      canEdit={editable}
       submitting={saving || removeMutation.isPending}
       onSave={(id, values) => persist(id, values)}
       onCreate={(values) => persist(null, values)}

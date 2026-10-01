@@ -9,14 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label, Select } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/context";
+import { useAuth } from "@/lib/auth/context";
 
 type ImportMode = "replace" | "merge";
 
 export function ImportExportTab() {
+  const { isAdmin } = useAuth();
   return (
     <div className="space-y-6">
-      <ImportAccessCard />
-      <ImportExcelCard />
+      {isAdmin ? <ImportAccessCard /> : null}
+      {isAdmin ? <ImportExcelCard /> : null}
     </div>
   );
 }

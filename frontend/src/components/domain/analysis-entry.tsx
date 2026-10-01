@@ -18,7 +18,8 @@ import {
 } from "@/lib/analysis-forms";
 import { AccessFormWindow, AccessNav } from "@/components/layout/access-form";
 import { Input } from "@/components/ui/input";
-import { DataTable, type Column } from "@/components/ui/data-table";
+import { type Column } from "@/components/ui/data-table";
+import { DatasheetPane } from "@/components/ui/datasheet-pane";
 import { ErrorState } from "@/components/ui/spinner";
 import { ExportButtons } from "@/components/domain/export-buttons";
 import { formatDate } from "@/lib/utils";
@@ -92,6 +93,42 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
   const normalizedScope = normalizeAnalysisScope(scope);
   const form = analysisForm(analysisType, normalizedScope);
   const queryClient = useQueryClient();
+  const exportColumns = useMemo(() => {
+    if (!form) return undefined;
+    const identityLabels: Record<string, string> = {
+      id: "ID",
+      analysis_type: t("analyses.analysisType"),
+      scope: t("analyses.scope"),
+      date: t("fields.date"),
+      time: t("fields.time"),
+      electrolyzer: t("fields.electrolyzer"),
+      position: t("fields.position"),
+      group_nr: t("fields.group"),
+      sub_plant: t("fields.subPlant"),
+    };
+    const cols: { key: string; label: string }[] = [
+      { key: "id", label: identityLabels.id },
+      { key: "analysis_type", label: identityLabels.analysis_type },
+      { key: "scope", label: identityLabels.scope },
+    ];
+    for (const id of form.identity) {
+      const key = id === "train" ? "sub_plant" : id === "group" ? "group_nr" : id;
+      cols.push({ key, label: identityLabels[key] || key });
+    }
+    for (const field of form.fields) {
+      const label = field.labelKey ? t(field.labelKey) : field.label;
+      const withUnit = field.unit ? `${field.key} [${field.unit.replace(/^\[|\]$/g, "")}]` : field.key;
+      cols.push({ key: withUnit, label: field.unit ? `${label} [${field.unit.replace(/^\[|\]$/g, "")}]` : label });
+    }
+    // de-dupe
+    const seen = new Set<string>();
+    return cols.filter((col) => {
+      if (seen.has(col.key)) return false;
+      seen.add(col.key);
+      return true;
+    });
+  }, [form, t]);
+
   const params: Record<string, unknown> = { limit: 500, analysis_type: analysisType, scope: normalizedScope };
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<
     AnalysisSample,
@@ -178,6 +215,7 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
           key: field.key,
           header: fieldLabel(field, t),
           render: (row: AnalysisSample) => readParam(row.parameters, field) || "—",
+          filterText: (row: AnalysisSample) => readParam(row.parameters, field),
         })),
       ]
     : [];
@@ -209,6 +247,7 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
           canEdit={editable}
           view={view}
           onView={setView}
+          hideFind={view === "datasheet"}
           findValue={find}
           onFind={(value) => {
             setFind(value);
@@ -264,25 +303,53 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
       }
     >
       <div className="mb-3">
-        <ExportButtons prefix="/analyses" params={params} filenameBase={`analysis-${analysisType}-${normalizedScope}`} />
+        <ExportButtons
+          prefix="/analyses"
+          params={params}
+          filenameBase={`analysis-${analysisType}-${normalizedScope}`}
+          exportColumns={exportColumns}
+        />
       </div>
       {listQuery.isLoading ? <div className="text-[12px]">{t("common.loading")}</div> : null}
       {listQuery.isError ? <ErrorState message={(listQuery.error as Error).message} /> : null}
       {error ? <div className="mb-3 text-[12px] text-red-700">{error.message}</div> : null}
       {view === "datasheet" ? (
-        <DataTable
+        <DatasheetPane
           columns={columns}
-          data={filtered}
+          rows={rows}
           keyField="id"
+          selectedKey={current?.id ?? null}
+          canEdit={editable}
           emptyTitle={t("analyses.noSamplesFound")}
-          onRowClick={(row) => {
-            const found = filtered.findIndex((item) => item.id === row.id);
+          onSelect={(row) => {
+            const found = rows.findIndex((item) => item.id === row.id);
+            if (found >= 0) {
+              setIndex(found);
+              setIsNew(false);
+            }
+          }}
+          onOpen={(row) => {
+            const found = rows.findIndex((item) => item.id === row.id);
             if (found >= 0) {
               setIndex(found);
               setIsNew(false);
               setView("form");
             }
           }}
+          onDelete={
+            editable
+              ? (row) => {
+                  if (!window.confirm(t("analyses.confirmDelete", { type: title }))) return;
+                  removeMutation.mutate(row.id, {
+                    onSuccess: () => {
+                      setIndex((i) => Math.max(0, i - 1));
+                      if (rows.length <= 1) setIsNew(true);
+                      queryClient.invalidateQueries({ queryKey: ["analyses"] });
+                    },
+                  });
+                }
+              : undefined
+          }
         />
       ) : draft ? (
         <AnalysisRecordForm

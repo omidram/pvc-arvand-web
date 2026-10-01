@@ -38,6 +38,7 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import type { Locale } from "@/lib/i18n/translations";
 import { useAuth } from "@/lib/auth/context";
+import { canSeeInspections, canSeeSegregation } from "@/lib/inspection-access";
 import { useTheme } from "@/lib/theme/context";
 import { monitoringApi } from "@/lib/endpoints";
 
@@ -60,7 +61,7 @@ const NAV_GROUPS: {
     items: [
       { href: "/elements", labelKey: "nav.elements", icon: Boxes, formKey: "elements" },
       { href: "/inspections", labelKey: "nav.inspections", icon: ClipboardCheck, formKey: "inspections" },
-      { href: "/segregation", labelKey: "nav.segregation", icon: SplitSquareVertical, formKey: "anodes" },
+      { href: "/segregation", labelKey: "nav.segregation", icon: SplitSquareVertical, formKey: "elements" },
     ],
   },
   {
@@ -190,6 +191,8 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
           const visibleItems = group.items.filter((item) => {
             if (item.adminOnly && !isAdmin) return false;
             if (item.formKey === "monitoring") return canMonitor;
+            if (item.href === "/inspections") return canSeeInspections(canView);
+            if (item.href === "/segregation") return canSeeSegregation(canView);
             return canView(item.formKey);
           });
           if (visibleItems.length === 0) return null;

@@ -28,6 +28,18 @@ export function orDash(value: string | number | null | undefined): string {
   return String(value);
 }
 
+export function compactNr(value: string | number | null | undefined): string {
+  return String(value ?? "")
+    .replace(/\s+/g, "")
+    .trim()
+    .toUpperCase();
+}
+
+export function sameNr(a: string | number | null | undefined, b: string | number | null | undefined): boolean {
+  const left = compactNr(a);
+  return !!left && left === compactNr(b);
+}
+
 export function snakeToCamel(key: string): string {
   return key.replace(/_([a-z0-9])/g, (_, c: string) => c.toUpperCase());
 }

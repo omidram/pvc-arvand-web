@@ -3,9 +3,11 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { InspectionDefectGrid } from "@/components/domain/inspection-defect-grid";
+import { InspectionSignaturePad } from "@/components/domain/inspection-signature";
 import { DateInput } from "@/components/ui/date-input";
 import { elementsApi, inspectionGridsApi, relationsApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
+import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
 
 /** Columns written by the CZ-03-00-189-A sheet. Order matches the printed form, then the older flags. */
 export const INSPECTION_SHEET_FIELDS = [
@@ -62,6 +64,17 @@ export const INSPECTION_SHEET_FIELDS = [
   "inspector_name",
   "signature",
   "general_remarks",
+  "xrf_anode",
+  "xrf_cathode",
+  "sign_insp_name",
+  "sign_insp_image",
+  "sign_insp_at",
+  "sign_maint_name",
+  "sign_maint_image",
+  "sign_maint_at",
+  "sign_proc_name",
+  "sign_proc_image",
+  "sign_proc_at",
 ] as const;
 
 const GRID_TYPES = ["membrane_as", "membrane_ks", "membrane_lt", "anode_half", "cathode_half"] as const;
@@ -355,6 +368,14 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
                   />
                 </td>
               </tr>
+              <tr>
+                <td className="insp-lab">XRF.Anode:</td>
+                <td colSpan={4}>{line("xrf_anode")}</td>
+              </tr>
+              <tr>
+                <td className="insp-lab">XRF.Cathode:</td>
+                <td colSpan={4}>{line("xrf_cathode")}</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -418,8 +439,49 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
             <tr>
               <td>{labeled("Anode:", note("sample_anode_note", "sample_anode"))}</td>
               <td>{labeled("spacer strip(Anode):", note("anode_spacer_remark", "anode_spacer_ok"))}</td>
-              <td rowSpan={3} className="insp-topcell">
-                {labeled("Signature:", line("signature"))}
+              <td rowSpan={3} className="insp-topcell insp-sign-cell">
+                <div className="insp-sign-stack">
+                  <InspectionSignaturePad
+                    label="Insp."
+                    name={text(values.sign_insp_name) || text(values.signature)}
+                    image={text(values.sign_insp_image)}
+                    readOnly={readOnly}
+                    onChange={(patch) =>
+                      onPatch({
+                        sign_insp_name: patch.name ?? values.sign_insp_name,
+                        sign_insp_image: patch.image ?? values.sign_insp_image,
+                        sign_insp_at: patch.at ?? values.sign_insp_at,
+                        signature: patch.name ?? values.signature,
+                      })
+                    }
+                  />
+                  <InspectionSignaturePad
+                    label="Maint."
+                    name={text(values.sign_maint_name)}
+                    image={text(values.sign_maint_image)}
+                    readOnly={readOnly}
+                    onChange={(patch) =>
+                      onPatch({
+                        sign_maint_name: patch.name ?? values.sign_maint_name,
+                        sign_maint_image: patch.image ?? values.sign_maint_image,
+                        sign_maint_at: patch.at ?? values.sign_maint_at,
+                      })
+                    }
+                  />
+                  <InspectionSignaturePad
+                    label="Proc."
+                    name={text(values.sign_proc_name)}
+                    image={text(values.sign_proc_image)}
+                    readOnly={readOnly}
+                    onChange={(patch) =>
+                      onPatch({
+                        sign_proc_name: patch.name ?? values.sign_proc_name,
+                        sign_proc_image: patch.image ?? values.sign_proc_image,
+                        sign_proc_at: patch.at ?? values.sign_proc_at,
+                      })
+                    }
+                  />
+                </div>
               </td>
             </tr>
             <tr>
@@ -427,7 +489,15 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
               <td>{labeled("spacer strip(cathode):", note("cathode_spacer_remark", "cathode_spacer_ok"))}</td>
             </tr>
             <tr>
-              <td>{labeled("REMARKS", line("general_remarks"))}</td>
+              <td className="insp-topcell">
+                <div className="insp-lab">REMARKS</div>
+                <textarea
+                  className="insp-in insp-remarks"
+                  value={text(values.general_remarks)}
+                  disabled={readOnly}
+                  onChange={(e) => onChange("general_remarks", e.target.value)}
+                />
+              </td>
               <td>{labeled("Frame gasket:", note("frame_gasket_remark", "frame_gasket_ok"))}</td>
             </tr>
           </tbody>
@@ -451,7 +521,9 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
         </datalist>
         <datalist id="insp-reasons">
           {(reasons.data || []).map((value) => (
-            <option key={value} value={value} />
+            <option key={value} value={value} label={inspectionReasonLabel(value, t)}>
+              {inspectionReasonLabel(value, t)}
+            </option>
           ))}
         </datalist>
       </div>

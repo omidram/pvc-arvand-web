@@ -28,6 +28,10 @@ def electrolyzer_name(train: str, letter: str) -> str:
     return f"{letter.upper()}{train}"
 
 
+def all_electrolyzers() -> tuple[str, ...]:
+    return tuple(electrolyzer_name(train, letter) for train in ("1", "2") for letter in LETTERS)
+
+
 def train_of(electrolyzer: str) -> str | None:
     name = (electrolyzer or "").strip().upper()
     if len(name) >= 2 and name[-1] in {"1", "2"} and name[0] in LETTERS:

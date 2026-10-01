@@ -7,13 +7,16 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
+from ..cell_component_names import industrial_english
+from ..inspection_reason_names import industrial_reason
 from ..calculations import installation_dol
-from ..warehouse import ensure_indexed, import_contractor_repairs, load_compact_index
+from ..warehouse import compact_eq, compact_nr, ensure_indexed, import_contractor_repairs, load_compact_index
 from ..crud import build_crud_router
 from ..database import get_db
 from ..excel_import import import_excel_bytes, read_xlsx
 from ..import_jobs import spawn_import
-from ..export_utils import export_pdf, export_xlsx, rows_to_dicts
+from ..auth import require_admin
+from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx, rows_to_dicts
 from ..plant_import import parse_assembly_excel
 
 router = APIRouter(prefix="/elements", tags=["elements"])
@@ -49,6 +52,40 @@ def _enrich(obj: models.Element) -> schemas.ElementRead:
     return read
 
 
+CELL_POSITION_MIN = 1
+CELL_POSITION_MAX = 168
+_POSITION_RE = re.compile(r"^\d{1,3}$")
+
+
+def _next_element_nr(db: Session) -> str:
+    """Last created numeric Element Nr + 1, skipping numbers that already exist."""
+    latest = 0
+    for (value,) in db.query(models.Element.element_nr).order_by(models.Element.id.desc()).all():
+        text = str(value or "").strip()
+        if text.isdigit():
+            latest = int(text)
+            break
+    existing = {str(value or "").strip() for (value,) in db.query(models.Element.element_nr).all()}
+    n = latest + 1
+    while str(n) in existing:
+        n += 1
+    return str(n)
+
+
+def _normalize_position(value: str | None) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if not text:
+        return None
+    if not _POSITION_RE.fullmatch(text):
+        raise HTTPException(status_code=400, detail="Position must be a number from 001 to 168.")
+    number = int(text)
+    if number < CELL_POSITION_MIN or number > CELL_POSITION_MAX:
+        raise HTTPException(status_code=400, detail="Position must be a number from 001 to 168.")
+    return f"{number:03d}"
+
+
 def _sync_saved_element(db: Session, obj: models.Element) -> None:
     """Keep DOL and the anode/cathode/membrane masters in step with this installation."""
     if obj.dol_days is None:
@@ -69,21 +106,30 @@ def list_elements(
     group_nr: str | None = None,
     active_only: bool = False,
     skip: int = 0,
-    limit: int = Query(default=500, le=5000),
+    limit: int = Query(default=500, le=20000),
     db: Session = Depends(get_db),
 ):
     query = db.query(models.Element)
     if q:
         like = f"%{q}%"
-        query = query.filter(
-            or_(
-                models.Element.element_nr.ilike(like),
-                models.Element.anode_nr.ilike(like),
-                models.Element.cathode_nr.ilike(like),
-                models.Element.membrane_nr.ilike(like),
-                models.Element.remarks.ilike(like),
-            )
-        )
+        clauses = [
+            models.Element.element_nr.ilike(like),
+            models.Element.anode_nr.ilike(like),
+            models.Element.cathode_nr.ilike(like),
+            models.Element.membrane_nr.ilike(like),
+            models.Element.remarks.ilike(like),
+            models.Element.membrane_remark.ilike(like),
+        ]
+        for column in (
+            models.Element.element_nr,
+            models.Element.anode_nr,
+            models.Element.cathode_nr,
+            models.Element.membrane_nr,
+        ):
+            match = compact_eq(column, q)
+            if match is not None:
+                clauses.append(match)
+        query = query.filter(or_(*clauses))
     if electrolyzer:
         query = query.filter(models.Element.electrolyzer == electrolyzer)
     if group_nr:
@@ -94,24 +140,48 @@ def list_elements(
     return [_enrich(i) for i in items]
 
 
+@router.get("/export.meta", include_in_schema=False)
+def export_elements_meta():
+    return build_export_meta(ELEMENT_EXPORT_FIELDS)
+
+
 @router.get("/export.xlsx", include_in_schema=False)
-def export_elements_xlsx(q: str | None = None, electrolyzer: str | None = None, db: Session = Depends(get_db)):
+def export_elements_xlsx(
+    q: str | None = None,
+    electrolyzer: str | None = None,
+    filters: ExportFilters = Depends(),
+    db: Session = Depends(get_db),
+):
     items = list_elements(q=q, electrolyzer=electrolyzer, limit=20000, db=db)
     rows = rows_to_dicts(items, ELEMENT_EXPORT_FIELDS)
-    return export_xlsx(rows, ELEMENT_EXPORT_FIELDS, "elements")
+    rows, fields = filters.apply(rows, ELEMENT_EXPORT_FIELDS)
+    return export_xlsx(rows, fields, "elements")
 
 
 @router.get("/export.pdf", include_in_schema=False)
-def export_elements_pdf(q: str | None = None, electrolyzer: str | None = None, db: Session = Depends(get_db)):
+def export_elements_pdf(
+    q: str | None = None,
+    electrolyzer: str | None = None,
+    filters: ExportFilters = Depends(),
+    db: Session = Depends(get_db),
+):
     items = list_elements(q=q, electrolyzer=electrolyzer, limit=2000, db=db)
     rows = rows_to_dicts(items, ELEMENT_EXPORT_FIELDS)
-    return export_pdf(rows, ELEMENT_EXPORT_FIELDS, "elements")
+    rows, fields = filters.apply(rows, ELEMENT_EXPORT_FIELDS)
+    return export_pdf(rows, fields, "elements")
 
 
 def _part_key(value) -> str:
     if value is None:
         return ""
     return re.sub(r"\s+", " ", str(value)).strip().upper()
+
+
+def _position_key(value) -> str:
+    text = str(value or "").strip()
+    if re.fullmatch(r"\d+", text):
+        return str(int(text))
+    return text
 
 
 def _installation_key(electrolyzer, position, assembly_date, anode_nr, cathode_nr) -> tuple:
@@ -121,7 +191,23 @@ def _installation_key(electrolyzer, position, assembly_date, anode_nr, cathode_n
         day = assembly_date.isoformat()
     else:
         day = str(assembly_date or "")[:10]
-    return (_part_key(electrolyzer), str(position or "").strip(), day, _part_key(anode_nr), _part_key(cathode_nr))
+    return (_part_key(electrolyzer), _position_key(position), day, _part_key(anode_nr), _part_key(cathode_nr))
+
+
+def _write_electrode_coating(db: Session, model, field: str, nr, coating, index: dict[str, str]) -> None:
+    """When anode/cathode coating reasons differ, store each on that serial."""
+    if not nr or not coating:
+        return
+    key = compact_nr(nr)
+    if not key:
+        return
+    column = getattr(model, field)
+    stored = index.get(key) if index else None
+    obj = db.query(model).filter(column == stored).first() if stored else None
+    if obj is None:
+        obj = db.query(model).filter(func.replace(func.upper(column), " ", "") == key).first()
+    if obj is not None:
+        obj.coating = str(coating)[:50]
 
 
 def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) -> dict:
@@ -142,7 +228,7 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
     for el in db.query(models.Element).all():
         index[_installation_key(el.electrolyzer, el.position, el.assembly_date, el.anode_nr, el.cathode_nr)] = el
         if el.disassembly_date is None and el.electrolyzer and el.position:
-            active.setdefault((_part_key(el.electrolyzer), str(el.position).strip()), el)
+            active.setdefault((_part_key(el.electrolyzer), _position_key(el.position)), el)
 
     anode_index = load_compact_index(db, models.Anode, "anode_nr")
     cathode_index = load_compact_index(db, models.Cathode, "cathode_nr")
@@ -156,36 +242,41 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
     for done, item in enumerate(items, start=1):
         assembly_date = _parse_iso_date(item.get("assembly_date"))
         commissioning_date = _parse_iso_date(item.get("commissioning_date"))
-        disassembly_date = _parse_iso_date(item.get("disassembly_date"))
+        dismantle_date = _parse_iso_date(item.get("disassembly_date") or item.get("decommissioning_date"))
         payload = {
             "element_nr": item.get("element_nr"),
             "electrolyzer": item.get("electrolyzer"),
             "position": str(item["position"]) if item.get("position") is not None else None,
-            "generation": (item.get("generation") or "")[:50] or None,
             "anode_nr": item.get("anode_nr"),
             "cathode_nr": item.get("cathode_nr"),
             "membrane_nr": item.get("membrane_nr"),
             "membrane_type": item.get("membrane_type"),
             "membrane_info": item.get("membrane_info"),
+            "membrane_remark": item.get("membrane_remark"),
             "assembly_date": assembly_date,
             "commissioning_date": commissioning_date,
-            "disassembly_date": disassembly_date,
+            "decommissioning_date": dismantle_date,
+            "disassembly_date": dismantle_date,
+            "decommission_reason": item.get("decommission_reason"),
             "remarks": item.get("remarks"),
+            "anode_coating": item.get("anode_coating"),
+            "cathode_coating": item.get("cathode_coating"),
+            "anode_shell": item.get("anode_shell"),
+            "cathode_shell": item.get("cathode_shell"),
         }
         key = _installation_key(
             payload["electrolyzer"], payload["position"], assembly_date, payload["anode_nr"], payload["cathode_nr"]
         )
         el = index.get(key)
         if el is None and mode == "disassembly" and assembly_date is None and payload["electrolyzer"] and payload["position"]:
-            el = active.get((_part_key(payload["electrolyzer"]), str(payload["position"]).strip()))
+            el = active.get((_part_key(payload["electrolyzer"]), _position_key(payload["position"])))
         if el is not None:
             for field, value in payload.items():
-                if mode == "disassembly" and field not in {"disassembly_date", "remarks"}:
+                if mode == "disassembly" and field not in {"disassembly_date", "decommissioning_date", "decommission_reason", "remarks"}:
                     continue
-                if value is not None:
-                    setattr(el, field, value)
+                setattr(el, field, value)
             updated += 1
-        elif mode == "disassembly" and disassembly_date is None:
+        elif mode == "disassembly" and dismantle_date is None:
             skipped += 1
             continue
         else:
@@ -203,6 +294,9 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
             membrane_index,
             extra={"membrane_type": payload.get("membrane_type")},
         )
+        if item.get("coating_split"):
+            _write_electrode_coating(db, models.Anode, "anode_nr", payload.get("anode_nr"), payload.get("anode_coating"), anode_index)
+            _write_electrode_coating(db, models.Cathode, "cathode_nr", payload.get("cathode_nr"), payload.get("cathode_coating"), cathode_index)
         if (created + updated) % 500 == 0:
             db.flush()
         if progress and (done == total or done % 25 == 0):
@@ -234,19 +328,26 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
             "cathode_nr",
             "membrane_type",
             "membrane_nr",
+            "membrane_remark",
             "electrolyzer",
             "position",
             "assembly_date",
             "commissioning_date",
+            "decommissioning_date",
             "disassembly_date",
+            "decommission_reason",
             "remarks",
+            "anode_coating",
+            "cathode_coating",
+            "anode_shell",
+            "cathode_shell",
         ],
         "preview": items[:3],
     }
 
 
 @router.post("/import.xlsx", include_in_schema=False)
-async def import_elements(file: UploadFile = File(...)):
+async def import_elements(_admin=Depends(require_admin), file: UploadFile = File(...)):
     content = await read_xlsx(file)
     parsed = parse_assembly_excel(content)
 
@@ -262,6 +363,7 @@ async def import_elements(file: UploadFile = File(...)):
 
 @router.post("/import-assembly-excel")
 async def import_assembly_excel(
+    _admin=Depends(require_admin),
     file: UploadFile = File(...),
     mode: str = Query(default="assembly", description="assembly | disassembly | upsert"),
 ):
@@ -277,8 +379,8 @@ async def import_assembly_excel(
             status_code=400,
             detail=(
                 "This Excel file does not match Assembly Data. "
-                "Expected the montage / demontage sheet (ANODE, CATHODE, شماره المنت, تاریخ مونتاژ, تاریخ دی مونتاژ). "
-                "فایل با فرم مونتاژ جور نیست."
+                "Expected the montage / demontage sheet (ANODE, CATHODE, شماره المنت, تاریخ مونتاژ در C90, تاریخ دی مونتاژ). "
+                "فایل با فرم مونتاژ جور نیست. از سال ۱۳۹۵ روی تاریخ C90 وارد می‌شود."
             ),
         )
     mode = (mode or "assembly").strip().lower()
@@ -290,6 +392,11 @@ async def import_assembly_excel(
         return result
 
     return spawn_import(work)
+
+
+@router.get("/next-number")
+def next_element_number(db: Session = Depends(get_db)):
+    return {"element_nr": _next_element_nr(db)}
 
 
 _MATCH_FIELDS = (
@@ -372,7 +479,11 @@ def _ensure_group(db: Session, group_nr: str | None) -> None:
 @router.post("", response_model=schemas.ElementRead, status_code=201)
 def create_element(payload: schemas.ElementBase, db: Session = Depends(get_db)):
     _ensure_group(db, payload.group_nr)
-    obj = models.Element(**payload.model_dump())
+    data = payload.model_dump()
+    data["position"] = _normalize_position(data.get("position"))
+    if not str(data.get("element_nr") or "").strip():
+        data["element_nr"] = _next_element_nr(db)
+    obj = models.Element(**data)
     db.add(obj)
     _sync_saved_element(db, obj)
     db.commit()
@@ -388,6 +499,8 @@ def update_element(item_id: int, payload: schemas.ElementBase, db: Session = Dep
     data = payload.model_dump(exclude_unset=True)
     if "group_nr" in data:
         _ensure_group(db, data.get("group_nr"))
+    if "position" in data:
+        data["position"] = _normalize_position(data.get("position"))
     for key, value in data.items():
         setattr(obj, key, value)
     _sync_saved_element(db, obj)
@@ -462,6 +575,14 @@ def group_overview(db: Session = Depends(get_db)):
     return [{"group_nr": g, "element_count": c} for g, c in rows]
 
 
+def _prepare_reason(obj: models.InspectionReason) -> None:
+    obj.reason = industrial_reason(obj.reason)
+
+
+def _translate_reason_read(item: schemas.InspectionReasonRead) -> None:
+    item.reason = industrial_reason(item.reason)
+
+
 inspection_reasons_router = build_crud_router(
     model=models.InspectionReason,
     read_schema=schemas.InspectionReasonRead,
@@ -469,6 +590,8 @@ inspection_reasons_router = build_crud_router(
     prefix="/inspection-reasons",
     tags=["elements"],
     search_fields=["reason", "code"],
+    prepare=_prepare_reason,
+    transform=_translate_reason_read,
 )
 
 inspection_findings_router = build_crud_router(
@@ -490,6 +613,7 @@ def _spares(obj: models.CellComponent) -> schemas.CellComponentRead:
     calculated = parts per element × Spare Elements × reserve index.
     """
     read = schemas.CellComponentRead.model_validate(obj)
+    read.name = industrial_english(read.name, read.part_nr)
     if read.total_parts is not None:
         read.recommended_spares = round(read.total_parts * 0.02, 4)
     return read
@@ -500,27 +624,40 @@ def list_cell_components(db: Session = Depends(get_db)):
     return [_spares(o) for o in db.query(models.CellComponent).all()]
 
 
+def _apply_industrial_name(obj: models.CellComponent) -> None:
+    obj.name = industrial_english(obj.name, obj.part_nr)
+
+
 def _prepare_cell(obj: models.CellComponent) -> None:
+    _apply_industrial_name(obj)
     if obj.parts_per_element is not None and obj.element_count is not None:
         obj.total_parts = obj.parts_per_element * obj.element_count
 
 
+@cell_components_router.get("/export.meta", include_in_schema=False)
+def export_cell_components_meta():
+    fields = list(schemas.CellComponentRead.model_fields.keys())
+    return build_export_meta(fields)
+
+
 @cell_components_router.get("/export.xlsx", include_in_schema=False)
-def export_cell_components_xlsx(db: Session = Depends(get_db)):
+def export_cell_components_xlsx(filters: ExportFilters = Depends(), db: Session = Depends(get_db)):
     items = list_cell_components(db=db)
     fields = list(schemas.CellComponentRead.model_fields.keys())
-    return export_xlsx(rows_to_dicts(items, fields), fields, "cell-components")
+    rows, out_fields = filters.apply(rows_to_dicts(items, fields), fields)
+    return export_xlsx(rows, out_fields, "cell-components")
 
 
 @cell_components_router.get("/export.pdf", include_in_schema=False)
-def export_cell_components_pdf(db: Session = Depends(get_db)):
+def export_cell_components_pdf(filters: ExportFilters = Depends(), db: Session = Depends(get_db)):
     items = list_cell_components(db=db)
     fields = list(schemas.CellComponentRead.model_fields.keys())
-    return export_pdf(rows_to_dicts(items, fields), fields, "cell-components")
+    rows, out_fields = filters.apply(rows_to_dicts(items, fields), fields)
+    return export_pdf(rows, out_fields, "cell-components")
 
 
 @cell_components_router.post("/import.xlsx", include_in_schema=False)
-async def import_cell_components(file: UploadFile = File(...)):
+async def import_cell_components(_admin=Depends(require_admin), file: UploadFile = File(...)):
     content = await read_xlsx(file)
     return spawn_import(
         lambda db, progress: import_excel_bytes(
@@ -538,8 +675,7 @@ async def import_cell_components(file: UploadFile = File(...)):
 @cell_components_router.post("", response_model=schemas.CellComponentRead, status_code=201)
 def create_cell_component(payload: schemas.CellComponentBase, db: Session = Depends(get_db)):
     obj = models.CellComponent(**payload.model_dump())
-    if obj.parts_per_element is not None and obj.element_count is not None:
-        obj.total_parts = obj.parts_per_element * obj.element_count
+    _prepare_cell(obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -563,8 +699,7 @@ def update_cell_component(item_id: int, payload: schemas.CellComponentBase, db: 
         raise HTTPException(status_code=404, detail="Not found")
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
-    if obj.parts_per_element is not None and obj.element_count is not None:
-        obj.total_parts = obj.parts_per_element * obj.element_count
+    _prepare_cell(obj)
     db.commit()
     db.refresh(obj)
     return _spares(obj)

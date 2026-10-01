@@ -6,6 +6,7 @@ import { RefreshCw, ScrollText, Shield } from "lucide-react";
 import { logsApi } from "@/lib/endpoints";
 import type { AuditLog } from "@/lib/types";
 import { AccessFormWindow } from "@/components/layout/access-form";
+import { ExportButtons } from "@/components/domain/export-buttons";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -135,15 +136,25 @@ export default function LogsPage() {
   const total = listQuery.data?.total ?? 0;
   const page = Math.floor(skip / limit) + 1;
   const pages = Math.max(1, Math.ceil(total / limit));
+  const exportParams = {
+    q: q || undefined,
+    action: action || undefined,
+    resource: resource || undefined,
+    username: username || undefined,
+    success: successFilter === "" ? undefined : successFilter === "true",
+  };
 
   return (
     <AccessFormWindow
       caption={t("logs.title")}
       helpKey="logs"
       commands={
-        <Button type="button" variant="secondary" onClick={() => listQuery.refetch()}>
-          <RefreshCw size={14} /> {t("common.refresh")}
-        </Button>
+        <>
+          <ExportButtons prefix="/logs" params={exportParams} filenameBase="audit-logs" allowImport={false} />
+          <Button type="button" variant="secondary" onClick={() => listQuery.refetch()}>
+            <RefreshCw size={14} /> {t("common.refresh")}
+          </Button>
+        </>
       }
     >
       <div className="mb-3 flex flex-wrap items-start gap-2 text-xs text-[var(--win-muted)]">

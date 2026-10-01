@@ -6,17 +6,20 @@ import { monitoringApi, type ComponentDossier } from "@/lib/endpoints";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
+import { CellHealthCard } from "@/components/domain/cell-health-chip";
 
 type Part = { kind: "anode" | "cathode" | "membrane"; nr: string };
 
 function PartButton({
   label,
   nr,
+  detail,
   active,
   onOpen,
 }: {
   label: string;
   nr: string | null | undefined;
+  detail?: string | null;
   active: boolean;
   onOpen: () => void;
 }) {
@@ -24,7 +27,17 @@ function PartButton({
     <button type="button" className={`psm-part${active ? " is-active" : ""}`} disabled={!nr} onClick={onOpen}>
       <span>{label}</span>
       <strong>{nr || "—"}</strong>
+      {detail ? <em>{detail}</em> : null}
     </button>
+  );
+}
+
+function StaticFact({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div className="psm-part is-static">
+      <span>{label}</span>
+      <strong>{value || "—"}</strong>
+    </div>
   );
 }
 
@@ -53,7 +66,7 @@ function Dossier({ part }: { part: Part }) {
         </p>
       ) : null}
       <Catalog catalog={data.catalog} />
-      <Installations rows={data.installations} />
+      <Installations rows={data.installations} kind={data.kind} />
       <Maintenance rows={data.maintenance} kind={data.kind} />
       <Reports rows={data.reports} />
     </div>
@@ -72,10 +85,11 @@ function Catalog({ catalog }: { catalog: ComponentDossier["catalog"] }) {
     [t("monitoring.received"), catalog.received_date ? formatDate(catalog.received_date) : null],
     [t("monitoring.decommissioned"), catalog.decommission_date ? formatDate(catalog.decommission_date) : null],
   ].filter(([, value]) => value);
+  if (!facts.length && !catalog.remarks) return <p className="psm-muted">{t("monitoring.noCatalog")}</p>;
   return (
     <div className="psm-facts">
       {facts.map(([label, value]) => (
-        <div key={label}>
+        <div key={label} className={label === t("monitoring.coating") ? "is-coating" : undefined}>
           <span>{label}</span>
           <strong>{value}</strong>
         </div>
@@ -85,8 +99,15 @@ function Catalog({ catalog }: { catalog: ComponentDossier["catalog"] }) {
   );
 }
 
-function Installations({ rows }: { rows: ComponentDossier["installations"] }) {
+function Installations({
+  rows,
+  kind,
+}: {
+  rows: ComponentDossier["installations"];
+  kind: string;
+}) {
   const { t } = useI18n();
+  const showCoating = kind === "anode" || kind === "cathode";
   return (
     <div className="psm-block">
       <h4>{t("monitoring.installations")}</h4>
@@ -97,6 +118,7 @@ function Installations({ rows }: { rows: ComponentDossier["installations"] }) {
             <tr>
               <th>{t("monitoring.elementNr")}</th>
               <th>{t("monitoring.place")}</th>
+              {showCoating ? <th>{t("monitoring.coating")}</th> : null}
               <th>{t("fields.assemblyDate")}</th>
               <th>{t("fields.commissioningDate")}</th>
               <th>{t("fields.disassemblyDate")}</th>
@@ -112,6 +134,9 @@ function Installations({ rows }: { rows: ComponentDossier["installations"] }) {
                   {row.position ? `-${String(row.position).padStart(3, "0")}` : ""}
                   {row.active ? ` · ${t("monitoring.partStatus.mounted")}` : ""}
                 </td>
+                {showCoating ? (
+                  <td>{(kind === "anode" ? row.anode_coating : row.cathode_coating) || "—"}</td>
+                ) : null}
                 <td>{formatDate(row.assembly_date) || "—"}</td>
                 <td>{formatDate(row.commissioning_date) || "—"}</td>
                 <td>{formatDate(row.disassembly_date) || "—"}</td>
@@ -192,10 +217,15 @@ export function CellPropertiesPanel({ electrolyzer, position }: { electrolyzer: 
     queryKey: ["monitoring", "cell", electrolyzer, position],
     queryFn: () => monitoringApi.cell({ electrolyzer, position }),
   });
+  const healthQuery = useQuery({
+    queryKey: ["monitoring", "cell-health", electrolyzer, position],
+    queryFn: () => monitoringApi.cellHealth({ electrolyzer, position }),
+  });
   const current = query.data?.current;
   if (query.isLoading) return <LoadingState />;
   if (query.isError) return <ErrorState message={(query.error as Error).message} />;
   const data = query.data;
+  const health = healthQuery.data?.cell;
   return (
     <div className="psm-props">
       <div className="psm-props-head">
@@ -207,17 +237,31 @@ export function CellPropertiesPanel({ electrolyzer, position }: { electrolyzer: 
           {data?.rack ? ` · ${t(data.rack === "1" ? "monitoring.rack1" : "monitoring.rack2")}` : ""}
         </span>
       </div>
+      {health ? (
+        <CellHealthCard
+          score={health.health_score}
+          status={health.status}
+          dolDays={health.dol_days}
+          cePct={health.ce_pct}
+          unAvg={health.un_avg}
+          avgVoltage={health.avg_voltage}
+          avgCurrentKa={health.avg_current_ka}
+          reason={health.reasons[0] || null}
+        />
+      ) : null}
       {!current ? <p className="psm-muted">{t("monitoring.noElement")}</p> : null}
       <div className="psm-parts">
         <PartButton
           label={t("monitoring.anodeNr")}
           nr={current?.anode_nr}
+          detail={current?.anode_coating}
           active={part?.kind === "anode" && part.nr === current?.anode_nr}
           onOpen={() => current?.anode_nr && setPart({ kind: "anode", nr: current.anode_nr })}
         />
         <PartButton
           label={t("monitoring.cathodeNr")}
           nr={current?.cathode_nr}
+          detail={current?.cathode_coating}
           active={part?.kind === "cathode" && part.nr === current?.cathode_nr}
           onOpen={() => current?.cathode_nr && setPart({ kind: "cathode", nr: current.cathode_nr })}
         />
@@ -227,10 +271,9 @@ export function CellPropertiesPanel({ electrolyzer, position }: { electrolyzer: 
           active={part?.kind === "membrane" && part.nr === current?.membrane_nr}
           onOpen={() => current?.membrane_nr && setPart({ kind: "membrane", nr: current.membrane_nr })}
         />
-        <div className="psm-part is-static">
-          <span>{t("monitoring.membraneType")}</span>
-          <strong>{current?.membrane_type || "—"}</strong>
-        </div>
+        <StaticFact label={t("monitoring.membraneType")} value={current?.membrane_type} />
+        <StaticFact label={t("fields.anodeCoating")} value={current?.anode_coating} />
+        <StaticFact label={t("fields.cathodeCoating")} value={current?.cathode_coating} />
       </div>
       {current ? (
         <p className="psm-place">
@@ -250,7 +293,9 @@ export function CellPropertiesPanel({ electrolyzer, position }: { electrolyzer: 
               <tr>
                 <th>{t("monitoring.elementNr")}</th>
                 <th>{t("monitoring.anodeNr")}</th>
+                <th>{t("fields.anodeCoating")}</th>
                 <th>{t("monitoring.cathodeNr")}</th>
+                <th>{t("fields.cathodeCoating")}</th>
                 <th>{t("monitoring.membraneNr")}</th>
                 <th>{t("fields.disassemblyDate")}</th>
               </tr>
@@ -260,7 +305,9 @@ export function CellPropertiesPanel({ electrolyzer, position }: { electrolyzer: 
                 <tr key={row.id}>
                   <td>{row.element_nr || "—"}</td>
                   <td>{row.anode_nr || "—"}</td>
+                  <td>{row.anode_coating || "—"}</td>
                   <td>{row.cathode_nr || "—"}</td>
+                  <td>{row.cathode_coating || "—"}</td>
                   <td>{row.membrane_nr || "—"}</td>
                   <td>{row.active ? t("monitoring.partStatus.mounted") : formatDate(row.disassembly_date) || "—"}</td>
                 </tr>

@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
+from ..auth import require_admin
 from ..calculations import standardized_voltage
 from ..crud import build_crud_router
 from ..database import get_db
@@ -176,6 +177,7 @@ async def import_voltage_excel(
     file: UploadFile,
     electrolyzer: str | None = None,
     reading_date: str | None = None,
+    _admin=Depends(require_admin),
 ):
     """Import SiteMan / F2 / ARIAORMS LogSheets Excel (upsert by electrolyzer+date+time+position)."""
     from .. import voltage_sync

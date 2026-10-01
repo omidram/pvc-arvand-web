@@ -349,6 +349,7 @@ class Element(Base):
     cathode_electrode: Mapped[str | None] = mapped_column(String(100))
     cathode_shell: Mapped[str | None] = mapped_column(String(100))
     membrane_info: Mapped[str | None] = mapped_column(String(200))  # Info Membrane
+    membrane_remark: Mapped[str | None] = mapped_column(Text)
     remarks: Mapped[str | None] = mapped_column(Text)
 
 
@@ -409,6 +410,17 @@ class InspectionReport(Base):
     sample_cathode_note: Mapped[str | None] = mapped_column(String(200))
     sample_anode_note: Mapped[str | None] = mapped_column(String(200))
     sample_membrane_note: Mapped[str | None] = mapped_column(String(200))
+    xrf_anode: Mapped[str | None] = mapped_column(String(200))
+    xrf_cathode: Mapped[str | None] = mapped_column(String(200))
+    sign_insp_name: Mapped[str | None] = mapped_column(String(150))
+    sign_insp_image: Mapped[str | None] = mapped_column(Text)
+    sign_insp_at: Mapped[str | None] = mapped_column(String(40))
+    sign_maint_name: Mapped[str | None] = mapped_column(String(150))
+    sign_maint_image: Mapped[str | None] = mapped_column(Text)
+    sign_maint_at: Mapped[str | None] = mapped_column(String(40))
+    sign_proc_name: Mapped[str | None] = mapped_column(String(150))
+    sign_proc_image: Mapped[str | None] = mapped_column(Text)
+    sign_proc_at: Mapped[str | None] = mapped_column(String(40))
 
 
 class InspectionHalfshellGrid(Base):
@@ -609,20 +621,27 @@ class ElectrodeSegregation(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     serial_nr: Mapped[str] = mapped_column(String(50), index=True)
     electrode_kind: Mapped[str | None] = mapped_column(String(20))  # anode | cathode | unknown
-    company: Mapped[str | None] = mapped_column(String(100))
+    company: Mapped[str | None] = mapped_column(String(100))  # from Element anode/cathode coating
     service_life: Mapped[str | None] = mapped_column(String(100))
     install_date: Mapped[date | None] = mapped_column(Date)
-    dismantle_date: Mapped[date | None] = mapped_column(Date)
+    decommission_date: Mapped[date | None] = mapped_column(Date)
+    disassemble_date: Mapped[date | None] = mapped_column(Date)
     inspection_date: Mapped[date | None] = mapped_column(Date)
     xrf: Mapped[str | None] = mapped_column(String(100))
-    voltage_quality: Mapped[str | None] = mapped_column(String(100))
+    pair_serial_nr: Mapped[str | None] = mapped_column(String(50))
+    pair_xrf: Mapped[str | None] = mapped_column(String(100))
+    decommission_voltage: Mapped[float | None] = mapped_column(Float)
+    decommission_ka: Mapped[float | None] = mapped_column(Float)
+    decommission_temp: Mapped[float | None] = mapped_column(Float)
+    voltage_quality: Mapped[str | None] = mapped_column(String(100))  # تفسیر ولتاژ
     warranty: Mapped[str | None] = mapped_column(String(100))
     coating_quality: Mapped[str | None] = mapped_column(String(100))
     decision: Mapped[str | None] = mapped_column(String(200))
-    problems: Mapped[str | None] = mapped_column(Text)
+    problems: Mapped[str | None] = mapped_column(Text)  # from Element.decommission_reason
     segregation: Mapped[str | None] = mapped_column(Text)
     pallet: Mapped[str | None] = mapped_column(String(50))
-    remarks: Mapped[str | None] = mapped_column(Text)
+    inspection_form_serial: Mapped[str | None] = mapped_column(String(150))  # Inspection.client
+    remarks: Mapped[str | None] = mapped_column(Text)  # تفکیک در حضور بازرس
 
 
 # ==========================================================================
@@ -676,6 +695,9 @@ class ElectrolyzerNormalization(Base):
     zero_voltage: Mapped[float | None] = mapped_column(Float)  # Uo
     total_voltage: Mapped[float | None] = mapped_column(Float)  # U Gesamt
     element_count: Mapped[int | None] = mapped_column(Integer)  # Elementzahl
+    rack_a_avg: Mapped[float | None] = mapped_column(Float)
+    rack_b_avg: Mapped[float | None] = mapped_column(Float)
+    catholyte_conc: Mapped[float | None] = mapped_column(Float)
     cl2_pct: Mapped[float | None] = mapped_column(Float)
     h2_pct: Mapped[float | None] = mapped_column(Float)
     delta_p: Mapped[float | None] = mapped_column(Float)

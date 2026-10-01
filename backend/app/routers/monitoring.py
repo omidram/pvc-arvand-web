@@ -10,16 +10,30 @@ from sqlalchemy.orm import Session
 from .. import alerts_engine, models, schemas
 from ..calculations import installation_dol
 from ..database import get_db
-from ..export_utils import export_pdf, export_xlsx
+from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx
 from ..plant_topology import arrangement_name, rack_of, train_of
 from ..warehouse import compact_nr
 
 router = APIRouter(prefix="/monitoring", tags=["monitoring"])
 
 
+def _position_keys(position: str | None) -> list[str]:
+    raw = (position or "").strip()
+    if not raw:
+        return []
+    keys = {raw}
+    try:
+        number = str(int(float(raw)))
+        keys.add(number)
+        keys.add(number.zfill(3))
+    except (TypeError, ValueError):
+        pass
+    return [key for key in keys if key]
+
+
 @router.get("/snapshot", response_model=schemas.MonitoringSnapshot)
 def monitoring_snapshot(db: Session = Depends(get_db)):
-    data = alerts_engine.build_snapshot(db)
+    data = alerts_engine.build_snapshot(db, evaluate=False)
     return schemas.MonitoringSnapshot.model_validate(data)
 
 
@@ -135,7 +149,7 @@ def _monitoring_export_pack(
     if kind == "history":
         if not el:
             raise HTTPException(status_code=400, detail="electrolyzer is required")
-        history = voltage_history(el, position, span, db)
+        history = voltage_history(el, position, span, db=db)
         rows = [
             {"date": point.get("date"), "time": point.get("time"), "voltage": point.get("voltage"), "series": "cell"}
             for point in history.get("points") or []
@@ -220,6 +234,10 @@ def _monitoring_export_pack(
             "avg_voltage": block.get("avg_voltage"),
             "max_voltage": block.get("max_voltage"),
             "total_voltage": block.get("total_voltage"),
+            "current_ka": block.get("current_ka"),
+            "power_kw": block.get("power_kw"),
+            "energy_kwh_24h": block.get("energy_kwh_24h"),
+            "energy_kwh_30d": block.get("energy_kwh_30d"),
             "reading_date": _export_date(block.get("reading_date")),
             "reading_time": block.get("reading_time"),
         }
@@ -235,11 +253,31 @@ def _monitoring_export_pack(
         "avg_voltage",
         "max_voltage",
         "total_voltage",
+        "current_ka",
+        "power_kw",
+        "energy_kwh_24h",
+        "energy_kwh_30d",
         "reading_date",
         "reading_time",
     ]
     label = f"train{train_id}" if kind == "train" and train_id else "plant"
     return rows, fields, f"monitoring-{label}"
+
+
+@router.get("/export.meta", include_in_schema=False)
+def export_monitoring_meta(
+    db: Session = Depends(get_db),
+    scope: str = Query(default="plant"),
+    train: str | None = None,
+    electrolyzer: str | None = None,
+    position: str | None = None,
+    status: str | None = Query(default="open"),
+    span: str = Query(default="30"),
+):
+    _, fields, _ = _monitoring_export_pack(
+        db, scope=scope, train=train, electrolyzer=electrolyzer, position=position, status=status, span=span
+    )
+    return build_export_meta(fields)
 
 
 @router.get("/export.xlsx", include_in_schema=False)
@@ -251,10 +289,12 @@ def export_monitoring_xlsx(
     position: str | None = None,
     status: str | None = Query(default="open"),
     span: str = Query(default="30"),
+    filters: ExportFilters = Depends(),
 ):
     rows, fields, title = _monitoring_export_pack(
         db, scope=scope, train=train, electrolyzer=electrolyzer, position=position, status=status, span=span
     )
+    rows, fields = filters.apply(rows, fields)
     return export_xlsx(rows, fields, title)
 
 
@@ -267,10 +307,12 @@ def export_monitoring_pdf(
     position: str | None = None,
     status: str | None = Query(default="open"),
     span: str = Query(default="30"),
+    filters: ExportFilters = Depends(),
 ):
     rows, fields, title = _monitoring_export_pack(
         db, scope=scope, train=train, electrolyzer=electrolyzer, position=position, status=status, span=span
     )
+    rows, fields = filters.apply(rows, fields)
     return export_pdf(rows[:2000], fields, title)
 
 
@@ -428,36 +470,54 @@ def voltage_history(
     electrolyzer: str,
     position: str | None = None,
     span: str = Query(default="30"),
+    date_from: date | None = Query(default=None),
+    date_to: date | None = Query(default=None),
     db: Session = Depends(get_db),
 ):
     """Cell or electrolyzer voltage history for the monitoring chart.
 
     span 10 or 30 means the last N readings. 90, 365 and 730 are day windows.
+    Pass date_from / date_to (with span=custom or any span) for an explicit calendar range.
     """
     el = (electrolyzer or "").strip().upper()
     if not el:
         raise HTTPException(status_code=400, detail="electrolyzer is required")
-    tail = span in {"10", "30"}
+    custom = bool(date_from or date_to) or span == "custom"
+    if span == "custom" and not date_from and not date_to:
+        raise HTTPException(status_code=400, detail="date_from or date_to is required for custom range")
+    tail = (not custom) and span in {"10", "30"}
     days = {"90": 90, "365": 365, "730": 730}.get(span, 730 if not tail else 800)
     since = datetime.utcnow() - timedelta(days=days)
     pos = None
+    pos_keys: list[str] = []
     if position:
         pos = position.strip()
-        if pos.isdigit():
+        if pos.isdigit() or (pos.replace(".", "", 1).isdigit()):
             pos = pos.lstrip("0") or "0"
+        pos_keys = _position_keys(pos)
+
+    def _apply_window(query, date_col):
+        if custom:
+            if date_from is not None:
+                query = query.filter(date_col >= datetime.combine(date_from, datetime.min.time()))
+            if date_to is not None:
+                query = query.filter(date_col <= datetime.combine(date_to, datetime.max.time()))
+            return query
+        if not tail:
+            query = query.filter(date_col >= since)
+        return query
 
     if pos:
         query = (
             db.query(models.VoltageReading)
             .filter(
                 models.VoltageReading.electrolyzer == el,
-                models.VoltageReading.position == pos,
+                models.VoltageReading.position.in_(pos_keys),
                 models.VoltageReading.voltage.isnot(None),
             )
             .order_by(models.VoltageReading.date.asc(), models.VoltageReading.time.asc(), models.VoltageReading.id.asc())
         )
-        if not tail:
-            query = query.filter(models.VoltageReading.date >= since)
+        query = _apply_window(query, models.VoltageReading.date)
         rows = query.all()
         points = [
             {
@@ -485,8 +545,7 @@ def voltage_history(
                 models.ElectrolyzerNormalization.id.asc(),
             )
         )
-        if not tail:
-            query = query.filter(models.ElectrolyzerNormalization.date >= since)
+        query = _apply_window(query, models.ElectrolyzerNormalization.date)
         rows = query.all()
         points = [
             {
@@ -505,7 +564,16 @@ def voltage_history(
     rectifier_points: list[dict] = []
     if not pos:
         rectifier_points = _rectifier_voltage_points(db, el)
-        if tail:
+        if custom:
+            lo = date_from.isoformat() if date_from else ""
+            hi = date_to.isoformat() if date_to else "9999-12-31"
+            rectifier_points = [
+                point
+                for point in rectifier_points
+                if (not lo or (point.get("date") or "") >= lo) and (not date_to or (point.get("date") or "") <= hi)
+            ]
+            rectifier_points = _sample_points(rectifier_points, 360)
+        elif tail:
             rectifier_points = rectifier_points[-int(span) :]
         else:
             cutoff = since.date().isoformat()
@@ -513,14 +581,18 @@ def voltage_history(
             rectifier_points = _sample_points(rectifier_points, 360)
 
     total = len(points)
-    shown = points if tail else _sample_points(points, 360)
+    shown = points if (tail or custom) else _sample_points(points, 360)
+    if custom and len(shown) > 2000:
+        shown = _sample_points(shown, 2000)
     return {
         "electrolyzer": el,
         "position": pos,
         "title": title,
         "kind": kind,
         "unit": "V",
-        "span": span,
+        "span": "custom" if custom else span,
+        "date_from": date_from.isoformat() if date_from else None,
+        "date_to": date_to.isoformat() if date_to else None,
         "total": total,
         "points": shown,
         "rectifier_points": rectifier_points,
@@ -613,6 +685,262 @@ def cell_properties(
         "rack_end": rack["end"] if rack else None,
         "current": _element_brief(current) if current else None,
         "history": [_element_brief(row) for row in matched],
+    }
+
+
+@router.get("/cell-health")
+def cell_health(
+    electrolyzer: str,
+    position: str,
+    db: Session = Depends(get_db),
+):
+    """Cell Health Index + operating history for one slot (peer-aware)."""
+    from ..cell_health import build_cell_health
+
+    el = (electrolyzer or "").strip().upper()
+    pos = alerts_engine._norm_pos(position)
+    if not el or not pos:
+        raise HTTPException(status_code=400, detail="electrolyzer and position are required")
+    try:
+        return build_cell_health(db, el, pos)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.get("/cell-health-board")
+def cell_health_board(
+    electrolyzer: str,
+    db: Session = Depends(get_db),
+):
+    """Peer comparison board + investigation list for one electrolyzer."""
+    from ..cell_health import build_cell_health_board
+
+    el = (electrolyzer or "").strip().upper()
+    if not el:
+        raise HTTPException(status_code=400, detail="electrolyzer is required")
+    try:
+        return build_cell_health_board(db, el)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+def _count_map(pairs: list) -> list[dict]:
+    return [{"label": label or "—", "count": int(count)} for label, count in pairs if count]
+
+
+def _electrolyzer_aliases(el: str) -> list[str]:
+    aliases = {el, el.lower(), el.upper()}
+    arranged = arrangement_name(el)
+    if arranged:
+        aliases.update({arranged, arranged.lower(), arranged.upper()})
+    train = train_of(el)
+    if train == "1":
+        aliases.update({"081", "Train I", "train i", "I"})
+    elif train == "2":
+        aliases.update({"082", "Train II", "train ii", "II"})
+    return [item for item in aliases if item]
+
+
+@router.get("/electrolyzer")
+def electrolyzer_properties(electrolyzer: str, db: Session = Depends(get_db)):
+    """Assembly, plant layout, voltage, CE, analyses, alerts and shutdowns for one electrolyzer."""
+    el = (electrolyzer or "").strip().upper()
+    if not el:
+        raise HTTPException(status_code=400, detail="electrolyzer is required")
+    aliases = _electrolyzer_aliases(el)
+    arranged = arrangement_name(el)
+    train = train_of(el)
+
+    layout_rows = (
+        db.query(models.ElectrolyzerArrangement)
+        .filter(func.upper(models.ElectrolyzerArrangement.name) == (arranged or el).upper())
+        .order_by(models.ElectrolyzerArrangement.block.asc(), models.ElectrolyzerArrangement.id.asc())
+        .all()
+    )
+    layout = [
+        {
+            "block": row.block,
+            "transformer": row.transformer,
+            "rectifier": row.rectifier,
+            "sub_plant": row.sub_plant,
+            "start_position": row.start_position,
+            "end_position": row.end_position,
+        }
+        for row in layout_rows
+    ]
+
+    elements = (
+        db.query(models.Element)
+        .filter(func.upper(models.Element.electrolyzer) == el)
+        .all()
+    )
+    active = [row for row in elements if row.disassembly_date is None]
+    dismantled = [row for row in elements if row.disassembly_date is not None]
+    occupied = {
+        alerts_engine._norm_pos(row.position)
+        for row in active
+        if alerts_engine._norm_pos(row.position)
+    }
+    dol_values = [
+        installation_dol(row.assembly_date, row.commissioning_date, row.disassembly_date, row.decommissioning_date)
+        for row in active
+    ]
+    dol_values = [value for value in dol_values if value is not None]
+    membrane_types = (
+        db.query(models.Element.membrane_type, func.count())
+        .filter(func.upper(models.Element.electrolyzer) == el, models.Element.disassembly_date.is_(None))
+        .group_by(models.Element.membrane_type)
+        .order_by(func.count().desc())
+        .all()
+    )
+    coatings = (
+        db.query(models.Element.anode_coating, func.count())
+        .filter(func.upper(models.Element.electrolyzer) == el, models.Element.disassembly_date.is_(None))
+        .group_by(models.Element.anode_coating)
+        .order_by(func.count().desc())
+        .limit(8)
+        .all()
+    )
+    recent_installs = sorted(
+        active,
+        key=lambda row: (_stamp(row.commissioning_date or row.assembly_date), row.id or 0),
+        reverse=True,
+    )[:8]
+    recent_dismantles = sorted(
+        dismantled,
+        key=lambda row: (_stamp(row.disassembly_date or row.decommissioning_date), row.id or 0),
+        reverse=True,
+    )[:8]
+
+    norm = (
+        db.query(models.ElectrolyzerNormalization)
+        .filter(func.upper(models.ElectrolyzerNormalization.electrolyzer) == el)
+        .order_by(models.ElectrolyzerNormalization.date.desc(), models.ElectrolyzerNormalization.id.desc())
+        .first()
+    )
+    ce = (
+        db.query(models.CurrentEfficiencyEntry)
+        .filter(
+            models.CurrentEfficiencyEntry.scope == "electrolyzer",
+            func.upper(models.CurrentEfficiencyEntry.scope_ref).in_([item.upper() for item in aliases]),
+        )
+        .order_by(models.CurrentEfficiencyEntry.date.desc(), models.CurrentEfficiencyEntry.id.desc())
+        .first()
+    )
+    analyses = (
+        db.query(models.AnalysisSample)
+        .filter(
+            models.AnalysisSample.scope == "electrolyzer",
+            func.upper(models.AnalysisSample.electrolyzer) == el,
+        )
+        .order_by(models.AnalysisSample.date.desc(), models.AnalysisSample.id.desc())
+        .limit(8)
+        .all()
+    )
+    alerts = (
+        db.query(models.AlertEvent)
+        .filter(func.upper(models.AlertEvent.electrolyzer) == el, models.AlertEvent.status != "resolved")
+        .order_by(models.AlertEvent.created_at.desc(), models.AlertEvent.id.desc())
+        .limit(8)
+        .all()
+    )
+    shutdowns = (
+        db.query(models.Shutdown)
+        .filter(models.Shutdown.plant_part.in_(aliases))
+        .order_by(models.Shutdown.shutdown_time.desc(), models.Shutdown.nr.desc())
+        .limit(8)
+        .all()
+    )
+    inspections = (
+        db.query(models.InspectionReport)
+        .filter(func.upper(models.InspectionReport.electrolyzer) == el)
+        .order_by(models.InspectionReport.inspection_date.desc(), models.InspectionReport.id.desc())
+        .limit(8)
+        .all()
+    )
+
+    return {
+        "electrolyzer": el,
+        "train": train,
+        "arrangement": arranged,
+        "layout": layout,
+        "summary": {
+            "installations": len(elements),
+            "active_cells": len(active),
+            "occupied_positions": len(occupied),
+            "empty_positions": max(0, 168 - len(occupied)),
+            "dismantled": len(dismantled),
+            "avg_dol_days": round(sum(dol_values) / len(dol_values)) if dol_values else None,
+            "membrane_types": _count_map(membrane_types),
+            "anode_coatings": _count_map(coatings),
+        },
+        "normalization": None
+        if norm is None
+        else {
+            "date": _iso(norm.date),
+            "time": norm.time,
+            "total_current": norm.total_current,
+            "total_voltage": norm.total_voltage,
+            "element_count": norm.element_count,
+            "anolyte_temp": norm.anolyte_temp,
+            "catholyte_temp": norm.catholyte_temp,
+            "catholyte_conc": norm.catholyte_conc,
+            "cl2_pct": norm.cl2_pct,
+            "h2_pct": norm.h2_pct,
+            "rack_a_avg": norm.rack_a_avg,
+            "rack_b_avg": norm.rack_b_avg,
+        },
+        "current_efficiency": None
+        if ce is None
+        else {"date": _iso(ce.date), "value_pct": ce.value_pct, "scope_ref": ce.scope_ref},
+        "analyses": [
+            {
+                "id": row.id,
+                "analysis_type": row.analysis_type,
+                "date": _iso(row.date),
+                "time": row.time,
+                "parameters": row.parameters or {},
+            }
+            for row in analyses
+        ],
+        "alerts": [
+            {
+                "id": row.id,
+                "severity": row.severity,
+                "status": row.status,
+                "title": row.title,
+                "message": row.message,
+                "position": row.position,
+                "value": row.value,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+            }
+            for row in alerts
+        ],
+        "shutdowns": [
+            {
+                "nr": row.nr,
+                "plant_part": row.plant_part,
+                "shutdown_time": row.shutdown_time.isoformat() if row.shutdown_time else None,
+                "startup_time": row.startup_time.isoformat() if row.startup_time else None,
+                "category": row.category,
+                "cause": row.cause,
+                "remarks": row.remarks,
+            }
+            for row in shutdowns
+        ],
+        "inspections": [
+            {
+                "id": row.id,
+                "element_nr": row.element_nr,
+                "position": row.position,
+                "inspection_date": _iso(row.inspection_date),
+                "inspection_reason": row.inspection_reason,
+                "inspector_name": row.inspector_name,
+            }
+            for row in inspections
+        ],
+        "recent_installs": [_element_brief(row) for row in recent_installs],
+        "recent_dismantles": [_element_brief(row) for row in recent_dismantles],
     }
 
 
@@ -763,12 +1091,31 @@ def component_dossier(
         shown = catalog.cathode_nr
     if kind == "membrane" and catalog:
         shown = catalog.membrane_nr
+    catalog_out = _catalog_brief(kind, catalog)
+    if catalog_out is not None and not catalog_out.get("coating") and place_row is not None and kind in {"anode", "cathode"}:
+        install_coating = place_row.anode_coating if kind == "anode" else place_row.cathode_coating
+        if install_coating:
+            catalog_out["coating"] = install_coating
+    if catalog_out is None and place_row is not None and kind in {"anode", "cathode"}:
+        install_coating = place_row.anode_coating if kind == "anode" else place_row.cathode_coating
+        if install_coating or place_row:
+            catalog_out = {
+                "nr": (nr or "").strip(),
+                "membrane_type": None,
+                "manufacturer": None,
+                "coating": install_coating,
+                "batch": None,
+                "generation": None,
+                "received_date": None,
+                "decommission_date": None,
+                "remarks": None,
+            }
     return {
         "kind": kind,
         "nr": shown or (nr or "").strip(),
         "status": status,
         "place": place,
-        "catalog": _catalog_brief(kind, catalog),
+        "catalog": catalog_out,
         "installations": [_element_brief(row) for row in installations[:40]],
         "maintenance": [_maintenance_brief(kind, row) for row in maintenance[:40]],
         "reports": [

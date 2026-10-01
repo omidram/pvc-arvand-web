@@ -45,6 +45,10 @@ FORM_KEYS: list[str] = [
 LEVEL_RANK = {"none": 0, "view": 1, "edit": 2}
 WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 
+# Inspection sheet is signed by Insp. / Maint. / Proc., so any of these
+# plant forms is enough to open and edit the shared CZ-03 report.
+INSPECTION_COLLAB_KEYS = ("inspections", "anodes", "cathodes", "membranes", "elements")
+
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
@@ -188,7 +192,7 @@ DEFAULT_ROLES: list[dict] = [
             "reports": "view",
             "monitoring": "view",
             "elements": "view",
-            "inspections": "view",
+            "inspections": "edit",
             "anodes": "view",
             "cathodes": "view",
             "membranes": "view",
@@ -204,15 +208,15 @@ DEFAULT_ROLES: list[dict] = [
     },
     {
         "name": "Inspector",
-        "description": "بازرس — فقط بخش ولتاژ فعال است؛ بقیه منوها مخفی",
+        "description": "بازرس — ولتاژ و فرم بازرسی برای امضا و ویرایش مشترک",
         "is_system": True,
         "permissions": {
             "dashboard": "none",
             "statistics": "none",
             "reports": "none",
             "monitoring": "view",
-            "elements": "none",
-            "inspections": "none",
+            "elements": "view",
+            "inspections": "edit",
             "anodes": "none",
             "cathodes": "none",
             "membranes": "none",
@@ -279,8 +283,42 @@ def seed_default_roles(db: Session) -> None:
     db.commit()
 
 
+def ensure_inspection_collaboration(db: Session) -> None:
+    """Raise inspections access on built-in roles so Insp/Maint/Proc can share the form."""
+    wanted = {"Operator": "edit", "Inspector": "edit", "Viewer": "view"}
+    changed = False
+    for name, level in wanted.items():
+        role = db.query(models.AppRole).filter(models.AppRole.name == name).first()
+        if role is None:
+            continue
+        row = (
+            db.query(models.RolePermission)
+            .filter(models.RolePermission.role_id == role.id, models.RolePermission.form_key == "inspections")
+            .first()
+        )
+        if row is None:
+            db.add(models.RolePermission(role_id=role.id, form_key="inspections", level=level))
+            changed = True
+        elif LEVEL_RANK.get(row.level, 0) < LEVEL_RANK[level]:
+            row.level = level
+            changed = True
+        if name == "Inspector" and role.description and "فقط بخش ولتاژ" in role.description:
+            role.description = "بازرس — ولتاژ و فرم بازرسی برای امضا و ویرایش مشترک"
+            changed = True
+            elem = (
+                db.query(models.RolePermission)
+                .filter(models.RolePermission.role_id == role.id, models.RolePermission.form_key == "elements")
+                .first()
+            )
+            if elem is None:
+                db.add(models.RolePermission(role_id=role.id, form_key="elements", level="view"))
+    if changed:
+        db.commit()
+
+
 def seed_default_admin(db: Session) -> None:
     seed_default_roles(db)
+    ensure_inspection_collaboration(db)
     if db.query(models.User).count() > 0:
         return
     admin = models.User(

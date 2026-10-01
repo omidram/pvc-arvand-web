@@ -154,6 +154,8 @@ export const elementsApi = {
     });
     return followImport(data, onProgress);
   },
+  nextNumber: async (): Promise<{ element_nr: string }> =>
+    (await apiClient.get("/elements/next-number")).data,
   match: async (params: {
     focus: string;
     element_nr?: string;
@@ -400,6 +402,20 @@ export const electrodeSegregationsApi = {
     });
     return followImport(data, onProgress);
   },
+  enrichFromAssembly: async (): Promise<{ checked: number; updated: number }> =>
+    (await apiClient.post("/electrode-segregations/enrich-from-assembly")).data,
+  fromAssembly: async (
+    serialNr: string,
+    preserveServiceLife?: string | null
+  ): Promise<Partial<T.ElectrodeSegregation>> =>
+    (
+      await apiClient.get("/electrode-segregations/from-assembly", {
+        params: {
+          serial_nr: serialNr,
+          preserve_service_life: preserveServiceLife || undefined,
+        },
+      })
+    ).data,
 };
 
 // ---------------------------------------------------------------- Search
@@ -416,8 +432,31 @@ export const statisticsApi = {
   dashboard: async (): Promise<T.DashboardStats> => (await apiClient.get("/statistics/dashboard")).data,
   dolByMembraneType: async (): Promise<T.DolByMembraneType[]> =>
     (await apiClient.get("/statistics/dol-by-membrane-type")).data,
-  powerConsumption: async (electrolyzer?: string): Promise<Record<string, unknown>> =>
-    (await apiClient.get("/statistics/power-consumption", { params: { electrolyzer } })).data,
+  powerConsumption: async (params?: {
+    electrolyzer?: string;
+    group?: string;
+    date_from?: string;
+    date_till?: string;
+  }): Promise<{
+    from: string;
+    till: string;
+    group: string;
+    formula: string;
+    total_kwh: number;
+    rows: Array<{
+      key: string;
+      train?: string | null;
+      electrolyzer?: string | null;
+      rack?: string;
+      energy_kwh: number;
+      hours: number;
+      samples: number;
+      current_ka?: number;
+      voltage?: number;
+      power_kw?: number;
+      avg_kw?: number | null;
+    }>;
+  }> => (await apiClient.get("/statistics/power-consumption", { params })).data,
   groups: async (): Promise<T.GroupStat[]> => (await apiClient.get("/statistics/groups")).data,
 };
 
@@ -430,6 +469,19 @@ export const reportsApi = {
 };
 
 // ---------------------------------------------------------------- Export helpers
+export type ExportMeta = { fields: string[]; date_fields: string[] };
+
+export async function fetchExportMeta(
+  prefix: string,
+  params?: Record<string, unknown>
+): Promise<ExportMeta> {
+  const { data } = await apiClient.get(`${prefix}/export.meta`, { params });
+  return {
+    fields: Array.isArray(data.fields) ? data.fields.map(String) : [],
+    date_fields: Array.isArray(data.date_fields) ? data.date_fields.map(String) : [],
+  };
+}
+
 /** Downloads a resource's export.xlsx/export.pdf via the browser (auth header via axios, then blob download). */
 export async function downloadExport(
   prefix: string,
@@ -906,6 +958,159 @@ export interface ComponentDossier {
   reports: { id: number; report_date: string | null; title: string | null; notes: string | null; file_count: number }[];
 }
 
+export interface ElectrolyzerProperties {
+  electrolyzer: string;
+  train: string | null;
+  arrangement: string | null;
+  layout: {
+    block: string | null;
+    transformer: string | null;
+    rectifier: string | null;
+    sub_plant: string | null;
+    start_position: string | null;
+    end_position: string | null;
+  }[];
+  summary: {
+    installations: number;
+    active_cells: number;
+    occupied_positions: number;
+    empty_positions: number;
+    dismantled: number;
+    avg_dol_days: number | null;
+    membrane_types: { label: string; count: number }[];
+    anode_coatings: { label: string; count: number }[];
+  };
+  normalization: {
+    date: string | null;
+    time: string | null;
+    total_current: number | null;
+    total_voltage: number | null;
+    element_count: number | null;
+    anolyte_temp: number | null;
+    catholyte_temp: number | null;
+    catholyte_conc: number | null;
+    cl2_pct: number | null;
+    h2_pct: number | null;
+    rack_a_avg: number | null;
+    rack_b_avg: number | null;
+  } | null;
+  current_efficiency: { date: string | null; value_pct: number | null; scope_ref: string | null } | null;
+  analyses: {
+    id: number;
+    analysis_type: string;
+    date: string | null;
+    time: string | null;
+    parameters: Record<string, number | string>;
+  }[];
+  alerts: {
+    id: number;
+    severity: string;
+    status: string;
+    title: string;
+    message: string | null;
+    position: string | null;
+    value: number | null;
+    created_at: string | null;
+  }[];
+  shutdowns: {
+    nr: number;
+    plant_part: string | null;
+    shutdown_time: string | null;
+    startup_time: string | null;
+    category: string | null;
+    cause: string | null;
+    remarks: string | null;
+  }[];
+  inspections: {
+    id: number;
+    element_nr: string | null;
+    position: string | null;
+    inspection_date: string | null;
+    inspection_reason: string | null;
+    inspector_name: string | null;
+  }[];
+  recent_installs: CellElementBrief[];
+  recent_dismantles: CellElementBrief[];
+}
+
+export type CellHealthStatus = "ok" | "watch" | "investigate" | "critical" | "unknown";
+
+export interface CellHealthRow {
+  electrolyzer: string;
+  position: string;
+  position_label: string;
+  element_nr: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  membrane_type: string | null;
+  voltage: number | null;
+  standardized_voltage: number | null;
+  reading_date: string | null;
+  median_voltage: number | null;
+  operating_hours: number | null;
+  dol_days: number | null;
+  install_cycles: number;
+  ce_pct: number | null;
+  un_avg: number | null;
+  avg_voltage: number | null;
+  avg_current_ka: number | null;
+  test_ce_pct: number | null;
+  test_spc_kwh: number | null;
+  lab_score: number | null;
+  health_score: number | null;
+  status: CellHealthStatus;
+  peer_delta_v: number | null;
+  trend_mv_day: number | null;
+  reasons: string[];
+  factors: { name: string; status: string; value: number | null }[];
+}
+
+export interface CellHealthBoard {
+  electrolyzer: string;
+  train: string | null;
+  arrangement: string | null;
+  median_voltage: number | null;
+  envelope: {
+    report_date: string | null;
+    total_current_ka: number | null;
+    anolyte_temp: number | null;
+    catholyte_temp: number | null;
+    delta_p: number | null;
+    naoh_pct: number | null;
+    cl2_pct: number | null;
+    h2_pct: number | null;
+    brine_flags: { parameter: string; value: number; limit: number; severity: string }[];
+    brine_date: string | null;
+    factors: { name: string; value: number | null; status: string; detail: string }[];
+    envelope_score: number | null;
+    envelope_status: CellHealthStatus;
+  };
+  shutdown_stats: { shutdowns: number; trips: number };
+  summary: {
+    cells: number;
+    ok: number;
+    watch: number;
+    investigate: number;
+    critical: number;
+    unknown: number;
+    median_voltage: number | null;
+  };
+  investigation: CellHealthRow[];
+  cells: CellHealthRow[];
+  levels: { l1_online: string; l2_condition: string; l3_overhaul: string };
+}
+
+export interface CellHealthDetail {
+  electrolyzer: string;
+  train: string | null;
+  envelope: CellHealthBoard["envelope"];
+  shutdown_stats: { shutdowns: number; trips: number };
+  median_voltage: number | null;
+  cell: CellHealthRow | null;
+  levels: CellHealthBoard["levels"];
+}
+
 export const monitoringApi = {
   snapshot: async (): Promise<T.MonitoringSnapshot> => (await apiClient.get("/monitoring/snapshot")).data,
   summary: async (): Promise<T.AlertSummary> => (await apiClient.get("/monitoring/summary")).data,
@@ -933,12 +1138,22 @@ export const monitoringApi = {
     (await apiClient.post("/monitoring/alerts/resolve-all", null, { params: { severity } })).data,
   cell: async (params: { electrolyzer: string; position: string }): Promise<CellProperties> =>
     (await apiClient.get("/monitoring/cell", { params })).data,
+  electrolyzer: async (params: { electrolyzer: string }): Promise<ElectrolyzerProperties> =>
+    (await apiClient.get("/monitoring/electrolyzer", { params })).data,
+  cellHealth: async (params: {
+    electrolyzer: string;
+    position: string;
+  }): Promise<CellHealthDetail> => (await apiClient.get("/monitoring/cell-health", { params })).data,
+  cellHealthBoard: async (params: { electrolyzer: string }): Promise<CellHealthBoard> =>
+    (await apiClient.get("/monitoring/cell-health-board", { params })).data,
   component: async (params: { kind: "anode" | "cathode" | "membrane"; nr: string }): Promise<ComponentDossier> =>
     (await apiClient.get("/monitoring/component", { params })).data,
   voltageHistory: async (params: {
     electrolyzer: string;
     position?: string;
     span?: string;
+    date_from?: string;
+    date_to?: string;
   }): Promise<{
     electrolyzer: string;
     position: string | null;
@@ -946,6 +1161,8 @@ export const monitoringApi = {
     kind: string;
     unit: string;
     span: string;
+    date_from?: string | null;
+    date_to?: string | null;
     total: number;
     points: { date: string | null; time: string | null; voltage: number }[];
     rectifier_points?: { date: string | null; time: string | null; voltage: number }[];

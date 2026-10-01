@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
-from ..auth import require_form_access
+from ..auth import require_admin, require_form_access
 from ..excel_import import import_excel_bytes, read_xlsx
 from ..import_jobs import spawn_import
 from ..migrate_access import run_migration
@@ -82,6 +82,7 @@ async def import_excel(
     resource: str,
     file: UploadFile,
     mode: str = Query(default="merge", pattern="^(replace|merge)$"),
+    _admin=Depends(require_admin),
 ):
     if resource not in IMPORTABLE_RESOURCES:
         raise HTTPException(status_code=400, detail=f"Unknown resource. Choose one of: {sorted(IMPORTABLE_RESOURCES)}")

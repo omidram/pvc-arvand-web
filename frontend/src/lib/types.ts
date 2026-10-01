@@ -144,6 +144,7 @@ export interface Element {
   cathode_electrode: string | null;
   cathode_shell: string | null;
   membrane_info: string | null;
+  membrane_remark: string | null;
   remarks: string | null;
   computed_dol_days: number | null;
   status: "active" | "disassembled" | "decommissioned" | "planned" | null;
@@ -204,6 +205,17 @@ export interface InspectionReport {
   sample_cathode_note: string | null;
   sample_anode_note: string | null;
   sample_membrane_note: string | null;
+  xrf_anode: string | null;
+  xrf_cathode: string | null;
+  sign_insp_name: string | null;
+  sign_insp_image: string | null;
+  sign_insp_at: string | null;
+  sign_maint_name: string | null;
+  sign_maint_image: string | null;
+  sign_maint_at: string | null;
+  sign_proc_name: string | null;
+  sign_proc_image: string | null;
+  sign_proc_at: string | null;
 }
 
 export interface InspectionHalfshellGrid {
@@ -440,9 +452,15 @@ export interface ElectrodeSegregation {
   company: string | null;
   service_life: string | null;
   install_date: string | null;
-  dismantle_date: string | null;
+  decommission_date: string | null;
+  disassemble_date: string | null;
   inspection_date: string | null;
   xrf: string | null;
+  pair_serial_nr: string | null;
+  pair_xrf: string | null;
+  decommission_voltage: number | null;
+  decommission_ka: number | null;
+  decommission_temp: number | null;
   voltage_quality: string | null;
   warranty: string | null;
   coating_quality: string | null;
@@ -450,11 +468,16 @@ export interface ElectrodeSegregation {
   problems: string | null;
   segregation: string | null;
   pallet: string | null;
+  inspection_form_serial: string | null;
   remarks: string | null;
 }
 
 export interface DashboardVoltageStats {
-  plant_total_voltage: number;
+  plant_total_voltage: number | null;
+  plant_total_ka: number | null;
+  plant_energy_kwh_24h: number | null;
+  report_date?: string | null;
+  online_count?: number;
   cell_count: number;
   ok_count: number;
   warning_count: number;
@@ -467,9 +490,12 @@ export interface DashboardVoltageStats {
   electrolyzers: {
     electrolyzer: string;
     cell_count: number;
-    total_voltage: number;
+    total_voltage: number | null;
     avg_voltage: number | null;
     max_voltage: number | null;
+    current_ka?: number | null;
+    energy_kwh_24h?: number | null;
+    online?: boolean;
   }[];
 }
 
@@ -753,6 +779,7 @@ export interface MonitoringCellStatus {
   reading_time: string | null;
   severity: AlertSeverity;
   threshold: number | null;
+  live?: boolean;
 }
 
 export interface MonitoringElectrolyzerBlock {
@@ -766,6 +793,22 @@ export interface MonitoringElectrolyzerBlock {
   max_voltage: number | null;
   avg_voltage: number | null;
   total_voltage: number | null;
+  current_ka: number | null;
+  power_kw: number | null;
+  energy_kwh_24h: number | null;
+  energy_kwh_30d: number | null;
+  online?: boolean;
+  racks?: {
+    id: string;
+    start: number;
+    end: number;
+    cell_count: number;
+    total_voltage: number | null;
+    avg_voltage: number | null;
+    power_kw: number | null;
+    energy_kwh_24h: number | null;
+    energy_kwh_30d: number | null;
+  }[];
   cells: MonitoringCellStatus[];
 }
 
@@ -793,6 +836,10 @@ export interface MonitoringSnapshot {
     anode_count: number;
     cathode_count: number;
     component_issue_count: number;
+    current_ka?: number | null;
+    power_kw?: number | null;
+    energy_kwh_24h?: number | null;
+    energy_kwh_30d?: number | null;
   };
   electrolyzers: MonitoringElectrolyzerBlock[];
   component_issues: MonitoringComponentIssue[];

@@ -53,6 +53,8 @@ import { DirectoryTab } from "@/components/domain/directory-tab";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useTheme } from "@/lib/theme/context";
+import { cellComponentLabel } from "@/lib/cell-component-names";
+import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
 import type { ThemeColors, ThemePresetId } from "@/lib/theme/presets";
 import { NAMED_PRESETS } from "@/lib/theme/presets";
 import { Sun, Moon, MonitorCog, Contrast, Waves, Trees, Grape, Wheat, Palette } from "lucide-react";
@@ -169,7 +171,7 @@ function CellComponentsTab() {
         <DataTable
           columns={[
             { key: "part_nr", header: t("fields.partNr") },
-            { key: "name", header: t("fields.name") },
+            { key: "name", header: t("fields.name"), render: (row) => cellComponentLabel(row, t) },
             { key: "drawing_nr", header: t("fields.drawingNr") },
             { key: "total_parts", header: t("fields.totalParts") },
             { key: "recommended_spares", header: t("fields.recommendedSpares") },
@@ -189,15 +191,25 @@ function CellComponentsTab() {
           }
         />
       </CardContent>
-      <Modal open={!!editing} onClose={() => setEditing(null)} title={t("settings.editComponent", { name: editing?.name || t("settings.component") })}>
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={t("settings.editComponent", { name: editing ? cellComponentLabel(editing, t) : t("settings.component") })}>
         {editing && (
           <ResourceForm<CellComponent>
             fields={fields}
-            initialValues={editing}
+            initialValues={{ ...editing, name: cellComponentLabel(editing, t) }}
             onCancel={() => setEditing(null)}
             submitting={updateMutation.isPending}
             readOnly={!editable}
-            onSubmit={(values) => updateMutation.mutate({ id: editing.id, payload: values })}
+            onSubmit={(values) => {
+              const shown = cellComponentLabel(editing, t);
+              const nextName = values.name ?? "";
+              updateMutation.mutate({
+                id: editing.id,
+                payload: {
+                  ...values,
+                  name: nextName.trim() === shown.trim() ? editing.name : values.name,
+                },
+              });
+            }}
           />
         )}
       </Modal>
@@ -562,7 +574,7 @@ export default function SettingsPage() {
                 ]}
                 columns={[
                   { key: "code", header: t("fields.code") },
-                  { key: "reason", header: t("fields.reason") },
+                  { key: "reason", header: t("fields.reason"), render: (row) => inspectionReasonLabel(row.reason, t) },
                   { key: "count", header: t("fields.count") },
                 ]}
               />

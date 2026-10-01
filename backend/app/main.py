@@ -7,7 +7,9 @@ from sqlalchemy import inspect, text
 
 from . import alerts_engine, audit, backup_scheduler, models, voltage_sync_scheduler
 from .audit_middleware import AuditMiddleware
-from .auth import require_any_form_access, require_form_access, seed_default_admin
+from .auth import INSPECTION_COLLAB_KEYS, require_any_form_access, require_form_access, seed_default_admin
+from .cell_component_names import persist_industrial_names
+from .inspection_reason_names import persist_industrial_reasons
 from .config import settings
 from .database import Base, SessionLocal, engine
 from .paths import static_dir
@@ -93,6 +95,17 @@ _INSPECTION_SHEET_COLUMNS = {
     "sample_cathode_note": "TEXT",
     "sample_anode_note": "TEXT",
     "sample_membrane_note": "TEXT",
+    "xrf_anode": "TEXT",
+    "xrf_cathode": "TEXT",
+    "sign_insp_name": "TEXT",
+    "sign_insp_image": "TEXT",
+    "sign_insp_at": "TEXT",
+    "sign_maint_name": "TEXT",
+    "sign_maint_image": "TEXT",
+    "sign_maint_at": "TEXT",
+    "sign_proc_name": "TEXT",
+    "sign_proc_image": "TEXT",
+    "sign_proc_at": "TEXT",
 }
 
 
@@ -114,9 +127,80 @@ _ensure_user_auth_source()
 _ensure_user_role_id()
 _ensure_inspection_sheet_columns()
 
+
+def _ensure_element_membrane_remark() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("elements")}
+    except Exception:
+        return
+    if "membrane_remark" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE elements ADD COLUMN membrane_remark TEXT"))
+
+
+_ensure_element_membrane_remark()
+
+
+def _ensure_segregation_disassemble_date() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("electrode_segregations")}
+    except Exception:
+        return
+    if "disassemble_date" in present or "dismantle_date" not in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE electrode_segregations RENAME COLUMN dismantle_date TO disassemble_date"))
+
+
+_ensure_segregation_disassemble_date()
+
+
+def _ensure_segregation_enrich_columns() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("electrode_segregations")}
+    except Exception:
+        return
+    additions = {
+        "decommission_date": "DATE",
+        "pair_serial_nr": "VARCHAR(50)",
+        "pair_xrf": "VARCHAR(100)",
+        "decommission_voltage": "FLOAT",
+        "decommission_ka": "FLOAT",
+        "decommission_temp": "FLOAT",
+        "inspection_form_serial": "VARCHAR(150)",
+    }
+    for name, sql_type in additions.items():
+        if name in present:
+            continue
+        with engine.begin() as conn:
+            conn.execute(text(f"ALTER TABLE electrode_segregations ADD COLUMN {name} {sql_type}"))
+        present.add(name)
+
+
+_ensure_segregation_enrich_columns()
+
+
+def _ensure_normalization_energy_columns() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("electrolyzer_normalizations")}
+    except Exception:
+        return
+    for name in ("rack_a_avg", "rack_b_avg", "catholyte_conc"):
+        if name in present:
+            continue
+        with engine.begin() as conn:
+            conn.execute(text(f"ALTER TABLE electrolyzer_normalizations ADD COLUMN {name} FLOAT"))
+        present.add(name)
+
+
+_ensure_normalization_energy_columns()
+
 with SessionLocal() as _db:
     seed_default_admin(_db)
     alerts_engine.ensure_default_rules(_db)
+    persist_industrial_names(_db)
+    persist_industrial_reasons(_db)
 
 app = FastAPI(title="PVC Arvand - Electrolyzer Management System", version="1.0.0")
 
@@ -255,12 +339,15 @@ _api(
     dependencies=[Depends(require_any_form_access("anodes", "cathodes", "membranes"))],
 )
 
-# --- TAFKIK electrode segregation (shared anode/cathode workshop decisions) ---
-_api(segregation.router, dependencies=_perm("anodes"))
+# --- TAFKIK electrode segregation (Element Administration workshop form) ---
+_api(
+    segregation.router,
+    dependencies=[Depends(require_any_form_access("anodes", "cathodes", "elements"))],
+)
 
-# --- Inspections ---
-_api(inspections.router, dependencies=_perm("inspections"))
-_api(inspections.grids_router, dependencies=_perm("inspections"))
+# --- Inspections (shared by Insp. / Maint. / Proc. roles via related forms) ---
+_api(inspections.router, dependencies=[Depends(require_any_form_access(*INSPECTION_COLLAB_KEYS))])
+_api(inspections.grids_router, dependencies=[Depends(require_any_form_access(*INSPECTION_COLLAB_KEYS))])
 
 # --- Shutdowns ---
 _api(shutdowns.router, dependencies=_perm("shutdowns"))

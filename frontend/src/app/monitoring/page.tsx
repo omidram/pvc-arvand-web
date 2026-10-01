@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
@@ -22,9 +22,10 @@ import { Tabs } from "@/components/ui/tabs";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, formatNumber } from "@/lib/utils";
 import { VoltageHistoryDialog } from "@/components/domain/voltage-history-dialog";
 import { PlantSchematic } from "@/components/domain/plant-schematic";
+import { CellHealthBoardPanel } from "@/components/domain/cell-health-board";
 import { MonitoringExport } from "@/components/domain/export-buttons";
 import { trainOf, type TrainId } from "@/lib/plant-topology";
 
@@ -320,7 +321,7 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
 
   function openHottestCell() {
     let best: MonitoringCellStatus | null = null;
-    for (const block of data.electrolyzers) {
+    for (const block of data?.electrolyzers || []) {
       for (const cell of block.cells) {
         if (cell.voltage == null) continue;
         if (!best || Number(cell.voltage) > Number(best.voltage)) best = cell;
@@ -445,6 +446,27 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
           tone="info"
           icon={Zap}
           onClick={openHottestCell}
+        />
+        <Kpi
+          label={t("monitoring.loadKa")}
+          value={voltage.current_ka != null ? formatNumber(voltage.current_ka, 1) : "—"}
+          tone="info"
+          icon={Activity}
+          onClick={() => setFocus(null)}
+        />
+        <Kpi
+          label={t("monitoring.powerKw")}
+          value={voltage.power_kw != null ? formatNumber(voltage.power_kw, 0) : "—"}
+          tone="info"
+          icon={Zap}
+          onClick={() => setFocus(null)}
+        />
+        <Kpi
+          label={t("monitoring.energyKwh24h")}
+          value={voltage.energy_kwh_24h != null ? formatNumber(voltage.energy_kwh_24h, 0) : "—"}
+          tone="info"
+          icon={Zap}
+          onClick={() => setFocus(null)}
         />
         <Kpi
           label={t("monitoring.componentIssues")}
@@ -582,6 +604,15 @@ function InboxTab() {
 export default function MonitoringPage() {
   const { t } = useI18n();
   const [tab, setTab] = useState("overview");
+  const snapshotQuery = useQuery({
+    queryKey: ["monitoring", "snapshot"],
+    queryFn: monitoringApi.snapshot,
+    refetchInterval: 60_000,
+  });
+  const electrolyzers = useMemo(
+    () => (snapshotQuery.data?.electrolyzers || []).map((block) => block.electrolyzer).filter(Boolean),
+    [snapshotQuery.data]
+  );
 
   return (
     <AccessFormWindow caption={t("monitoring.title")} helpKey="monitoring">
@@ -590,6 +621,15 @@ export default function MonitoringPage() {
         onChange={setTab}
         tabs={[
           { key: "overview", label: t("monitoring.tabOverview"), content: <OverviewTab onOpenAlerts={() => setTab("alerts")} /> },
+          {
+            key: "health",
+            label: t("monitoring.tabHealth"),
+            content: (
+              <CellHealthBoardPanel
+                electrolyzers={electrolyzers.length ? electrolyzers : ["A1", "A2", "B1", "B2", "C1", "C2", "D1", "D2", "E1", "E2", "F1", "F2", "G1", "G2", "H1", "H2", "J1", "J2", "K1", "K2", "L1", "L2", "M1", "M2"]}
+              />
+            ),
+          },
           { key: "alerts", label: t("monitoring.tabAlerts"), content: <InboxTab /> },
           { key: "rules", label: t("monitoring.tabRules"), content: <RulesPanel /> },
         ]}

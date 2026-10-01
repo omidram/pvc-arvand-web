@@ -143,18 +143,21 @@ def _bulk_upsert_totals(db: Session, rows: list[dict[str, Any]]) -> None:
         """
         INSERT INTO electrolyzer_normalizations (
             electrolyzer, date, time, total_voltage, element_count,
-            anolyte_temp, catholyte_temp, total_current
+            anolyte_temp, catholyte_temp, total_current, rack_a_avg, rack_b_avg, catholyte_conc
         )
         VALUES (
             :electrolyzer, :date, :time, :total_voltage, :element_count,
-            :anolyte_temp, :catholyte_temp, :total_current
+            :anolyte_temp, :catholyte_temp, :total_current, :rack_a_avg, :rack_b_avg, :catholyte_conc
         )
         ON CONFLICT(electrolyzer, date, time) DO UPDATE SET
             total_voltage = COALESCE(excluded.total_voltage, electrolyzer_normalizations.total_voltage),
             element_count = COALESCE(excluded.element_count, electrolyzer_normalizations.element_count),
             anolyte_temp = COALESCE(excluded.anolyte_temp, electrolyzer_normalizations.anolyte_temp),
             catholyte_temp = COALESCE(excluded.catholyte_temp, electrolyzer_normalizations.catholyte_temp),
-            total_current = COALESCE(excluded.total_current, electrolyzer_normalizations.total_current)
+            total_current = COALESCE(excluded.total_current, electrolyzer_normalizations.total_current),
+            rack_a_avg = COALESCE(excluded.rack_a_avg, electrolyzer_normalizations.rack_a_avg),
+            rack_b_avg = COALESCE(excluded.rack_b_avg, electrolyzer_normalizations.rack_b_avg),
+            catholyte_conc = COALESCE(excluded.catholyte_conc, electrolyzer_normalizations.catholyte_conc)
         """
     )
     db.connection().execute(stmt, rows)
@@ -238,7 +241,7 @@ def apply_parsed_voltage(
         total_v = slot.get("total")
         if total_v is None and slot.get("rack_a") is not None and slot.get("rack_b") is not None:
             total_v = float(slot["rack_a"]) + float(slot["rack_b"])
-        if total_v is None and slot.get("anolyte_temp") is None and slot.get("load") is None:
+        if total_v is None and slot.get("anolyte_temp") is None and slot.get("load") is None and slot.get("rack_a_avg") is None:
             continue
         stamp = _as_midnight(slot.get("date"), date_val)
         times_in_file.add(tlabel)
@@ -253,6 +256,9 @@ def apply_parsed_voltage(
                 "anolyte_temp": slot.get("anolyte_temp"),
                 "catholyte_temp": slot.get("catholyte_temp"),
                 "total_current": slot.get("load"),
+                "rack_a_avg": slot.get("rack_a_avg"),
+                "rack_b_avg": slot.get("rack_b_avg"),
+                "catholyte_conc": slot.get("catholyte_conc"),
             }
         )
     _bulk_upsert_totals(db, norm_rows)

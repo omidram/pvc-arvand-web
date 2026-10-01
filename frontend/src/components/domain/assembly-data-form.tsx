@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Upload } from "lucide-react";
@@ -19,18 +19,28 @@ import { ErrorState } from "@/components/ui/spinner";
 import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
+import { assemblyPositionError, normalizeCellPosition } from "@/lib/assembly-rules";
+
+function withAssemblyPayload(values: Record<string, unknown>) {
+  return { ...values, position: normalizeCellPosition(values.position) };
+}
 
 export function AssemblyDataForm() {
   const { t } = useI18n();
-  const { canEdit } = useAuth();
+  const { canEdit, isAdmin } = useAuth();
   const editable = canEdit("elements");
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const [showImport, setShowImport] = useState<"assembly" | "disassembly" | null>(null);
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Element>(
     "elements",
     elementsApi,
-    { limit: 500 }
+    { limit: 20000 }
   );
+  const nextNrQuery = useQuery({
+    queryKey: ["elements", "next-number"],
+    queryFn: () => elementsApi.nextNumber(),
+  });
   const anodes = useQuery({ queryKey: ["relations", "anode-numbers"], queryFn: () => relationsApi.lookup("anode-numbers") });
   const cathodes = useQuery({ queryKey: ["relations", "cathode-numbers"], queryFn: () => relationsApi.lookup("cathode-numbers") });
   const membranes = useQuery({ queryKey: ["relations", "membrane-numbers"], queryFn: () => relationsApi.lookup("membrane-numbers") });
@@ -38,11 +48,30 @@ export function AssemblyDataForm() {
   const groups = useQuery({ queryKey: ["relations", "groups"], queryFn: () => relationsApi.lookup("groups") });
   const electrolyzers = useQuery({ queryKey: ["relations", "electrolyzers"], queryFn: () => relationsApi.lookup("electrolyzers") });
 
+  const generations = useQuery({ queryKey: ["relations", "generations"], queryFn: () => relationsApi.lookup("generations") });
+  const decommissionReasons = useQuery({
+    queryKey: ["relations", "decommission-reasons"],
+    queryFn: () => relationsApi.lookup("decommission-reasons"),
+  });
+
   useEffect(() => {
     const imp = searchParams.get("import");
     if (imp === "montage" || imp === "assembly") setShowImport("assembly");
     if (imp === "demontage" || imp === "disassembly") setShowImport("disassembly");
   }, [searchParams]);
+
+  const generationOptions = useMemo(() => {
+    const fixed = Array.from({ length: 8 }, (_, i) => String(i + 3)); // 3..10
+    const found = new Set<string>([...fixed, ...(generations.data || [])]);
+    return [...found]
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
+      .map((value) => ({ label: value, value }));
+  }, [generations.data]);
+
+  const reasonOptions = useMemo(
+    () => (decommissionReasons.data || []).map((value) => ({ label: value, value })),
+    [decommissionReasons.data]
+  );
 
   const fields: FieldDef[] = [
     { name: "element_nr", label: t("fields.elementNr"), required: true },
@@ -52,14 +81,19 @@ export function AssemblyDataForm() {
       type: "select",
       options: (electrolyzers.data || []).map((value) => ({ label: value, value })),
     },
-    { name: "position", label: t("fields.position") },
+    { name: "position", label: t("fields.position"), placeholder: t("elements.positionPlaceholder") },
     {
       name: "group_nr",
       label: t("fields.groupNr"),
       type: "select",
       options: (groups.data || []).map((value) => ({ label: value, value })),
     },
-    { name: "generation", label: t("fields.generation") },
+    {
+      name: "generation",
+      label: t("fields.generation"),
+      type: "combo",
+      options: generationOptions,
+    },
     {
       name: "anode_nr",
       label: t("fields.anodeNr"),
@@ -90,7 +124,12 @@ export function AssemblyDataForm() {
     { name: "decommissioning_date", label: t("fields.decommissioningDate"), type: "date" },
     { name: "disassembly_date", label: t("fields.disassemblyDate"), type: "date" },
     { name: "dol_days", label: t("fields.dolDaysOverride"), type: "number" },
-    { name: "decommission_reason", label: t("fields.decommissionReason") },
+    {
+      name: "decommission_reason",
+      label: t("fields.decommissionReason"),
+      type: "combo",
+      options: reasonOptions,
+    },
     { name: "ispb", label: t("fields.ispb") },
     { name: "anode_coating", label: t("fields.anodeCoating") },
     { name: "anode_electrode", label: t("fields.anodeElectrode") },
@@ -99,6 +138,7 @@ export function AssemblyDataForm() {
     { name: "cathode_electrode", label: t("fields.cathodeElectrode") },
     { name: "cathode_shell", label: t("fields.cathodeShell") },
     { name: "membrane_info", label: t("fields.membraneInfo") },
+    { name: "membrane_remark", label: t("fields.membraneRemark"), type: "textarea", span: 2 },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
 
@@ -110,8 +150,18 @@ export function AssemblyDataForm() {
     { key: "anode_nr", header: t("fields.anode") },
     { key: "cathode_nr", header: t("fields.cathode") },
     { key: "membrane_nr", header: t("fields.membrane") },
-    { key: "assembly_date", header: t("elements.assembly"), render: (row) => formatDate(row.assembly_date) },
-    { key: "computed_dol_days", header: t("fields.dolDays"), render: (row) => row.computed_dol_days ?? "—" },
+    {
+      key: "assembly_date",
+      header: t("elements.assembly"),
+      render: (row) => formatDate(row.assembly_date),
+      filterText: (row) => formatDate(row.assembly_date) || row.assembly_date || "",
+    },
+    {
+      key: "computed_dol_days",
+      header: t("fields.dolDays"),
+      render: (row) => row.computed_dol_days ?? "—",
+      filterText: (row) => (row.computed_dol_days == null ? "" : String(row.computed_dol_days)),
+    },
   ];
 
   return (
@@ -129,8 +179,17 @@ export function AssemblyDataForm() {
         idField="id"
         recordParam="element_nr"
         canEdit={editable}
-        onSave={(id, values) => updateMutation.mutate({ id, payload: values })}
-        onCreate={(values) => createMutation.mutate(values as never)}
+        sheetMode="summary"
+        newDefaults={() => ({ element_nr: nextNrQuery.data?.element_nr ?? "" })}
+        newDefaultsKey={nextNrQuery.data?.element_nr ?? ""}
+        validate={(values) => assemblyPositionError(values.position, t)}
+        onSave={async (id, values) => {
+          await updateMutation.mutateAsync({ id, payload: withAssemblyPayload(values) });
+        }}
+        onCreate={async (values) => {
+          await createMutation.mutateAsync(withAssemblyPayload(values) as never);
+          await queryClient.invalidateQueries({ queryKey: ["elements", "next-number"] });
+        }}
         onDelete={(id) => removeMutation.mutate(id)}
         confirmDelete={(el) => t("elements.confirmDelete", { nr: el.element_nr })}
         submitting={createMutation.isPending || updateMutation.isPending}
@@ -162,7 +221,7 @@ export function AssemblyDataForm() {
         }}
         related={(row) => <ElementRelations row={row} />}
         commands={
-          editable ? (
+          editable && isAdmin ? (
             <>
               <Button size="sm" variant="secondary" onClick={() => setShowImport("assembly")}>
                 <Upload size={14} /> {t("menus.importMontage")}
@@ -174,7 +233,7 @@ export function AssemblyDataForm() {
           ) : null
         }
       />
-      {editable && showImport ? (
+      {editable && isAdmin && showImport ? (
         <ImportAssemblyModal mode={showImport} onClose={() => setShowImport(null)} />
       ) : null}
     </>

@@ -194,7 +194,7 @@ function NormalizationsTab() {
 
 function ReadingsTab() {
   const { t } = useI18n();
-  const { canEdit } = useAuth();
+  const { canEdit, isAdmin } = useAuth();
   const editable = canEdit("voltage");
   const searchParams = useSearchParams();
   const [showForm, setShowForm] = useState(false);
@@ -223,7 +223,7 @@ function ReadingsTab() {
     <div>
       <div className="mb-3 flex justify-end gap-2">
         <ExportButtons prefix="/voltage-readings" filenameBase="voltage-readings" />
-        {editable && (
+        {editable && isAdmin && (
           <>
             <Button variant="secondary" onClick={() => setShowImport(true)}>
               <Upload size={16} /> {t("voltage.importFile")}
@@ -295,7 +295,7 @@ function ReadingsTab() {
           submitting={createMutation.isPending || updateMutation.isPending}
         />
       </Modal>
-      {editable && <ImportModal open={showImport} onClose={() => setShowImport(false)} />}
+      {editable && isAdmin && <ImportModal open={showImport} onClose={() => setShowImport(false)} />}
     </div>
   );
 }

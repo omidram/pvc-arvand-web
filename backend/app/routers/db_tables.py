@@ -18,7 +18,8 @@ from ..auth import LEVEL_RANK, get_current_user, user_permission_map
 from ..database import get_db
 from ..excel_import import parse_sheet, read_xlsx
 from ..import_jobs import spawn_import
-from ..export_utils import export_pdf, export_xlsx
+from ..auth import require_admin
+from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx
 
 router = APIRouter(prefix="/db-tables", tags=["database-tables"])
 
@@ -129,18 +130,30 @@ def delete_row(
     return {"ok": True}
 
 
+@router.get("/{slug}/export.meta", include_in_schema=False)
+def export_table_meta(
+    slug: str,
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    meta = _require_table(slug, user, db)
+    return build_export_meta(meta["columns"])
+
+
 @router.get("/{slug}/export.xlsx", include_in_schema=False)
 def export_table_xlsx(
     slug: str,
     q: str | None = Query(default=None),
     column: str | None = Query(default=None),
     value: str | None = Query(default=None),
+    filters: ExportFilters = Depends(),
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     meta = _require_table(slug, user, db)
     _, rows, _ = query_archive_rows(slug, q=q, column=column, value=value, skip=0, limit=20000)
     fields = meta["columns"]
+    rows, fields = filters.apply(rows, fields)
     return export_xlsx(rows, fields, meta["name"][:31] or slug)
 
 
@@ -150,18 +163,21 @@ def export_table_pdf(
     q: str | None = Query(default=None),
     column: str | None = Query(default=None),
     value: str | None = Query(default=None),
+    filters: ExportFilters = Depends(),
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     meta = _require_table(slug, user, db)
     _, rows, _ = query_archive_rows(slug, q=q, column=column, value=value, skip=0, limit=2000)
     fields = meta["columns"]
+    rows, fields = filters.apply(rows, fields)
     return export_pdf(rows, fields, meta["name"][:80] or slug)
 
 
 @router.post("/{slug}/import.xlsx", include_in_schema=False)
 async def import_table_xlsx(
     slug: str,
+    _admin=Depends(require_admin),
     file: UploadFile = File(...),
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),

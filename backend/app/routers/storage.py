@@ -13,10 +13,10 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from .. import models
-from ..auth import require_any_form_access
+from ..auth import require_admin, require_any_form_access
 from ..database import get_db
 from ..excel_import import read_xlsx
-from ..export_utils import export_pdf, export_xlsx
+from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx
 from ..import_jobs import spawn_import
 from ..plant_import import parse_assembly_excel
 from ..routers.elements import _apply_assembly_import
@@ -275,16 +275,25 @@ def warehouse_board(
     return _board_or_400(db, kind, bucket, q, limit)
 
 
+@router.get("/board/export.meta", include_in_schema=False)
+def warehouse_export_meta(
+    _: models.User = Depends(require_any_form_access("storage", "anodes", "cathodes")),
+):
+    return build_export_meta(_BOARD_FIELDS)
+
+
 @router.get("/board/export.xlsx", include_in_schema=False)
 def warehouse_export_xlsx(
     kind: str = Query(default="anode"),
     bucket: str | None = Query(default="warehouse"),
     q: str | None = None,
+    filters: ExportFilters = Depends(),
     db: Session = Depends(get_db),
     _: models.User = Depends(require_any_form_access("storage", "anodes", "cathodes")),
 ):
     board = _board_or_400(db, kind, bucket, q, 20000)
-    return export_xlsx(board["items"], _BOARD_FIELDS, "warehouse")
+    rows, fields = filters.apply(board["items"], _BOARD_FIELDS)
+    return export_xlsx(rows, fields, "warehouse")
 
 
 @router.get("/board/export.pdf", include_in_schema=False)
@@ -292,15 +301,17 @@ def warehouse_export_pdf(
     kind: str = Query(default="anode"),
     bucket: str | None = Query(default="warehouse"),
     q: str | None = None,
+    filters: ExportFilters = Depends(),
     db: Session = Depends(get_db),
     _: models.User = Depends(require_any_form_access("storage", "anodes", "cathodes")),
 ):
     board = _board_or_400(db, kind, bucket, q, 1500)
-    return export_pdf(board["items"], _BOARD_FIELDS, "warehouse")
+    rows, fields = filters.apply(board["items"], _BOARD_FIELDS)
+    return export_pdf(rows, fields, "warehouse")
 
 
 @router.post("/board/import.xlsx", include_in_schema=False)
-async def warehouse_import(file: UploadFile = File(...)):
+async def warehouse_import(_admin=Depends(require_admin), file: UploadFile = File(...)):
     """Montage / demontage workbook. Assembly rows, DOL and catalog stubs update together."""
     content = await read_xlsx(file)
     parsed = parse_assembly_excel(content)

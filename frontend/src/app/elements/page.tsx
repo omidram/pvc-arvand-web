@@ -33,7 +33,7 @@ export default function ElementAdministrationMenu() {
         <AccessBtn href="/membranes?tab=maintenance">{t("menus.membraneMaintenance")}</AccessBtn>
         <span />
 
-        <span />
+        <AccessBtn href="/segregation">{t("menus.electrodeSegregation")}</AccessBtn>
         <span />
         <AccessBtn href="/maintenance-reports?kind=anode">{t("menus.anodeMaintenanceReport")}</AccessBtn>
         <AccessBtn href="/maintenance-reports?kind=cathode">{t("menus.cathodeMaintenanceReport")}</AccessBtn>

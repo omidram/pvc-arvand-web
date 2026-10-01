@@ -1,7 +1,7 @@
 """Evaluate plant alert rules against voltage readings and anode/cathode status."""
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -461,12 +461,23 @@ def _sanitize_reading_dt(value: datetime | None) -> datetime | None:
     return value
 
 
+def _live_voltage_rows(db: Session) -> list[models.VoltageReading]:
+    """Latest cell row per position, only when AriaORMS has same-day (or 1-day lag) data."""
+    from .energy import is_live_day, tehran_today
+
+    today = tehran_today()
+    return [row for row in _latest_voltage_rows(db) if is_live_day(row.date, today)]
+
+
 def voltage_live_stats(db: Session) -> dict[str, Any]:
-    """Lightweight live voltage totals for the main dashboard (no alert write)."""
+    """Live plant kA / kWh and same-day cell gauges for the main dashboard."""
+    from .energy import energy_since, is_live_day, latest_by_electrolyzer, tehran_now, tehran_today
+
     ensure_default_rules(db)
     rules = db.query(models.AlertRule).filter(models.AlertRule.enabled.is_(True)).all()
     voltage_rules = [r for r in rules if r.metric in {"cell_voltage", "standardized_voltage"}]
-    readings = _latest_voltage_rows(db)
+    today = tehran_today()
+    readings = _live_voltage_rows(db)
 
     by_el: dict[str, list[float]] = {}
     ok = warn = danger = 0
@@ -492,24 +503,41 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         if max_v is None or v > max_v:
             max_v = v
 
+    live_loads = {
+        el: item
+        for el, item in latest_by_electrolyzer(db).items()
+        if is_live_day(item.get("stamp"), today)
+    }
+    e24 = energy_since(db, tehran_now() - timedelta(hours=24)) if live_loads else {}
+    plant_ka = 0.0
+    plant_kwh = 0.0
+    for el, item in live_loads.items():
+        plant_ka += float(item.get("current_ka") or 0)
+        plant_kwh += float((e24.get(el) or {}).get("energy_kwh") or 0)
+
+    names = sorted(set(by_el) | set(live_loads))
     electrolyzers = []
     plant_total = 0.0
-    for el, vals in sorted(by_el.items()):
+    for el in names:
+        vals = by_el.get(el, [])
         total = sum(vals)
         plant_total += total
+        load = live_loads.get(el)
         electrolyzers.append(
             {
                 "electrolyzer": el,
                 "cell_count": len(vals),
-                "total_voltage": round(total, 3),
+                "total_voltage": round(total, 3) if vals else None,
                 "avg_voltage": round(total / len(vals), 4) if vals else None,
                 "max_voltage": round(max(vals), 4) if vals else None,
+                "current_ka": round(float(load["current_ka"]), 3) if load and load.get("current_ka") else None,
+                "energy_kwh_24h": round(float((e24.get(el) or {}).get("energy_kwh") or 0), 1) if load else None,
+                "online": True,
             }
         )
 
     cell_count = ok + warn + danger
     health_pct = round((ok / cell_count) * 100, 1) if cell_count else None
-    # Typical single-cell scale for gauges (V)
     cell_gauge_max = 4.0
     danger_limit = 3.5
     for r in voltage_rules:
@@ -518,7 +546,11 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
             break
 
     return {
-        "plant_total_voltage": round(plant_total, 2),
+        "plant_total_voltage": round(plant_total, 2) if plant_total else None,
+        "plant_total_ka": round(plant_ka, 3) if plant_ka else None,
+        "plant_energy_kwh_24h": round(plant_kwh, 1) if plant_kwh else None,
+        "report_date": today.isoformat(),
+        "online_count": len(names),
         "cell_count": cell_count,
         "ok_count": ok,
         "warning_count": warn,
@@ -564,6 +596,9 @@ def build_snapshot(db: Session, *, evaluate: bool = True) -> dict[str, Any]:
 
     rules = db.query(models.AlertRule).filter(models.AlertRule.enabled.is_(True)).all()
     voltage_rules = [r for r in rules if r.metric in {"cell_voltage", "standardized_voltage"}]
+    from .energy import is_live_day, tehran_today
+
+    today = tehran_today()
     readings = _latest_voltage_rows(db)
 
     # Map element assembly for anode/cathode refs
@@ -591,6 +626,7 @@ def build_snapshot(db: Session, *, evaluate: bool = True) -> dict[str, Any]:
             if rank[sev2] > rank[sev]:
                 sev, thr = sev2, thr2
         asm = el_map.get((el, pos))
+        live = is_live_day(row.date, today)
         cell = {
             "electrolyzer": el,
             "position": pos,
@@ -605,6 +641,7 @@ def build_snapshot(db: Session, *, evaluate: bool = True) -> dict[str, Any]:
             "reading_time": row.time if _sanitize_reading_dt(row.date) else None,
             "severity": sev,
             "threshold": thr,
+            "live": live,
         }
         by_el.setdefault(el, []).append(cell)
 
@@ -613,20 +650,22 @@ def build_snapshot(db: Session, *, evaluate: bool = True) -> dict[str, Any]:
     max_v: float | None = None
     for el, cells in sorted(by_el.items()):
         cells_sorted = sorted(cells, key=lambda c: int(c["position"]) if str(c["position"]).isdigit() else str(c["position"]))
-        voltages = [c["voltage"] for c in cells_sorted if c["voltage"] is not None]
-        oc = sum(1 for c in cells_sorted if c["severity"] == "ok")
-        wc = sum(1 for c in cells_sorted if c["severity"] == "warning")
-        dc = sum(1 for c in cells_sorted if c["severity"] == "danger")
+        live_cells = [c for c in cells_sorted if c.get("live")]
+        voltages = [c["voltage"] for c in live_cells if c["voltage"] is not None]
+        oc = sum(1 for c in live_cells if c["severity"] == "ok")
+        wc = sum(1 for c in live_cells if c["severity"] == "warning")
+        dc = sum(1 for c in live_cells if c["severity"] == "danger")
         ok += oc
         warn += wc
         danger += dc
-        total_cells += len(cells_sorted)
+        total_cells += len(live_cells)
         el_max = max(voltages) if voltages else None
         if el_max is not None and (max_v is None or el_max > max_v):
             max_v = el_max
-        latest_date = cells_sorted[0]["reading_date"] if cells_sorted else None
-        latest_time = cells_sorted[0]["reading_time"] if cells_sorted else None
-        for c in cells_sorted:
+        dated = live_cells or cells_sorted
+        latest_date = dated[0]["reading_date"] if dated else None
+        latest_time = dated[0]["reading_time"] if dated else None
+        for c in dated:
             if c["reading_date"] and (latest_date is None or c["reading_date"] > latest_date):
                 latest_date = c["reading_date"]
                 latest_time = c["reading_time"]
@@ -635,7 +674,7 @@ def build_snapshot(db: Session, *, evaluate: bool = True) -> dict[str, Any]:
                 "electrolyzer": el,
                 "reading_date": latest_date,
                 "reading_time": latest_time,
-                "cell_count": len(cells_sorted),
+                "cell_count": len(live_cells),
                 "ok_count": oc,
                 "warning_count": wc,
                 "danger_count": dc,
@@ -645,6 +684,10 @@ def build_snapshot(db: Session, *, evaluate: bool = True) -> dict[str, Any]:
                 "cells": cells_sorted,
             }
         )
+
+    from .energy import attach_to_snapshot
+
+    energy = attach_to_snapshot(db, blocks)
 
     # Component issues (for dashboard panel; alerts also generated separately)
     anodes = {a.anode_nr: a for a in db.query(models.Anode).all()}
@@ -727,6 +770,7 @@ def build_snapshot(db: Session, *, evaluate: bool = True) -> dict[str, Any]:
             "anode_count": len(anodes),
             "cathode_count": len(cathodes),
             "component_issue_count": len(issues),
+            **energy,
         },
         "electrolyzers": blocks,
         "component_issues": issues[:100],

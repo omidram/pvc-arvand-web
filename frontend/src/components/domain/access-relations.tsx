@@ -12,6 +12,7 @@ import {
   cathodeCoatingChecksApi,
   cathodeMaintenanceApi,
   cathodeRecoatingApi,
+  electrodeSegregationsApi,
   elementsApi,
   inspectionsApi,
   membraneMaintenanceApi,
@@ -23,12 +24,14 @@ import type {
   CathodeCoatingCheck,
   CathodeMaintenance,
   CathodeRecoating,
+  ElectrodeSegregation,
   Element,
   InspectionReport,
   MembraneMaintenance,
 } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
+import { formatDate, sameNr } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
+import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
 import type { FieldDef } from "@/components/ui/resource-form";
 
 type TFn = ReturnType<typeof useI18n>["t"];
@@ -48,11 +51,13 @@ export function RelatedLinks({
   cathodeNr,
   membraneNr,
   elementNr,
+  serialNr,
 }: {
   anodeNr?: string | null;
   cathodeNr?: string | null;
   membraneNr?: string | null;
   elementNr?: string | null;
+  serialNr?: string | null;
 }) {
   const { t } = useI18n();
   return (
@@ -77,7 +82,54 @@ export function RelatedLinks({
           {t("access.openElement")} {elementNr}
         </Link>
       ) : null}
+      {serialNr ? (
+        <Link href={`/segregation?serial_nr=${encodeURIComponent(serialNr)}`} className="access-menu-btn !w-auto px-3">
+          {t("access.openTafkik")} {serialNr}
+        </Link>
+      ) : null}
     </div>
+  );
+}
+
+function TafkikTable({ serial, kind }: { serial: string; kind?: "anode" | "cathode" }) {
+  const { t } = useI18n();
+  const query = useQuery({
+    queryKey: ["electrode-segregations", { q: serial, electrode_kind: kind, limit: 200 }],
+    queryFn: () =>
+      electrodeSegregationsApi.list({
+        q: serial,
+        limit: 200,
+        ...(kind ? { electrode_kind: kind } : {}),
+      }),
+    enabled: !!serial,
+  });
+  const rows = (query.data || []).filter((row) => sameNr(row.serial_nr, serial));
+  const caption =
+    kind === "anode"
+      ? `${t("access.relatedSegregation")} — ${t("segregation.anode")} ${serial}`
+      : kind === "cathode"
+        ? `${t("access.relatedSegregation")} — ${t("segregation.cathode")} ${serial}`
+        : t("access.relatedSegregation");
+  return (
+    <AccessSubform caption={caption}>
+      <DataTable
+        columns={[
+          { key: "serial_nr", header: t("segregation.serialNr") },
+          { key: "inspection_date", header: t("segregation.inspectionDate"), render: (r: ElectrodeSegregation) => formatDate(r.inspection_date) },
+          { key: "install_date", header: t("segregation.installDate"), render: (r: ElectrodeSegregation) => formatDate(r.install_date) },
+          { key: "disassemble_date", header: t("segregation.disassembleDate"), render: (r: ElectrodeSegregation) => formatDate(r.disassemble_date) },
+          { key: "decision", header: t("segregation.decision") },
+          { key: "pallet", header: t("segregation.pallet") },
+        ]}
+        data={rows}
+        keyField="id"
+        isLoading={query.isLoading}
+        onRowClick={(r) => {
+          window.location.href = `/segregation?serial_nr=${encodeURIComponent(r.serial_nr)}`;
+        }}
+        emptyTitle={t("common.noRecordsFound")}
+      />
+    </AccessSubform>
   );
 }
 
@@ -103,7 +155,7 @@ export function ElementRelations({ row }: { row: Element }) {
   ];
   const inspectionCols: Column<InspectionReport>[] = [
     { key: "inspection_date", header: t("fields.date"), render: (r) => formatDate(r.inspection_date) },
-    { key: "inspection_reason", header: t("fields.inspectionReason") },
+    { key: "inspection_reason", header: t("fields.inspectionReason"), render: (r) => inspectionReasonLabel(r.inspection_reason, t) },
     { key: "inspector_name", header: t("fields.inspector") },
   ];
 
@@ -131,6 +183,8 @@ export function ElementRelations({ row }: { row: Element }) {
           emptyTitle={t("common.noRecordsFound")}
         />
       </AccessSubform>
+      {row.anode_nr ? <TafkikTable serial={row.anode_nr} kind="anode" /> : null}
+      {row.cathode_nr ? <TafkikTable serial={row.cathode_nr} kind="cathode" /> : null}
     </>
   );
 }
@@ -211,8 +265,10 @@ export function AnodeRelations({ anodeNr }: { anodeNr: string }) {
             { key: "element_nr", header: t("fields.elementNr") },
             { key: "electrolyzer", header: t("fields.electrolyzer") },
             { key: "position", header: t("fields.position") },
+            { key: "assembly_date", header: t("fields.assemblyDate"), render: (r) => formatDate(r.assembly_date) },
+            { key: "disassembly_date", header: t("fields.disassemblyDate"), render: (r) => formatDate(r.disassembly_date) },
           ]}
-          data={(elementsQuery.data || []).filter((e) => e.anode_nr === anodeNr)}
+          data={(elementsQuery.data || []).filter((e) => sameNr(e.anode_nr, anodeNr))}
           keyField="id"
           isLoading={elementsQuery.isLoading}
           onRowClick={(r) => {
@@ -221,6 +277,7 @@ export function AnodeRelations({ anodeNr }: { anodeNr: string }) {
           emptyTitle={t("common.noRecordsFound")}
         />
       </AccessSubform>
+      <TafkikTable serial={anodeNr} kind="anode" />
     </>
   );
 }
@@ -296,8 +353,10 @@ export function CathodeRelations({ cathodeNr }: { cathodeNr: string }) {
             { key: "element_nr", header: t("fields.elementNr") },
             { key: "electrolyzer", header: t("fields.electrolyzer") },
             { key: "position", header: t("fields.position") },
+            { key: "assembly_date", header: t("fields.assemblyDate"), render: (r) => formatDate(r.assembly_date) },
+            { key: "disassembly_date", header: t("fields.disassemblyDate"), render: (r) => formatDate(r.disassembly_date) },
           ]}
-          data={(elementsQuery.data || []).filter((e) => e.cathode_nr === cathodeNr)}
+          data={(elementsQuery.data || []).filter((e) => sameNr(e.cathode_nr, cathodeNr))}
           keyField="id"
           isLoading={elementsQuery.isLoading}
           onRowClick={(r) => {
@@ -306,6 +365,7 @@ export function CathodeRelations({ cathodeNr }: { cathodeNr: string }) {
           emptyTitle={t("common.noRecordsFound")}
         />
       </AccessSubform>
+      <TafkikTable serial={cathodeNr} kind="cathode" />
     </>
   );
 }
@@ -344,7 +404,48 @@ export function MembraneRelations({ membraneNr }: { membraneNr: string }) {
             { key: "electrolyzer", header: t("fields.electrolyzer") },
             { key: "position", header: t("fields.position") },
           ]}
-          data={(elementsQuery.data || []).filter((e) => e.membrane_nr === membraneNr)}
+          data={(elementsQuery.data || []).filter((e) => sameNr(e.membrane_nr, membraneNr))}
+          keyField="id"
+          isLoading={elementsQuery.isLoading}
+          onRowClick={(r) => {
+            window.location.href = `/elements/assembly?id=${r.id}`;
+          }}
+          emptyTitle={t("common.noRecordsFound")}
+        />
+      </AccessSubform>
+    </>
+  );
+}
+
+export function SegregationRelations({ row }: { row: ElectrodeSegregation }) {
+  const { t } = useI18n();
+  const serial = row.serial_nr;
+  const elementsQuery = useQuery({
+    queryKey: ["elements", { q: serial, limit: 200 }],
+    queryFn: () => elementsApi.list({ q: serial, limit: 200 }),
+    enabled: !!serial,
+  });
+  const related = (elementsQuery.data || []).filter(
+    (el) => sameNr(el.anode_nr, serial) || sameNr(el.cathode_nr, serial)
+  );
+  return (
+    <>
+      <RelatedLinks
+        anodeNr={row.electrode_kind === "cathode" ? null : serial}
+        cathodeNr={row.electrode_kind === "anode" ? null : serial}
+      />
+      <AccessSubform caption={t("access.relatedElements")}>
+        <DataTable
+          columns={[
+            { key: "element_nr", header: t("fields.elementNr") },
+            { key: "electrolyzer", header: t("fields.electrolyzer") },
+            { key: "position", header: t("fields.position") },
+            { key: "anode_nr", header: t("fields.anode") },
+            { key: "cathode_nr", header: t("fields.cathode") },
+            { key: "assembly_date", header: t("fields.assemblyDate"), render: (r) => formatDate(r.assembly_date) },
+            { key: "disassembly_date", header: t("fields.disassemblyDate"), render: (r) => formatDate(r.disassembly_date) },
+          ]}
+          data={related}
           keyField="id"
           isLoading={elementsQuery.isLoading}
           onRowClick={(r) => {
@@ -358,5 +459,16 @@ export function MembraneRelations({ membraneNr }: { membraneNr: string }) {
 }
 
 export function InspectionRelations({ row }: { row: InspectionReport }) {
-  return <RelatedLinks elementNr={row.element_nr} />;
+  return (
+    <>
+      <RelatedLinks
+        elementNr={row.element_nr}
+        anodeNr={row.anode_nr}
+        cathodeNr={row.cathode_nr}
+        membraneNr={row.membrane_nr}
+      />
+      {row.anode_nr ? <TafkikTable serial={row.anode_nr} kind="anode" /> : null}
+      {row.cathode_nr ? <TafkikTable serial={row.cathode_nr} kind="cathode" /> : null}
+    </>
+  );
 }

@@ -24,6 +24,13 @@ export const ALL_TABLES_REGISTRY: TableRegistryCategory[] = [
     entries: [
       { key: "elements", endpoint: "/elements", formKey: "elements", titleKey: "nav.elements", linkHref: "/elements" },
       { key: "inspections", endpoint: "/inspections", formKey: "inspections", titleKey: "nav.inspections", linkHref: "/inspections" },
+      {
+        key: "electrode-segregations",
+        endpoint: "/electrode-segregations",
+        formKey: "elements",
+        titleKey: "nav.segregation",
+        linkHref: "/segregation",
+      },
     ],
   },
   {

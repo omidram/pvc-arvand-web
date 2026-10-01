@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { monitoringApi } from "@/lib/endpoints";
 import { Modal } from "@/components/ui/modal";
+import { DateInput } from "@/components/ui/date-input";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
@@ -18,7 +19,14 @@ const SPANS = [
   { id: "90", labelKey: "monitoring.days90" },
   { id: "365", labelKey: "monitoring.year1" },
   { id: "730", labelKey: "monitoring.year2" },
+  { id: "custom", labelKey: "monitoring.customRange" },
 ] as const;
+
+function defaultCustomFrom() {
+  const d = new Date();
+  d.setDate(d.getDate() - 30);
+  return d.toISOString().slice(0, 10);
+}
 
 export function VoltageHistoryDialog({
   electrolyzer,
@@ -31,14 +39,26 @@ export function VoltageHistoryDialog({
 }) {
   const { t } = useI18n();
   const [span, setSpan] = useState("30");
+  const [dateFrom, setDateFrom] = useState(defaultCustomFrom);
+  const [dateTo, setDateTo] = useState(() => new Date().toISOString().slice(0, 10));
   const [showProps, setShowProps] = useState(false);
   useCalendar();
   useEffect(() => {
     setShowProps(false);
   }, [electrolyzer, position]);
+
+  const custom = span === "custom";
   const query = useQuery({
-    queryKey: ["monitoring", "history", electrolyzer, position || "", span],
-    queryFn: () => monitoringApi.voltageHistory({ electrolyzer, position: position || undefined, span }),
+    queryKey: ["monitoring", "history", electrolyzer, position || "", span, custom ? dateFrom : "", custom ? dateTo : ""],
+    queryFn: () =>
+      monitoringApi.voltageHistory({
+        electrolyzer,
+        position: position || undefined,
+        span,
+        date_from: custom ? dateFrom || undefined : undefined,
+        date_to: custom ? dateTo || undefined : undefined,
+      }),
+    enabled: !custom || Boolean(dateFrom || dateTo),
   });
   const data = query.data;
   const chartRows = (() => {
@@ -95,6 +115,18 @@ export function VoltageHistoryDialog({
           filenameBase={`monitoring-history-${electrolyzer}${position ? `-${position}` : ""}`}
         />
       </div>
+      {custom ? (
+        <div className="vh-custom-range mb-3">
+          <label>
+            <span>{t("monitoring.rangeFrom")}</span>
+            <DateInput type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          </label>
+          <label>
+            <span>{t("monitoring.rangeTo")}</span>
+            <DateInput type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+          </label>
+        </div>
+      ) : null}
       {showProps && position ? <CellPropertiesPanel electrolyzer={electrolyzer} position={position} /> : null}
       {query.isLoading ? <LoadingState /> : null}
       {query.isError ? <ErrorState message={(query.error as Error).message} /> : null}

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth/context";
+import { canSeeInspections, canSeeSegregation } from "@/lib/inspection-access";
 import { getAccessFormShortcuts } from "@/lib/access-form-routes";
 import { useI18n } from "@/lib/i18n/context";
 
@@ -34,7 +35,12 @@ export function AllFormsPane({ onCollapse }: { onCollapse?: () => void }) {
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    const allowedOnly = shortcuts.filter((item) => !item.formKey || canView(item.formKey));
+    const allowedOnly = shortcuts.filter((item) => {
+      if (!item.formKey) return true;
+      if (item.formKey === "inspections") return canSeeInspections(canView);
+      if (item.href === "/segregation") return canSeeSegregation(canView);
+      return canView(item.formKey);
+    });
     if (!term) return allowedOnly;
     return allowedOnly.filter(
       (item) => item.label.toLowerCase().includes(term) || item.name.toLowerCase().includes(term)

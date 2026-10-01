@@ -9,6 +9,7 @@ import { ImportProgressBar } from "@/components/domain/import-progress";
 import { AnalysisEntry } from "@/components/domain/analysis-entry";
 import { AccessBtn } from "@/components/layout/access-hub";
 import { useI18n } from "@/lib/i18n/context";
+import { useAuth } from "@/lib/auth/context";
 
 // Fixed row position of each analysis type, matching the real Access "Analyse"
 // form exactly: every column places its buttons on the same rows, leaving a
@@ -89,6 +90,7 @@ const COLUMNS: { titleKey: string; scope: string; items: ColumnItem[] }[] = [
 
 function AnalysisMenu() {
   const { t } = useI18n();
+  const { isAdmin } = useAuth();
   const [importOpen, setImportOpen] = useState(false);
   return (
     <div className="access-hub" dir="ltr">
@@ -106,9 +108,11 @@ function AnalysisMenu() {
           <Link href="/" className="access-menu-btn access-hub-menu-btn">
             {t("common.mainMenu")}
           </Link>
-          <AccessBtn className="!w-auto px-3" onClick={() => setImportOpen(true)}>
-            {t("menus.importAnalyses")}
-          </AccessBtn>
+          {isAdmin ? (
+            <AccessBtn className="!w-auto px-3" onClick={() => setImportOpen(true)}>
+              {t("menus.importAnalyses")}
+            </AccessBtn>
+          ) : null}
         </div>
       </div>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-5">

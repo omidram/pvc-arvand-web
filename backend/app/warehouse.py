@@ -27,6 +27,13 @@ def compact_nr(value) -> str:
     return re.sub(r"\s+", "", str(value)).strip().upper()
 
 
+def compact_eq(column, value):
+    key = compact_nr(value)
+    if not key:
+        return None
+    return func.upper(func.replace(column, " ", "")) == key
+
+
 def _as_date(value):
     if value is None:
         return None
@@ -194,7 +201,7 @@ def _verdict_check(checks, after: date | None):
 def _segregation_bucket(rows, after: date | None) -> str | None:
     relevant = []
     for row in rows:
-        day = _as_date(row.inspection_date) or _as_date(row.dismantle_date)
+        day = _as_date(row.inspection_date) or _as_date(row.disassemble_date)
         if after and day and day < after:
             continue
         relevant.append(row)

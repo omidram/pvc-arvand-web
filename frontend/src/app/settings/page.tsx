@@ -50,6 +50,7 @@ import { DirectoryTab } from "@/components/domain/directory-tab";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useTheme } from "@/lib/theme/context";
+import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
 import { useUiStyle } from "@/lib/ui-style/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { formatDate } from "@/lib/utils";
@@ -579,7 +580,7 @@ function SettingsPageInner() {
                 ]}
                 columns={[
                   { key: "code", header: t("fields.code") },
-                  { key: "reason", header: t("fields.reason") },
+                  { key: "reason", header: t("fields.reason"), render: (row) => inspectionReasonLabel(row.reason, t) },
                   { key: "count", header: t("fields.count") },
                 ]}
               />

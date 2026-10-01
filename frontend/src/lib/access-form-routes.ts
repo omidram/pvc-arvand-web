@@ -87,8 +87,8 @@ const EXACT: Record<string, Route> = {
   frmEnergieverbrauchDurchschnitt: { href: "/power-consumption", formKey: "statistics" },
   frmImportDemontagedaten: { href: "/elements/assembly?import=demontage", formKey: "elements" },
   frmImportMontagedaten: { href: "/elements/assembly?import=montage", formKey: "elements" },
-  "Electrode Segregation (TAFKIK)": { href: "/segregation", formKey: "anodes" },
-  TAFKIK: { href: "/segregation", formKey: "anodes" },
+  "Electrode Segregation (TAFKIK)": { href: "/segregation", formKey: "elements" },
+  TAFKIK: { href: "/segregation", formKey: "elements" },
   frmInspektionsBerichtAlt: { href: "/inspections", formKey: "inspections" },
   frmInspektionsbericht: { href: "/inspections", formKey: "inspections" },
   frmInspektionsberichtBefunde: { href: "/inspections", formKey: "inspections" },
@@ -169,7 +169,7 @@ function patternRoute(name: string): Route {
     return { href: "/analyses", formKey: "analyses" };
   }
   if (n.includes("tafkik") || n.includes("segregation") || n.includes("تفکیک")) {
-    return { href: "/segregation", formKey: "anodes" };
+    return { href: "/segregation", formKey: "elements" };
   }
   if (n.includes("anoden")) return { href: "/anodes", formKey: "anodes" };
   if (n.includes("kathoden")) return { href: "/cathodes", formKey: "cathodes" };

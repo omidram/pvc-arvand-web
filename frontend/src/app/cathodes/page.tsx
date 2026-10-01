@@ -11,6 +11,7 @@ import {
 import { useCrudResource } from "@/lib/use-resource";
 import type { Cathode, CathodeCoatingCheck, CathodeMaintenance, CathodeRecoating } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
+import { CathodeRelations } from "@/components/domain/access-relations";
 import { ElectrodeSheet, type SheetColumn } from "@/components/domain/electrode-sheet";
 import type { FieldDef } from "@/components/ui/resource-form";
 import type { Column } from "@/components/ui/data-table";
@@ -22,10 +23,13 @@ import { LoadingState } from "@/components/ui/spinner";
 function CathodesDetails() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
+  const wanted = useSearchParams().get("cathode_nr");
+  const listParams: Record<string, unknown> = { limit: 5000 };
+  if (wanted) listParams.q = wanted;
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Cathode>(
     "cathodes",
     cathodesApi,
-    { limit: 500 }
+    listParams
   );
 
   const fields: FieldDef[] = [
@@ -80,6 +84,7 @@ function CathodesDetails() {
       submitting={createMutation.isPending || updateMutation.isPending}
       exportPrefix="/cathodes"
       filenameBase="cathodes"
+      related={(row) => <CathodeRelations cathodeNr={row.cathode_nr} />}
     />
   );
 }

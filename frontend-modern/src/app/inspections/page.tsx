@@ -18,6 +18,7 @@ import { formatDateTime } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { ExportButtons } from "@/components/domain/export-buttons";
+import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
 
 type T = ReturnType<typeof useI18n>["t"];
 
@@ -74,7 +75,7 @@ export default function InspectionsPage() {
 
   const columns: Column<InspectionReport>[] = [
     { key: "element_nr", header: t("fields.elementNr") },
-    { key: "inspection_reason", header: t("inspections.reason") },
+    { key: "inspection_reason", header: t("inspections.reason"), render: (r) => inspectionReasonLabel(r.inspection_reason, t) },
     { key: "inspector_name", header: t("fields.inspector") },
     { key: "inspection_date", header: t("fields.date"), render: (r) => formatDateTime(r.inspection_date) },
     { key: "general_remarks", header: t("fields.remarks") },

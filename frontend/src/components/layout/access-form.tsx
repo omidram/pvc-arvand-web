@@ -88,6 +88,7 @@ export function AccessNav({
   saving,
   view,
   onView,
+  hideFind,
 }: {
   index: number;
   total: number;
@@ -105,6 +106,7 @@ export function AccessNav({
   saving?: boolean;
   view: "form" | "datasheet";
   onView: (view: "form" | "datasheet") => void;
+  hideFind?: boolean;
 }) {
   const { t } = useI18n();
   const pos = isNew ? "*" : total === 0 ? "0" : String(index + 1);
@@ -140,12 +142,14 @@ export function AccessNav({
           {t("common.delete")}
         </button>
       ) : null}
+      {hideFind ? null : (
       <input
         className="ms-2 h-[22px] w-40 border-2 border-[var(--win-border-shadow)] bg-[var(--win-input)] px-1 text-[11px] [border-style:inset]"
         placeholder={t("access.find")}
         value={findValue}
         onChange={(e) => onFind(e.target.value)}
       />
+      )}
       <span className="ms-auto flex gap-1">
         <button type="button" className={`access-nav-btn ${view === "form" ? "is-active" : ""}`} onClick={() => onView("form")}>
           {t("access.formView")}

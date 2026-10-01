@@ -29,8 +29,10 @@ import { InspectionDefectGrid } from "@/components/domain/inspection-defect-grid
 import { ErrorState, Spinner } from "@/components/ui/spinner";
 import type { Element } from "@/lib/types";
 import { useAuth } from "@/lib/auth/context";
+import { canWorkInspections } from "@/lib/inspection-access";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
+import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
 
 const INSPECTION_BOOLS = [
   "sample_anode",
@@ -227,7 +229,7 @@ export function CellArrangementEditor({
   const editAnodes = canEdit("anodes");
   const editCathodes = canEdit("cathodes");
   const editMembranes = canEdit("membranes");
-  const editInspections = canEdit("inspections");
+  const editInspections = canWorkInspections(canEdit);
   const editVoltage = canEdit("voltage");
 
   const cellQuery = useQuery({
@@ -239,6 +241,10 @@ export function CellArrangementEditor({
   const reasons = useQuery({
     queryKey: ["relations", "inspection-reasons"],
     queryFn: () => relationsApi.lookup("inspection-reasons"),
+  });
+  const nextNrQuery = useQuery({
+    queryKey: ["elements", "next-number"],
+    queryFn: () => elementsApi.nextNumber(),
   });
 
   const dossier = cellQuery.data;
@@ -273,6 +279,7 @@ export function CellArrangementEditor({
       { name: "cathode_electrode", label: t("fields.cathodeElectrode") },
       { name: "cathode_shell", label: t("fields.cathodeShell") },
       { name: "membrane_info", label: t("fields.membraneInfo"), span: 2 },
+      { name: "membrane_remark", label: t("fields.membraneRemark"), type: "textarea", span: 2 },
       { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
     ],
     [t, groups.data]
@@ -381,7 +388,7 @@ export function CellArrangementEditor({
       { name: "company", label: t("fields.manufacturer") },
       { name: "service_life", label: t("fields.dolDays") },
       { name: "install_date", label: t("fields.assemblyDate"), type: "date" },
-      { name: "dismantle_date", label: t("fields.disassemblyDate"), type: "date" },
+      { name: "disassemble_date", label: t("fields.disassemblyDate"), type: "date" },
       { name: "inspection_date", label: t("fields.inspectionDate"), type: "date" },
       { name: "warranty", label: t("arrangement.warranty") },
       { name: "decision", label: t("arrangement.decision"), span: 2 },
@@ -394,7 +401,7 @@ export function CellArrangementEditor({
 
   const inspectionFields = useMemo<FieldDef[]>(
     () => [
-      { name: "inspection_reason", label: t("fields.inspectionReason"), type: "select", options: asOptions(reasons.data) },
+      { name: "inspection_reason", label: t("fields.inspectionReason"), type: "select", options: (reasons.data || []).map((value) => ({ label: inspectionReasonLabel(value, t), value })) },
       { name: "inspector_name", label: t("fields.inspectorName") },
       { name: "inspection_date", label: t("fields.inspectionDate"), type: "date" },
       { name: "blister_anode_area", label: t("fields.blisterAnodeArea") },
@@ -421,6 +428,8 @@ export function CellArrangementEditor({
       { name: "frame_gasket_ok", label: t("fields.frameGasketOk"), type: "select", options: yn(t) },
       { name: "frame_gasket_remark", label: t("fields.frameGasketRemark") },
       { name: "general_remarks", label: t("fields.generalRemarks"), type: "textarea", span: 2 },
+      { name: "xrf_anode", label: t("inspections.xrfAnode") },
+      { name: "xrf_cathode", label: t("inspections.xrfCathode") },
     ],
     [t, reasons.data]
   );
@@ -515,9 +524,9 @@ export function CellArrangementEditor({
           </p>
         ) : null}
         <BoundForm
-          key={creating ? `new-${position}` : `el-${element?.id || "empty"}`}
+          key={creating ? `new-${position}-${nextNrQuery.data?.element_nr || "pending"}` : `el-${element?.id || "empty"}`}
           fields={assemblyFields}
-          record={creating ? null : element}
+          record={creating ? { element_nr: nextNrQuery.data?.element_nr ?? "" } : element}
           locked={{ electrolyzer, position: String(position) }}
           canEdit={editElements}
           onSubmit={async (payload) => {
@@ -528,6 +537,7 @@ export function CellArrangementEditor({
               const created = await elementsApi.create(payload as Partial<Element>);
               setCreating(false);
               setInstallationId(created.id);
+              await queryClient.invalidateQueries({ queryKey: ["elements", "next-number"] });
             } else {
               await elementsApi.update(element.id, payload as Partial<Element>);
             }

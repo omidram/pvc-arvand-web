@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const PAGE_TITLES: { prefix: string; key: string }[] = [
   { prefix: "/overview", key: "nav.overview" },
   { prefix: "/elements", key: "nav.elements" },
+  { prefix: "/segregation", key: "nav.segregation" },
   { prefix: "/inspections", key: "nav.inspections" },
   { prefix: "/anodes", key: "nav.anodes" },
   { prefix: "/cathodes", key: "nav.cathodes" },
@@ -34,6 +35,7 @@ const EXTRA_FORMS: { href: string; labelKey: string; formKey?: string; adminOnly
   { href: "/cathodes", labelKey: "nav.cathodes", formKey: "cathodes" },
   { href: "/membranes", labelKey: "nav.membranes", formKey: "membranes" },
   { href: "/inspections", labelKey: "nav.inspections", formKey: "inspections" },
+  { href: "/segregation", labelKey: "nav.segregation", formKey: "elements" },
   { href: "/tables", labelKey: "nav.databaseTables" },
   { href: "/all-tables", labelKey: "nav.allTables" },
   { href: "/users", labelKey: "nav.users", adminOnly: true },

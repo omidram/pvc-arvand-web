@@ -59,6 +59,8 @@ export const elementsApi = {
     (await apiClient.get(`/elements/duplicates/${componentType}`)).data,
   groupsOverview: async (): Promise<{ group_nr: string; element_count: number }[]> =>
     (await apiClient.get("/elements/groups/overview")).data,
+  nextNumber: async (): Promise<{ element_nr: string }> =>
+    (await apiClient.get("/elements/next-number")).data,
   importAssemblyExcel: async (file: File): Promise<{ imported_rows: number }> => {
     const form = new FormData();
     form.append("file", file);

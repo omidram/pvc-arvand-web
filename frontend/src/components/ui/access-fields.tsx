@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import type { FieldDef } from "@/components/ui/resource-form";
 import { cn } from "@/lib/utils";
@@ -47,6 +48,19 @@ export function AccessFields({
   readOnly?: boolean;
   columns?: 1 | 2 | 3;
 }) {
+  const lookupTimers = useRef<Record<string, number>>({});
+
+  function scheduleCommit(name: string, value: unknown) {
+    if (!onCommit) return;
+    window.clearTimeout(lookupTimers.current[name]);
+    lookupTimers.current[name] = window.setTimeout(() => onCommit(name, value), 400);
+  }
+
+  function flushCommit(name: string, value: unknown) {
+    window.clearTimeout(lookupTimers.current[name]);
+    onCommit?.(name, value);
+  }
+
   return (
     <div
       className="access-fields grid gap-x-4 gap-y-1"
@@ -104,6 +118,31 @@ export function AccessFields({
                       </option>
                     ))}
                   </Select>
+                ) : f.type === "combo" ? (
+                  <>
+                    <Input
+                      list={`combo-${f.name}`}
+                      required={f.required}
+                      value={String(values[f.name] ?? "")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        onChange(f.name, value);
+                        scheduleCommit(f.name, value);
+                      }}
+                      onBlur={(e) => flushCommit(f.name, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                      }}
+                      disabled={readOnly}
+                      placeholder={f.placeholder}
+                      className="h-[22px] py-0 text-[11px]"
+                    />
+                    <datalist id={`combo-${f.name}`}>
+                      {f.options?.map((opt) => (
+                        <option key={opt.value} value={opt.value} />
+                      ))}
+                    </datalist>
+                  </>
                 ) : (
                   <Input
                     type={f.type || "text"}
@@ -113,20 +152,16 @@ export function AccessFields({
                     onChange={(e) => {
                       const value = e.target.value;
                       onChange(f.name, value);
-                      if (!onCommit) return;
-                      const el = e.currentTarget;
-                      window.clearTimeout(el.dataset.lookupTimer ? Number(el.dataset.lookupTimer) : undefined);
-                      const timer = window.setTimeout(() => onCommit(f.name, value), 400);
-                      el.dataset.lookupTimer = String(timer);
+                      scheduleCommit(f.name, value);
                     }}
                     onBlur={(e) => {
-                      window.clearTimeout(Number(e.currentTarget.dataset.lookupTimer || 0));
-                      onCommit?.(f.name, e.target.value);
+                      flushCommit(f.name, e.target.value);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") e.currentTarget.blur();
                     }}
                     disabled={readOnly}
+                    placeholder={f.placeholder}
                     className="h-[22px] py-0 text-[11px]"
                   />
                 )}

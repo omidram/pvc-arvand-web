@@ -24,28 +24,36 @@ const FIELDS: FieldDef[] = [
   { name: "company", label: "Company" },
   { name: "service_life", label: "Service life" },
   { name: "install_date", label: "Install", type: "date" },
-  { name: "dismantle_date", label: "Dismantle", type: "date" },
+  { name: "decommission_date", label: "Decommissioning", type: "date" },
+  { name: "disassemble_date", label: "Disassemble date", type: "date" },
   { name: "inspection_date", label: "Inspection", type: "date" },
   { name: "xrf", label: "XRF" },
-  { name: "voltage_quality", label: "Voltage" },
+  { name: "pair_serial_nr", label: "Paired serial" },
+  { name: "pair_xrf", label: "Paired XRF" },
+  { name: "decommission_voltage", label: "V at decommission", type: "number" },
+  { name: "decommission_ka", label: "kA at decommission", type: "number" },
+  { name: "decommission_temp", label: "Temp at decommission", type: "number" },
+  { name: "voltage_quality", label: "Voltage quality" },
   { name: "warranty", label: "Warranty" },
   { name: "coating_quality", label: "Coating" },
   { name: "decision", label: "Decision" },
   { name: "problems", label: "Problems", type: "textarea", span: 2 },
   { name: "segregation", label: "Segregation", type: "textarea", span: 2 },
   { name: "pallet", label: "Pallet" },
+  { name: "inspection_form_serial", label: "Inspection form serial" },
   { name: "remarks", label: "Remarks", type: "textarea", span: 2 },
 ];
 
 export default function SegregationPage() {
   const { t } = useI18n();
-  const { canEdit } = useAuth();
-  const editable = canEdit("anodes");
+  const { canEdit, canView } = useAuth();
+  const allowed = canView("anodes") || canView("cathodes") || canView("elements");
+  const editable = canEdit("anodes") || canEdit("cathodes") || canEdit("elements");
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<ElectrodeSegregation | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
-  const params: Record<string, unknown> = { limit: 500 };
+  const params: Record<string, unknown> = { limit: 5000 };
   if (q) params.q = q;
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<ElectrodeSegregation>(
     "electrode-segregations",
@@ -62,11 +70,14 @@ export default function SegregationPage() {
     { key: "inspection_date", header: "Date", render: (r) => formatDate(r.inspection_date) },
   ];
 
+  if (!allowed) return null;
+
   return (
     <div>
       <PageHeader
         title={t("nav.segregation")}
-        description="TAFKIK workshop decisions"
+        description={t("help.segregation.body").split("\n")[0]}
+        helpKey="segregation"
         actions={
           <>
             <ExportButtons prefix="/electrode-segregations" filenameBase="segregation" />

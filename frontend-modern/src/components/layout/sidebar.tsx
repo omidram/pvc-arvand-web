@@ -48,6 +48,7 @@ const NAV_GROUPS: {
     items: [
       { href: "/elements", labelKey: "nav.elements", icon: Boxes, formKey: "elements" },
       { href: "/inspections", labelKey: "nav.inspections", icon: ClipboardCheck, formKey: "inspections" },
+      { href: "/segregation", labelKey: "nav.segregation", icon: ClipboardCheck, formKey: "elements" },
     ],
   },
   {
@@ -64,7 +65,6 @@ const NAV_GROUPS: {
       { href: "/shutdowns", labelKey: "nav.shutdowns", icon: PowerOff, formKey: "shutdowns" },
       { href: "/voltage", labelKey: "nav.voltage", icon: Zap, formKey: "voltage" },
       { href: "/analyses", labelKey: "nav.analyses", icon: FlaskConical, formKey: "analyses" },
-      { href: "/segregation", labelKey: "nav.segregation", icon: ClipboardCheck, formKey: "anodes" },
       { href: "/search", labelKey: "nav.search", icon: Search, formKey: "search" },
       { href: "/remarks", labelKey: "nav.remarks", icon: MessageSquareText, formKey: "remarks" },
     ],
@@ -155,6 +155,9 @@ export function Sidebar() {
           const visibleItems = group.items.filter((item) => {
             if (item.adminOnly && !isAdmin) return false;
             if (item.adminOnly) return true;
+            if (item.href === "/segregation") {
+              return canView("anodes") || canView("cathodes") || canView("elements");
+            }
             return canView(item.formKey);
           });
           if (visibleItems.length === 0) return null;

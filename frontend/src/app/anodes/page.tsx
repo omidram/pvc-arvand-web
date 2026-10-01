@@ -11,6 +11,7 @@ import {
 import { useCrudResource } from "@/lib/use-resource";
 import type { Anode, AnodeCoatingCheck, AnodeMaintenance, AnodeRecoating } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
+import { AnodeRelations } from "@/components/domain/access-relations";
 import { ElectrodeSheet, type SheetColumn } from "@/components/domain/electrode-sheet";
 import type { FieldDef } from "@/components/ui/resource-form";
 import type { Column } from "@/components/ui/data-table";
@@ -22,10 +23,13 @@ import { LoadingState } from "@/components/ui/spinner";
 function AnodesDetails() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
+  const wanted = useSearchParams().get("anode_nr");
+  const listParams: Record<string, unknown> = { limit: 5000 };
+  if (wanted) listParams.q = wanted;
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Anode>(
     "anodes",
     anodesApi,
-    { limit: 500 }
+    listParams
   );
 
   const fields: FieldDef[] = [
@@ -84,6 +88,7 @@ function AnodesDetails() {
       submitting={createMutation.isPending || updateMutation.isPending}
       exportPrefix="/anodes"
       filenameBase="anodes"
+      related={(row) => <AnodeRelations anodeNr={row.anode_nr} />}
     />
   );
 }

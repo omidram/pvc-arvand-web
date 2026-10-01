@@ -75,8 +75,8 @@ export default function OverviewPage() {
         <StatCard label={t("dashboard.inspections")} value={counts.inspections} icon={ClipboardCheck} accent="cyan" />
         <StatCard label={t("dashboard.analysisSamples")} value={counts.analysis_samples} icon={FlaskConical} accent="emerald" />
         <StatCard
-          label={t("dashboard.plantTotalVoltage")}
-          value={voltage?.plant_total_voltage != null ? `${formatNumber(voltage.plant_total_voltage, 1)} V` : "—"}
+          label={t("dashboard.plantTotalLoad")}
+          value={voltage?.plant_total_ka != null ? `${formatNumber(voltage.plant_total_ka, 1)} kA` : "—"}
           icon={Zap}
           accent="blue"
         />

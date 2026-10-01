@@ -64,27 +64,30 @@ def dol_by_membrane_type(db: Session = Depends(get_db)):
 
 
 @router.get("/power-consumption", dependencies=[Depends(require_form_access("statistics"))])
-def power_consumption(electrolyzer: str | None = None, db: Session = Depends(get_db)):
-    """
-    Rough estimate of specific power consumption (kWh per unit output) from
-    average standardized voltage and current, per the manual's anodic-balance
-    method. Full accuracy requires matched current-efficiency data for the
-    same day (see /current-efficiency).
-    """
-    query = db.query(models.ElectrolyzerNormalization)
-    if electrolyzer:
-        query = query.filter(models.ElectrolyzerNormalization.electrolyzer == electrolyzer)
-    batches = query.all()
-    if not batches:
-        return {"records": 0, "average_specific_power_kwh_per_kA_h": None}
+def power_consumption(
+    electrolyzer: str | None = None,
+    group: str = "electrolyzer",
+    date_from: str | None = None,
+    date_till: str | None = None,
+    db: Session = Depends(get_db),
+):
+    """kWh from LogSheets load (kA) and total voltage: kWh = V × I_kA × hours."""
+    from datetime import datetime
 
-    values = []
-    for b in batches:
-        if b.total_voltage and b.element_count:
-            avg_cell_voltage = b.total_voltage / b.element_count
-            values.append(avg_cell_voltage * 0.001 * 1000)  # kWh per kA*h per cell, i.e. just the voltage in V
-    avg = sum(values) / len(values) if values else None
-    return {"records": len(batches), "average_specific_power_kwh_per_kA_h": round(avg, 4) if avg else None}
+    from ..energy import report
+
+    start = datetime.fromisoformat(date_from) if date_from else None
+    end = datetime.fromisoformat(date_till) if date_till else None
+    data = report(db, start=start, end=end, group=group)
+    if electrolyzer:
+        el = electrolyzer.strip().upper()
+        data["rows"] = [
+            row
+            for row in data["rows"]
+            if str(row.get("electrolyzer") or "").upper() == el or str(row.get("key") or "").upper().startswith(el)
+        ]
+        data["total_kwh"] = round(sum(row["energy_kwh"] for row in data["rows"]), 1)
+    return data
 
 
 @router.get("/groups", dependencies=[Depends(require_form_access("statistics"))])

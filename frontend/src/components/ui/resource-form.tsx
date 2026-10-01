@@ -8,7 +8,7 @@ import { useI18n } from "@/lib/i18n/context";
 export interface FieldDef {
   name: string;
   label: string;
-  type?: "text" | "number" | "date" | "datetime-local" | "checkbox" | "textarea" | "select";
+  type?: "text" | "number" | "date" | "datetime-local" | "checkbox" | "textarea" | "select" | "combo";
   options?: { label: string; value: string }[];
   required?: boolean;
   placeholder?: string;

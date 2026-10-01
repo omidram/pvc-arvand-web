@@ -29,6 +29,8 @@ except ImportError:  # pragma: no cover - optional on Linux/Docker images
 from sqlalchemy.orm import Session
 
 from . import models
+from .cell_component_names import industrial_english
+from .inspection_reason_names import industrial_reason
 from .config import settings
 from .database import Base, SessionLocal, engine
 
@@ -237,7 +239,7 @@ def migrate_elements(cur, db: Session):
             models.InspectionReason(
                 language_id=to_int(r.get("IDSprache")),
                 code=to_str(r.get("Code")),
-                reason=to_str(r.get("Inspektionsgrund")),
+                reason=industrial_reason(to_str(r.get("Inspektionsgrund"))),
                 selected=to_bool(r.get("Gewaehlt")),
                 count=to_int(r.get("Anzahl")),
             )
@@ -256,7 +258,7 @@ def migrate_elements(cur, db: Session):
         db.add(
             models.CellComponent(
                 part_nr=to_str(r.get("Teil Nr")),
-                name=to_str(r.get("Benennung")),
+                name=industrial_english(to_str(r.get("Benennung")), to_str(r.get("Teil Nr"))),
                 drawing_nr=to_str(r.get("Zeichnungs Nr")),
                 revision=to_str(r.get("Revision")),
                 parts_per_element=to_float(r.get("Teile pro Element")),
