@@ -19,6 +19,10 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [enabled, setEnabled] = useState(initial.enabled);
+  const [username, setUsername] = useState(initial.username || "");
+  const [password, setPassword] = useState("");
+  const [dailyTime, setDailyTime] = useState(initial.daily_time || "00:00");
+  const [lookbackDays, setLookbackDays] = useState(initial.lookback_days || 1);
   const [watchDir, setWatchDir] = useState(initial.watch_dir || initial.resolved_watch_dir || "");
   const [pollSeconds, setPollSeconds] = useState(initial.poll_seconds);
   const [sourceUrl, setSourceUrl] = useState(initial.source_url || "");
@@ -30,23 +34,33 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
     mutationFn: () =>
       voltageSyncApi.updateSettings({
         enabled,
+        username: username || null,
+        password: password || undefined,
+        daily_time: dailyTime || "00:00",
+        lookback_days: lookbackDays,
         watch_dir: watchDir || null,
         poll_seconds: pollSeconds,
         source_url: sourceUrl || null,
       }),
     onSuccess: (data) => {
       queryClient.setQueryData(["voltage-sync-settings"], data);
+      setPassword("");
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     },
   });
 
   const runMutation = useMutation({
-    mutationFn: () => voltageSyncApi.runNow(),
+    mutationFn: () => {
+      setProgress({ percent: 0, processed: 0, total: 0 });
+      return voltageSyncApi.runNow(setProgress);
+    },
     onSuccess: (data) => {
       setLastResult(data);
+      setProgress(null);
       queryClient.invalidateQueries({ queryKey: ["voltage-sync-settings"] });
     },
+    onError: () => setProgress(null),
   });
 
   const uploadMutation = useMutation({
@@ -56,9 +70,11 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
     },
     onSuccess: (data) => {
       setLastResult(data);
+      setProgress(null);
       queryClient.invalidateQueries({ queryKey: ["voltage-sync-settings"] });
       if (fileRef.current) fileRef.current.value = "";
     },
+    onError: () => setProgress(null),
   });
 
   return (
@@ -71,6 +87,41 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
       </label>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div>
+          <Label>{t("voltageSync.username")}</Label>
+          <Input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
+        </div>
+        <div>
+          <Label>{t("voltageSync.password")}</Label>
+          <Input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={initial.password_set ? t("voltageSync.passwordKept") : ""}
+            autoComplete="current-password"
+          />
+        </div>
+        <div>
+          <Label>{t("voltageSync.dailyTime")}</Label>
+          <Input type="time" value={dailyTime} onChange={(e) => setDailyTime(e.target.value)} className="max-w-[160px]" />
+          <p className="mt-1 text-xs text-[var(--win-text-dim)]">{t("voltageSync.dailyTimeHelp")}</p>
+        </div>
+        <div>
+          <Label>{t("voltageSync.lookbackDays")}</Label>
+          <Input
+            type="number"
+            min={1}
+            max={31}
+            value={lookbackDays}
+            onChange={(e) => setLookbackDays(Math.max(1, Number(e.target.value) || 1))}
+            className="max-w-[160px]"
+          />
+          <p className="mt-1 text-xs text-[var(--win-text-dim)]">{t("voltageSync.lookbackDaysHelp")}</p>
+        </div>
+        <div className="sm:col-span-2">
+          <Label>{t("voltageSync.sourceUrl")}</Label>
+          <Input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} />
+        </div>
         <div className="sm:col-span-2">
           <Label>{t("voltageSync.watchDir")}</Label>
           <Input value={watchDir} onChange={(e) => setWatchDir(e.target.value)} placeholder={initial.resolved_watch_dir || ""} />
@@ -80,16 +131,12 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
           <Label>{t("voltageSync.pollSeconds")}</Label>
           <Input
             type="number"
-            min={5}
+            min={30}
             max={3600}
             value={pollSeconds}
             onChange={(e) => setPollSeconds(Number(e.target.value) || 30)}
             className="max-w-[160px]"
           />
-        </div>
-        <div>
-          <Label>{t("voltageSync.sourceUrl")}</Label>
-          <Input value={sourceUrl} onChange={(e) => setSourceUrl(e.target.value)} />
         </div>
       </div>
 
@@ -118,9 +165,18 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
           {initial.last_run_at ? formatDateTime(initial.last_run_at) : t("voltageSync.lastRunNever")}
           {initial.last_run_status ? ` · ${initial.last_run_status}` : ""}
         </div>
+        {initial.next_run_at ? (
+          <div className="mt-1">
+            <span className="font-semibold">{t("voltageSync.nextRun")}: </span>
+            {formatDateTime(initial.next_run_at)}
+          </div>
+        ) : null}
         {initial.last_run_message ? (
           <div className="mt-1 text-xs text-[var(--win-text-dim)]">{initial.last_run_message}</div>
         ) : null}
+        <div className="mt-1 text-xs text-[var(--win-text-dim)]">
+          {initial.password_set ? t("voltageSync.credentialsReady") : t("voltageSync.credentialsMissing")}
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -144,7 +200,10 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
         />
       </div>
 
-      {progress && uploadMutation.isPending ? <ImportProgressBar progress={progress} wide /> : null}
+      {progress && (runMutation.isPending || uploadMutation.isPending) ? <ImportProgressBar progress={progress} wide /> : null}
+      {runMutation.isError ? (
+        <div className="text-sm text-red-700">{(runMutation.error as Error)?.message}</div>
+      ) : null}
       {lastResult ? (
         <div className="rounded border border-[var(--win-shadow)] p-3 text-sm">
           <div className="font-semibold">{lastResult.ok ? t("voltageSync.statusSuccess") : t("voltageSync.statusError")}</div>

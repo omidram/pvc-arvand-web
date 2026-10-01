@@ -419,3 +419,170 @@ def count_watched_files(configured: str | None) -> int:
         return sum(1 for p in watch.iterdir() if p.is_file() and p.suffix.lower() in _EXCEL_SUFFIXES)
     except OSError:
         return 0
+
+
+def pull_from_ariaorms(
+    db: Session,
+    row: models.VoltageSyncSettings | None = None,
+    *,
+    include_today: bool = False,
+    progress=None,
+) -> dict[str, Any]:
+    """Login to AriaORMS and upsert full log sheets for every electrolyzer."""
+    from . import ariaorms_client
+
+    if row is None:
+        row = db.query(models.VoltageSyncSettings).first()
+        if row is None:
+            row = models.VoltageSyncSettings()
+            db.add(row)
+            db.commit()
+            db.refresh(row)
+
+    username = (row.username or "").strip()
+    password = row.password or ""
+    if not username or not password:
+        msg = "AriaORMS username/password are not configured in Settings → Data Sync"
+        row.last_run_at = datetime.utcnow()
+        row.last_run_status = "error"
+        row.last_run_message = msg[:500]
+        db.commit()
+        return {
+            "ok": False,
+            "mode": "ariaorms",
+            "files_scanned": 0,
+            "files_applied": 0,
+            "rows_upserted": 0,
+            "message": msg,
+            "details": [],
+        }
+
+    base = ariaorms_client.normalize_base_url(row.source_url)
+    start_day, end_day = ariaorms_client.date_window(
+        lookback_days=int(row.lookback_days or 1),
+        include_today=include_today,
+    )
+    electrolyzers = ariaorms_client.iter_electrolyzers()
+    details: list[dict[str, Any]] = []
+    files_applied = 0
+    rows_total = 0
+    errors = 0
+
+    try:
+        opener = ariaorms_client.new_opener(base, username, password)
+    except Exception as exc:  # noqa: BLE001
+        msg = f"AriaORMS login failed: {exc}"
+        row.last_run_at = datetime.utcnow()
+        row.last_run_status = "error"
+        row.last_run_message = msg[:500]
+        db.commit()
+        return {
+            "ok": False,
+            "mode": "ariaorms",
+            "files_scanned": 0,
+            "files_applied": 0,
+            "rows_upserted": 0,
+            "message": msg,
+            "details": [],
+        }
+
+    total = len(electrolyzers)
+    if progress:
+        progress(0, total)
+
+    for index, (name, log_id) in enumerate(electrolyzers, start=1):
+        try:
+            content = ariaorms_client.download_logsheet(
+                opener,
+                base,
+                log_id,
+                start_day,
+                end_day,
+                username=username,
+                password=password,
+            )
+            info = apply_excel_bytes(
+                db,
+                content,
+                electrolyzer=name,
+                hint_from_name=name,
+                evaluate_alerts=False,
+            )
+            db.commit()
+            files_applied += 1
+            rows_total += int(info.get("rows_upserted") or 0)
+            details.append(
+                {
+                    "electrolyzer": name,
+                    "status": "applied",
+                    "start": start_day.isoformat(),
+                    "end": end_day.isoformat(),
+                    "rows_upserted": info.get("rows_upserted"),
+                    "dates": info.get("dates"),
+                    "times": info.get("times"),
+                }
+            )
+            logger.info(
+                "AriaORMS pull %s %s..%s → %s rows",
+                name,
+                start_day,
+                end_day,
+                info.get("rows_upserted"),
+            )
+        except Exception as exc:  # noqa: BLE001
+            db.rollback()
+            message = str(exc)
+            if "Header row with Parameter" in message:
+                details.append(
+                    {
+                        "electrolyzer": name,
+                        "status": "empty",
+                        "start": start_day.isoformat(),
+                        "end": end_day.isoformat(),
+                        "message": "empty sheet",
+                    }
+                )
+            else:
+                errors += 1
+                logger.exception("AriaORMS pull failed for %s", name)
+                details.append(
+                    {
+                        "electrolyzer": name,
+                        "status": "error",
+                        "start": start_day.isoformat(),
+                        "end": end_day.isoformat(),
+                        "message": message[:300],
+                    }
+                )
+        if progress:
+            progress(index, total)
+
+    try:
+        from . import alerts_engine
+
+        alerts_engine.ensure_default_rules(db)
+        alerts_engine.evaluate_voltage_rules(db)
+        db.commit()
+    except Exception:  # noqa: BLE001
+        logger.exception("Alert evaluation after AriaORMS pull failed")
+
+    ok = errors == 0
+    message = (
+        f"AriaORMS {start_day.isoformat()}..{end_day.isoformat()}: "
+        f"electrolyzers {files_applied}/{total}, upserted {rows_total} rows"
+        + (f", errors {errors}" if errors else "")
+    )
+    row.last_run_at = datetime.utcnow()
+    row.last_run_status = "success" if ok else "error"
+    row.last_run_message = message[:500]
+    db.commit()
+
+    return {
+        "ok": ok,
+        "mode": "ariaorms",
+        "files_scanned": total,
+        "files_applied": files_applied,
+        "rows_upserted": rows_total,
+        "message": message,
+        "details": details,
+    }

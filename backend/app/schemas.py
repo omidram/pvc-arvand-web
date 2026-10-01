@@ -152,19 +152,25 @@ class VoltageSyncSettingsBase(ORMModel):
     watch_dir: str | None = None
     poll_seconds: int = Field(default=30, ge=5, le=3600)
     source_url: str | None = "http://192.168.20.12:8080/LogSheetsReports.aspx"
+    username: str | None = None
+    daily_time: str = "00:00"
+    lookback_days: int = Field(default=1, ge=1, le=31)
 
 
 class VoltageSyncSettingsUpdate(VoltageSyncSettingsBase):
-    pass
+    # Omit or blank = keep previously saved password.
+    password: str | None = None
 
 
 class VoltageSyncSettingsRead(VoltageSyncSettingsBase):
     id: int
+    password_set: bool = False
     last_run_at: datetime | None = None
     last_run_status: str | None = None
     last_run_message: str | None = None
     resolved_watch_dir: str | None = None
     watched_file_count: int = 0
+    next_run_at: str | None = None
 
 
 class VoltageSyncRunResult(BaseModel):
@@ -174,6 +180,7 @@ class VoltageSyncRunResult(BaseModel):
     rows_upserted: int = 0
     message: str = ""
     details: list[dict] = []
+    mode: str | None = None
 
 
 # ---------------------------------------------------------------- Monitoring / alerts

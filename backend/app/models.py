@@ -111,7 +111,7 @@ class BackupSettings(Base):
 
 
 class VoltageSyncSettings(Base):
-    """Watch-folder sync from ARIAORMS LogSheets Excel → standardized voltage."""
+    """ARIAORMS LogSheets → standardized voltage (daily HTTP pull + optional watch folder)."""
     __tablename__ = "voltage_sync_settings"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     enabled: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -122,6 +122,12 @@ class VoltageSyncSettings(Base):
         default="http://192.168.20.12:8080/LogSheetsReports.aspx",
         nullable=True,
     )
+    username: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    password: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Local wall-clock time for daily full pull of all electrolyzers (HH:MM).
+    daily_time: Mapped[str] = mapped_column(String(5), default="00:00")
+    # Inclusive days ending yesterday for scheduled pull (Sync Now includes today).
+    lookback_days: Mapped[int] = mapped_column(Integer, default=1)
     last_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     last_run_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
     last_run_message: Mapped[str | None] = mapped_column(String(500), nullable=True)

@@ -876,9 +876,21 @@ export const backupApi = {
 export const voltageSyncApi = {
   getSettings: async (): Promise<T.VoltageSyncSettings> => (await apiClient.get("/voltage-sync/settings")).data,
   updateSettings: async (
-    payload: Pick<T.VoltageSyncSettings, "enabled" | "watch_dir" | "poll_seconds" | "source_url">
+    payload: Partial<{
+      enabled: boolean;
+      watch_dir: string | null;
+      poll_seconds: number;
+      source_url: string | null;
+      username: string | null;
+      password: string;
+      daily_time: string;
+      lookback_days: number;
+    }>
   ): Promise<T.VoltageSyncSettings> => (await apiClient.put("/voltage-sync/settings", payload)).data,
-  runNow: async (): Promise<T.VoltageSyncRunResult> => (await apiClient.post("/voltage-sync/run")).data,
+  runNow: async (onProgress?: (progress: ImportProgress) => void): Promise<T.VoltageSyncRunResult> => {
+    const { data } = await apiClient.post("/voltage-sync/run");
+    return followImport(data, onProgress);
+  },
   importFile: async (
     file: File,
     params?: { electrolyzer?: string; reading_date?: string },

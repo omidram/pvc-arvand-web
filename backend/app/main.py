@@ -196,6 +196,28 @@ def _ensure_normalization_energy_columns() -> None:
 
 _ensure_normalization_energy_columns()
 
+
+def _ensure_voltage_sync_columns() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("voltage_sync_settings")}
+    except Exception:
+        return
+    additions = {
+        "username": "VARCHAR(120)",
+        "password": "VARCHAR(255)",
+        "daily_time": "VARCHAR(5) DEFAULT '00:00'",
+        "lookback_days": "INTEGER DEFAULT 1",
+    }
+    for name, sql_type in additions.items():
+        if name in present:
+            continue
+        with engine.begin() as conn:
+            conn.execute(text(f"ALTER TABLE voltage_sync_settings ADD COLUMN {name} {sql_type}"))
+        present.add(name)
+
+
+_ensure_voltage_sync_columns()
+
 with SessionLocal() as _db:
     seed_default_admin(_db)
     alerts_engine.ensure_default_rules(_db)

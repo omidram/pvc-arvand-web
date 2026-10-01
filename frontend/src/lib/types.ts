@@ -699,11 +699,16 @@ export interface VoltageSyncSettings {
   watch_dir: string | null;
   poll_seconds: number;
   source_url: string | null;
+  username: string | null;
+  password_set: boolean;
+  daily_time: string;
+  lookback_days: number;
   last_run_at: string | null;
   last_run_status: "success" | "error" | null;
   last_run_message: string | null;
   resolved_watch_dir: string | null;
   watched_file_count: number;
+  next_run_at: string | null;
 }
 
 export interface VoltageSyncRunResult {
@@ -713,6 +718,7 @@ export interface VoltageSyncRunResult {
   rows_upserted: number;
   message: string;
   details: Record<string, unknown>[];
+  mode?: string | null;
 }
 
 // ---------------------------------------------------------------- Monitoring / alerts
