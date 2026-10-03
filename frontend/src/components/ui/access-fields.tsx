@@ -174,7 +174,7 @@ export function AccessFields({
                     disabled={readOnly}
                     placeholder={f.placeholder}
                     className="h-[22px] py-0 text-[11px]"
-                    {...(f.type === "password" ? {} : OFF_AUTOCOMPLETE)}
+                    {...OFF_AUTOCOMPLETE}
                   />
                 )}
               </div>
