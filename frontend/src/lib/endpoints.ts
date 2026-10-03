@@ -315,10 +315,24 @@ export const voltageCalcApi = {
     conc_ref?: number;
   }): Promise<{ standardized_voltage: number; inputs: Record<string, number> }> =>
     (await apiClient.post("/voltage/calculate-standardized", null, { params })).data,
-  distribution: async (electrolyzer?: string): Promise<T.VoltageDistribution> =>
-    (await apiClient.get("/voltage/distribution", { params: { electrolyzer } })).data,
-  highDeviation: async (params?: { threshold?: number; electrolyzer?: string }): Promise<T.HighDeviation> =>
-    (await apiClient.get("/voltage/high-deviation", { params })).data,
+  distribution: async (params?: {
+    electrolyzer?: string;
+    date_from?: string;
+    date_till?: string;
+  }): Promise<T.VoltageDistribution> =>
+    (await apiClient.get("/voltage/distribution", { params })).data,
+  highDeviation: async (params?: {
+    threshold?: number;
+    electrolyzer?: string;
+    date_from?: string;
+    date_till?: string;
+  }): Promise<T.HighDeviation> => (await apiClient.get("/voltage/high-deviation", { params })).data,
+  elementVoltages: async (params: {
+    electrolyzer: string;
+    date_from?: string;
+    date_till?: string;
+  }): Promise<T.ElementVoltageSnapshot> =>
+    (await apiClient.get("/voltage/element-voltages", { params })).data,
   importCsv: async (
     file: File,
     electrolyzer: string,
@@ -432,6 +446,10 @@ export const statisticsApi = {
   dashboard: async (): Promise<T.DashboardStats> => (await apiClient.get("/statistics/dashboard")).data,
   dolByMembraneType: async (): Promise<T.DolByMembraneType[]> =>
     (await apiClient.get("/statistics/dol-by-membrane-type")).data,
+  averagePower: async (params?: {
+    date_from?: string;
+    date_till?: string;
+  }): Promise<T.AveragePowerStats> => (await apiClient.get("/statistics/average-power", { params })).data,
   powerConsumption: async (params?: {
     electrolyzer?: string;
     group?: string;
@@ -549,6 +567,7 @@ export const authApi = {
 
 export const usersApi = {
   formKeys: async (): Promise<string[]> => (await apiClient.get("/users/form-keys")).data,
+  formFields: async (): Promise<Record<string, string[]>> => (await apiClient.get("/users/form-fields")).data,
   list: async (): Promise<T.UserAccount[]> => (await apiClient.get("/users")).data,
   create: async (payload: {
     username: string;
@@ -1186,6 +1205,32 @@ export const monitoringApi = {
     }[];
     rectifier_points?: { date: string | null; time: string | null; voltage: number }[];
   }> => (await apiClient.get("/monitoring/voltage-history", { params })).data,
+  plantTrends: async (params: {
+    scope?: string;
+    electrolyzer?: string;
+    train?: string;
+    span?: string;
+    date_from?: string;
+    date_to?: string;
+  }): Promise<{
+    scope: string;
+    title: string;
+    electrolyzer: string | null;
+    train: string | null;
+    span: string;
+    date_from?: string | null;
+    date_to?: string | null;
+    total: number;
+    points: {
+      date: string | null;
+      time: string | null;
+      voltage: number;
+      voltage_sum?: number;
+      current_ka: number;
+      power_kw: number;
+      electrolyzers?: number;
+    }[];
+  }> => (await apiClient.get("/monitoring/plant-trends", { params })).data,
   importProgress: async (): Promise<{
     active: boolean;
     done: number;

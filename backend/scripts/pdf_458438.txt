@@ -1,5 +1,0 @@
-FILE=uhde administrator      نرم افزار الکترولایزرها (2).pdf
-SIZE=458438
-PAGES=1
-
-===== PAGE 1 =====

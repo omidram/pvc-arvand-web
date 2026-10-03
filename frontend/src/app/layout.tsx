@@ -7,9 +7,12 @@ export const metadata: Metadata = {
   title: "Arvand Electrolyzer Management Program",
   description: "Plant configuration, element administration, and data analysis for the Arvand electrolysis plant",
   icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
+    icon: [
+      { url: "/favicon.png?v=3", type: "image/png", sizes: "64x64" },
+      { url: "/logo-arvand.png", type: "image/png", sizes: "any" },
+    ],
+    shortcut: "/favicon.png?v=3",
+    apple: "/logo-arvand.png",
   },
 };
 
@@ -63,6 +66,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" dir="ltr" className="h-full" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <link rel="icon" href="/favicon.png?v=3" type="image/png" sizes="64x64" />
+        <link rel="apple-touch-icon" href="/logo-arvand.png" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" />
       </head>
       <body className="flex h-full min-h-screen flex-col antialiased">

@@ -653,6 +653,42 @@ def voltage_history(
     }
 
 
+@router.get("/plant-trends")
+def plant_trends(
+    scope: str = Query(default="plant", description="plant | train | electrolyzer"),
+    electrolyzer: str | None = Query(default=None),
+    train: str | None = Query(default=None),
+    span: str = Query(default="30"),
+    date_from: date | None = Query(default=None),
+    date_to: date | None = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    """Plant / train / electrolyzer charts for voltage, current (kA) and power (kW)."""
+    from ..energy import plant_timeseries
+
+    custom = bool(date_from or date_to) or span == "custom"
+    if span == "custom" and not date_from and not date_to:
+        raise HTTPException(status_code=400, detail="date_from or date_to is required for custom range")
+    if custom:
+        start = datetime.combine(date_from, datetime.min.time()) if date_from else None
+        end = datetime.combine(date_to, datetime.max.time()) if date_to else None
+    else:
+        days = {"10": 10, "30": 30, "90": 90, "365": 365, "730": 730}.get(span, 30)
+        start = datetime.utcnow() - timedelta(days=days)
+        end = None
+    data = plant_timeseries(
+        db,
+        start=start,
+        end=end,
+        scope=scope,
+        electrolyzer=electrolyzer,
+        train=train,
+        limit=600,
+    )
+    data["span"] = "custom" if custom else span
+    return data
+
+
 def _stamp(value):
     if isinstance(value, datetime):
         return value

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ShieldCheck, FileText, Lock, Database, ScrollText } from "lucide-react";
+import { ShieldCheck, FileText, Lock, Database, ScrollText, Phone, UserRound, Building2 } from "lucide-react";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n/context";
@@ -40,6 +40,43 @@ export default function AboutPage() {
         </Card>
 
         <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 size={16} className="text-[var(--win-navy)]" />
+              {t("about.developerTitle")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="text-base font-bold text-[var(--win-navy)]">{t("about.developerCompany")}</div>
+              <p className="mt-1.5 text-sm leading-relaxed text-[var(--win-text)]">{t("about.developerBlurb")}</p>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex items-start gap-2.5 border-2 border-[var(--win-border-shadow)] bg-[var(--win-face)] px-3 py-2.5 [border-style:inset]">
+                <UserRound size={16} className="mt-0.5 shrink-0 text-[var(--win-navy)]" />
+                <div>
+                  <div className="text-[11px] text-[var(--win-muted)]">{t("about.leadRole")}</div>
+                  <div className="text-sm font-bold text-[var(--win-navy)]">{t("about.leadName")}</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 border-2 border-[var(--win-border-shadow)] bg-[var(--win-face)] px-3 py-2.5 [border-style:inset]">
+                <Phone size={16} className="mt-0.5 shrink-0 text-[var(--win-navy)]" />
+                <div>
+                  <div className="text-[11px] text-[var(--win-muted)]">{t("about.supportRole")}</div>
+                  <a
+                    href={`tel:${t("about.supportPhone")}`}
+                    className="text-sm font-bold text-[var(--win-navy)] underline-offset-2 hover:underline"
+                    dir="ltr"
+                  >
+                    {t("about.supportPhone")}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>{t("about.trustTitle")}</CardTitle>
           </CardHeader>

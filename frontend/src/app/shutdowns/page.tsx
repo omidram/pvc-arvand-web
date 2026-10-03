@@ -9,6 +9,7 @@ import {
   shutdownCausesApi,
   shutdownSummaryApi,
   settingsApi,
+  electrolyzersApi,
 } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { Shutdown, ShutdownCategory, ShutdownCause } from "@/lib/types";
@@ -16,9 +17,11 @@ import { ExportButtons } from "@/components/domain/export-buttons";
 import { AccessBtn, AccessHub } from "@/components/layout/access-hub";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
-import { formatDate, formatNumber } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { useCalendar } from "@/lib/calendar/context";
 import { DateInput } from "@/components/ui/date-input";
+
+const BASE_PLANT_PARTS = ["081", "082", "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "J1", "K1", "L1", "M1"];
 
 function toLocalInput(value: string | null | undefined): string {
   if (!value) return "";
@@ -35,13 +38,23 @@ function fromLocalInput(value: string): string | null {
   return value.length === 16 ? `${value}:00` : value;
 }
 
-function durationHours(row: Shutdown): string {
-  if (row.duration_hours != null) return formatNumber(row.duration_hours);
-  if (!row.shutdown_time || !row.startup_time) return "";
+function durationMinutes(row: Shutdown): number | null {
+  if (row.duration_hours != null && !Number.isNaN(row.duration_hours)) {
+    return Math.max(0, Math.round(row.duration_hours * 60));
+  }
+  if (!row.shutdown_time || !row.startup_time) return null;
   const a = new Date(row.shutdown_time).getTime();
   const b = new Date(row.startup_time).getTime();
-  if (Number.isNaN(a) || Number.isNaN(b)) return "";
-  return formatNumber(Math.max((b - a) / 3600000, 0));
+  if (Number.isNaN(a) || Number.isNaN(b)) return null;
+  return Math.max(0, Math.round((b - a) / 60000));
+}
+
+function durationHm(row: Shutdown): string {
+  const mins = durationMinutes(row);
+  if (mins == null) return "";
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${h}:${String(m).padStart(2, "0")}`;
 }
 
 function PlantBar() {
@@ -50,9 +63,9 @@ function PlantBar() {
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const s = settingsQuery.data;
   return (
-    <div className="access-plant-bar">
+    <div className="access-plant-bar shutdown-plant-bar">
       <span>{s?.customer || "PVC Arvand"}</span>
-      <span>{s?.plant_type === "KOH" ? t("menus.kohElectrolysis") : t("menus.naclElectrolysis")}</span>
+      <span>{t("menus.naclElectrolysis")}</span>
       <span>{s?.uan || "E0-3031"}</span>
       <span>{s?.version || (s?.date ? formatDate(s.date) : "")}</span>
     </div>
@@ -87,11 +100,12 @@ function ShutdownMenu() {
 
 function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: string; dateTo?: string; showPeriodFilter?: boolean }) {
   const { t } = useI18n();
-  const { canEdit } = useAuth();
+  const { canEdit, canEditField, canViewField } = useAuth();
   const editable = canEdit("shutdowns");
   const [active, setActive] = useState<number | "new" | null>(null);
   const [from, setFrom] = useState(dateFrom || "");
   const [to, setTo] = useState(dateTo || "");
+  const [newPart, setNewPart] = useState("");
 
   const listParams = useMemo(() => {
     const params: Record<string, unknown> = { limit: 2000 };
@@ -113,14 +127,32 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     queryKey: ["shutdown-categories", { limit: 200 }],
     queryFn: () => shutdownCategoriesApi.list({ limit: 200 }),
   });
+  const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
 
   const rows = listQuery.data || [];
   const causes = causesQuery.data || [];
   const categories = categoriesQuery.data || [];
-  const totalHours = rows.reduce((sum, r) => sum + (r.duration_hours ?? 0), 0);
+  const totalMins = rows.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
+  const totalHm = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, "0")}`;
+
+  const plantParts = useMemo(() => {
+    const names = (elQuery.data || []).map((e) => e.name).filter(Boolean) as string[];
+    const existing = rows.map((r) => r.plant_part).filter(Boolean) as string[];
+    return Array.from(new Set([...BASE_PLANT_PARTS, ...names, ...existing])).sort((a, b) =>
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
+    );
+  }, [elQuery.data, rows]);
+
+  function fieldEditable(field: string) {
+    return editable && canEditField("shutdowns", field);
+  }
+  function fieldVisible(field: string) {
+    return canViewField("shutdowns", field);
+  }
 
   function save(row: Shutdown, patch: Partial<Shutdown>) {
-    if (!editable) return;
+    const keys = Object.keys(patch);
+    if (!keys.every((k) => fieldEditable(k))) return;
     updateMutation.mutate({ id: row.nr, payload: { ...row, ...patch } });
   }
 
@@ -142,139 +174,174 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       extraButtons={<ExportButtons prefix="/shutdowns" params={listParams} filenameBase="shutdowns" />}
     >
       <PlantBar />
-      {showPeriodFilter ? (
-        <div className="mb-3 flex flex-wrap items-end gap-3 text-[12px]">
-          <label className="flex flex-col gap-1">
-            <span>{t("menus.from")}</span>
-            <DateInput className="access-inset-field" value={from} onChange={(e) => setFrom(e.target.value)} />
-          </label>
-          <label className="flex flex-col gap-1">
-            <span>{t("menus.till")}</span>
-            <DateInput className="access-inset-field" value={to} onChange={(e) => setTo(e.target.value)} />
-          </label>
-          <div className="font-bold">
-            {t("shutdowns.totalDuration")}: {formatNumber(totalHours)} h &nbsp;·&nbsp; {t("shutdowns.totalShutdowns")}:{" "}
-            {rows.length}
+      <div className="shutdown-list-toolbar mb-3 flex flex-wrap items-end justify-between gap-3 text-[12px]">
+        {showPeriodFilter ? (
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="flex flex-col gap-1">
+              <span>{t("menus.from")}</span>
+              <DateInput className="access-inset-field" value={from} onChange={(e) => setFrom(e.target.value)} />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span>{t("menus.till")}</span>
+              <DateInput className="access-inset-field" value={to} onChange={(e) => setTo(e.target.value)} />
+            </label>
           </div>
+        ) : (
+          <div />
+        )}
+        <div className="shutdown-summary-chip font-bold">
+          {t("shutdowns.totalDuration")}: {totalHm} &nbsp;·&nbsp; {t("shutdowns.totalShutdowns")}: {rows.length}
         </div>
-      ) : null}
-      <div className="overflow-auto">
-        <table className="access-cont-table min-w-[1100px]">
+      </div>
+      <div className="overflow-auto shutdown-list-scroll">
+        <table className="access-cont-table shutdown-list-table min-w-[1100px]">
           <thead>
             <tr>
               <th className="w-4" />
               <th className="w-12">{t("menus.number")}</th>
-              <th className="w-28">{t("menus.partOfPlant")}</th>
-              <th className="w-40">{t("fields.shutdownTime")}</th>
-              <th className="w-40">{t("fields.startupTime")}</th>
-              <th className="w-24">{t("fields.durationHours")}</th>
-              <th className="w-16">{t("fields.code")}</th>
-              <th className="w-44">{t("fields.reason")}</th>
-              <th className="w-28">{t("fields.category")}</th>
-              <th>{t("fields.remarks")}</th>
+              {fieldVisible("plant_part") ? <th className="w-28">{t("menus.partOfPlant")}</th> : null}
+              {fieldVisible("shutdown_time") ? <th className="w-40">{t("fields.shutdownTime")}</th> : null}
+              {fieldVisible("startup_time") ? <th className="w-40">{t("fields.startupTime")}</th> : null}
+              <th className="w-24">{t("fields.durationHm")}</th>
+              {fieldVisible("code") ? <th className="w-16">{t("fields.code")}</th> : null}
+              {fieldVisible("cause") ? <th className="w-44">{t("fields.reason")}</th> : null}
+              {fieldVisible("category") ? <th className="w-28">{t("fields.category")}</th> : null}
+              {fieldVisible("remarks") ? <th>{t("fields.remarks")}</th> : null}
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.nr} onClick={() => setActive(row.nr)}>
+              <tr key={row.nr} onClick={() => setActive(row.nr)} className={active === row.nr ? "is-active-row" : undefined}>
                 <td className="access-selector">{active === row.nr ? "►" : ""}</td>
                 <td>
                   <input className="w-12" value={row.nr} readOnly />
                 </td>
+                {fieldVisible("plant_part") ? (
+                  <td>
+                    <select
+                      className="w-full"
+                      value={row.plant_part || ""}
+                      onChange={(e) => save(row, { plant_part: e.target.value || null })}
+                      disabled={!fieldEditable("plant_part")}
+                    >
+                      <option value="" />
+                      {plantParts.map((p) => (
+                        <option key={p} value={p}>
+                          {p}
+                        </option>
+                      ))}
+                      {row.plant_part && !plantParts.includes(row.plant_part) ? (
+                        <option value={row.plant_part}>{row.plant_part}</option>
+                      ) : null}
+                    </select>
+                  </td>
+                ) : null}
+                {fieldVisible("shutdown_time") ? (
+                  <td>
+                    <DateInput
+                      type="datetime-local"
+                      value={toLocalInput(row.shutdown_time)}
+                      onChange={(e) => save(row, { shutdown_time: fromLocalInput(e.target.value) })}
+                      disabled={!fieldEditable("shutdown_time")}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("startup_time") ? (
+                  <td>
+                    <DateInput
+                      type="datetime-local"
+                      value={toLocalInput(row.startup_time)}
+                      onChange={(e) => save(row, { startup_time: fromLocalInput(e.target.value) })}
+                      disabled={!fieldEditable("startup_time")}
+                    />
+                  </td>
+                ) : null}
                 <td>
-                  <input
-                    className="w-full"
-                    value={row.plant_part || ""}
-                    onChange={(e) => save(row, { plant_part: e.target.value })}
-                    disabled={!editable}
-                  />
+                  <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(row)} readOnly />
                 </td>
-                <td>
-                  <DateInput
-                    type="datetime-local"
-                    value={toLocalInput(row.shutdown_time)}
-                    onChange={(e) => save(row, { shutdown_time: fromLocalInput(e.target.value) })}
-                    disabled={!editable}
-                  />
-                </td>
-                <td>
-                  <DateInput
-                    type="datetime-local"
-                    value={toLocalInput(row.startup_time)}
-                    onChange={(e) => save(row, { startup_time: fromLocalInput(e.target.value) })}
-                    disabled={!editable}
-                  />
-                </td>
-                <td>
-                  <input className="w-20" value={durationHours(row)} readOnly />
-                </td>
-                <td>
-                  <input
-                    className="w-14"
-                    list="shutdown-codes"
-                    value={row.code || ""}
-                    onChange={(e) => applyCode(row, e.target.value)}
-                    disabled={!editable}
-                  />
-                </td>
-                <td>
-                  <input
-                    className="w-full"
-                    list="shutdown-causes"
-                    value={row.cause || ""}
-                    onChange={(e) => save(row, { cause: e.target.value || null })}
-                    disabled={!editable}
-                  />
-                </td>
-                <td>
-                  <select
-                    className="w-full"
-                    value={row.category || ""}
-                    onChange={(e) => save(row, { category: e.target.value || null })}
-                    disabled={!editable}
-                  >
-                    <option value="" />
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.category || ""}>
-                        {c.category}
-                      </option>
-                    ))}
-                    {row.category && !categories.some((c) => c.category === row.category) ? (
-                      <option value={row.category}>{row.category}</option>
-                    ) : null}
-                  </select>
-                </td>
-                <td>
-                  <input
-                    className="w-full"
-                    value={row.remarks || ""}
-                    onChange={(e) => save(row, { remarks: e.target.value })}
-                    disabled={!editable}
-                  />
-                </td>
+                {fieldVisible("code") ? (
+                  <td>
+                    <input
+                      className="w-14"
+                      list="shutdown-codes"
+                      value={row.code || ""}
+                      onChange={(e) => applyCode(row, e.target.value)}
+                      disabled={!fieldEditable("code")}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("cause") ? (
+                  <td>
+                    <input
+                      className="w-full"
+                      list="shutdown-causes"
+                      value={row.cause || ""}
+                      onChange={(e) => save(row, { cause: e.target.value || null })}
+                      disabled={!fieldEditable("cause")}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("category") ? (
+                  <td>
+                    <select
+                      className="w-full"
+                      value={row.category || ""}
+                      onChange={(e) => save(row, { category: e.target.value || null })}
+                      disabled={!fieldEditable("category")}
+                    >
+                      <option value="" />
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.category || ""}>
+                          {c.category}
+                        </option>
+                      ))}
+                      {row.category && !categories.some((c) => c.category === row.category) ? (
+                        <option value={row.category}>{row.category}</option>
+                      ) : null}
+                    </select>
+                  </td>
+                ) : null}
+                {fieldVisible("remarks") ? (
+                  <td>
+                    <input
+                      className="w-full"
+                      value={row.remarks || ""}
+                      onChange={(e) => save(row, { remarks: e.target.value })}
+                      disabled={!fieldEditable("remarks")}
+                    />
+                  </td>
+                ) : null}
               </tr>
             ))}
-            {editable ? (
+            {fieldEditable("plant_part") ? (
               <tr onClick={() => setActive("new")}>
                 <td className="access-selector">*</td>
                 <td />
                 <td>
-                  <input
+                  <select
                     className="w-full"
-                    placeholder={t("menus.partOfPlant")}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const plant_part = (e.target as HTMLInputElement).value.trim();
-                        if (plant_part) {
-                          createMutation.mutate({
+                    value={newPart}
+                    onChange={(e) => {
+                      const plant_part = e.target.value;
+                      setNewPart(plant_part);
+                      if (plant_part) {
+                        createMutation.mutate(
+                          {
                             plant_part,
-                            shutdown_time: new Date().toISOString(),
-                          } as never);
-                          (e.target as HTMLInputElement).value = "";
-                        }
+                            shutdown_time: new Date().toISOString().slice(0, 19),
+                          } as never,
+                          { onSuccess: () => setNewPart("") }
+                        );
                       }
                     }}
-                  />
+                  >
+                    <option value="">{t("menus.partOfPlant")}</option>
+                    {plantParts.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td colSpan={7} className="text-[11px] text-[#404040]">
                   {t("shutdowns.newRowHint")}
@@ -479,24 +546,32 @@ function SummaryReasonForm() {
             <th>{t("fields.reason")}</th>
             <th className="w-32">{t("fields.category")}</th>
             <th className="w-20">{t("shutdowns.count")}</th>
-            <th className="w-28">{t("fields.durationHours")}</th>
+            <th className="w-28">{t("fields.durationHm")}</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, idx) => (
+          {rows.map((row, idx) => {
+            const mins = Math.max(0, Math.round((row.total_hours || 0) * 60));
+            const hm = `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`;
+            return (
             <tr key={`${row.code}-${row.cause}-${idx}`}>
               <td>{row.code}</td>
               <td>{row.cause}</td>
               <td>{row.category}</td>
               <td>{row.count}</td>
-              <td>{formatNumber(row.total_hours)}</td>
+              <td>{hm}</td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
       <div className="mt-3 text-[12px] font-bold">
         {t("shutdowns.totalShutdowns")}: {summaryQuery.data?.total_shutdowns ?? 0} &nbsp;·&nbsp;
-        {t("shutdowns.totalDuration")}: {formatNumber(summaryQuery.data?.total_hours ?? 0)} h
+        {t("shutdowns.totalDuration")}:{" "}
+        {(() => {
+          const mins = Math.max(0, Math.round((summaryQuery.data?.total_hours ?? 0) * 60));
+          return `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`;
+        })()}
       </div>
     </AccessHub>
   );
@@ -514,22 +589,30 @@ function SummaryCategoryForm() {
           <tr>
             <th>{t("fields.category")}</th>
             <th className="w-20">{t("shutdowns.count")}</th>
-            <th className="w-28">{t("fields.durationHours")}</th>
+            <th className="w-28">{t("fields.durationHm")}</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {rows.map((row) => {
+            const mins = Math.max(0, Math.round((row.total_hours || 0) * 60));
+            const hm = `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`;
+            return (
             <tr key={row.category}>
               <td>{row.category}</td>
               <td>{row.count}</td>
-              <td>{formatNumber(row.total_hours)}</td>
+              <td>{hm}</td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
       <div className="mt-3 text-[12px] font-bold">
         {t("shutdowns.totalShutdowns")}: {summaryQuery.data?.total_shutdowns ?? 0} &nbsp;·&nbsp;
-        {t("shutdowns.totalDuration")}: {formatNumber(summaryQuery.data?.total_hours ?? 0)} h
+        {t("shutdowns.totalDuration")}:{" "}
+        {(() => {
+          const mins = Math.max(0, Math.round((summaryQuery.data?.total_hours ?? 0) * 60));
+          return `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`;
+        })()}
       </div>
     </AccessHub>
   );

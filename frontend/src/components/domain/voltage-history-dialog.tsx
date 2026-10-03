@@ -102,6 +102,7 @@ export function VoltageHistoryDialog({
   const [dateFrom, setDateFrom] = useState(defaultCustomFrom);
   const [dateTo, setDateTo] = useState(() => new Date().toISOString().slice(0, 10));
   const [showProps, setShowProps] = useState(false);
+  const [showAmpChart, setShowAmpChart] = useState(false);
   useCalendar();
   useEffect(() => {
     setShowProps(false);
@@ -171,6 +172,7 @@ export function VoltageHistoryDialog({
     return rows;
   }, [data]);
   const hasRectifier = (data?.rectifier_points || []).length > 0;
+  const hasAmpSeries = chartRows.some((row) => row.current_ka != null);
 
   return (
     <Modal open title={data?.title || electrolyzer} onClose={onClose} wide>
@@ -185,6 +187,15 @@ export function VoltageHistoryDialog({
             {t(item.labelKey)}
           </button>
         ))}
+        {hasAmpSeries ? (
+          <button
+            type="button"
+            className={`mon-filter-chip${showAmpChart ? " is-active" : ""}`}
+            onClick={() => setShowAmpChart((open) => !open)}
+          >
+            {t("monitoring.showAmpChart")}
+          </button>
+        ) : null}
         {position ? (
           <button
             type="button"
@@ -225,7 +236,8 @@ export function VoltageHistoryDialog({
             {hasRectifier ? ` · ${t("monitoring.rectifierSeries")}` : ""}
           </p>
           <div className="rounded bg-[#0c1848] px-1 py-2">
-            <ResponsiveContainer width="100%" height={360}>
+            <div className="mb-1 px-2 text-[11px] font-semibold text-[#d6e35a]">{t("monitoring.voltageChart")}</div>
+            <ResponsiveContainer width="100%" height={showAmpChart ? 260 : 360}>
               <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 0, bottom: 8 }}>
                 <CartesianGrid stroke="#243056" />
                 <XAxis dataKey="label" stroke="#cbd5e1" tick={{ fontSize: 10 }} minTickGap={28} />
@@ -246,6 +258,28 @@ export function VoltageHistoryDialog({
               </LineChart>
             </ResponsiveContainer>
           </div>
+          {showAmpChart ? (
+            <div className="mt-2 rounded bg-[#0c1848] px-1 py-2">
+              <div className="mb-1 px-2 text-[11px] font-semibold text-[#f59e0b]">{t("monitoring.ampChart")}</div>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 0, bottom: 8 }}>
+                  <CartesianGrid stroke="#243056" />
+                  <XAxis dataKey="label" stroke="#cbd5e1" tick={{ fontSize: 10 }} minTickGap={28} />
+                  <YAxis stroke="#f59e0b" tick={{ fontSize: 10 }} domain={["auto", "auto"]} width={48} unit=" kA" />
+                  <Tooltip content={<HistoryTooltip title={t("monitoring.loadKa")} t={t} />} />
+                  <Line
+                    type="monotone"
+                    dataKey="current_ka"
+                    stroke="#f59e0b"
+                    strokeWidth={2}
+                    dot={{ r: 2 }}
+                    connectNulls
+                    name={t("monitoring.loadKa")}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ) : null}
           <div className="mt-3 max-h-40 overflow-auto border border-[var(--win-border-shadow)]">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-[#1e3a8a] text-white">

@@ -54,6 +54,8 @@ export interface PlantSettings {
   reference_current_density: number;
   zero_voltage: number;
   date: string | null;
+  /** Minutes without input before auto-logout. 0 = disabled. */
+  session_idle_minutes: number;
 }
 
 export interface CorrectionFactor {
@@ -145,6 +147,8 @@ export interface Element {
   cathode_shell: string | null;
   membrane_info: string | null;
   membrane_remark: string | null;
+  anode_remark: string | null;
+  cathode_remark: string | null;
   remarks: string | null;
   computed_dol_days: number | null;
   status: "active" | "disassembled" | "decommissioned" | "planned" | null;
@@ -518,11 +522,49 @@ export interface DashboardStats {
   voltage?: DashboardVoltageStats | null;
 }
 
+export interface DolStatBucket {
+  number: number;
+  dol: { min: number | null; max: number | null; avg: number | null; std: number | null };
+}
+
 export interface DolByMembraneType {
   membrane_type: string;
-  active: number;
-  passive: number;
+  total?: number;
+  without_dol?: number;
+  active: number | DolStatBucket;
+  passive: number | DolStatBucket;
+  combined?: DolStatBucket;
+  active_count?: number;
+  passive_count?: number;
   total_dol_days: number;
+}
+
+export interface MetricStats {
+  min: number | null;
+  max: number | null;
+  avg: number | null;
+  std: number | null;
+  count?: number;
+}
+
+export interface AveragePowerStats {
+  date_from?: string | null;
+  date_till?: string | null;
+  basis?: string;
+  rows: Array<{
+    electrolyzer: string;
+    records: number;
+    i: MetricStats;
+    un: MetricStats;
+    ce: MetricStats;
+    spc: MetricStats;
+  }>;
+  plant_total: {
+    i: { avg: number | null; std: number | null };
+    un: { avg: number | null; std: number | null };
+    ce: { avg: number | null; std: number | null };
+    spc: { avg: number | null; std: number | null };
+  };
 }
 
 export interface GroupStat {
@@ -548,18 +590,49 @@ export interface ShutdownSummary {
 }
 
 export interface VoltageDistribution {
+  electrolyzer?: string | null;
+  date?: string | null;
+  date_from?: string | null;
+  date_till?: string | null;
   total_readings: number;
   buckets: { label: string | null; lower_bound: number | null; upper_bound: number | null; count: number }[];
 }
 
 export interface HighDeviation {
+  electrolyzer?: string | null;
+  date?: string | null;
+  date_from?: string | null;
+  date_till?: string | null;
   average: number | null;
+  threshold_pct?: number;
   flagged: {
     electrolyzer: string | null;
     position: string | null;
     element_nr: string | null;
+    date?: string | null;
+    voltage?: number | null;
     standardized_voltage: number | null;
+    value?: number | null;
     deviation_pct: number | null;
+  }[];
+}
+
+export interface ElementVoltageSnapshot {
+  electrolyzer: string;
+  date: string | null;
+  date_from?: string | null;
+  date_till?: string | null;
+  count: number;
+  average: number | null;
+  min: number | null;
+  max: number | null;
+  rows: {
+    date?: string | null;
+    position: string | null;
+    element_nr: string | null;
+    voltage: number | null;
+    standardized_voltage: number | null;
+    value: number;
   }[];
 }
 
@@ -627,6 +700,8 @@ export interface AuthUser {
   created_at: string;
   permissions: Record<string, PermissionLevel>;
   auth_source?: "local" | "ad";
+  /** From plant settings; minutes of inactivity before auto-logout. 0 = off. */
+  session_idle_minutes?: number;
 }
 
 export type UserAccount = AuthUser;

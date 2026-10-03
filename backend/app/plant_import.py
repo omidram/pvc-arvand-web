@@ -869,7 +869,18 @@ def _assembly_columns(header: list[Any], sub: list[Any] | None) -> dict[str, Any
         "position": find(lambda key: "موقعیت" in key or key in {"position", "p"}),
         "coating": find(lambda key: "پوشش" in key),
         "status": find(lambda key: "وضعیتفعلی" in key or key in {"وضعیتفعلیالمان", "status"}),
+        # Exact «توضیحات» / reason — not «توضیحات آند|کاتد».
         "notes": find(lambda key: key in {"توضیحات", "ملاحظات"} or "دلیل" in key),
+        "anode_remark": find(
+            lambda key: "anoderemark" in key
+            or "توضیحاتاند" in key
+            or ("توضیح" in key and "اند" in key and "کاتد" not in key)
+        ),
+        "cathode_remark": find(
+            lambda key: "cathoderemark" in key
+            or "توضیحاتکاتد" in key
+            or ("توضیح" in key and "کاتد" in key)
+        ),
         "assembly_ymd": ymd_at(c90_at),
         "install_ymd": ymd_at(install_at),
         "dismantle": dismantle_at,
@@ -930,6 +941,8 @@ def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSE
         notes = _clean_code(_cell(row, columns.get("notes")))
         if notes and len(notes) > 200:
             notes = notes[:200]
+        anode_remark = _clean_code(_cell(row, columns.get("anode_remark")))
+        cathode_remark = _clean_code(_cell(row, columns.get("cathode_remark")))
 
         elements.append(
             {
@@ -948,6 +961,8 @@ def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSE
                 "disassembly_date": dismantle.isoformat() if dismantle else None,
                 "decommission_reason": notes,
                 "remarks": status,
+                "anode_remark": anode_remark,
+                "cathode_remark": cathode_remark,
                 "anode_coating": anode_coating,
                 "cathode_coating": cathode_coating,
                 "anode_shell": shell,

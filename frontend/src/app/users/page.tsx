@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { rolesApi, usersApi } from "@/lib/endpoints";
@@ -19,19 +19,66 @@ import { formatDate } from "@/lib/utils";
 
 const ROLE_COLORS: Record<UserRole, "violet" | "cyan" | "slate"> = { admin: "violet", user: "cyan", visitor: "slate" };
 
+function initPermissions(
+  formKeys: string[],
+  formFields: Record<string, string[]>,
+  initial?: Record<string, PermissionLevel> | null
+): Record<string, PermissionLevel> {
+  const next: Record<string, PermissionLevel> = {};
+  for (const key of formKeys) next[key] = initial?.[key] || "none";
+  for (const [form, fields] of Object.entries(formFields)) {
+    for (const field of fields) {
+      const key = `${form}.${field}`;
+      if (initial?.[key]) next[key] = initial[key];
+    }
+  }
+  return next;
+}
+
+function fieldLabel(t: (key: string, vars?: Record<string, string | number>) => string, field: string): string {
+  const candidates = [`fields.${field}`, `menus.${field}`, field];
+  for (const key of candidates) {
+    const label = t(key);
+    if (label && label !== key) return label;
+  }
+  return field.replace(/_/g, " ");
+}
+
 function PermissionMatrix({
   formKeys,
+  formFields,
   permissions,
   onChange,
 }: {
   formKeys: string[];
+  formFields: Record<string, string[]>;
   permissions: Record<string, PermissionLevel>;
   onChange: (next: Record<string, PermissionLevel>) => void;
 }) {
   const { t } = useI18n();
+  const [openForms, setOpenForms] = useState<Record<string, boolean>>({});
 
   function applyTemplate(level: PermissionLevel) {
-    onChange(Object.fromEntries(formKeys.map((k) => [k, level])) as Record<string, PermissionLevel>);
+    const next: Record<string, PermissionLevel> = Object.fromEntries(formKeys.map((k) => [k, level]));
+    onChange(next);
+  }
+
+  function setFormLevel(formKey: string, level: PermissionLevel) {
+    const next = { ...permissions, [formKey]: level };
+    if (level === "none") {
+      for (const field of formFields[formKey] || []) {
+        delete next[`${formKey}.${field}`];
+      }
+    }
+    onChange(next);
+  }
+
+  function setFieldLevel(formKey: string, field: string, level: "" | PermissionLevel) {
+    const key = `${formKey}.${field}`;
+    const next = { ...permissions };
+    if (!level) delete next[key];
+    else next[key] = level;
+    onChange(next);
   }
 
   return (
@@ -51,39 +98,93 @@ function PermissionMatrix({
         </div>
       </div>
       <p className="mb-2 text-[11px] text-[var(--win-muted)]">{t("users.menuAccessHint")}</p>
-      <div className="max-h-64 overflow-y-auto border-2 border-[var(--win-border-shadow)] [border-style:inset] bg-[var(--win-input)]">
+      <div className="max-h-[28rem] overflow-y-auto border-2 border-[var(--win-border-shadow)] [border-style:inset] bg-[var(--win-input)]">
         <table className="w-full text-xs">
-          <thead className="sticky top-0 bg-[var(--win-face)]">
+          <thead className="sticky top-0 z-10 bg-[var(--win-face)]">
             <tr>
               <th className="border-b-2 border-[var(--win-border-shadow)] px-2 py-1 text-start font-bold">{t("users.form")}</th>
               <th className="border-b-2 border-[var(--win-border-shadow)] px-2 py-1 text-start font-bold">{t("users.accessLevel")}</th>
             </tr>
           </thead>
           <tbody>
-            {formKeys.map((key) => (
-              <tr key={key} className="odd:bg-[var(--win-row-alt)]">
-                <td className="px-2 py-1 font-semibold text-[var(--win-text)]">{t(`nav.${key}`)}</td>
-                <td className="px-2 py-1">
-                  <Select
-                    value={permissions[key] || "none"}
-                    onChange={(e) => onChange({ ...permissions, [key]: e.target.value as PermissionLevel })}
-                    className="max-w-[160px]"
-                  >
-                    <option value="none">{t("enums.permissionLevel.none")}</option>
-                    <option value="view">{t("enums.permissionLevel.view")}</option>
-                    <option value="edit">{t("enums.permissionLevel.edit")}</option>
-                  </Select>
-                </td>
-              </tr>
-            ))}
+            {formKeys.map((key) => {
+              const fields = formFields[key] || [];
+              const formLevel = permissions[key] || "none";
+              const open = !!openForms[key] && formLevel !== "none" && fields.length > 0;
+              return (
+                <Fragment key={key}>
+                  <tr className="odd:bg-[var(--win-row-alt)]">
+                    <td className="px-2 py-1 font-semibold text-[var(--win-text)]">
+                      <div className="flex items-center gap-2">
+                        {fields.length > 0 && formLevel !== "none" ? (
+                          <button
+                            type="button"
+                            className="inline-flex h-5 w-5 items-center justify-center border border-[var(--win-border-shadow)] bg-[var(--win-face)] text-[10px]"
+                            onClick={() => setOpenForms((prev) => ({ ...prev, [key]: !prev[key] }))}
+                            aria-expanded={open}
+                          >
+                            {open ? "−" : "+"}
+                          </button>
+                        ) : (
+                          <span className="inline-block w-5" />
+                        )}
+                        <span>{t(`nav.${key}`)}</span>
+                        {fields.length > 0 ? (
+                          <span className="text-[10px] font-normal text-[var(--win-muted)]">
+                            ({fields.length} {t("users.fieldLabel").toLowerCase()})
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="px-2 py-1">
+                      <Select
+                        value={formLevel}
+                        onChange={(e) => setFormLevel(key, e.target.value as PermissionLevel)}
+                        className="max-w-[160px]"
+                      >
+                        <option value="none">{t("enums.permissionLevel.none")}</option>
+                        <option value="view">{t("enums.permissionLevel.view")}</option>
+                        <option value="edit">{t("enums.permissionLevel.edit")}</option>
+                      </Select>
+                    </td>
+                  </tr>
+                  {open
+                    ? fields.map((field) => {
+                        const fieldKey = `${key}.${field}`;
+                        const value = permissions[fieldKey] || "";
+                        return (
+                          <tr key={fieldKey} className="bg-[#eef2f8]">
+                            <td className="px-2 py-1 ps-10 text-[var(--win-muted)]">{fieldLabel(t, field)}</td>
+                            <td className="px-2 py-1">
+                              <Select
+                                value={value}
+                                onChange={(e) => setFieldLevel(key, field, e.target.value as "" | PermissionLevel)}
+                                className="max-w-[180px]"
+                              >
+                                <option value="">{t("users.inheritFormLevel")}</option>
+                                <option value="none">{t("enums.permissionLevel.none")}</option>
+                                <option value="view">{t("enums.permissionLevel.view")}</option>
+                                {formLevel === "edit" ? (
+                                  <option value="edit">{t("enums.permissionLevel.edit")}</option>
+                                ) : null}
+                              </Select>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    : null}
+                </Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
+      <p className="mt-2 text-[11px] text-[var(--win-muted)]">{t("users.fieldAccessHint")}</p>
     </div>
   );
 }
 
-function UsersTab({ formKeys }: { formKeys: string[] }) {
+function UsersTab({ formKeys, formFields }: { formKeys: string[]; formFields: Record<string, string[]> }) {
   const { t } = useI18n();
   const { user: currentUser } = useAuth();
   const queryClient = useQueryClient();
@@ -180,6 +281,7 @@ function UsersTab({ formKeys }: { formKeys: string[] }) {
         <Modal open onClose={() => setShowForm(false)} title={editing ? t("users.editUser") : t("users.newUser")} wide>
           <UserForm
             formKeys={formKeys}
+            formFields={formFields}
             roles={rolesQuery.data || []}
             initial={editing}
             onCancel={() => setShowForm(false)}
@@ -195,7 +297,7 @@ function UsersTab({ formKeys }: { formKeys: string[] }) {
   );
 }
 
-function RolesTab({ formKeys }: { formKeys: string[] }) {
+function RolesTab({ formKeys, formFields }: { formKeys: string[]; formFields: Record<string, string[]> }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
@@ -290,6 +392,7 @@ function RolesTab({ formKeys }: { formKeys: string[] }) {
         <Modal open onClose={() => setShowForm(false)} title={editing ? t("users.editRole") : t("users.newRole")} wide>
           <RoleForm
             formKeys={formKeys}
+            formFields={formFields}
             initial={editing}
             onCancel={() => setShowForm(false)}
             onSaved={() => {
@@ -309,6 +412,7 @@ export default function UsersPage() {
   const { isAdmin } = useAuth();
 
   const formKeysQuery = useQuery({ queryKey: ["users", "form-keys"], queryFn: usersApi.formKeys, enabled: isAdmin });
+  const formFieldsQuery = useQuery({ queryKey: ["users", "form-fields"], queryFn: usersApi.formFields, enabled: isAdmin });
 
   if (!isAdmin) {
     return (
@@ -321,20 +425,23 @@ export default function UsersPage() {
   }
 
   const formKeys = formKeysQuery.data || [];
+  const formFields = formFieldsQuery.data || {};
+  const loading = formKeysQuery.isLoading || formFieldsQuery.isLoading;
+  const error = formKeysQuery.error || formFieldsQuery.error;
 
   return (
     <AccessFormWindow caption={t("users.title")} helpKey="users">
-      {formKeysQuery.isError ? (
-        <ErrorState message={(formKeysQuery.error as Error).message} />
-      ) : formKeysQuery.isLoading ? (
+      {error ? (
+        <ErrorState message={(error as Error).message} />
+      ) : loading ? (
         <div className="flex justify-center py-8">
           <Spinner />
         </div>
       ) : (
         <Tabs
           tabs={[
-            { key: "users", label: t("users.tabUsers"), content: <UsersTab formKeys={formKeys} /> },
-            { key: "roles", label: t("users.tabRoles"), content: <RolesTab formKeys={formKeys} /> },
+            { key: "users", label: t("users.tabUsers"), content: <UsersTab formKeys={formKeys} formFields={formFields} /> },
+            { key: "roles", label: t("users.tabRoles"), content: <RolesTab formKeys={formKeys} formFields={formFields} /> },
           ]}
         />
       )}
@@ -344,12 +451,14 @@ export default function UsersPage() {
 
 function UserForm({
   formKeys,
+  formFields,
   roles,
   initial,
   onCancel,
   onSaved,
 }: {
   formKeys: string[];
+  formFields: Record<string, string[]>;
   roles: AppRole[];
   initial: UserAccount | null;
   onCancel: () => void;
@@ -362,8 +471,8 @@ function UserForm({
   const [role, setRole] = useState<UserRole>(initial?.role || "user");
   const [roleId, setRoleId] = useState<number | null>(initial?.role_id ?? null);
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
-  const [permissions, setPermissions] = useState<Record<string, PermissionLevel>>(
-    () => Object.fromEntries(formKeys.map((k) => [k, initial?.permissions?.[k] || "none"])) as Record<string, PermissionLevel>
+  const [permissions, setPermissions] = useState<Record<string, PermissionLevel>>(() =>
+    initPermissions(formKeys, formFields, initial?.permissions)
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -407,9 +516,7 @@ function UserForm({
     setRoleId(id);
     const selected = roles.find((r) => r.id === id);
     if (selected) {
-      setPermissions(
-        Object.fromEntries(formKeys.map((k) => [k, selected.permissions[k] || "none"])) as Record<string, PermissionLevel>
-      );
+      setPermissions(initPermissions(formKeys, formFields, selected.permissions));
     }
   }
 
@@ -478,7 +585,12 @@ function UserForm({
       </div>
 
       {role !== "admin" && !usingAppRole && (
-        <PermissionMatrix formKeys={formKeys} permissions={permissions} onChange={setPermissions} />
+        <PermissionMatrix
+          formKeys={formKeys}
+          formFields={formFields}
+          permissions={permissions}
+          onChange={setPermissions}
+        />
       )}
 
       {usingAppRole && (
@@ -503,11 +615,13 @@ function UserForm({
 
 function RoleForm({
   formKeys,
+  formFields,
   initial,
   onCancel,
   onSaved,
 }: {
   formKeys: string[];
+  formFields: Record<string, string[]>;
   initial: AppRole | null;
   onCancel: () => void;
   onSaved: () => void;
@@ -515,8 +629,8 @@ function RoleForm({
   const { t } = useI18n();
   const [name, setName] = useState(initial?.name || "");
   const [description, setDescription] = useState(initial?.description || "");
-  const [permissions, setPermissions] = useState<Record<string, PermissionLevel>>(
-    () => Object.fromEntries(formKeys.map((k) => [k, initial?.permissions?.[k] || "none"])) as Record<string, PermissionLevel>
+  const [permissions, setPermissions] = useState<Record<string, PermissionLevel>>(() =>
+    initPermissions(formKeys, formFields, initial?.permissions)
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -559,7 +673,12 @@ function RoleForm({
         </div>
       </div>
 
-      <PermissionMatrix formKeys={formKeys} permissions={permissions} onChange={setPermissions} />
+      <PermissionMatrix
+        formKeys={formKeys}
+        formFields={formFields}
+        permissions={permissions}
+        onChange={setPermissions}
+      />
 
       {error && <div className="text-xs font-semibold text-[var(--win-danger)]">{error}</div>}
 

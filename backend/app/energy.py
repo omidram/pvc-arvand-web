@@ -331,6 +331,102 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]]) -> dict[str, A
     }
 
 
+def plant_timeseries(
+    db: Session,
+    *,
+    start: datetime | None = None,
+    end: datetime | None = None,
+    scope: str = "plant",
+    electrolyzer: str | None = None,
+    train: str | None = None,
+    limit: int = 500,
+) -> dict[str, Any]:
+    """Time series of voltage / current / power for plant, train, or one electrolyzer."""
+    since = start or (datetime.utcnow() - timedelta(days=30))
+    until = end
+    slots = _load_slots(db, since=since - timedelta(days=1), until=until)
+    scope_key = (scope or "plant").strip().lower()
+    el_filter = (electrolyzer or "").strip().upper() or None
+    train_filter = (train or "").strip() or None
+    if train_filter and train_filter[-1] in {"1", "2"}:
+        train_filter = train_filter[-1]
+
+    filtered: list[dict[str, Any]] = []
+    for item in slots:
+        if el_filter and item["electrolyzer"] != el_filter:
+            continue
+        if train_filter and str(item.get("train") or "") != train_filter:
+            continue
+        if scope_key == "electrolyzer" and not el_filter:
+            continue
+        if scope_key == "train" and not train_filter and not el_filter:
+            continue
+        if until is not None and item["stamp"] > until:
+            continue
+        if item["stamp"] < since:
+            continue
+        filtered.append(item)
+
+    buckets: dict[str, dict[str, Any]] = {}
+    for item in filtered:
+        key = f"{item['date']}|{(item.get('time') or '').strip()}"
+        bucket = buckets.setdefault(
+            key,
+            {
+                "date": item["date"],
+                "time": item.get("time"),
+                "stamp": item["stamp"],
+                "voltage_sum": 0.0,
+                "current_ka": 0.0,
+                "power_kw": 0.0,
+                "count": 0,
+            },
+        )
+        bucket["voltage_sum"] += float(item["voltage"] or 0)
+        bucket["current_ka"] += float(item["current_ka"] or 0)
+        bucket["power_kw"] += float(item["power_kw"] or 0)
+        bucket["count"] += 1
+
+    points = []
+    for bucket in sorted(buckets.values(), key=lambda row: row["stamp"]):
+        count = bucket["count"] or 1
+        points.append(
+            {
+                "date": bucket["date"],
+                "time": bucket["time"],
+                "voltage": round(bucket["voltage_sum"] / count, 3),
+                "voltage_sum": round(bucket["voltage_sum"], 2),
+                "current_ka": round(bucket["current_ka"], 3),
+                "power_kw": round(bucket["power_kw"], 2),
+                "electrolyzers": count,
+            }
+        )
+
+    total = len(points)
+    if total > limit and limit >= 2:
+        step = (total - 1) / (limit - 1)
+        points = [points[round(i * step)] for i in range(limit)]
+
+    title = "Plant"
+    if scope_key == "electrolyzer" and el_filter:
+        title = el_filter
+    elif scope_key == "train" and train_filter:
+        title = f"Train {train_filter}"
+    elif el_filter:
+        title = el_filter
+
+    return {
+        "scope": scope_key,
+        "title": title,
+        "electrolyzer": el_filter,
+        "train": train_filter,
+        "date_from": since.date().isoformat(),
+        "date_to": (until.date().isoformat() if until else datetime.utcnow().date().isoformat()),
+        "total": total,
+        "points": points,
+    }
+
+
 def report(
     db: Session,
     *,

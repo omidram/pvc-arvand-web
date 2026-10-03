@@ -249,6 +249,8 @@ class PlantSettings(Base):
     reference_current_density: Mapped[float] = mapped_column(Float, default=6.0)  # kA/m^2
     zero_voltage: Mapped[float] = mapped_column(Float, default=2.40)  # U0
     date: Mapped[datetime | None] = mapped_column(DateTime)
+    # Auto-logout after this many minutes without user input. 0 = disabled.
+    session_idle_minutes: Mapped[int] = mapped_column(Integer, default=30)
 
 
 class CorrectionFactor(Base):
@@ -356,6 +358,8 @@ class Element(Base):
     cathode_shell: Mapped[str | None] = mapped_column(String(100))
     membrane_info: Mapped[str | None] = mapped_column(String(200))  # Info Membrane
     membrane_remark: Mapped[str | None] = mapped_column(Text)
+    anode_remark: Mapped[str | None] = mapped_column(Text)  # توضیحات آند
+    cathode_remark: Mapped[str | None] = mapped_column(Text)  # توضیحات کاتد
     remarks: Mapped[str | None] = mapped_column(Text)
 
 

@@ -52,6 +52,7 @@ const NAV_GROUPS: {
       { href: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, formKey: "dashboard" },
       { href: "/overview", labelKey: "nav.overview", icon: Activity, formKey: "dashboard" },
       { href: "/monitoring", labelKey: "nav.monitoring", icon: Bell, formKey: "monitoring" },
+      { href: "/plant-charts", labelKey: "nav.plantCharts", icon: LineChart, formKey: "monitoring" },
       { href: "/statistics", labelKey: "nav.statistics", icon: BarChart3, formKey: "statistics" },
       { href: "/reports", labelKey: "nav.reports", icon: FileBarChart, formKey: "reports" },
     ],

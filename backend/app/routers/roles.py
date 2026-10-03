@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
-from ..auth import FORM_KEYS, _set_role_permissions, require_admin, seed_default_roles
+from ..auth import FORM_KEYS, _set_role_permissions, is_valid_permission_key, require_admin, seed_default_roles
 from ..database import get_db
 
 router = APIRouter(prefix="/roles", tags=["roles"], dependencies=[Depends(require_admin)])
@@ -13,7 +13,7 @@ def _role_permissions_map(db: Session, role_id: int) -> dict[str, str]:
     levels = {key: "none" for key in FORM_KEYS}
     rows = db.query(models.RolePermission).filter(models.RolePermission.role_id == role_id).all()
     for row in rows:
-        if row.form_key in levels:
+        if row.form_key in FORM_KEYS or is_valid_permission_key(row.form_key):
             levels[row.form_key] = row.level
     return levels
 

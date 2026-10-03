@@ -128,18 +128,40 @@ _ensure_user_role_id()
 _ensure_inspection_sheet_columns()
 
 
-def _ensure_element_membrane_remark() -> None:
+def _ensure_element_remark_columns() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("elements")}
     except Exception:
         return
-    if "membrane_remark" in present:
+    alters: list[str] = []
+    if "membrane_remark" not in present:
+        alters.append("ALTER TABLE elements ADD COLUMN membrane_remark TEXT")
+    if "anode_remark" not in present:
+        alters.append("ALTER TABLE elements ADD COLUMN anode_remark TEXT")
+    if "cathode_remark" not in present:
+        alters.append("ALTER TABLE elements ADD COLUMN cathode_remark TEXT")
+    if not alters:
         return
     with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE elements ADD COLUMN membrane_remark TEXT"))
+        for statement in alters:
+            conn.execute(text(statement))
 
 
-_ensure_element_membrane_remark()
+_ensure_element_remark_columns()
+
+
+def _ensure_plant_settings_session_idle() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("plant_settings")}
+    except Exception:
+        return
+    if "session_idle_minutes" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE plant_settings ADD COLUMN session_idle_minutes INTEGER DEFAULT 30"))
+
+
+_ensure_plant_settings_session_idle()
 
 
 def _ensure_segregation_disassemble_date() -> None:

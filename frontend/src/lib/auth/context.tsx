@@ -5,6 +5,8 @@ import { authApi } from "../endpoints";
 import type { AuthUser, PermissionLevel } from "../types";
 import { AUTH_EXPIRED_EVENT, getToken, setToken } from "./token-store";
 
+const LEVEL_RANK: Record<PermissionLevel, number> = { none: 0, view: 1, edit: 2 };
+
 interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
@@ -13,8 +15,11 @@ interface AuthContextValue {
   logout: () => void;
   refresh: () => Promise<void>;
   levelOf: (formKey: string) => PermissionLevel;
+  fieldLevelOf: (formKey: string, field: string) => PermissionLevel;
   canView: (formKey: string) => boolean;
   canEdit: (formKey: string) => boolean;
+  canViewField: (formKey: string, field: string) => boolean;
+  canEditField: (formKey: string, field: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -73,12 +78,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user, isAdmin]
   );
 
+  const fieldLevelOf = useCallback(
+    (formKey: string, field: string): PermissionLevel => {
+      const formLevel = levelOf(formKey);
+      if (formLevel === "none") return "none";
+      if (!user || isAdmin) return formLevel;
+      const specific = user.permissions[`${formKey}.${field}`] as PermissionLevel | undefined;
+      if (!specific || !(specific in LEVEL_RANK)) return formLevel;
+      return LEVEL_RANK[specific] <= LEVEL_RANK[formLevel] ? specific : formLevel;
+    },
+    [user, isAdmin, levelOf]
+  );
+
   const canView = useCallback((formKey: string) => levelOf(formKey) === "view" || levelOf(formKey) === "edit", [levelOf]);
   const canEdit = useCallback((formKey: string) => levelOf(formKey) === "edit", [levelOf]);
+  const canViewField = useCallback(
+    (formKey: string, field: string) => {
+      const level = fieldLevelOf(formKey, field);
+      return level === "view" || level === "edit";
+    },
+    [fieldLevelOf]
+  );
+  const canEditField = useCallback(
+    (formKey: string, field: string) => fieldLevelOf(formKey, field) === "edit",
+    [fieldLevelOf]
+  );
 
   const value = useMemo(
-    () => ({ user, isLoading, isAdmin: !!isAdmin, login, logout, refresh: loadMe, levelOf, canView, canEdit }),
-    [user, isLoading, isAdmin, login, logout, loadMe, levelOf, canView, canEdit]
+    () => ({
+      user,
+      isLoading,
+      isAdmin: !!isAdmin,
+      login,
+      logout,
+      refresh: loadMe,
+      levelOf,
+      fieldLevelOf,
+      canView,
+      canEdit,
+      canViewField,
+      canEditField,
+    }),
+    [user, isLoading, isAdmin, login, logout, loadMe, levelOf, fieldLevelOf, canView, canEdit, canViewField, canEditField]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

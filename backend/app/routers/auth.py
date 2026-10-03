@@ -143,6 +143,13 @@ def me(user: models.User = Depends(get_current_user), db: Session = Depends(get_
     if user.role_id:
         role = db.query(models.AppRole).filter(models.AppRole.id == user.role_id).first()
         role_name = role.name if role else None
+    plant = db.query(models.PlantSettings).first()
+    idle = 30
+    if plant is not None:
+        try:
+            idle = max(0, int(getattr(plant, "session_idle_minutes", 30) or 0))
+        except (TypeError, ValueError):
+            idle = 30
     return schemas.MeResponse(
         id=user.id,
         username=user.username,
@@ -154,6 +161,7 @@ def me(user: models.User = Depends(get_current_user), db: Session = Depends(get_
         created_at=user.created_at,
         auth_source=getattr(user, "auth_source", "local") or "local",
         permissions=user_permission_map(db, user),
+        session_idle_minutes=idle,
     )
 
 

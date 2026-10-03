@@ -6,16 +6,49 @@ function withApiSuffix(url: string): string {
   return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
 }
 
-const sameOrigin = process.env.NEXT_PUBLIC_SAME_ORIGIN === "1";
-const configured = process.env.NEXT_PUBLIC_API_URL;
-export const API_URL = sameOrigin
-  ? "/api"
-  : withApiSuffix(configured || "http://127.0.0.1:8010");
+function resolveApiUrl(): string {
+  // Packaged / proxied builds: browser talks to same origin; Next rewrites to uvicorn.
+  if (process.env.NEXT_PUBLIC_SAME_ORIGIN === "1") {
+    return "/api";
+  }
+  const configured = (process.env.NEXT_PUBLIC_API_URL || "").trim();
+  if (configured) {
+    // Explicit 127.0.0.1 breaks LAN clients opening http://SERVER:3000 — rewrite to page host.
+    if (typeof window !== "undefined") {
+      try {
+        const cfg = new URL(withApiSuffix(configured));
+        if (cfg.hostname === "127.0.0.1" || cfg.hostname === "localhost") {
+          const pageHost = window.location.hostname;
+          if (pageHost && pageHost !== "127.0.0.1" && pageHost !== "localhost") {
+            cfg.hostname = pageHost;
+            return cfg.toString().replace(/\/+$/, "");
+          }
+        }
+        return cfg.toString().replace(/\/+$/, "");
+      } catch {
+        /* fall through */
+      }
+    }
+    return withApiSuffix(configured);
+  }
+  if (typeof window !== "undefined") {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:8010/api`;
+  }
+  return "http://127.0.0.1:8010/api";
+}
+
+export const API_URL = resolveApiUrl();
 
 export const apiClient = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
 });
+
+// Keep baseURL in sync on the client (SSR may have resolved localhost).
+if (typeof window !== "undefined") {
+  apiClient.defaults.baseURL = resolveApiUrl();
+}
 
 apiClient.interceptors.request.use((config) => {
   const token = getToken();

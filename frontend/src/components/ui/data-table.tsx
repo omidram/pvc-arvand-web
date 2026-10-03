@@ -165,14 +165,23 @@ export function DataTable<T extends object>({
                     onRowClick && "cursor-pointer"
                   )}
                 >
-                  {columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className={cn("whitespace-nowrap border border-[var(--win-face-dark)] px-2 py-1", col.className)}
-                    >
-                      {col.render ? col.render(row) : formatDisplayedDate(raw[col.key]) || "—"}
-                    </td>
-                  ))}
+                  {columns.map((col) => {
+                    const content = col.render ? col.render(row) : formatDisplayedDate(raw[col.key]) || "—";
+                    const plain = typeof content === "string" || typeof content === "number";
+                    return (
+                      <td
+                        key={col.key}
+                        className={cn(
+                          "whitespace-nowrap border border-[var(--win-face-dark)] px-2 py-1",
+                          plain && "bidi-plaintext",
+                          col.className
+                        )}
+                        dir={plain ? "auto" : undefined}
+                      >
+                        {content}
+                      </td>
+                    );
+                  })}
                   {actions && (
                     <td className="border border-[var(--win-face-dark)] px-2 py-1 text-end" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-1">{actions(row)}</div>

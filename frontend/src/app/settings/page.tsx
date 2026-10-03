@@ -62,7 +62,7 @@ type T = ReturnType<typeof useI18n>["t"];
 
 function PlantInfoTab() {
   const { t } = useI18n();
-  const { canEdit } = useAuth();
+  const { canEdit, refresh } = useAuth();
   const editable = canEdit("settings");
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const updateMutation = useMutation({ mutationFn: settingsApi.update });
@@ -77,6 +77,7 @@ function PlantInfoTab() {
       label: t("settings.plantType"),
       type: "select",
       options: [
+        { label: "NaCl", value: "NaCl" },
         { label: "NaOH", value: "NaOH" },
         { label: "KOH", value: "KOH" },
       ],
@@ -95,6 +96,13 @@ function PlantInfoTab() {
     { name: "reference_current_density", label: t("fields.referenceCurrentDensity"), type: "number", step: "0.01" },
     { name: "zero_voltage", label: t("fields.zeroVoltage"), type: "number", step: "0.001" },
     { name: "date", label: t("settings.recordDate"), type: "date" },
+    {
+      name: "session_idle_minutes",
+      label: t("settings.sessionIdleMinutes"),
+      type: "number",
+      step: "1",
+      placeholder: "30",
+    },
   ];
 
   if (settingsQuery.isLoading) return <LoadingState />;
@@ -108,21 +116,33 @@ function PlantInfoTab() {
       <CardContent>
         <ResourceForm<PlantSettings>
           fields={fields}
-          initialValues={settingsQuery.data}
+          initialValues={{
+            ...settingsQuery.data,
+            session_idle_minutes: settingsQuery.data?.session_idle_minutes ?? 30,
+          }}
           submitLabel={t("common.save")}
           onCancel={() => settingsQuery.refetch()}
           submitting={updateMutation.isPending}
           readOnly={!editable}
-          onSubmit={(values) =>
-            updateMutation.mutate(values, {
-              onSuccess: () => {
-                setSaved(true);
-                settingsQuery.refetch();
-                setTimeout(() => setSaved(false), 2000);
-              },
-            })
-          }
+          onSubmit={(values) => {
+            const idle = Number(values.session_idle_minutes);
+            updateMutation.mutate(
+              {
+                ...values,
+                session_idle_minutes: Number.isFinite(idle) ? Math.max(0, Math.min(24 * 60, Math.round(idle))) : 30,
+              } as Partial<PlantSettings>,
+              {
+                onSuccess: () => {
+                  setSaved(true);
+                  settingsQuery.refetch();
+                  void refresh();
+                  setTimeout(() => setSaved(false), 2000);
+                },
+              }
+            );
+          }}
         />
+        <p className="mt-2 text-[11px] text-[var(--win-muted)]">{t("settings.sessionIdleHint")}</p>
         {saved && <div className="mt-3 text-sm font-semibold text-[#0d5c0d]">{t("common.saved")}</div>}
       </CardContent>
     </Card>

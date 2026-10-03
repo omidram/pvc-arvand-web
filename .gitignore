@@ -26,10 +26,10 @@ backend/build/
 *.pem
 
 # Runtime data (keep schema via migrations; do not ship live plant DB)
-# backend/instance/*.db
-# backend/instance/backups/
-# backend/instance/*.json
-# !backend/instance/.gitkeep
+backend/instance/*.db
+backend/instance/backups/
+backend/instance/*.json
+!backend/instance/.gitkeep
 
 # Packaging artifacts (large)
 packaging/output/

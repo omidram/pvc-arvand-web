@@ -67,6 +67,7 @@ class UserUpdate(BaseModel):
 
 class MeResponse(UserRead):
     permissions: dict[str, str] = {}
+    session_idle_minutes: int = 30
 
 
 class AppRoleBase(BaseModel):
@@ -377,6 +378,7 @@ class PlantSettingsBase(ORMModel):
     reference_current_density: float = 6.0
     zero_voltage: float = 2.40
     date: datetime | None = None
+    session_idle_minutes: int = Field(default=30, ge=0, le=24 * 60)
 
 
 class PlantSettingsRead(PlantSettingsBase):
@@ -494,6 +496,8 @@ class ElementBase(ORMModel):
     cathode_shell: str | None = None
     membrane_info: str | None = None
     membrane_remark: str | None = None
+    anode_remark: str | None = None
+    cathode_remark: str | None = None
     remarks: str | None = None
 
 

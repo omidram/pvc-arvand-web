@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
-from ..auth import FORM_KEYS, hash_password, require_admin, user_permission_map
+from ..auth import FORM_FIELDS, FORM_KEYS, hash_password, is_valid_permission_key, require_admin, user_permission_map
 from ..database import get_db
 
 router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(require_admin)])
@@ -34,7 +34,7 @@ def _with_permissions(db: Session, user: models.User) -> schemas.UserWithPermiss
 def _set_permissions(db: Session, user: models.User, permissions: dict[str, str]) -> None:
     db.query(models.FormPermission).filter(models.FormPermission.user_id == user.id).delete()
     for form_key, level in permissions.items():
-        if form_key not in FORM_KEYS or level not in ("none", "view", "edit"):
+        if not is_valid_permission_key(form_key) or level not in ("none", "view", "edit"):
             continue
         if level == "none":
             continue
@@ -56,6 +56,12 @@ def _apply_role_id(db: Session, user: models.User, role_id: int | None) -> None:
 @router.get("/form-keys")
 def list_form_keys():
     return FORM_KEYS
+
+
+@router.get("/form-fields")
+def list_form_fields():
+    """Field-level permission catalog keyed by form."""
+    return FORM_FIELDS
 
 
 @router.get("", response_model=list[schemas.UserWithPermissions])

@@ -26,14 +26,14 @@ export default function ElementAdministrationMenu() {
         <AccessBtn href="/membranes">{t("menus.membraneDetails")}</AccessBtn>
         <span />
 
-        <AccessBtn href="/elements/assembly?import=montage">{t("menus.importMontage")}</AccessBtn>
+        <AccessBtn href="/segregation">{t("menus.electrodeSegregation")}</AccessBtn>
         <AccessBtn href="/settings?tab=inspection-reasons">{t("menus.inspectionReasons")}</AccessBtn>
         <AccessBtn href="/anodes?tab=maintenance">{t("menus.anodeMaintenance")}</AccessBtn>
         <AccessBtn href="/cathodes?tab=maintenance">{t("menus.cathodeMaintenance")}</AccessBtn>
         <AccessBtn href="/membranes?tab=maintenance">{t("menus.membraneMaintenance")}</AccessBtn>
         <span />
 
-        <AccessBtn href="/segregation">{t("menus.electrodeSegregation")}</AccessBtn>
+        <AccessBtn href="/elements/assembly?import=montage">{t("menus.importMontage")}</AccessBtn>
         <span />
         <AccessBtn href="/maintenance-reports?kind=anode">{t("menus.anodeMaintenanceReport")}</AccessBtn>
         <AccessBtn href="/maintenance-reports?kind=cathode">{t("menus.cathodeMaintenanceReport")}</AccessBtn>

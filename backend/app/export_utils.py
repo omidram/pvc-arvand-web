@@ -1,6 +1,7 @@
 """Shared helpers to export a list of ORM/dict rows to Excel (.xlsx) or PDF."""
 import io
 from datetime import date, datetime
+from pathlib import Path
 from typing import Any
 
 from fastapi import Query
@@ -9,9 +10,45 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+_PDF_FONT = "Helvetica"
+_PDF_FONT_BOLD = "Helvetica-Bold"
+
+
+def _ensure_pdf_fonts() -> tuple[str, str]:
+    """Prefer Calibri (Windows) for clearer PDF table text."""
+    global _PDF_FONT, _PDF_FONT_BOLD
+    if _PDF_FONT == "Calibri":
+        return _PDF_FONT, _PDF_FONT_BOLD
+    candidates = [
+        Path(r"C:\Windows\Fonts\calibri.ttf"),
+        Path("/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf"),
+        Path("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"),
+    ]
+    bold_candidates = [
+        Path(r"C:\Windows\Fonts\calibrib.ttf"),
+        Path("/usr/share/fonts/truetype/crosextra/Carlito-Bold.ttf"),
+        Path("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"),
+    ]
+    regular = next((p for p in candidates if p.exists()), None)
+    bold = next((p for p in bold_candidates if p.exists()), None)
+    if regular is not None:
+        try:
+            pdfmetrics.registerFont(TTFont("Calibri", str(regular)))
+            _PDF_FONT = "Calibri"
+            if bold is not None:
+                pdfmetrics.registerFont(TTFont("Calibri-Bold", str(bold)))
+                _PDF_FONT_BOLD = "Calibri-Bold"
+            else:
+                _PDF_FONT_BOLD = "Calibri"
+        except Exception:
+            pass
+    return _PDF_FONT, _PDF_FONT_BOLD
 
 
 def _cell_value(value: Any) -> Any:
@@ -164,6 +201,7 @@ def export_xlsx(rows: list[dict[str, Any]], fields: list[str], title: str) -> St
 
 
 def export_pdf(rows: list[dict[str, Any]], fields: list[str], title: str) -> StreamingResponse:
+    font, font_bold = _ensure_pdf_fonts()
     buf = io.BytesIO()
     doc = SimpleDocTemplate(
         buf,
@@ -174,19 +212,53 @@ def export_pdf(rows: list[dict[str, Any]], fields: list[str], title: str) -> Str
         bottomMargin=1 * cm,
     )
     styles = getSampleStyleSheet()
-    elements = [Paragraph(title, styles["Title"]), Spacer(1, 0.4 * cm)]
+    title_style = ParagraphStyle(
+        "ExportTitle",
+        parent=styles["Title"],
+        fontName=font_bold,
+        fontSize=14,
+        leading=18,
+        textColor=colors.HexColor("#0A246A"),
+        spaceAfter=6,
+    )
+    cell_style = ParagraphStyle(
+        "ExportCell",
+        fontName=font,
+        fontSize=8,
+        leading=10,
+        textColor=colors.black,
+    )
+    header_style = ParagraphStyle(
+        "ExportHeader",
+        fontName=font_bold,
+        fontSize=8,
+        leading=10,
+        textColor=colors.white,
+    )
+    elements = [Paragraph(title, title_style), Spacer(1, 0.35 * cm)]
 
-    data = [fields] + [[str(row.get(f, "") if row.get(f) is not None else "") for f in fields] for row in rows]
+    def _p(text: str, style: ParagraphStyle) -> Paragraph:
+        safe = str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        return Paragraph(safe, style)
+
+    data = [[_p(f, header_style) for f in fields]]
+    for row in rows:
+        data.append([_p("" if row.get(f) is None else row.get(f), cell_style) for f in fields])
     table = Table(data, repeatRows=1)
     table.setStyle(
         TableStyle(
             [
                 ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0A246A")),
                 ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                ("FONTSIZE", (0, 0), (-1, -1), 7),
+                ("FONTNAME", (0, 0), (-1, 0), font_bold),
+                ("FONTNAME", (0, 1), (-1, -1), font),
+                ("FONTSIZE", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 3),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
                 ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#808080")),
-                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F0EFEA")]),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F3F6FB")]),
                 ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ]
         )

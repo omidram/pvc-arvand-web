@@ -139,6 +139,8 @@ export function AssemblyDataForm() {
     { name: "cathode_shell", label: t("fields.cathodeShell") },
     { name: "membrane_info", label: t("fields.membraneInfo") },
     { name: "membrane_remark", label: t("fields.membraneRemark"), type: "textarea", span: 2 },
+    { name: "anode_remark", label: t("fields.anodeRemark"), type: "textarea", span: 2 },
+    { name: "cathode_remark", label: t("fields.cathodeRemark"), type: "textarea", span: 2 },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
 

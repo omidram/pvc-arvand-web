@@ -42,8 +42,91 @@ FORM_KEYS: list[str] = [
     "import_export",
 ]
 
+# Per-form table fields that can be granted view/edit independently of the
+# form-level access. Stored as RolePermission/FormPermission keys "form.field".
+FORM_FIELDS: dict[str, list[str]] = {
+    "shutdowns": [
+        "plant_part",
+        "shutdown_time",
+        "startup_time",
+        "code",
+        "cause",
+        "category",
+        "remarks",
+    ],
+    "elements": [
+        "element_nr",
+        "electrolyzer",
+        "position",
+        "anode_nr",
+        "cathode_nr",
+        "membrane_nr",
+        "membrane_type",
+        "group_nr",
+        "assembly_date",
+        "commissioning_date",
+        "decommissioning_date",
+        "disassembly_date",
+        "anode_remark",
+        "cathode_remark",
+        "membrane_remark",
+        "remarks",
+    ],
+    "anodes": ["anode_nr", "coating", "manufacturer", "delivery_date", "remarks"],
+    "cathodes": ["cathode_nr", "coating", "manufacturer", "delivery_date", "remarks"],
+    "membranes": ["membrane_nr", "membrane_type", "manufacturer", "delivery_date", "remarks"],
+    "inspections": [
+        "element_nr",
+        "electrolyzer",
+        "date",
+        "findings",
+        "remarks",
+        "signature_insp",
+        "signature_maint",
+        "signature_proc",
+    ],
+    "voltage": [
+        "electrolyzer",
+        "date",
+        "total_current",
+        "total_voltage",
+        "reference_current_density",
+        "standardized_voltage",
+        "remarks",
+    ],
+    "analyses": ["analysis_type", "electrolyzer", "date", "parameters", "remarks"],
+    "remarks": ["date", "electrolyzer", "text"],
+    "storage": ["item_nr", "kind", "location", "quantity", "remarks"],
+}
+
 LEVEL_RANK = {"none": 0, "view": 1, "edit": 2}
 WRITE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+def is_valid_permission_key(key: str) -> bool:
+    if key in FORM_KEYS:
+        return True
+    if "." not in key:
+        return False
+    form_key, field = key.split(".", 1)
+    return form_key in FORM_FIELDS and field in FORM_FIELDS[form_key]
+
+
+def field_permission_key(form_key: str, field: str) -> str:
+    return f"{form_key}.{field}"
+
+
+def resolve_field_level(permissions: dict[str, str], form_key: str, field: str) -> str:
+    """Effective field access capped by the parent form level."""
+    form_level = permissions.get(form_key, "none")
+    if form_level == "none":
+        return "none"
+    specific = permissions.get(field_permission_key(form_key, field))
+    if specific not in LEVEL_RANK:
+        return form_level
+    if LEVEL_RANK[specific] <= LEVEL_RANK[form_level]:
+        return specific
+    return form_level
 
 # Inspection sheet is signed by Insp. / Maint. / Proc., so any of these
 # plant forms is enough to open and edit the shared CZ-03 report.
@@ -108,9 +191,13 @@ def require_admin(user: models.User = Depends(get_current_user)) -> models.User:
 
 
 def user_permission_map(db: Session, user: models.User) -> dict[str, str]:
-    """Resolve effective menu access. 'none' means the section is completely hidden."""
+    """Resolve effective menu + field access. Form 'none' hides the section."""
     if user.role == "admin":
-        return {key: "edit" for key in FORM_KEYS}
+        levels = {key: "edit" for key in FORM_KEYS}
+        for form_key, fields in FORM_FIELDS.items():
+            for field in fields:
+                levels[field_permission_key(form_key, field)] = "edit"
+        return levels
 
     levels = {key: "none" for key in FORM_KEYS}
 
@@ -120,14 +207,13 @@ def user_permission_map(db: Session, user: models.User) -> dict[str, str]:
             .filter(models.RolePermission.role_id == user.role_id)
             .all()
         )
-        for row in rows:
-            if row.form_key in levels and row.level in LEVEL_RANK:
-                levels[row.form_key] = row.level
-        return levels
+    else:
+        rows = db.query(models.FormPermission).filter(models.FormPermission.user_id == user.id).all()
 
-    rows = db.query(models.FormPermission).filter(models.FormPermission.user_id == user.id).all()
     for row in rows:
-        if row.form_key in levels and row.level in LEVEL_RANK:
+        if row.level not in LEVEL_RANK:
+            continue
+        if row.form_key in FORM_KEYS or is_valid_permission_key(row.form_key):
             levels[row.form_key] = row.level
     return levels
 
@@ -260,7 +346,7 @@ DEFAULT_ROLES: list[dict] = [
 def _set_role_permissions(db: Session, role: models.AppRole, permissions: dict[str, str]) -> None:
     db.query(models.RolePermission).filter(models.RolePermission.role_id == role.id).delete()
     for form_key, level in permissions.items():
-        if form_key not in FORM_KEYS or level not in ("none", "view", "edit"):
+        if not is_valid_permission_key(form_key) or level not in ("none", "view", "edit"):
             continue
         if level == "none":
             continue
