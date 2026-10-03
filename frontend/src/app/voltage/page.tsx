@@ -460,7 +460,7 @@ function DistributionTab() {
   const [electrolyzer, setElectrolyzer] = useState("");
   const distQuery = useQuery({
     queryKey: ["voltage-distribution", electrolyzer],
-    queryFn: () => voltageCalcApi.distribution(electrolyzer || undefined),
+    queryFn: () => voltageCalcApi.distribution({ electrolyzer: electrolyzer || undefined }),
   });
   const deviationQuery = useQuery({
     queryKey: ["voltage-high-deviation", electrolyzer],
