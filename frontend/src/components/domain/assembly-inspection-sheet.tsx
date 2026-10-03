@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { InspectionSignaturePad } from "@/components/domain/inspection-signature";
+import { DateInput } from "@/components/ui/date-input";
 import {
   ASSEMBLY_ACTIVITY_SECTIONS,
   emptyAssemblyCheckRemarks,
@@ -9,6 +11,8 @@ import {
   POSITION_OPTIONS,
 } from "@/lib/assembly-inspection";
 import { elementsApi, relationsApi } from "@/lib/endpoints";
+
+const COMBO_SUGGEST_LIMIT = 80;
 
 type Props = {
   values: Record<string, unknown>;
@@ -62,6 +66,7 @@ function HeadCell({
 export function AssemblyInspectionSheet({ values, onChange, onPatch, readOnly }: Props) {
   const checks = checksOf(values);
   const checkRemarks = checkRemarksOf(values);
+  const [draft, setDraft] = useState<Record<string, string>>({});
 
   const anodes = useQuery({ queryKey: ["relations", "anode-numbers"], queryFn: () => relationsApi.lookup("anode-numbers") });
   const cathodes = useQuery({ queryKey: ["relations", "cathode-numbers"], queryFn: () => relationsApi.lookup("cathode-numbers") });
@@ -70,6 +75,8 @@ export function AssemblyInspectionSheet({ values, onChange, onPatch, readOnly }:
   const groups = useQuery({ queryKey: ["relations", "groups"], queryFn: () => relationsApi.lookup("groups") });
   const electrolyzers = useQuery({ queryKey: ["relations", "electrolyzers"], queryFn: () => relationsApi.lookup("electrolyzers") });
   const elements = useQuery({ queryKey: ["relations", "element-numbers"], queryFn: () => relationsApi.lookup("element-numbers") });
+  const anodeOptions = useMemo(() => anodes.data || [], [anodes.data]);
+  const cathodeOptions = useMemo(() => cathodes.data || [], [cathodes.data]);
 
   function setCheck(key: string, checked: boolean) {
     onChange("checks", { ...checks, [key]: checked });
@@ -121,27 +128,58 @@ export function AssemblyInspectionSheet({ values, onChange, onPatch, readOnly }:
     }
   }
 
+  function filterOptions(options: string[] | undefined, typed: string): string[] {
+    const all = options || [];
+    const q = typed.trim().toLowerCase().replace(/\s+/g, "");
+    if (!q) return all.slice(0, COMBO_SUGGEST_LIMIT);
+    const starts: string[] = [];
+    const contains: string[] = [];
+    for (const opt of all) {
+      const compact = opt.toLowerCase().replace(/\s+/g, "");
+      if (compact.startsWith(q)) starts.push(opt);
+      else if (compact.includes(q)) contains.push(opt);
+      if (starts.length >= COMBO_SUGGEST_LIMIT) break;
+    }
+    return starts.concat(contains).slice(0, COMBO_SUGGEST_LIMIT);
+  }
+
   function combo(
     name: string,
     listId: string,
     options: string[] | undefined,
-    opts?: { type?: string; link?: boolean }
+    opts?: { link?: boolean }
   ) {
+    const current = text(values[name]);
+    const suggestions = filterOptions(options, draft[name] ?? current);
     return (
       <>
         <input
           className="asm-paper-in"
-          type={opts?.type || "text"}
+          type="text"
+          name={`asm_${name}`}
+          autoComplete="off"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          data-form-type="other"
           list={listId}
-          value={text(values[name]).slice(0, opts?.type === "date" ? 10 : undefined)}
+          value={current}
           disabled={readOnly}
-          onChange={(e) => onChange(name, e.target.value || null)}
+          onChange={(e) => {
+            const value = e.target.value;
+            setDraft((prev) => ({ ...prev, [name]: value }));
+            onChange(name, value || null);
+          }}
           onBlur={(e) => {
+            setDraft((prev) => {
+              const next = { ...prev };
+              delete next[name];
+              return next;
+            });
             if (opts?.link) void resolveLinked(name, e.currentTarget.value);
           }}
         />
         <datalist id={listId}>
-          {(options || []).map((opt) => (
+          {suggestions.map((opt) => (
             <option key={opt} value={opt} />
           ))}
         </datalist>
@@ -151,7 +189,15 @@ export function AssemblyInspectionSheet({ values, onChange, onPatch, readOnly }:
 
   return (
     <div className="asm-scroll">
-      <div className="asm-paper" dir="ltr">
+      <form
+        className="asm-paper"
+        dir="ltr"
+        autoComplete="off"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-form-type="other"
+        onSubmit={(e) => e.preventDefault()}
+      >
         {/* Header band — Uhde | title | Arvand logo */}
         <div className="asm-top">
           <div className="asm-top-left">Uhde</div>
@@ -166,9 +212,19 @@ export function AssemblyInspectionSheet({ values, onChange, onPatch, readOnly }:
         <table className="asm-paper-tbl asm-id-tbl">
           <tbody>
             <tr>
-              <HeadCell label="Assembly Date">{combo("assembly_date", "asm-dl-date", undefined, { type: "date" })}</HeadCell>
-              <HeadCell label="Anode No">{combo("anode_nr", "asm-dl-anode", anodes.data, { link: true })}</HeadCell>
-              <HeadCell label="Cathode No">{combo("cathode_nr", "asm-dl-cathode", cathodes.data, { link: true })}</HeadCell>
+              <HeadCell label="Assembly Date">
+                <DateInput
+                  className="asm-paper-in"
+                  type="date"
+                  name="asm_assembly_date"
+                  autoComplete="off"
+                  disabled={readOnly}
+                  value={text(values.assembly_date).slice(0, 10)}
+                  onChange={(e) => onChange("assembly_date", e.target.value || null)}
+                />
+              </HeadCell>
+              <HeadCell label="Anode No">{combo("anode_nr", "asm-dl-anode", anodeOptions, { link: true })}</HeadCell>
+              <HeadCell label="Cathode No">{combo("cathode_nr", "asm-dl-cathode", cathodeOptions, { link: true })}</HeadCell>
               <HeadCell label="Membrane type">{combo("membrane_type", "asm-dl-mtype", membraneTypes.data, { link: true })}</HeadCell>
               <HeadCell label="Membrane no">{combo("membrane_nr", "asm-dl-membrane", membranes.data, { link: true })}</HeadCell>
             </tr>
@@ -180,6 +236,8 @@ export function AssemblyInspectionSheet({ values, onChange, onPatch, readOnly }:
               <HeadCell label="Remarks">
                 <input
                   className="asm-paper-in"
+                  name="asm_remarks"
+                  autoComplete="off"
                   value={text(values.remarks)}
                   disabled={readOnly}
                   onChange={(e) => onChange("remarks", e.target.value)}
@@ -326,7 +384,7 @@ export function AssemblyInspectionSheet({ values, onChange, onPatch, readOnly }:
             </tr>
           </tbody>
         </table>
-      </div>
+      </form>
     </div>
   );
 }

@@ -51,7 +51,45 @@ def _values(*columns) -> list[str]:
             text = str(value).strip()
             if text:
                 found.add(text)
-    return sorted(found, key=lambda s: (len(s), s))
+    return sorted(found, key=lambda s: (s.upper(), s))
+
+
+def _compact_upper(value: str) -> str:
+    return "".join(str(value).split()).upper()
+
+
+def _electrode_lookup_values(rows, *, prefix: str) -> list[str]:
+    """Catalogue serials for anode/cathode combos (UA… / UC… first; drop short numeric junk)."""
+    found: set[str] = set()
+    pref = prefix.upper()
+    for (value,) in rows:
+        if value is None:
+            continue
+        text = str(value).strip()
+        if not text:
+            continue
+        compact = _compact_upper(text)
+        # Element-style short numbers pollute combos (e.g. 8913) — skip them.
+        if compact.isdigit() and len(compact) <= 5:
+            continue
+        # Drop corrupted placeholders like "UC -2///" / "UC 1////".
+        if "/" in compact or compact.endswith("-"):
+            continue
+        if compact.startswith(pref):
+            digits = "".join(ch for ch in compact[len(pref) :] if ch.isdigit())
+            if len(digits) < 3:
+                continue
+        found.add(text)
+
+    def sort_key(serial: str) -> tuple:
+        compact = _compact_upper(serial)
+        if compact.startswith(pref):
+            return (0, compact)
+        if compact.startswith(("A", "C", "DA", "DC", "LA", "PA", "HA")):
+            return (1, compact)
+        return (2, compact)
+
+    return sorted(found, key=sort_key)
 
 
 @router.get("")
@@ -63,13 +101,13 @@ def list_relations():
 def lookup(name: str, db: Session = Depends(get_db)):
     # Prefer master tables so combos stay linked to real plant catalogues.
     if name == "anode-numbers":
-        values = _values(db.query(models.Anode.anode_nr).distinct().all())
+        values = _electrode_lookup_values(db.query(models.Anode.anode_nr).distinct().all(), prefix="UA")
         if not values:
-            values = _values(db.query(models.Element.anode_nr).distinct().all())
+            values = _electrode_lookup_values(db.query(models.Element.anode_nr).distinct().all(), prefix="UA")
     elif name == "cathode-numbers":
-        values = _values(db.query(models.Cathode.cathode_nr).distinct().all())
+        values = _electrode_lookup_values(db.query(models.Cathode.cathode_nr).distinct().all(), prefix="UC")
         if not values:
-            values = _values(db.query(models.Element.cathode_nr).distinct().all())
+            values = _electrode_lookup_values(db.query(models.Element.cathode_nr).distinct().all(), prefix="UC")
     elif name == "membrane-numbers":
         values = _values(db.query(models.Membrane.membrane_nr).distinct().all())
         if not values:

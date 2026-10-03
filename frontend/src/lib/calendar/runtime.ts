@@ -1,6 +1,6 @@
 export type CalendarKind = "gregorian" | "shamsi";
 
-let currentCalendar: CalendarKind = "gregorian";
+let currentCalendar: CalendarKind = "shamsi";
 
 export function getCalendar(): CalendarKind {
   return currentCalendar;

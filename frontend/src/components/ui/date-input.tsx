@@ -91,6 +91,7 @@ export function DateInput({
   required,
   name,
   id,
+  autoComplete = "off",
 }: DateInputProps) {
   const { locale } = useI18n();
   const { isShamsi } = useCalendar();
@@ -164,6 +165,10 @@ export function DateInput({
         name={name}
         disabled={disabled}
         required={required}
+        autoComplete={autoComplete}
+        data-lpignore="true"
+        data-1p-ignore="true"
+        data-form-type="other"
         className={cn("access-inset-field w-[108px]", className)}
         value={text}
         placeholder={isShamsi ? "1405/01/01" : "M/D/YYYY"}

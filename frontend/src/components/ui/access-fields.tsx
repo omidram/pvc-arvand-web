@@ -5,6 +5,14 @@ import { Input, Select, Textarea } from "@/components/ui/input";
 import type { FieldDef } from "@/components/ui/resource-form";
 import { cn } from "@/lib/utils";
 
+/** Keep Chrome / password managers from hijacking industrial form fields. */
+const OFF_AUTOCOMPLETE = {
+  autoComplete: "off" as const,
+  "data-lpignore": "true",
+  "data-1p-ignore": "true",
+  "data-form-type": "other",
+};
+
 export function toAccessValue(type: FieldDef["type"], value: unknown): string | boolean {
   if (value === null || value === undefined) return type === "checkbox" ? false : "";
   if (type === "checkbox") return Boolean(value);
@@ -122,6 +130,7 @@ export function AccessFields({
                   <>
                     <Input
                       list={`combo-${f.name}`}
+                      name={`field_${f.name}`}
                       required={f.required}
                       value={String(values[f.name] ?? "")}
                       onChange={(e) => {
@@ -136,6 +145,7 @@ export function AccessFields({
                       disabled={readOnly}
                       placeholder={f.placeholder}
                       className="h-[22px] py-0 text-[11px]"
+                      {...OFF_AUTOCOMPLETE}
                     />
                     <datalist id={`combo-${f.name}`}>
                       {f.options?.map((opt) => (
@@ -146,6 +156,7 @@ export function AccessFields({
                 ) : (
                   <Input
                     type={f.type || "text"}
+                    name={`field_${f.name}`}
                     step={f.step}
                     required={f.required}
                     value={String(values[f.name] ?? "")}
@@ -163,6 +174,7 @@ export function AccessFields({
                     disabled={readOnly}
                     placeholder={f.placeholder}
                     className="h-[22px] py-0 text-[11px]"
+                    {...(f.type === "password" ? {} : OFF_AUTOCOMPLETE)}
                   />
                 )}
               </div>

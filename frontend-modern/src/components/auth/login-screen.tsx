@@ -79,7 +79,15 @@ export function LoginScreen() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 p-6">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 p-6"
+          autoComplete="off"
+          data-lpignore="true"
+          data-1p-ignore="true"
+          data-bwignore="true"
+          data-form-type="other"
+        >
           <h1 className="text-sm font-bold text-[var(--win-text)]">{t("auth.loginTitle")}</h1>
           {directoryQuery.data?.enabled && (
             <p className="text-xs text-[var(--win-muted)]">
@@ -91,11 +99,31 @@ export function LoginScreen() {
 
           <div>
             <Label>{t("auth.username")}</Label>
-            <Input autoFocus value={username} onChange={(e) => setUsername(e.target.value)} required />
+            <Input
+              autoFocus
+              name="arvand_login_user"
+              autoComplete="off"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-form-type="other"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
           </div>
           <div>
             <Label>{t("auth.password")}</Label>
-            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <Input
+              type="password"
+              name="arvand_login_secret"
+              autoComplete="new-password"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-form-type="other"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
 
           {error && (

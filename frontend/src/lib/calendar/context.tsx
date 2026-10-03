@@ -9,11 +9,13 @@ export { getCalendar } from "./runtime";
 const STORAGE_KEY = "pvc-arvand-calendar";
 
 function readStored(): CalendarKind {
-  if (typeof window === "undefined") return "gregorian";
+  if (typeof window === "undefined") return "shamsi";
   try {
-    return window.localStorage.getItem(STORAGE_KEY) === "shamsi" ? "shamsi" : "gregorian";
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === "gregorian") return "gregorian";
+    return "shamsi";
   } catch {
-    return "gregorian";
+    return "shamsi";
   }
 }
 
@@ -26,13 +28,20 @@ interface CalendarContextValue {
 const CalendarContext = createContext<CalendarContextValue | null>(null);
 
 export function CalendarProvider({ children }: { children: React.ReactNode }) {
-  const [calendar, setCalendarState] = useState<CalendarKind>("gregorian");
+  const [calendar, setCalendarState] = useState<CalendarKind>("shamsi");
 
   useEffect(() => {
     const stored = readStored();
     setCalendarRuntime(stored);
     setCalendarState(stored);
     document.documentElement.setAttribute("data-calendar", stored);
+    try {
+      if (window.localStorage.getItem(STORAGE_KEY) == null) {
+        window.localStorage.setItem(STORAGE_KEY, "shamsi");
+      }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const setCalendar = useCallback((kind: CalendarKind) => {

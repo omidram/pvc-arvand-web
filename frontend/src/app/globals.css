@@ -3067,13 +3067,24 @@ html[data-theme="dark"] .mon-cell.is-warning {
 
 .access-main-grid {
   display: grid;
-  min-width: 820px;
+  min-width: 920px;
   min-height: 220px;
   align-content: start;
-  grid-template-columns: 154px 154px 128px 128px 128px minmax(24px, 1fr) 140px;
-  grid-template-rows: repeat(6, 28px);
+  grid-template-columns: 154px 168px 168px 140px 140px minmax(24px, 1fr) 140px;
+  grid-template-rows: repeat(6, minmax(28px, auto));
   column-gap: 12px;
   row-gap: 11px;
+}
+
+.access-main-grid .access-menu-btn {
+  height: auto;
+  min-height: 28px;
+  white-space: normal;
+  line-height: 1.2;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 .access-admin-grid {
