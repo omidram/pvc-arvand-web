@@ -229,6 +229,36 @@ export interface InspectionHalfshellGrid {
   grid_data: Record<string, unknown>;
 }
 
+export interface AssemblyInspectionReport {
+  id: number;
+  assembly_date: string | null;
+  element_nr: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  membrane_type: string | null;
+  electrolyzer: string | null;
+  position: string | null;
+  group_nr: string | null;
+  remarks: string | null;
+  checks: Record<string, boolean>;
+  check_remarks: Record<string, string>;
+  spacer_thickness_anode: string | null;
+  spacer_thickness_cathode: string | null;
+  electrode_distance: string | null;
+  sign_maint_name: string | null;
+  sign_maint_image: string | null;
+  sign_maint_at: string | null;
+  sign_insp_name: string | null;
+  sign_insp_image: string | null;
+  sign_insp_at: string | null;
+  sign_proc_name: string | null;
+  sign_proc_image: string | null;
+  sign_proc_at: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
 export interface CellComponent {
   id: number;
   part_nr: string | null;

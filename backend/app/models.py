@@ -433,6 +433,38 @@ class InspectionReport(Base):
     sign_proc_at: Mapped[str | None] = mapped_column(String(40))
 
 
+class AssemblyInspectionReport(Base):
+    """Uhde Inspection Report for the Assembly of cell Elements (مونتاژ checklist)."""
+    __tablename__ = "assembly_inspection_reports"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    assembly_date: Mapped[date | None] = mapped_column(Date, index=True)
+    element_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    anode_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    cathode_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    membrane_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    membrane_type: Mapped[str | None] = mapped_column(String(100))
+    electrolyzer: Mapped[str | None] = mapped_column(String(50), index=True)
+    position: Mapped[str | None] = mapped_column(String(50))
+    group_nr: Mapped[str | None] = mapped_column(String(50))
+    remarks: Mapped[str | None] = mapped_column(Text)
+    checks: Mapped[dict] = mapped_column(JSON, default=dict)  # {activity_key: bool}
+    check_remarks: Mapped[dict] = mapped_column(JSON, default=dict)  # {activity_key: str}
+    spacer_thickness_anode: Mapped[str | None] = mapped_column(String(50))
+    spacer_thickness_cathode: Mapped[str | None] = mapped_column(String(50))
+    electrode_distance: Mapped[str | None] = mapped_column(String(50))
+    sign_maint_name: Mapped[str | None] = mapped_column(String(150))
+    sign_maint_image: Mapped[str | None] = mapped_column(Text)
+    sign_maint_at: Mapped[str | None] = mapped_column(String(40))
+    sign_insp_name: Mapped[str | None] = mapped_column(String(150))
+    sign_insp_image: Mapped[str | None] = mapped_column(Text)
+    sign_insp_at: Mapped[str | None] = mapped_column(String(40))
+    sign_proc_name: Mapped[str | None] = mapped_column(String(150))
+    sign_proc_image: Mapped[str | None] = mapped_column(Text)
+    sign_proc_at: Mapped[str | None] = mapped_column(String(40))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class InspectionHalfshellGrid(Base):
     """
     Generic replacement for the 4 Access grid tables

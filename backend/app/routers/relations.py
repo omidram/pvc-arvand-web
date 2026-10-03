@@ -61,36 +61,34 @@ def list_relations():
 
 @router.get("/lookups/{name}")
 def lookup(name: str, db: Session = Depends(get_db)):
+    # Prefer master tables so combos stay linked to real plant catalogues.
     if name == "anode-numbers":
-        values = _values(
-            db.query(models.Element.anode_nr).distinct().all(),
-            db.query(models.Anode.anode_nr).distinct().all(),
-        )
+        values = _values(db.query(models.Anode.anode_nr).distinct().all())
+        if not values:
+            values = _values(db.query(models.Element.anode_nr).distinct().all())
     elif name == "cathode-numbers":
-        values = _values(
-            db.query(models.Element.cathode_nr).distinct().all(),
-            db.query(models.Cathode.cathode_nr).distinct().all(),
-        )
+        values = _values(db.query(models.Cathode.cathode_nr).distinct().all())
+        if not values:
+            values = _values(db.query(models.Element.cathode_nr).distinct().all())
     elif name == "membrane-numbers":
-        values = _values(
-            db.query(models.Element.membrane_nr).distinct().all(),
-            db.query(models.Membrane.membrane_nr).distinct().all(),
-        )
+        values = _values(db.query(models.Membrane.membrane_nr).distinct().all())
+        if not values:
+            values = _values(db.query(models.Element.membrane_nr).distinct().all())
     elif name == "membrane-types":
-        values = _values(
-            db.query(models.Element.membrane_type).distinct().all(),
-            db.query(models.Membrane.membrane_type).distinct().all(),
-        )
+        values = _values(db.query(models.Membrane.membrane_type).distinct().all())
+        if not values:
+            values = _values(db.query(models.Element.membrane_type).distinct().all())
     elif name == "groups":
-        values = _values(
-            db.query(models.GroupDefinition.group_nr).distinct().all(),
-            db.query(models.Element.group_nr).distinct().all(),
-        )
+        values = _values(db.query(models.GroupDefinition.group_nr).distinct().all())
+        if not values:
+            values = _values(db.query(models.Element.group_nr).distinct().all())
     elif name == "element-numbers":
         values = _values(db.query(models.Element.element_nr).distinct().all())
     elif name == "electrolyzers":
         rows = db.query(models.Electrolyzer.name).order_by(models.Electrolyzer.nr).all()
-        values = _values(rows, db.query(models.Element.electrolyzer).distinct().all())
+        values = _values(rows)
+        if not values:
+            values = _values(db.query(models.Element.electrolyzer).distinct().all())
     elif name == "sub-plants":
         values = _values(db.query(models.SubPlant.name).distinct().all())
     elif name == "inspection-reasons":

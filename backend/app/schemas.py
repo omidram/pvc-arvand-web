@@ -578,6 +578,39 @@ class InspectionReportRead(InspectionReportBase):
     id: int
 
 
+class AssemblyInspectionReportBase(ORMModel):
+    assembly_date: date | None = None
+    element_nr: str | None = None
+    anode_nr: str | None = None
+    cathode_nr: str | None = None
+    membrane_nr: str | None = None
+    membrane_type: str | None = None
+    electrolyzer: str | None = None
+    position: str | None = None
+    group_nr: str | None = None
+    remarks: str | None = None
+    checks: dict[str, bool] = Field(default_factory=dict)
+    check_remarks: dict[str, str] = Field(default_factory=dict)
+    spacer_thickness_anode: str | None = None
+    spacer_thickness_cathode: str | None = None
+    electrode_distance: str | None = None
+    sign_maint_name: str | None = None
+    sign_maint_image: str | None = Field(default=None, max_length=1_200_000)
+    sign_maint_at: str | None = None
+    sign_insp_name: str | None = None
+    sign_insp_image: str | None = Field(default=None, max_length=1_200_000)
+    sign_insp_at: str | None = None
+    sign_proc_name: str | None = None
+    sign_proc_image: str | None = Field(default=None, max_length=1_200_000)
+    sign_proc_at: str | None = None
+
+
+class AssemblyInspectionReportRead(AssemblyInspectionReportBase):
+    id: int
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
 class InspectionHalfshellGridBase(ORMModel):
     element_nr: str | None = None
     grid_type: str

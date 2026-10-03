@@ -16,6 +16,7 @@ from .paths import static_dir
 from .routers import (
     analyses,
     arrangement_board as arrangement_board_router_module,
+    assembly_inspections,
     auth as auth_router_module,
     backup as backup_router_module,
     components,
@@ -240,6 +241,20 @@ def _ensure_voltage_sync_columns() -> None:
 
 _ensure_voltage_sync_columns()
 
+
+def _ensure_assembly_inspection_columns() -> None:
+    insp = inspect(engine)
+    if "assembly_inspection_reports" not in insp.get_table_names():
+        return
+    present = {col["name"] for col in insp.get_columns("assembly_inspection_reports")}
+    if "check_remarks" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE assembly_inspection_reports ADD COLUMN check_remarks JSON"))
+
+
+_ensure_assembly_inspection_columns()
+
 with SessionLocal() as _db:
     seed_default_admin(_db)
     alerts_engine.ensure_default_rules(_db)
@@ -392,6 +407,10 @@ _api(
 # --- Inspections (shared by Insp. / Maint. / Proc. roles via related forms) ---
 _api(inspections.router, dependencies=[Depends(require_any_form_access(*INSPECTION_COLLAB_KEYS))])
 _api(inspections.grids_router, dependencies=[Depends(require_any_form_access(*INSPECTION_COLLAB_KEYS))])
+_api(
+    assembly_inspections.router,
+    dependencies=[Depends(require_any_form_access("elements", "inspections", "anodes", "cathodes", "membranes"))],
+)
 
 # --- Shutdowns ---
 _api(shutdowns.router, dependencies=_perm("shutdowns"))

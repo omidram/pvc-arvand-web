@@ -131,8 +131,6 @@ export function LoginScreen() {
       <footer className="login-koku-footer max-w-md text-center">
         <div>{t("auth.loginCreditIt")}</div>
         <div>{t("auth.loginCreditVendor")}</div>
-        <div>{t("auth.loginCreditLead")}</div>
-        <div dir="ltr">{t("auth.loginCreditSupport")}</div>
         <div className="login-koku-copy">{t("auth.loginCopyright")}</div>
       </footer>
     </div>

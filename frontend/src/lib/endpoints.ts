@@ -277,6 +277,7 @@ export const maintenanceReportsApi = {
 
 // ---------------------------------------------------------------- Inspections
 export const inspectionsApi = resource<T.InspectionReport>("/inspections");
+export const assemblyInspectionsApi = resource<T.AssemblyInspectionReport>("/assembly-inspections");
 
 export const inspectionGridsApi = {
   list: async (inspectionId: number): Promise<T.InspectionHalfshellGrid[]> =>

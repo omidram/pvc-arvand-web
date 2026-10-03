@@ -4333,6 +4333,219 @@ html[data-theme='dark'] .insp-caption {
   .insp-sign-actions, .insp-hint { display: none !important; }
 }
 
+/* Assembly Inspection Report — paper replica of Uhde مونتاژ form */
+.asm-scroll {
+  max-width: 100%;
+  overflow: auto;
+  background: #cfcfcf;
+  padding: 10px;
+}
+.asm-paper {
+  background: #fff;
+  color: #111;
+  border: 2px solid #111;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11.5px;
+  line-height: 1.2;
+  min-width: 920px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.asm-top {
+  display: grid;
+  grid-template-columns: 90px 1fr 120px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px 4px;
+  border-bottom: 1px solid #111;
+  min-height: 52px;
+}
+.asm-top-left {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+}
+.asm-top-title {
+  text-align: center;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.25;
+}
+.asm-top-logo {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.asm-top-logo img {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+}
+.asm-paper-tbl {
+  width: 100%;
+  border-collapse: collapse;
+}
+.asm-paper-tbl th,
+.asm-paper-tbl td {
+  border: 1px solid #111;
+  background: #fff;
+  color: #111;
+  vertical-align: middle;
+  font-weight: 400;
+}
+.asm-id-tbl .asm-hcell {
+  width: 20%;
+  padding: 2px 4px 3px;
+  vertical-align: top;
+}
+.asm-hlabel {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1px;
+}
+.asm-hvalue { min-height: 18px; }
+.asm-paper-in {
+  width: 100%;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  color: #111;
+  font: inherit;
+  font-size: 12px;
+  padding: 0;
+  min-height: 16px;
+}
+.asm-act-tbl th {
+  font-weight: 700;
+  font-size: 12px;
+  padding: 2px 4px;
+  background: #fff;
+}
+.asm-act-tbl td {
+  padding: 1px 4px;
+  height: 17px;
+}
+.asm-act-cat {
+  width: 48px;
+  text-align: center;
+  background: #fff !important;
+  padding: 0 !important;
+}
+.asm-act-cat-label {
+  display: inline-block;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  padding: 4px 0;
+}
+.asm-act-text {
+  text-align: left;
+  font-size: 10.5px;
+}
+.asm-act-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  font-weight: 400;
+}
+.asm-act-line span {
+  flex: 1;
+  min-width: 0;
+}
+.asm-act-check {
+  width: 46px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+.asm-act-remark {
+  width: 140px;
+  padding: 0 3px !important;
+}
+.asm-remark-in {
+  font-size: 10.5px !important;
+  min-height: 14px;
+}
+.asm-mini-box {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  margin: 1px 0 0;
+  padding: 0;
+  border: 1px solid #111;
+  background: #fff;
+  cursor: pointer;
+  flex: 0 0 auto;
+  position: relative;
+  vertical-align: middle;
+}
+.asm-mini-box:checked {
+  background: #fff;
+}
+.asm-mini-box:checked::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border: solid #111;
+  border-width: 0 1.6px 1.6px 0;
+  transform: rotate(45deg);
+}
+.asm-mini-box:disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+.asm-meas-tbl td {
+  width: 33.33%;
+  padding: 4px 6px;
+  white-space: nowrap;
+}
+.asm-meas-lab {
+  font-weight: 700;
+  font-size: 11px;
+  margin-right: 4px;
+}
+.asm-meas-in {
+  display: inline-block;
+  width: 72px;
+  border-bottom: 1px solid #666 !important;
+  text-align: center;
+}
+.asm-sign-tbl td {
+  width: 33.33%;
+  padding: 4px 6px 6px;
+  vertical-align: top;
+  height: 110px;
+}
+.asm-sign-cell .insp-sign {
+  border: 0;
+  padding: 0;
+}
+.asm-sign-cell .insp-sign-canvas {
+  height: 48px;
+}
+html[data-theme='dark'] .asm-scroll { background: #333; }
+html[data-theme='dark'] .asm-paper,
+html[data-theme='dark'] .asm-paper th,
+html[data-theme='dark'] .asm-paper td,
+html[data-theme='dark'] .asm-paper-in,
+html[data-theme='dark'] .asm-hlabel,
+html[data-theme='dark'] .asm-act-line {
+  background: #fff;
+  color: #111;
+}
+
 /* Modern dark canvas + monitoring reports */
 .mon-panel-head {
   display: flex;

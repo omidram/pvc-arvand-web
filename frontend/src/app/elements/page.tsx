@@ -61,8 +61,8 @@ export default function ElementAdministrationMenu() {
         <span />
         <span />
         <span />
-        <span />
         <AccessBtn href="/statistics?form=dol">{t("menus.membraneStatistics")}</AccessBtn>
+        <AccessBtn href="/assembly-inspection">{t("menus.assemblyInspection")}</AccessBtn>
         <AccessBtn href="/inspections">{t("menus.elementInspection")}</AccessBtn>
       </div>
     </AccessHub>
