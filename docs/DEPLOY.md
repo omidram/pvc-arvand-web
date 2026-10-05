@@ -215,6 +215,28 @@ bash deploy/update.sh
 
 That pulls `main` and rebuilds the container. It does not delete the database.
 
+### Bring laptop plant data (shutdowns, elements, electrodes, …)
+
+Code updates do **not** copy the laptop SQLite. After pull:
+
+```bash
+bash deploy/restore-plant-seed.sh
+```
+
+This merges `docs/plant-data/pvc_arvand_plant_seed.db` (committed, ~7 MB, no
+voltage readings) into the Docker volume. Users / roles / existing voltages stay.
+
+For a **byte-for-byte** copy of the laptop DB (including ~1.5M voltage rows,
+~780 MB), from your PC:
+
+```bash
+scp backend/instance/pvc_arvand.db user@SERVER:/tmp/pvc_arvand.db
+# on server:
+cd pvc-arvand-web
+docker compose cp /tmp/pvc_arvand.db pvc-arvand:/data/pvc_arvand.db
+docker compose restart
+```
+
 ### Useful commands on the server
 
 ```bash

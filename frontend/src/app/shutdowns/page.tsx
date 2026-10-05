@@ -127,7 +127,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       titleBlue
       backHref="/shutdowns"
       backLabel={t("mainMenu.shutDown")}
-      extraButtons={<ExportButtons prefix="/shutdowns" params={listParams} filenameBase="shutdowns" allowImport={false} />}
+      extraButtons={<ExportButtons prefix="/shutdowns" params={listParams} filenameBase="shutdowns" />}
     >
       <PlantBar />
       <div className="shutdown-list-toolbar mb-3 flex flex-wrap items-end justify-between gap-3 text-[12px]">
