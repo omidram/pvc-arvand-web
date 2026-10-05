@@ -549,6 +549,7 @@ body {
   max-height: min(360px, 55vh);
   display: flex;
   flex-direction: column;
+  min-height: 0;
   border: 1px solid #334155;
   border-radius: 0.35rem;
   background: #0f172a;
@@ -587,9 +588,14 @@ body {
 }
 .dt-value-filter-actions button:hover { text-decoration: underline; }
 .dt-value-filter-list {
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   padding: 0.25rem 0.35rem;
   flex: 1 1 auto;
+  min-height: 0;
+  max-height: min(260px, 40vh);
 }
 .dt-value-filter-item {
   display: flex;

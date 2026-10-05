@@ -22,7 +22,11 @@ class TokenResponse(BaseModel):
 
 class ChangePasswordRequest(BaseModel):
     current_password: str
-    new_password: str = Field(min_length=4)
+    new_password: str = Field(min_length=8, max_length=128)
+
+
+class AdminSetPasswordRequest(BaseModel):
+    new_password: str = Field(min_length=8, max_length=128)
 
 
 class FormPermissionEntry(ORMModel):
@@ -49,7 +53,7 @@ class UserWithPermissions(UserRead):
 class UserCreate(BaseModel):
     username: str
     full_name: str | None = None
-    password: str = Field(min_length=4)
+    password: str = Field(min_length=8, max_length=128)
     role: str = "user"
     role_id: int | None = None
     is_active: bool = True
@@ -61,7 +65,7 @@ class UserUpdate(BaseModel):
     role: str | None = None
     role_id: int | None = None
     is_active: bool | None = None
-    password: str | None = Field(default=None, min_length=4)
+    password: str | None = Field(default=None, min_length=8, max_length=128)
     permissions: dict[str, str] | None = None
 
 

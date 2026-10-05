@@ -34,6 +34,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatDate, formatNumber } from "@/lib/utils";
+import { formatElectrolyzer } from "@/lib/plant-topology";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
@@ -42,19 +43,55 @@ import { ExportButtons } from "@/components/domain/export-buttons";
 type T = ReturnType<typeof useI18n>["t"];
 const TOOLTIP_STYLE = { background: "#ffffff", border: "1px solid #808080", borderRadius: 0, fontSize: 12, color: "#000" };
 
+/** Access form captions (Datenerfassung / Spannungen) — keep wording exact. */
+const ACCESS_VOLTAGE = {
+  electrolyser: "Electrolyser",
+  date: "Date",
+  time: "Time",
+  iTotal: "I Total",
+  iGesamt: "I Gesamt",
+  tAn: "t An",
+  tKa: "t Ka",
+  uTotal: "U Total",
+  noElements: "No. of Elements",
+  position: "Position",
+  uiV: "Ui [V]",
+  ukV: "Uk [V]",
+  umV: "Um [V]",
+  normalization: "Normierung",
+} as const;
+
+function accessTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const text = String(value).trim();
+  if (!text) return "—";
+  // ISO datetime → HH:MM:SS ; already a clock string → keep
+  const iso = text.match(/T(\d{2}:\d{2}(?::\d{2})?)/);
+  if (iso) return iso[1].length === 5 ? `${iso[1]}:00` : iso[1];
+  const clock = text.match(/\b(\d{1,2}:\d{2}(?::\d{2})?)\b/);
+  if (clock) return clock[1];
+  return text;
+}
+
+function accessPosition(value: string | number | null | undefined): string {
+  if (value == null || value === "") return "—";
+  const n = Number(value);
+  if (!Number.isNaN(n) && Number.isFinite(n)) return String(Math.trunc(n));
+  return String(value);
+}
+
 function normalizationFields(t: T): FieldDef[] {
   return [
-    { name: "normalization_nr", label: t("fields.normalizationNr"), type: "number" },
-    { name: "electrolyzer", label: t("fields.electrolyzer"), required: true },
-    { name: "date", label: t("fields.date"), type: "date" },
-    { name: "time", label: t("fields.time") },
-    { name: "total_current", label: t("fields.totalCurrent"), type: "number", step: "0.01" },
-    { name: "reference_current_density", label: t("fields.referenceCurrentDensity"), type: "number", step: "0.01" },
-    { name: "anolyte_temp", label: t("fields.anolyteTemp"), type: "number", step: "0.1" },
-    { name: "catholyte_temp", label: t("fields.catholyteTemp"), type: "number", step: "0.1" },
+    { name: "normalization_nr", label: ACCESS_VOLTAGE.normalization, type: "number" },
+    { name: "electrolyzer", label: ACCESS_VOLTAGE.electrolyser, required: true },
+    { name: "date", label: ACCESS_VOLTAGE.date, type: "date" },
+    { name: "time", label: ACCESS_VOLTAGE.time },
+    { name: "total_current", label: `${ACCESS_VOLTAGE.iTotal} [kA]`, type: "number", step: "0.01" },
+    { name: "anolyte_temp", label: `${ACCESS_VOLTAGE.tAn} [°C]`, type: "number", step: "0.1" },
+    { name: "catholyte_temp", label: `${ACCESS_VOLTAGE.tKa} [°C]`, type: "number", step: "0.1" },
     { name: "zero_voltage", label: t("fields.zeroVoltage"), type: "number", step: "0.001" },
-    { name: "total_voltage", label: t("fields.totalVoltage"), type: "number", step: "0.01" },
-    { name: "element_count", label: t("fields.elementCount"), type: "number" },
+    { name: "total_voltage", label: `${ACCESS_VOLTAGE.uTotal} [V]`, type: "number", step: "0.01" },
+    { name: "element_count", label: ACCESS_VOLTAGE.noElements, type: "number" },
     { name: "cl2_pct", label: t("fields.cl2Pct"), type: "number", step: "0.01" },
     { name: "h2_pct", label: t("fields.h2Pct"), type: "number", step: "0.01" },
     { name: "delta_p", label: t("fields.deltaP"), type: "number", step: "0.01" },
@@ -63,15 +100,15 @@ function normalizationFields(t: T): FieldDef[] {
 
 function readingFields(t: T): FieldDef[] {
   return [
-    { name: "normalization_nr", label: t("fields.normalizationNr"), type: "number" },
-    { name: "electrolyzer", label: t("fields.electrolyzer"), required: true },
-    { name: "position", label: t("fields.position") },
+    { name: "normalization_nr", label: ACCESS_VOLTAGE.normalization, type: "number" },
+    { name: "electrolyzer", label: ACCESS_VOLTAGE.electrolyser, required: true },
+    { name: "position", label: ACCESS_VOLTAGE.position },
     { name: "element_nr", label: t("fields.elementNr") },
-    { name: "date", label: t("fields.date"), type: "date" },
-    { name: "time", label: t("fields.time") },
-    { name: "voltage", label: t("fields.voltage"), type: "number", step: "0.001" },
-    { name: "voltage_prev", label: t("fields.voltagePrev"), type: "number", step: "0.001" },
-    { name: "standardized_voltage", label: t("fields.standardizedVoltage"), type: "number", step: "0.001" },
+    { name: "date", label: ACCESS_VOLTAGE.date, type: "date" },
+    { name: "time", label: ACCESS_VOLTAGE.time },
+    { name: "voltage", label: ACCESS_VOLTAGE.uiV, type: "number", step: "0.001" },
+    { name: "voltage_prev", label: ACCESS_VOLTAGE.ukV, type: "number", step: "0.001" },
+    { name: "standardized_voltage", label: ACCESS_VOLTAGE.umV, type: "number", step: "0.001" },
   ];
 }
 
@@ -104,17 +141,18 @@ function NormalizationsTab() {
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<ElectrolyzerNormalization>(
     "voltage-normalizations",
     voltageNormalizationsApi,
-    { limit: 500 }
+    { limit: 10000 }
   );
 
   const columns: Column<ElectrolyzerNormalization>[] = [
-    { key: "electrolyzer", header: t("fields.electrolyzer") },
-    { key: "date", header: t("fields.date"), render: (r) => formatDate(r.date) },
-    { key: "total_current", header: t("fields.totalCurrent"), render: (r) => formatNumber(r.total_current) },
-    { key: "total_voltage", header: t("fields.totalVoltage"), render: (r) => formatNumber(r.total_voltage) },
-    { key: "element_count", header: t("fields.elementCount") },
-    { key: "anolyte_temp", header: t("fields.anolyteTemp"), render: (r) => formatNumber(r.anolyte_temp) },
-    { key: "catholyte_temp", header: t("fields.catholyteTemp"), render: (r) => formatNumber(r.catholyte_temp) },
+    { key: "electrolyzer", header: ACCESS_VOLTAGE.electrolyser, render: (r) => formatElectrolyzer(r.electrolyzer) || r.electrolyzer || "—" },
+    { key: "date", header: ACCESS_VOLTAGE.date, render: (r) => formatDate(r.date) },
+    { key: "time", header: ACCESS_VOLTAGE.time, render: (r) => accessTime(r.time) },
+    { key: "total_current", header: `${ACCESS_VOLTAGE.iTotal} [kA]`, render: (r) => formatNumber(r.total_current) },
+    { key: "anolyte_temp", header: `${ACCESS_VOLTAGE.tAn} [°C]`, render: (r) => formatNumber(r.anolyte_temp) },
+    { key: "catholyte_temp", header: `${ACCESS_VOLTAGE.tKa} [°C]`, render: (r) => formatNumber(r.catholyte_temp) },
+    { key: "total_voltage", header: `${ACCESS_VOLTAGE.uTotal} [V]`, render: (r) => formatNumber(r.total_voltage) },
+    { key: "element_count", header: ACCESS_VOLTAGE.noElements },
   ];
 
   return (
@@ -203,20 +241,30 @@ function ReadingsTab() {
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<VoltageReading>(
     "voltage-readings",
     voltageReadingsApi,
-    { limit: 500 }
+    { limit: 10000 }
   );
 
   useEffect(() => {
     if (searchParams.get("import") === "1") setShowImport(true);
   }, [searchParams]);
 
+  const rows = useMemo(
+    () =>
+      (listQuery.data || []).map((row) => ({
+        ...row,
+        electrolyzer: formatElectrolyzer(row.electrolyzer) || row.electrolyzer,
+      })),
+    [listQuery.data]
+  );
+
+  // Access Spannungen order: Electrolyser, Position, Date, Time, Ui [V], Uk [V]
   const columns: Column<VoltageReading>[] = [
-    { key: "electrolyzer", header: t("fields.electrolyzer") },
-    { key: "position", header: t("fields.position") },
-    { key: "element_nr", header: t("fields.elementNr") },
-    { key: "date", header: t("fields.date"), render: (r) => formatDate(r.date) },
-    { key: "voltage", header: "Ui (V)", render: (r) => formatNumber(r.voltage, 3) },
-    { key: "standardized_voltage", header: "Un (V)", render: (r) => formatNumber(r.standardized_voltage, 3) },
+    { key: "electrolyzer", header: ACCESS_VOLTAGE.electrolyser },
+    { key: "position", header: ACCESS_VOLTAGE.position, render: (r) => accessPosition(r.position) },
+    { key: "date", header: ACCESS_VOLTAGE.date, render: (r) => formatDate(r.date) },
+    { key: "time", header: ACCESS_VOLTAGE.time, render: (r) => accessTime(r.time) },
+    { key: "voltage", header: ACCESS_VOLTAGE.uiV, render: (r) => formatNumber(r.voltage, 3) },
+    { key: "voltage_prev", header: ACCESS_VOLTAGE.ukV, render: (r) => formatNumber(r.voltage_prev, 3) },
   ];
 
   return (
@@ -244,7 +292,7 @@ function ReadingsTab() {
       ) : (
         <DataTable
           columns={columns}
-          data={listQuery.data}
+          data={rows}
           keyField="id"
           isLoading={listQuery.isLoading}
           emptyTitle={t("voltage.noReadings")}

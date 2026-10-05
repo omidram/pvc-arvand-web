@@ -23,13 +23,12 @@ import { LoadingState } from "@/components/ui/spinner";
 function AnodesDetails() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
-  const wanted = useSearchParams().get("anode_nr");
-  const listParams: Record<string, unknown> = { limit: 5000 };
-  if (wanted) listParams.q = wanted;
+  // URL ?anode_nr= is only for selecting/opening a record (AccessWorkspace).
+  // Never pass it as list `q` — that collapses the datasheet to one row on click.
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Anode>(
     "anodes",
     anodesApi,
-    listParams
+    { limit: 10000 }
   );
 
   const fields: FieldDef[] = [

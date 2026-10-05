@@ -205,8 +205,10 @@ export function AccessWorkspace<T extends object>({
       const row = rows[clamped] as Record<string, unknown>;
       const token = row[paramName] ?? readId(rows[clamped]);
       const url = new URL(window.location.href);
+      // Keep other query keys (e.g. tab=). Record id is for navigation/selection only —
+      // list pages must not treat it as a search filter.
       url.searchParams.set(paramName, String(token));
-      router.replace(`${url.pathname}?${url.searchParams.toString()}`);
+      router.replace(`${url.pathname}?${url.searchParams.toString()}`, { scroll: false });
     }
   }
 

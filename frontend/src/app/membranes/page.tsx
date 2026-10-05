@@ -18,13 +18,11 @@ import { LoadingState } from "@/components/ui/spinner";
 function MembranesDetails() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
-  const wanted = useSearchParams().get("membrane_nr");
-  const listParams: Record<string, unknown> = { limit: 5000 };
-  if (wanted) listParams.q = wanted;
+  // URL ?membrane_nr= selects a record only — do not filter the list by it.
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Membrane>(
     "membranes",
     membranesApi,
-    listParams
+    { limit: 10000 }
   );
 
   const fields: FieldDef[] = [

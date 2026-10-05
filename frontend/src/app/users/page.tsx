@@ -2,10 +2,11 @@
 
 import { Fragment, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { KeyRound, Pencil, Plus, Trash2 } from "lucide-react";
 import { rolesApi, usersApi } from "@/lib/endpoints";
 import type { AppRole, PermissionLevel, UserAccount, UserRole } from "@/lib/types";
 import { AccessFormWindow } from "@/components/layout/access-form";
+import { AdminSetPasswordDialog, PasswordRulesList } from "@/components/auth/change-password-dialog";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
@@ -15,6 +16,7 @@ import { ErrorState, Spinner } from "@/components/ui/spinner";
 import { Tabs } from "@/components/ui/tabs";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
+import { isPasswordStrong } from "@/lib/password-policy";
 import { formatDate } from "@/lib/utils";
 
 const ROLE_COLORS: Record<UserRole, "violet" | "cyan" | "slate"> = { admin: "violet", user: "cyan", visitor: "slate" };
@@ -190,6 +192,7 @@ function UsersTab({ formKeys, formFields }: { formKeys: string[]; formFields: Re
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<UserAccount | null>(null);
+  const [passwordTarget, setPasswordTarget] = useState<UserAccount | null>(null);
 
   const usersQuery = useQuery({ queryKey: ["users"], queryFn: usersApi.list });
   const rolesQuery = useQuery({ queryKey: ["roles"], queryFn: rolesApi.list });
@@ -205,6 +208,14 @@ function UsersTab({ formKeys, formFields }: { formKeys: string[]; formFields: Re
       return;
     }
     if (confirm(t("users.confirmDelete", { name: u.username }))) removeMutation.mutate(u.id);
+  }
+
+  function handleSetPassword(u: UserAccount) {
+    if ((u.auth_source || "local") === "ad") {
+      alert(t("users.adPasswordLocked"));
+      return;
+    }
+    setPasswordTarget(u);
   }
 
   const columns: Column<UserAccount>[] = [
@@ -262,6 +273,16 @@ function UsersTab({ formKeys, formFields }: { formKeys: string[]; formFields: Re
               <Button
                 size="sm"
                 variant="ghost"
+                title={t("users.setPassword")}
+                aria-label={t("users.setPassword")}
+                onClick={() => handleSetPassword(row)}
+                disabled={(row.auth_source || "local") === "ad"}
+              >
+                <KeyRound size={14} />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
                 onClick={() => {
                   setEditing(row);
                   setShowForm(true);
@@ -293,6 +314,16 @@ function UsersTab({ formKeys, formFields }: { formKeys: string[]; formFields: Re
           />
         </Modal>
       )}
+
+      {passwordTarget ? (
+        <AdminSetPasswordDialog
+          open
+          userId={passwordTarget.id}
+          username={passwordTarget.username}
+          onClose={() => setPasswordTarget(null)}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ["users"] })}
+        />
+      ) : null}
     </div>
   );
 }
@@ -477,6 +508,7 @@ function UserForm({
   const [error, setError] = useState<string | null>(null);
 
   const usingAppRole = role !== "admin" && roleId != null;
+  const isAdUser = Boolean(initial && (initial.auth_source || "local") === "ad");
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -500,7 +532,7 @@ function UserForm({
         role,
         role_id: role === "admin" ? null : roleId,
         is_active: isActive,
-        password: password || undefined,
+        password: !isAdUser && password ? password : undefined,
         permissions: role === "admin" || roleId != null ? undefined : permissions,
       }),
     onSuccess: onSaved,
@@ -523,6 +555,11 @@ function UserForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    const needsPassword = !isAdUser && (!initial || Boolean(password));
+    if (needsPassword && !isPasswordStrong(password, username)) {
+      setError(t("auth.passwordPolicyFailed"));
+      return;
+    }
     if (initial) updateMutation.mutate();
     else createMutation.mutate();
   }
@@ -542,9 +579,27 @@ function UserForm({
         </div>
         <div>
           <Label>
-            {t("users.password")} {initial && <span className="font-normal normal-case">({t("users.passwordHint")})</span>}
+            {t("users.password")} {initial && !isAdUser ? <span className="font-normal normal-case">({t("users.passwordHint")})</span> : null}
           </Label>
-          <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required={!initial} />
+          {isAdUser ? (
+            <p className="mt-1 text-[11px] text-[var(--win-muted)]">{t("users.adPasswordLocked")}</p>
+          ) : (
+            <>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required={!initial}
+                autoComplete="new-password"
+              />
+              {(password || !initial) && (
+                <>
+                  <p className="mt-1 text-[11px] text-[var(--win-muted)]">{t("users.passwordRequirements")}</p>
+                  <PasswordRulesList password={password} username={username} />
+                </>
+              )}
+            </>
+          )}
         </div>
         <div>
           <Label>{t("users.systemRole")}</Label>

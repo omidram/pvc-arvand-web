@@ -60,18 +60,24 @@ export function ColumnValueFilter({
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
-    function onScroll() {
+    function onOutsideScroll(e: Event) {
+      // Capture-phase scroll fires for the filter list too — ignore those so the menu stays open.
+      const target = e.target;
+      if (target instanceof Node && menuRef.current?.contains(target)) return;
+      setOpen(false);
+    }
+    function onResize() {
       setOpen(false);
     }
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
-    window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("scroll", onOutsideScroll, true);
+    window.addEventListener("resize", onResize);
     return () => {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
-      window.removeEventListener("scroll", onScroll, true);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("scroll", onOutsideScroll, true);
+      window.removeEventListener("resize", onResize);
     };
   }, [open]);
 
@@ -108,6 +114,7 @@ export function ColumnValueFilter({
             role="listbox"
             style={{ top: pos.top, left: pos.left, width: pos.width }}
             onClick={(e) => e.stopPropagation()}
+            onWheel={(e) => e.stopPropagation()}
           >
             <div className="dt-value-filter-tools">
               <input
@@ -126,7 +133,7 @@ export function ColumnValueFilter({
                 </button>
               </div>
             </div>
-            <div className="dt-value-filter-list">
+            <div className="dt-value-filter-list" onWheel={(e) => e.stopPropagation()}>
               {visible.length === 0 ? (
                 <div className="dt-value-filter-empty">{t("common.noRecordsFound")}</div>
               ) : (

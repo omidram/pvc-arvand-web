@@ -9,7 +9,6 @@ import {
   shutdownCausesApi,
   shutdownSummaryApi,
   settingsApi,
-  electrolyzersApi,
 } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { Shutdown, ShutdownCategory, ShutdownCause } from "@/lib/types";
@@ -20,9 +19,7 @@ import { useAuth } from "@/lib/auth/context";
 import { formatDate } from "@/lib/utils";
 import { useCalendar } from "@/lib/calendar/context";
 import { DateInput } from "@/components/ui/date-input";
-import { compareElectrolyzers, formatElectrolyzer } from "@/lib/plant-topology";
-
-const BASE_PLANT_PARTS = ["081", "082", "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "J1", "K1", "L1", "M1"];
+import { formatElectrolyzer } from "@/lib/plant-topology";
 
 function toLocalInput(value: string | null | undefined): string {
   if (!value) return "";
@@ -32,11 +29,6 @@ function toLocalInput(value: string | null | undefined): string {
   if (Number.isNaN(d.getTime())) return value.slice(0, 16);
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-function fromLocalInput(value: string): string | null {
-  if (!value) return null;
-  return value.length === 16 ? `${value}:00` : value;
 }
 
 function durationMinutes(row: Shutdown): number | null {
@@ -103,13 +95,11 @@ function ShutdownMenu() {
 
 function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: string; dateTo?: string; showPeriodFilter?: boolean }) {
   const { t } = useI18n();
-  const { canEdit, canEditField, canViewField } = useAuth();
-  // Time-period view is a report: only the from/till filter dates are interactive.
-  const editable = !showPeriodFilter && canEdit("shutdowns");
-  const [active, setActive] = useState<number | "new" | null>(null);
+  const { canViewField } = useAuth();
+  // Shut Down List / Time Period are reporting views: only from/till dates are interactive.
+  const [active, setActive] = useState<number | null>(null);
   const [from, setFrom] = useState(dateFrom || "");
   const [to, setTo] = useState(dateTo || "");
-  const [newPart, setNewPart] = useState("");
 
   const listParams = useMemo(() => {
     const params: Record<string, unknown> = { limit: 2000 };
@@ -122,52 +112,13 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     return params;
   }, [from, to]);
 
-  const { listQuery, createMutation, updateMutation } = useCrudResource<Shutdown>("shutdowns", shutdownsApi, listParams);
-  const causesQuery = useQuery({
-    queryKey: ["shutdown-causes", { limit: 500 }],
-    queryFn: () => shutdownCausesApi.list({ limit: 500 }),
-  });
-  const categoriesQuery = useQuery({
-    queryKey: ["shutdown-categories", { limit: 200 }],
-    queryFn: () => shutdownCategoriesApi.list({ limit: 200 }),
-  });
-  const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
-
+  const { listQuery } = useCrudResource<Shutdown>("shutdowns", shutdownsApi, listParams);
   const rows = listQuery.data || [];
-  const causes = causesQuery.data || [];
-  const categories = categoriesQuery.data || [];
   const totalMins = rows.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
   const totalHm = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, "0")}`;
 
-  const plantParts = useMemo(() => {
-    const names = (elQuery.data || []).map((e) => formatElectrolyzer(e.name)).filter(Boolean) as string[];
-    const existing = rows.map((r) => formatElectrolyzer(r.plant_part)).filter(Boolean) as string[];
-    return Array.from(new Set([...BASE_PLANT_PARTS, ...names, ...existing])).sort((a, b) => {
-      if (/^\d/.test(a) || /^\d/.test(b)) return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
-      return compareElectrolyzers(a, b);
-    });
-  }, [elQuery.data, rows]);
-
-  function fieldEditable(field: string) {
-    return editable && canEditField("shutdowns", field);
-  }
   function fieldVisible(field: string) {
     return canViewField("shutdowns", field);
-  }
-
-  function save(row: Shutdown, patch: Partial<Shutdown>) {
-    const keys = Object.keys(patch);
-    if (!keys.every((k) => fieldEditable(k))) return;
-    updateMutation.mutate({ id: row.nr, payload: { ...row, ...patch } });
-  }
-
-  function applyCode(row: Shutdown, code: string) {
-    const match = causes.find((c) => (c.code || "").toLowerCase() === code.toLowerCase());
-    save(row, {
-      code,
-      cause: match?.cause ?? row.cause,
-      category: match?.category ?? row.category,
-    });
   }
 
   return (
@@ -176,24 +127,20 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       titleBlue
       backHref="/shutdowns"
       backLabel={t("mainMenu.shutDown")}
-      extraButtons={<ExportButtons prefix="/shutdowns" params={listParams} filenameBase="shutdowns" />}
+      extraButtons={<ExportButtons prefix="/shutdowns" params={listParams} filenameBase="shutdowns" allowImport={false} />}
     >
       <PlantBar />
       <div className="shutdown-list-toolbar mb-3 flex flex-wrap items-end justify-between gap-3 text-[12px]">
-        {showPeriodFilter ? (
-          <div className="flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1">
-              <span>{t("menus.from")}</span>
-              <DateInput className="access-inset-field" value={from} onChange={(e) => setFrom(e.target.value)} />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span>{t("menus.till")}</span>
-              <DateInput className="access-inset-field" value={to} onChange={(e) => setTo(e.target.value)} />
-            </label>
-          </div>
-        ) : (
-          <div />
-        )}
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="flex flex-col gap-1">
+            <span>{t("menus.from")}</span>
+            <DateInput className="access-inset-field" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span>{t("menus.till")}</span>
+            <DateInput className="access-inset-field" value={to} onChange={(e) => setTo(e.target.value)} />
+          </label>
+        </div>
         <div className="shutdown-summary-chip font-bold">
           {t("shutdowns.totalDuration")}: {totalHm} &nbsp;·&nbsp; {t("shutdowns.totalShutdowns")}: {rows.length}
         </div>
@@ -219,186 +166,51 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               <tr key={row.nr} onClick={() => setActive(row.nr)} className={active === row.nr ? "is-active-row" : undefined}>
                 <td className="access-selector">{active === row.nr ? "►" : ""}</td>
                 <td>
-                  <input className="w-12" value={row.nr} readOnly />
+                  <input className="w-12" value={row.nr} readOnly tabIndex={-1} />
                 </td>
                 {fieldVisible("plant_part") ? (
                   <td>
-                    {showPeriodFilter ? (
-                      <span className="block px-1">{formatElectrolyzer(row.plant_part) || row.plant_part || "—"}</span>
-                    ) : (
-                      <select
-                        className="w-full"
-                        value={formatElectrolyzer(row.plant_part) || row.plant_part || ""}
-                        onChange={(e) =>
-                          save(row, { plant_part: formatElectrolyzer(e.target.value) || e.target.value || null })
-                        }
-                        disabled={!fieldEditable("plant_part")}
-                      >
-                        <option value="" />
-                        {plantParts.map((p) => (
-                          <option key={p} value={p}>
-                            {p}
-                          </option>
-                        ))}
-                        {row.plant_part &&
-                        !plantParts.includes(formatElectrolyzer(row.plant_part) || row.plant_part) ? (
-                          <option value={formatElectrolyzer(row.plant_part) || row.plant_part}>
-                            {formatElectrolyzer(row.plant_part) || row.plant_part}
-                          </option>
-                        ) : null}
-                      </select>
-                    )}
+                    <span className="block px-1">{formatElectrolyzer(row.plant_part) || row.plant_part || "—"}</span>
                   </td>
                 ) : null}
                 {fieldVisible("shutdown_time") ? (
                   <td>
-                    {showPeriodFilter ? (
-                      <span className="block px-1 tabular-nums">{toLocalInput(row.shutdown_time).replace("T", " ") || "—"}</span>
-                    ) : (
-                      <DateInput
-                        type="datetime-local"
-                        value={toLocalInput(row.shutdown_time)}
-                        onChange={(e) => save(row, { shutdown_time: fromLocalInput(e.target.value) })}
-                        disabled={!fieldEditable("shutdown_time")}
-                      />
-                    )}
+                    <span className="block px-1 tabular-nums">{toLocalInput(row.shutdown_time).replace("T", " ") || "—"}</span>
                   </td>
                 ) : null}
                 {fieldVisible("startup_time") ? (
                   <td>
-                    {showPeriodFilter ? (
-                      <span className="block px-1 tabular-nums">{toLocalInput(row.startup_time).replace("T", " ") || "—"}</span>
-                    ) : (
-                      <DateInput
-                        type="datetime-local"
-                        value={toLocalInput(row.startup_time)}
-                        onChange={(e) => save(row, { startup_time: fromLocalInput(e.target.value) })}
-                        disabled={!fieldEditable("startup_time")}
-                      />
-                    )}
+                    <span className="block px-1 tabular-nums">{toLocalInput(row.startup_time).replace("T", " ") || "—"}</span>
                   </td>
                 ) : null}
                 <td>
-                  <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(row)} readOnly />
+                  <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(row)} readOnly tabIndex={-1} />
                 </td>
                 {fieldVisible("code") ? (
                   <td>
-                    {showPeriodFilter ? (
-                      <span className="block px-1">{row.code || "—"}</span>
-                    ) : (
-                      <input
-                        className="w-14"
-                        list="shutdown-codes"
-                        value={row.code || ""}
-                        onChange={(e) => applyCode(row, e.target.value)}
-                        disabled={!fieldEditable("code")}
-                      />
-                    )}
+                    <span className="block px-1">{row.code || "—"}</span>
                   </td>
                 ) : null}
                 {fieldVisible("cause") ? (
                   <td>
-                    {showPeriodFilter ? (
-                      <span className="block px-1">{row.cause || "—"}</span>
-                    ) : (
-                      <input
-                        className="w-full"
-                        list="shutdown-causes"
-                        value={row.cause || ""}
-                        onChange={(e) => save(row, { cause: e.target.value || null })}
-                        disabled={!fieldEditable("cause")}
-                      />
-                    )}
+                    <span className="block px-1">{row.cause || "—"}</span>
                   </td>
                 ) : null}
                 {fieldVisible("category") ? (
                   <td>
-                    {showPeriodFilter ? (
-                      <span className="block px-1">{row.category || "—"}</span>
-                    ) : (
-                      <select
-                        className="w-full"
-                        value={row.category || ""}
-                        onChange={(e) => save(row, { category: e.target.value || null })}
-                        disabled={!fieldEditable("category")}
-                      >
-                        <option value="" />
-                        {categories.map((c) => (
-                          <option key={c.id} value={c.category || ""}>
-                            {c.category}
-                          </option>
-                        ))}
-                        {row.category && !categories.some((c) => c.category === row.category) ? (
-                          <option value={row.category}>{row.category}</option>
-                        ) : null}
-                      </select>
-                    )}
+                    <span className="block px-1">{row.category || "—"}</span>
                   </td>
                 ) : null}
                 {fieldVisible("remarks") ? (
                   <td>
-                    {showPeriodFilter ? (
-                      <span className="block px-1">{row.remarks || "—"}</span>
-                    ) : (
-                      <input
-                        className="w-full"
-                        value={row.remarks || ""}
-                        onChange={(e) => save(row, { remarks: e.target.value })}
-                        disabled={!fieldEditable("remarks")}
-                      />
-                    )}
+                    <span className="block px-1">{row.remarks || "—"}</span>
                   </td>
                 ) : null}
               </tr>
             ))}
-            {!showPeriodFilter && fieldEditable("plant_part") ? (
-              <tr onClick={() => setActive("new")}>
-                <td className="access-selector">*</td>
-                <td />
-                <td>
-                  <select
-                    className="w-full"
-                    value={newPart}
-                    onChange={(e) => {
-                      const plant_part = e.target.value;
-                      setNewPart(plant_part);
-                      if (plant_part) {
-                        createMutation.mutate(
-                          {
-                            plant_part,
-                            shutdown_time: new Date().toISOString().slice(0, 19),
-                          } as never,
-                          { onSuccess: () => setNewPart("") }
-                        );
-                      }
-                    }}
-                  >
-                    <option value="">{t("menus.partOfPlant")}</option>
-                    {plantParts.map((p) => (
-                      <option key={p} value={p}>
-                        {p}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td colSpan={7} className="text-[11px] text-[#404040]">
-                  {t("shutdowns.newRowHint")}
-                </td>
-              </tr>
-            ) : null}
           </tbody>
         </table>
       </div>
-      <datalist id="shutdown-codes">
-        {Array.from(new Set(causes.map((c) => c.code).filter(Boolean))).map((code) => (
-          <option key={code!} value={code!} />
-        ))}
-      </datalist>
-      <datalist id="shutdown-causes">
-        {causes.map((c) => (
-          <option key={c.id} value={c.cause || ""} />
-        ))}
-      </datalist>
       {listQuery.isError ? <div className="mt-2 text-[12px] text-red-800">{(listQuery.error as Error).message}</div> : null}
     </AccessHub>
   );

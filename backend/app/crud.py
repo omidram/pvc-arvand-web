@@ -53,7 +53,7 @@ def build_crud_router(
     def list_items(
         q: str | None = Query(default=None, description="Free-text search"),
         skip: int = 0,
-        limit: int = Query(default=500, le=5000),
+        limit: int = Query(default=500, le=20000),
         db: Session = Depends(get_db),
     ):
         rows = _query_list(q, skip, limit, db)

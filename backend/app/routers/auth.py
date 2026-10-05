@@ -8,6 +8,7 @@ from ..auth import (
     create_access_token,
     get_current_user,
     hash_password,
+    require_password_strength,
     user_permission_map,
     verify_password,
 )
@@ -189,6 +190,9 @@ def change_password(
             user_agent=_ua(request),
         )
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Current password is incorrect")
+    require_password_strength(payload.new_password, username=user.username)
+    if payload.new_password == payload.current_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New password must be different from the current password")
     user.password_hash = hash_password(payload.new_password)
     db.commit()
     audit.log_auth_event(

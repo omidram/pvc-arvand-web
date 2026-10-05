@@ -61,7 +61,7 @@ def list_segregations(
     q: str | None = Query(default=None),
     electrode_kind: str | None = None,
     skip: int = 0,
-    limit: int = Query(default=500, le=5000),
+    limit: int = Query(default=500, le=20000),
     db: Session = Depends(get_db),
 ):
     query = db.query(models.ElectrodeSegregation)

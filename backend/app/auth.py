@@ -139,6 +139,49 @@ bearer_scheme = HTTPBearer(auto_error=False)
 # Passwords
 # --------------------------------------------------------------------------
 
+_PASSWORD_MIN_LEN = 8
+_COMMON_PASSWORDS = {
+    "password",
+    "password1",
+    "password123",
+    "admin",
+    "admin123",
+    "admin1234",
+    "12345678",
+    "123456789",
+    "qwerty123",
+    "letmein",
+    "welcome1",
+    "changeme",
+}
+
+
+def validate_password_strength(password: str, *, username: str | None = None) -> str | None:
+    """Return an error message if the password fails policy, else None."""
+    value = password or ""
+    if len(value) < _PASSWORD_MIN_LEN:
+        return f"Password must be at least {_PASSWORD_MIN_LEN} characters."
+    if not any(ch.isupper() for ch in value):
+        return "Password must include at least one uppercase letter."
+    if not any(ch.islower() for ch in value):
+        return "Password must include at least one lowercase letter."
+    if not any(ch.isdigit() for ch in value):
+        return "Password must include at least one digit."
+    if not any(not ch.isalnum() for ch in value):
+        return "Password must include at least one special character."
+    if username and value.lower() == username.strip().lower():
+        return "Password must not be the same as the username."
+    if value.lower() in _COMMON_PASSWORDS:
+        return "Password is too common. Choose a stronger password."
+    return None
+
+
+def require_password_strength(password: str, *, username: str | None = None) -> None:
+    message = validate_password_strength(password, username=username)
+    if message:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=message)
+
+
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
-from ..auth import FORM_FIELDS, FORM_KEYS, hash_password, is_valid_permission_key, require_admin, user_permission_map
+from ..auth import FORM_FIELDS, FORM_KEYS, hash_password, is_valid_permission_key, require_admin, require_password_strength, user_permission_map
 from ..database import get_db
 
 router = APIRouter(prefix="/users", tags=["users"], dependencies=[Depends(require_admin)])
@@ -75,6 +75,7 @@ def create_user(payload: schemas.UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Username already exists")
     if payload.role not in ("admin", "user", "visitor"):
         raise HTTPException(status_code=400, detail="Invalid system role")
+    require_password_strength(payload.password, username=payload.username)
     user = models.User(
         username=payload.username,
         full_name=payload.full_name,
@@ -110,6 +111,12 @@ def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends
     if payload.is_active is not None:
         user.is_active = payload.is_active
     if payload.password:
+        if getattr(user, "auth_source", "local") == "ad":
+            raise HTTPException(
+                status_code=400,
+                detail="This account uses Active Directory. Change the password in Windows / AD, not here.",
+            )
+        require_password_strength(payload.password, username=user.username)
         user.password_hash = hash_password(payload.password)
 
     # role_id / permissions: role_id wins when set; explicit null clears role
@@ -121,6 +128,24 @@ def update_user(user_id: int, payload: schemas.UserUpdate, db: Session = Depends
     elif payload.permissions is not None and user.role != "admin" and not user.role_id:
         _set_permissions(db, user, payload.permissions)
 
+    db.commit()
+    db.refresh(user)
+    return _with_permissions(db, user)
+
+
+@router.post("/{user_id}/password", response_model=schemas.UserWithPermissions)
+def set_user_password(user_id: int, payload: schemas.AdminSetPasswordRequest, db: Session = Depends(get_db)):
+    """Admin sets / resets another user's local password."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Not found")
+    if getattr(user, "auth_source", "local") == "ad":
+        raise HTTPException(
+            status_code=400,
+            detail="This account uses Active Directory. Change the password in Windows / AD, not here.",
+        )
+    require_password_strength(payload.new_password, username=user.username)
+    user.password_hash = hash_password(payload.new_password)
     db.commit()
     db.refresh(user)
     return _with_permissions(db, user)

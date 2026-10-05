@@ -593,6 +593,8 @@ export const usersApi = {
       permissions: Record<string, T.PermissionLevel>;
     }>
   ): Promise<T.UserAccount> => (await apiClient.put(`/users/${id}`, payload)).data,
+  setPassword: async (id: number, newPassword: string): Promise<T.UserAccount> =>
+    (await apiClient.post(`/users/${id}/password`, { new_password: newPassword })).data,
   remove: async (id: number): Promise<void> => {
     await apiClient.delete(`/users/${id}`);
   },
