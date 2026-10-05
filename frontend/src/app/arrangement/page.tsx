@@ -8,7 +8,8 @@ import { arrangementBoardApi } from "@/lib/endpoints";
 import { CellArrangementEditor } from "@/components/domain/cell-arrangement-editor";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { Button } from "@/components/ui/button";
-import { Label, Select } from "@/components/ui/input";
+import { Label } from "@/components/ui/input";
+import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { Badge } from "@/components/ui/badge";
 import { ErrorState, Spinner } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
@@ -59,20 +60,15 @@ export default function ArrangementBoardPage() {
       <div className="mb-3 flex flex-wrap items-end gap-3">
         <div className="min-w-[200px]">
           <Label>{t("fields.electrolyzer")}</Label>
-          <Select
+          <ElectrolyzerCombo
             value={currentEz}
-            onChange={(e) => {
-              setElectrolyzer(e.target.value);
+            extraOptions={data?.electrolyzers}
+            placeholder={t("arrangement.selectElectrolyzer")}
+            onChange={(v) => {
+              setElectrolyzer(v);
               setSelectedPos(null);
             }}
-          >
-            <option value="">{t("arrangement.selectElectrolyzer")}</option>
-            {(data?.electrolyzers || []).map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </Select>
+          />
         </div>
         <Badge color="cyan">
           {t("arrangement.occupied")}: {data?.counts.occupied ?? "—"} / {data?.counts.positions ?? "—"}

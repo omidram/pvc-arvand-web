@@ -77,7 +77,7 @@ export function AssemblyDataForm() {
     {
       name: "electrolyzer",
       label: t("fields.electrolyzer"),
-      type: "select",
+      type: "combo",
       options: (electrolyzers.data || []).map((value) => ({ label: value, value })),
     },
     { name: "position", label: t("fields.position"), placeholder: t("elements.positionPlaceholder") },

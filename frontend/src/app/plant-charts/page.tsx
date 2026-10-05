@@ -10,7 +10,8 @@ import { monitoringApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { formatDate } from "@/lib/utils";
-import { TRAIN_LETTERS, electrolyzerName, type TrainId } from "@/lib/plant-topology";
+import type { TrainId } from "@/lib/plant-topology";
+import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 
 const SPANS = [
   { id: "10", labelKey: "monitoring.last10" },
@@ -112,16 +113,6 @@ export default function PlantChartsPage() {
     [query.data]
   );
 
-  const elOptions = useMemo(() => {
-    const names: string[] = [];
-    for (const trainId of ["1", "2"] as TrainId[]) {
-      for (const letter of TRAIN_LETTERS) {
-        names.push(electrolyzerName(trainId, letter));
-      }
-    }
-    return names;
-  }, []);
-
   return (
     <AccessHub title={t("mainMenu.plantCharts")}>
       <p className="mb-3 text-[11px] text-[var(--win-muted)]">{t("plantCharts.hint")}</p>
@@ -154,18 +145,13 @@ export default function PlantChartsPage() {
           </>
         ) : null}
         {scope === "electrolyzer" ? (
-          <select
-            className="mon-filter-chip"
+          <ElectrolyzerCombo
+            className="mon-filter-chip max-w-[88px]"
+            variant="access"
             value={electrolyzer}
-            onChange={(e) => setElectrolyzer(e.target.value)}
+            onChange={setElectrolyzer}
             aria-label={t("plantCharts.scopeElectrolyzer")}
-          >
-            {elOptions.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
+          />
         ) : null}
       </div>
 

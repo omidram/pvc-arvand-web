@@ -13,7 +13,6 @@ import {
   voltageCalcApi,
   currentEfficiencyEntriesApi,
   currentEfficiencyCalcApi,
-  electrolyzersApi,
   subPlantsApi,
   arrangementsApi,
   correctionFactorsApi,
@@ -28,6 +27,12 @@ import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { ResourceForm, type FieldDef } from "@/components/ui/resource-form";
+import { AccessFields, accessPayload, valuesFromRecord } from "@/components/ui/access-fields";
+import {
+  ElectrolyzerCombo,
+  electrolyzerFieldOptions,
+  useElectrolyzerNames,
+} from "@/components/ui/electrolyzer-combo";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { Tabs } from "@/components/ui/tabs";
@@ -80,10 +85,16 @@ function accessPosition(value: string | number | null | undefined): string {
   return String(value);
 }
 
-function normalizationFields(t: T): FieldDef[] {
+function normalizationFields(t: T, electrolyzerOptions: FieldDef["options"]): FieldDef[] {
   return [
     { name: "normalization_nr", label: ACCESS_VOLTAGE.normalization, type: "number" },
-    { name: "electrolyzer", label: ACCESS_VOLTAGE.electrolyser, required: true },
+    {
+      name: "electrolyzer",
+      label: ACCESS_VOLTAGE.electrolyser,
+      type: "combo",
+      required: true,
+      options: electrolyzerOptions,
+    },
     { name: "date", label: ACCESS_VOLTAGE.date, type: "date" },
     { name: "time", label: ACCESS_VOLTAGE.time },
     { name: "total_current", label: `${ACCESS_VOLTAGE.iTotal} [kA]`, type: "number", step: "0.01" },
@@ -98,10 +109,16 @@ function normalizationFields(t: T): FieldDef[] {
   ];
 }
 
-function readingFields(t: T): FieldDef[] {
+function readingFields(t: T, electrolyzerOptions: FieldDef["options"]): FieldDef[] {
   return [
     { name: "normalization_nr", label: ACCESS_VOLTAGE.normalization, type: "number" },
-    { name: "electrolyzer", label: ACCESS_VOLTAGE.electrolyser, required: true },
+    {
+      name: "electrolyzer",
+      label: ACCESS_VOLTAGE.electrolyser,
+      type: "combo",
+      required: true,
+      options: electrolyzerOptions,
+    },
     { name: "position", label: ACCESS_VOLTAGE.position },
     { name: "element_nr", label: t("fields.elementNr") },
     { name: "date", label: ACCESS_VOLTAGE.date, type: "date" },
@@ -112,7 +129,7 @@ function readingFields(t: T): FieldDef[] {
   ];
 }
 
-function ceFields(t: T): FieldDef[] {
+function ceFields(t: T, scopeRefField: FieldDef): FieldDef[] {
   return [
     {
       name: "scope",
@@ -125,11 +142,62 @@ function ceFields(t: T): FieldDef[] {
         { label: t("enums.scope.group"), value: "group" },
       ],
     },
-    { name: "scope_ref", label: t("fields.scopeReference") },
+    scopeRefField,
     { name: "position", label: t("fields.position") },
     { name: "date", label: t("fields.date"), type: "date" },
     { name: "value_pct", label: t("fields.currentEfficiencyPct"), type: "number", step: "0.01" },
   ];
+}
+
+function CeEntryForm({
+  initial,
+  onSubmit,
+  onCancel,
+  submitting,
+}: {
+  initial?: CurrentEfficiencyEntry | null;
+  onSubmit: (values: Record<string, unknown>) => void;
+  onCancel: () => void;
+  submitting?: boolean;
+}) {
+  const { t } = useI18n();
+  const elNames = useElectrolyzerNames();
+  const [values, setValues] = useState<Record<string, unknown>>(() =>
+    valuesFromRecord(ceFields(t, { name: "scope_ref", label: t("fields.scopeReference"), type: "text" }), initial ?? null)
+  );
+
+  const fields = useMemo((): FieldDef[] => {
+    const scopeRef: FieldDef =
+      values.scope === "electrolyzer"
+        ? {
+            name: "scope_ref",
+            label: t("fields.scopeReference"),
+            type: "combo",
+            options: electrolyzerFieldOptions(elNames),
+          }
+        : { name: "scope_ref", label: t("fields.scopeReference"), type: "text" };
+    return ceFields(t, scopeRef);
+  }, [t, elNames, values.scope]);
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        onSubmit(accessPayload(fields, values));
+      }}
+      className="space-y-3"
+    >
+      <AccessFields fields={fields} values={values} onChange={(name, value) => setValues((v) => ({ ...v, [name]: value }))} />
+      <div className="flex justify-end gap-2 border-t-2 border-[var(--win-face-dark)] pt-3">
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          {t("common.cancel")}
+        </Button>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? t("common.saving") : t("common.save")}
+        </Button>
+      </div>
+    </form>
+  );
 }
 
 function NormalizationsTab() {
@@ -138,6 +206,11 @@ function NormalizationsTab() {
   const editable = canEdit("voltage");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<ElectrolyzerNormalization | null>(null);
+  const electrolyzerNames = useElectrolyzerNames();
+  const normFields = useMemo(
+    () => normalizationFields(t, electrolyzerFieldOptions(electrolyzerNames)),
+    [t, electrolyzerNames]
+  );
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<ElectrolyzerNormalization>(
     "voltage-normalizations",
     voltageNormalizationsApi,
@@ -213,7 +286,7 @@ function NormalizationsTab() {
         wide
       >
         <ResourceForm<ElectrolyzerNormalization>
-          fields={normalizationFields(t)}
+          fields={normFields}
           initialValues={editing ?? undefined}
           onSubmit={(values) => {
             if (editing) {
@@ -238,6 +311,11 @@ function ReadingsTab() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<VoltageReading | null>(null);
   const [showImport, setShowImport] = useState(() => searchParams.get("import") === "1");
+  const electrolyzerNames = useElectrolyzerNames();
+  const readingFormFields = useMemo(
+    () => readingFields(t, electrolyzerFieldOptions(electrolyzerNames)),
+    [t, electrolyzerNames]
+  );
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<VoltageReading>(
     "voltage-readings",
     voltageReadingsApi,
@@ -330,7 +408,7 @@ function ReadingsTab() {
         wide
       >
         <ResourceForm<VoltageReading>
-          fields={readingFields(t)}
+          fields={readingFormFields}
           initialValues={editing ?? undefined}
           onSubmit={(values) => {
             if (editing) {
@@ -381,9 +459,9 @@ function ImportModal({ open, onClose }: { open: boolean; onClose: () => void }) 
         <p className="text-xs text-[var(--win-muted)]">{t("voltage.importHelp")}</p>
         <div>
           <Label>{t("voltage.electrolyzer")}</Label>
-          <Input
+          <ElectrolyzerCombo
             value={electrolyzer}
-            onChange={(e) => setElectrolyzer(e.target.value)}
+            onChange={setElectrolyzer}
             placeholder={isExcel ? t("voltage.electrolyzerOptional") : "e.g. F2"}
           />
         </div>
@@ -517,10 +595,10 @@ function DistributionTab() {
 
   return (
     <div className="space-y-6">
-      <Input
+      <ElectrolyzerCombo
         placeholder={t("voltage.filterElectrolyzerOptional")}
         value={electrolyzer}
-        onChange={(e) => setElectrolyzer(e.target.value)}
+        onChange={setElectrolyzer}
         className="max-w-xs"
       />
       <Card>
@@ -701,9 +779,8 @@ function CurrentEfficiencyTab() {
       </div>
 
       <Modal open={showForm} onClose={() => setShowForm(false)} title={editing ? t("voltage.editEntry") : t("voltage.newEntryTitle")}>
-        <ResourceForm<CurrentEfficiencyEntry>
-          fields={ceFields(t)}
-          initialValues={editing ?? undefined}
+        <CeEntryForm
+          initial={editing}
           onSubmit={(values) => {
             if (editing) {
               updateMutation.mutate({ id: editing.id, payload: values }, { onSuccess: () => setShowForm(false) });
@@ -770,7 +847,7 @@ function StandardizedVoltageBoard() {
   const [severalGroups, setSeveralGroups] = useState("");
   const [severalElements, setSeveralElements] = useState("");
 
-  const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
+  const elNames = useElectrolyzerNames();
   const subPlantsQuery = useQuery({ queryKey: ["sub-plants"], queryFn: () => subPlantsApi.list() });
   const arrangementsQuery = useQuery({ queryKey: ["arrangements"], queryFn: () => arrangementsApi.list() });
   const densityQuery = useQuery({ queryKey: ["correction-factors"], queryFn: () => correctionFactorsApi.list() });
@@ -790,7 +867,6 @@ function StandardizedVoltageBoard() {
     enabled: shown?.key === "groups",
   });
 
-  const elNames = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean);
   const trainNames = (subPlantsQuery.data || []).map((p) => p.name || String(p.nr)).filter(Boolean);
   const densities = Array.from(
     new Set((densityQuery.data || []).map((d) => d.reference_current_density).filter((v): v is number => v != null))
@@ -1063,11 +1139,7 @@ function StandardizedVoltageBoard() {
               ],
               extra: (v) =>
                 v === "individual" ? (
-                  <select className="access-inset-field mt-1 w-full" value={elNr} onChange={(e) => setElNr(e.target.value)}>
-                    {(elNames.length ? elNames : ["1G"]).map((n) => (
-                      <option key={n}>{n}</option>
-                    ))}
-                  </select>
+                  <ElectrolyzerCombo variant="access" className="mt-1 w-full" value={elNr} onChange={setElNr} />
                 ) : v === "several" ? (
                   <input
                     className="access-inset-field mt-1 w-full"
@@ -1127,11 +1199,7 @@ function StandardizedVoltageBoard() {
               ],
               extra: (v) =>
                 v === "individual" ? (
-                  <select className="access-inset-field mt-1 w-full" value={elNr} onChange={(e) => setElNr(e.target.value)}>
-                    {(elNames.length ? elNames : ["1G"]).map((n) => (
-                      <option key={n}>{n}</option>
-                    ))}
-                  </select>
+                  <ElectrolyzerCombo variant="access" className="mt-1 w-full" value={elNr} onChange={setElNr} />
                 ) : v === "several" ? (
                   <input
                     className="access-inset-field mt-1 w-full"

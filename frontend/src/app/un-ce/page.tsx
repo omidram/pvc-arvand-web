@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
-import { currentEfficiencyEntriesApi, electrolyzersApi, voltageNormalizationsApi, voltageReadingsApi } from "@/lib/endpoints";
+import { currentEfficiencyEntriesApi, voltageNormalizationsApi, voltageReadingsApi } from "@/lib/endpoints";
+import { ElectrolyzerCombo, useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { formatDisplayedDate } from "@/lib/utils";
@@ -22,7 +23,7 @@ export default function UnCePage() {
   const [elNr, setElNr] = useState("");
   const [mode, setMode] = useState<"one" | "all" | null>(null);
 
-  const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
+  const names = useElectrolyzerNames();
   const unQuery = useQuery({ queryKey: ["voltage-readings", "unce"], queryFn: () => voltageReadingsApi.list({ limit: 5000 }) });
   const normsQuery = useQuery({
     queryKey: ["voltage-normalizations", "unce"],
@@ -32,8 +33,6 @@ export default function UnCePage() {
     queryKey: ["current-efficiency-entries", "unce"],
     queryFn: () => currentEfficiencyEntriesApi.list({ limit: 5000 }),
   });
-
-  const names = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean);
 
   useEffect(() => {
     if (!elNr && names[0]) setElNr(names[0]);
@@ -114,19 +113,15 @@ export default function UnCePage() {
         <div className="access-col-title">{t("mainMenu.unCe")}</div>
         <div className="access-group">
           <div className="mb-1 text-[12px] font-bold">{t("menus.electrolyzer")}</div>
-          <select
-            className="access-inset-field mb-3 w-full"
+          <ElectrolyzerCombo
+            className="mb-3 w-full"
+            variant="access"
             value={elNr}
-            onChange={(e) => {
-              setElNr(e.target.value);
+            onChange={(v) => {
+              setElNr(v);
               setMode(null);
             }}
-          >
-            <option value="">—</option>
-            {names.map((n) => (
-              <option key={n}>{n}</option>
-            ))}
-          </select>
+          />
           <AccessBtn onClick={() => setMode("one")} disabled={!elNr}>
             {t("menus.graph")}
           </AccessBtn>

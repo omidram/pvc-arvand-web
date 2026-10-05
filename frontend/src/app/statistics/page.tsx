@@ -12,14 +12,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { electrolyzersApi, statisticsApi, voltageCalcApi } from "@/lib/endpoints";
+import { statisticsApi, voltageCalcApi } from "@/lib/endpoints";
+import { ElectrolyzerCombo, useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { AccessBtn, AccessHub } from "@/components/layout/access-hub";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { DateInput } from "@/components/ui/date-input";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatNumber } from "@/lib/utils";
-import { compareElectrolyzers, formatElectrolyzer } from "@/lib/plant-topology";
+import { formatElectrolyzer } from "@/lib/plant-topology";
 
 const CHART_TOOLTIP = {
   background: "#ffffff",
@@ -58,11 +59,7 @@ function StatQuad({
 
 function StatisticsMenu() {
   const { t } = useI18n();
-  const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
-  const names = useMemo(() => {
-    const raw = (elQuery.data || []).map((e) => formatElectrolyzer(e.name || String(e.nr))).filter(Boolean);
-    return Array.from(new Set(raw)).sort(compareElectrolyzers);
-  }, [elQuery.data]);
+  const names = useElectrolyzerNames();
   const [elNr, setElNr] = useState("A1");
 
   useEffect(() => {
@@ -76,13 +73,7 @@ function StatisticsMenu() {
           <h3>{t("menus.singleElementVoltages")}</h3>
           <label className="mb-2 block text-[12px]">
             {t("menus.electrolyzer")}
-            <select className="access-inset-field mt-1" value={elNr} onChange={(e) => setElNr(e.target.value)}>
-              {(names.length ? names : ["A1"]).map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
+            <ElectrolyzerCombo variant="access" className="mt-1" value={elNr} onChange={setElNr} />
           </label>
           <div className="flex flex-col gap-2">
             <AccessBtn href={`/statistics?form=voltages&electrolyzer=${encodeURIComponent(elNr)}`}>
@@ -372,39 +363,6 @@ function GroupsForm() {
   );
 }
 
-function ElectrolyzerPicker({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (next: string) => void;
-}) {
-  const { t } = useI18n();
-  const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
-  const names = useMemo(() => {
-    const raw = (elQuery.data || []).map((e) => formatElectrolyzer(e.name || String(e.nr))).filter(Boolean) as string[];
-    return Array.from(new Set(raw)).sort(compareElectrolyzers);
-  }, [elQuery.data]);
-  const display = formatElectrolyzer(value) || value;
-  useEffect(() => {
-    if (!display && names[0]) onChange(names[0]);
-    else if (display && names.length && !names.includes(display) && names[0]) onChange(names[0]);
-    else if (value && display !== value) onChange(display);
-  }, [names, value, display, onChange]);
-  return (
-    <label className="flex flex-col gap-1 text-[12px]">
-      <span>{t("menus.electrolyzer")}</span>
-      <select className="access-inset-field w-[120px]" value={display} onChange={(e) => onChange(formatElectrolyzer(e.target.value) || e.target.value)}>
-        {(names.length ? names : display ? [display] : ["A1"]).map((n) => (
-          <option key={n} value={n}>
-            {n}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
 function UnDistributionForm() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
@@ -460,7 +418,10 @@ function UnDistributionForm() {
           <span>Date</span>
           <DateInput className="access-inset-field w-[130px]" value={date} onChange={(e) => setDate(e.target.value)} />
         </label>
-        <ElectrolyzerPicker value={electrolyzer} onChange={setElectrolyzer} />
+        <label className="flex flex-col gap-1 text-[12px]">
+          <span>{t("menus.electrolyzer")}</span>
+          <ElectrolyzerCombo variant="access" className="w-[120px]" value={electrolyzer} onChange={setElectrolyzer} />
+        </label>
         <label className="flex flex-col gap-1">
           <span>Ui min [V]</span>
           <input className="access-inset-field w-[90px]" value={uiMin} onChange={(e) => setUiMin(e.target.value)} />
@@ -663,7 +624,10 @@ function VoltageForms({ form }: { form: string }) {
   return (
     <AccessHub title={title} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
       <div className="mb-3 flex flex-wrap items-end gap-3 text-[12px]">
-        <ElectrolyzerPicker value={electrolyzer} onChange={setElectrolyzer} />
+        <label className="flex flex-col gap-1 text-[12px]">
+          <span>{t("menus.electrolyzer")}</span>
+          <ElectrolyzerCombo variant="access" className="w-[120px]" value={electrolyzer} onChange={setElectrolyzer} />
+        </label>
         <label className="flex flex-col gap-1">
           <span>{t("statistics.dateFrom")}</span>
           <DateInput className="access-inset-field w-[130px]" value={from} onChange={(e) => setFrom(e.target.value)} />

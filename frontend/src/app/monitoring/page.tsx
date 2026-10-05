@@ -18,6 +18,7 @@ import type { AlertEvent, AlertRule, MonitoringCellStatus } from "@/lib/types";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
+import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { Tabs } from "@/components/ui/tabs";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
@@ -243,14 +244,14 @@ function RulesPanel() {
                 </div>
                 <div>
                   <Label>{t("monitoring.electrolyzerFilter")}</Label>
-                  <Input
+                  <ElectrolyzerCombo
                     disabled={!editable}
                     placeholder={t("monitoring.allElectrolyzers")}
                     value={rule.electrolyzer ?? ""}
-                    onChange={(e) =>
+                    onChange={(v) =>
                       setDrafts((prev) => ({
                         ...prev,
-                        [rule.id]: { ...rule, electrolyzer: e.target.value || null },
+                        [rule.id]: { ...rule, electrolyzer: v.trim() ? v : null },
                       }))
                     }
                   />

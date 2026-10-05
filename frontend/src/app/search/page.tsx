@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { DateInput } from "@/components/ui/date-input";
+import { useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
 
 type SearchKind =
   | "element"
@@ -123,6 +124,7 @@ export default function SearchPage() {
   const { t } = useI18n();
   const [term, setTerm] = useState("");
   const [date, setDate] = useState("");
+  const electrolyzerNames = useElectrolyzerNames();
   const [kindQuery, setKindQuery] = useState<{ kind: SearchKind; q?: string } | null>(null);
   const [dateQuery, setDateQuery] = useState<{ field: string; date: string } | null>(null);
 
@@ -165,6 +167,7 @@ export default function SearchPage() {
           {t("search.searchTerm")}
           <input
             className="access-inset-field w-full min-w-0 sm:w-[220px]"
+            list="search-electrolyzer-options"
             placeholder={t("search.searchTermPlaceholder")}
             value={term}
             onChange={(e) => setTerm(e.target.value)}
@@ -172,6 +175,11 @@ export default function SearchPage() {
               if (e.key === "Enter" && term.trim()) runKind("element", true);
             }}
           />
+          <datalist id="search-electrolyzer-options">
+            {electrolyzerNames.map((name) => (
+              <option key={name} value={name} />
+            ))}
+          </datalist>
         </label>
         <label className="inline-flex min-w-0 items-center gap-1">
           {t("search.date")}

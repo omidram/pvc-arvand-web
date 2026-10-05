@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
-import { currentEfficiencyEntriesApi, electrolyzersApi } from "@/lib/endpoints";
+import { currentEfficiencyEntriesApi } from "@/lib/endpoints";
+import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 
@@ -26,8 +27,6 @@ export default function CurrentEfficiencyPage() {
     queryKey: ["current-efficiency-entries"],
     queryFn: () => currentEfficiencyEntriesApi.list({ limit: 2000 }),
   });
-  const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
-
   const rows = useMemo(() => {
     const items = ceQuery.data || [];
     return items
@@ -53,15 +52,15 @@ export default function CurrentEfficiencyPage() {
     setShown({ title, mode: col.values.result === "table" ? "table" : "chart", scope });
   }
 
-  const combo = (value: string, onChange: (v: string) => void, options: string[]) => (
+  const trainCombo = (value: string, onChange: (v: string) => void) => (
     <select className="access-inset-field mt-1 w-full" value={value} onChange={(e) => onChange(e.target.value)}>
-      {options.map((o) => (
-        <option key={o}>{o}</option>
+      {["1", "2"].map((o) => (
+        <option key={o} value={o}>
+          {o}
+        </option>
       ))}
     </select>
   );
-
-  const elNames = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean);
 
   return (
     <AccessHub title={t("mainMenu.currentEfficiency")}>
@@ -136,7 +135,7 @@ export default function CurrentEfficiencyPage() {
                 { value: "individual", label: t("menus.individualTrain") },
                 { value: "all", label: t("menus.allTrains") },
               ],
-              extra: (v) => (v === "individual" ? combo(trainNr, setTrainNr, ["1", "2", ...elNames]) : null),
+              extra: (v) => (v === "individual" ? trainCombo(trainNr, setTrainNr) : null),
             },
             {
               legend: t("menus.resultsAs"),
@@ -170,7 +169,10 @@ export default function CurrentEfficiencyPage() {
                 { value: "various", label: t("menus.variousEls") },
                 { value: "all", label: t("menus.allElectrolyzers") },
               ],
-              extra: (v) => (v === "individual" ? combo(elNr, setElNr, elNames.length ? elNames : ["2C"]) : null),
+              extra: (v) =>
+                v === "individual" ? (
+                  <ElectrolyzerCombo variant="access" className="mt-1 w-full" value={elNr} onChange={setElNr} />
+                ) : null,
             },
             {
               legend: t("menus.resultsAs"),

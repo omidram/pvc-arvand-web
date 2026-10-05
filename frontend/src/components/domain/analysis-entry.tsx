@@ -21,6 +21,7 @@ import {
 } from "@/lib/analysis-forms";
 import { AccessFormWindow, AccessNav } from "@/components/layout/access-form";
 import { Input } from "@/components/ui/input";
+import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { type Column } from "@/components/ui/data-table";
 import { DatasheetPane } from "@/components/ui/datasheet-pane";
 import { ErrorState } from "@/components/ui/spinner";
@@ -579,20 +580,30 @@ function AnalysisRecordForm({
           return (
             <div key={key} className="grid grid-cols-[10.5rem_8.5rem] items-center gap-2">
               <label className="text-right text-[12px]">{identityLabel(key)}</label>
-              <Input
-                type={key === "date" ? "date" : key === "time" ? "time" : "text"}
-                step={key === "time" ? 60 : undefined}
-                value={key === "time" ? timeValue : raw}
-                disabled={disabled}
-                onChange={(e) => {
-                  if (key === "time") {
-                    const v = e.target.value;
-                    onIdentity(key, v ? (v.length === 5 ? `${v}:00` : v) : "");
-                    return;
-                  }
-                  onIdentity(key, e.target.value);
-                }}
-              />
+              {key === "electrolyzer" ? (
+                <ElectrolyzerCombo
+                  variant="access"
+                  className="w-full"
+                  value={raw}
+                  disabled={disabled}
+                  onChange={(v) => onIdentity(key, v)}
+                />
+              ) : (
+                <Input
+                  type={key === "date" ? "date" : key === "time" ? "time" : "text"}
+                  step={key === "time" ? 60 : undefined}
+                  value={key === "time" ? timeValue : raw}
+                  disabled={disabled}
+                  onChange={(e) => {
+                    if (key === "time") {
+                      const v = e.target.value;
+                      onIdentity(key, v ? (v.length === 5 ? `${v}:00` : v) : "");
+                      return;
+                    }
+                    onIdentity(key, e.target.value);
+                  }}
+                />
+              )}
             </div>
           );
         })}

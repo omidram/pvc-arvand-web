@@ -20,7 +20,8 @@ import { reportsApi } from "@/lib/endpoints";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/input";
+import { Label } from "@/components/ui/input";
+import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { StatCard } from "@/components/ui/stat-card";
 import { DataTable } from "@/components/ui/data-table";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
@@ -85,7 +86,12 @@ export default function ReportsPage() {
 
       <div className="mb-4 max-w-xs">
         <Label>{t("reports.electrolyzerFilter")}</Label>
-        <Input value={electrolyzer} onChange={(e) => setElectrolyzer(e.target.value)} placeholder="e.g. E1" />
+        <ElectrolyzerCombo
+          className="max-w-xs"
+          value={electrolyzer}
+          onChange={setElectrolyzer}
+          placeholder={t("reports.electrolyzerFilter")}
+        />
       </div>
 
       {summaryQuery.isLoading ? (

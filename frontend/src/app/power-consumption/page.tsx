@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
-import { electrolyzersApi, statisticsApi } from "@/lib/endpoints";
+import { statisticsApi } from "@/lib/endpoints";
+import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
 
@@ -58,9 +59,6 @@ export default function PowerConsumptionPage() {
   const [groupNr, setGroupNr] = useState("1");
   const [elementNr, setElementNr] = useState("");
 
-  const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
-  const elNames = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean) as string[];
-
   const apiGroup =
     shown?.scope === "train"
       ? "train"
@@ -109,16 +107,6 @@ export default function PowerConsumptionPage() {
       ref,
     });
   }
-
-  const combo = (value: string, onChange: (v: string) => void, options: string[]) => (
-    <select className="access-inset-field mt-1 w-full max-w-[120px]" value={value} onChange={(e) => onChange(e.target.value)}>
-      {options.map((o) => (
-        <option key={o} value={o}>
-          {o}
-        </option>
-      ))}
-    </select>
-  );
 
   return (
     <AccessHub title={t("mainMenu.powerConsumption")}>
@@ -192,7 +180,10 @@ export default function PowerConsumptionPage() {
                 { value: "several", label: t("menus.severalElectrolyzers") },
                 { value: "all", label: t("menus.allElectrolyzers") },
               ],
-              extra: (v) => (v === "individual" ? combo(elNr, setElNr, elNames.length ? elNames : ["1B"]) : null),
+              extra: (v) =>
+                v === "individual" ? (
+                  <ElectrolyzerCombo variant="access" className="mt-1 w-full max-w-[120px]" value={elNr} onChange={setElNr} />
+                ) : null,
             },
             {
               legend: t("menus.resultsAs"),
