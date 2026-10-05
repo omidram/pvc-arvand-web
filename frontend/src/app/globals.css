@@ -788,6 +788,38 @@ html:not([data-theme="dark"]) .dt-value-filter-foot {
   margin-bottom: 10px;
 }
 
+/* Access Energieverbrauch — five equal classic columns */
+.pc-access-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(170px, 1fr));
+  gap: 10px;
+  align-items: stretch;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.pc-access-grid .access-col {
+  min-height: 520px;
+}
+
+.pc-access-grid .access-col .access-menu-btn {
+  width: 100%;
+  white-space: normal;
+  min-height: 28px;
+  height: auto;
+  line-height: 1.2;
+  padding: 5px 6px;
+}
+
+@media (max-width: 1100px) {
+  .pc-access-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+  .pc-access-grid .access-col {
+    min-height: 380px;
+  }
+}
+
 .access-sunken {
   border-style: solid;
   border-width: 2px;
@@ -795,6 +827,13 @@ html:not([data-theme="dark"]) .dt-value-filter-foot {
   background: #d4d0c8;
   box-shadow: inset 1px 1px 0 #404040;
   padding: 8px 6px;
+}
+
+.access-period-bar {
+  background: #c0c0c0;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #ffffff #808080 #808080 #ffffff;
 }
 
 .access-radio {

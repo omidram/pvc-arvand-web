@@ -826,6 +826,29 @@ def _clean_code(value: Any) -> str | None:
     return text
 
 
+def ensure_electrode_serial_prefix(code: str | None, kind: str) -> str | None:
+    """If the serial is digits-only, prefix A (anode) or C (cathode).
+
+    Plant rule for assembly / electrode master lists: numeric-only barcodes
+    must become A123 / C123 so they match Access and segregation joins.
+    """
+    if not code:
+        return code
+    compact = re.sub(r"\s+", "", str(code))
+    if not compact:
+        return None
+    if any(ch.isalpha() for ch in compact):
+        return code.strip() if isinstance(code, str) else compact
+    digits = compact.replace(".", "", 1) if compact.count(".") == 1 else compact
+    if not digits.isdigit():
+        return code.strip() if isinstance(code, str) else compact
+    # Prefer integer form without trailing .0
+    if compact.endswith(".0") and compact[:-2].isdigit():
+        compact = compact[:-2]
+    prefix = "A" if kind == "anode" else "C"
+    return f"{prefix}{compact}"
+
+
 def _assembly_columns(header: list[Any], sub: list[Any] | None) -> dict[str, Any] | None:
     keys = [_compact_header(cell) for cell in header]
     blob = " ".join(keys)
@@ -916,8 +939,8 @@ def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSE
     for row in rows[data_at:]:
         if not row:
             continue
-        anode = _clean_code(_cell(row, columns["anode"]))
-        cathode = _clean_code(_cell(row, columns["cathode"]))
+        anode = ensure_electrode_serial_prefix(_clean_code(_cell(row, columns["anode"])), "anode")
+        cathode = ensure_electrode_serial_prefix(_clean_code(_cell(row, columns["cathode"])), "cathode")
         element_nr = _clean_code(_cell(row, columns["element_nr"]))
         if not anode and not cathode and not element_nr:
             continue

@@ -50,28 +50,37 @@ function HistoryTooltip({
   active,
   payload,
   title,
+  mode = "voltage",
   t,
 }: {
   active?: boolean;
-  payload?: Array<{ payload: ChartRow }>;
+  payload?: Array<{ payload: ChartRow; dataKey?: string; value?: number; name?: string }>;
   title: string;
+  mode?: "voltage" | "current";
   t: (key: string, vars?: Record<string, string>) => string;
 }) {
   if (!active || !payload?.length) return null;
   const row = payload[0]?.payload;
   if (!row) return null;
   const voltage = row.voltage;
+  const loadKa = row.current_ka;
   return (
     <div className="vh-tip">
       <div className="vh-tip-time">{row.label}</div>
-      {voltage != null ? (
+      {mode === "current" ? (
+        loadKa != null ? (
+          <div className="vh-tip-i">
+            {title}: {Number(loadKa).toFixed(2)} kA
+          </div>
+        ) : null
+      ) : voltage != null ? (
         <div className="vh-tip-v">
-          {title} : {Number(voltage).toFixed(3)} V
+          {title}: {Number(voltage).toFixed(3)} V
         </div>
       ) : null}
-      {row.current_ka != null ? (
+      {mode === "voltage" && loadKa != null ? (
         <div className="vh-tip-i">
-          {t("monitoring.tipLoadToday")}: {Number(row.current_ka).toFixed(2)} kA
+          {t("monitoring.loadKa")}: {Number(loadKa).toFixed(2)} kA
         </div>
       ) : null}
       {row.prev_day_ka != null ? (
@@ -242,7 +251,7 @@ export function VoltageHistoryDialog({
                 <CartesianGrid stroke="#243056" />
                 <XAxis dataKey="label" stroke="#cbd5e1" tick={{ fontSize: 10 }} minTickGap={28} />
                 <YAxis stroke="#cbd5e1" tick={{ fontSize: 10 }} domain={["auto", "auto"]} width={48} />
-                <Tooltip content={<HistoryTooltip title={data.title} t={t} />} />
+                <Tooltip content={<HistoryTooltip title={data.title} mode="voltage" t={t} />} />
                 <Line type="monotone" dataKey="voltage" stroke="#d6e35a" strokeWidth={2} dot={{ r: 2 }} connectNulls name={data.title} />
                 {hasRectifier ? (
                   <Line
@@ -266,7 +275,7 @@ export function VoltageHistoryDialog({
                   <CartesianGrid stroke="#243056" />
                   <XAxis dataKey="label" stroke="#cbd5e1" tick={{ fontSize: 10 }} minTickGap={28} />
                   <YAxis stroke="#f59e0b" tick={{ fontSize: 10 }} domain={["auto", "auto"]} width={48} unit=" kA" />
-                  <Tooltip content={<HistoryTooltip title={t("monitoring.loadKa")} t={t} />} />
+                  <Tooltip content={<HistoryTooltip title={t("monitoring.loadKa")} mode="current" t={t} />} />
                   <Line
                     type="monotone"
                     dataKey="current_ka"

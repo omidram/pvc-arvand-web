@@ -50,7 +50,7 @@ ANALYSIS_TYPES = [
 # Display units from the Access forms. The entry screen uses a per-scope field
 # list (frontend analysis-forms.ts); these are the shared units for /meta.
 PARAMETER_UNITS: dict[str, dict[str, str]] = {
-    "anolyte": {"NaCl": "g/l", "NaClO3": "g/l", "Na2SO4": "g/l", "NaOCl": "g/l", "HCl": "g/l", "density_20C": "g/l", "temperature": "°C", "pH": "[/]"},
+    "anolyte": {"NaCl": "g/l", "NaClO3": "g/l", "Na2SO4": "g/l", "NaOCl": "g/l", "HOCl": "g/l", "HCl": "g/l", "density_20C": "g/l", "temperature": "°C", "pH": "[/]"},
     "catholyte": {"make_up_water": "m³/h", "temperature": "°C", "NaOH": "wt.%", "NaCl": "ppm w", "NaClO3": "ppm w", "Na2SO4": "ppm w", "Fe": "ppm w"},
     "chlorine_gas": {"Cl2_CO2": "Vol.%", "restgas": "Vol.%", "O2": "Vol.%", "H2": "Vol.%", "N2": "Vol.%", "Br": "Vol. ppm"},
     "pure_brine": {
@@ -155,10 +155,10 @@ def _chlorine_fields(plant: bool) -> list[AnalysisFieldDef]:
     ]
 
 
-def _brine_fields(plant: bool, with_peroxide: bool) -> list[AnalysisFieldDef]:
+def _brine_fields(plant: bool) -> list[AnalysisFieldDef]:
     salt = lambda name: name if plant else f"{name} Pb"
     salt_alias = lambda name: (f"{name} Pb",) if plant else (name,)
-    fields = [
+    return [
         _field("flow rate", "flow_rate", unit="m³/h"),
         _field("temperature", unit="°C"),
         _field("pH", unit="-"),
@@ -168,7 +168,7 @@ def _brine_fields(plant: bool, with_peroxide: bool) -> list[AnalysisFieldDef]:
         _field(salt("Na2CO3"), *salt_alias("Na2CO3"), unit="g/l"),
         _field(salt("NaOH"), *salt_alias("NaOH"), unit="g/l"),
         _field(salt("Na2SO4"), *salt_alias("Na2SO4"), unit="g/l"),
-        _field(salt("NaOCl"), *salt_alias("NaOCl"), unit="g/l"),
+        _field(salt("NaOCl"), *salt_alias("NaOCl"), "HOCl", unit="g/l"),
         _field(salt("HCl"), *salt_alias("HCl"), unit="g/l"),
         _field("Ca +Mg", "Ca+Mg", unit="ppb w"),
         _field("Ba", unit="ppb w"),
@@ -181,10 +181,8 @@ def _brine_fields(plant: bool, with_peroxide: bool) -> list[AnalysisFieldDef]:
         _field("F", unit="ppb w"),
         _field("Br", unit="ppb w"),
         _field("Organics", "organics", unit="ppm w"),
+        _field("H2O2", unit="ppm w"),
     ]
-    if with_peroxide:
-        fields.append(_field("H2O2", unit="ppm w"))
-    return fields
 
 
 ANALYSIS_FORM_FIELDS: dict[tuple[str, str], list[AnalysisFieldDef]] = {}
@@ -196,7 +194,7 @@ def _register_analysis_form_fields() -> None:
         plant = scope == "total_plant"
         ANALYSIS_FORM_FIELDS[("anolyte", scope)] = _anolyte_fields(plant)
         ANALYSIS_FORM_FIELDS[("catholyte", scope)] = _catholyte_fields()
-        ANALYSIS_FORM_FIELDS[("pure_brine", scope)] = _brine_fields(plant, scope != "sub_plant")
+        ANALYSIS_FORM_FIELDS[("pure_brine", scope)] = _brine_fields(plant)
         ANALYSIS_FORM_FIELDS[("chlorine_gas", scope)] = _chlorine_fields(plant)
         # Element/group chlorine Br unit differs in Access (ppm vs Vol.%); keep Vol.% for plant, Vol.% for electrolyzer per UI.
     hydrogen = [_field("H2", unit="vol. %"), _field("O2", unit="ppm v")]

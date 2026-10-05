@@ -148,11 +148,14 @@ def lookup(name: str, db: Session = Depends(get_db)):
     elif name == "decommission-reasons":
         values = _values(db.query(models.Element.decommission_reason).distinct().all())
     elif name == "generations":
-        values = _values(
+        fixed = ["3", "4", "5", "5+", "6", "6+", "Blue Star"]
+        extras = _values(
             db.query(models.Element.generation).distinct().all(),
             db.query(models.Anode.generation).distinct().all(),
             db.query(models.Cathode.generation).distinct().all(),
         )
+        fixed_l = {v.lower() for v in fixed}
+        values = fixed + [v for v in extras if v.lower() not in fixed_l]
     else:
         raise HTTPException(status_code=404, detail=f"Unknown lookup '{name}'")
     return {"name": name, "values": values}

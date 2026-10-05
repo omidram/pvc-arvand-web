@@ -187,35 +187,143 @@ def calculate_standardized(
     return {"standardized_voltage": result.standardized_voltage, "inputs": result.inputs}
 
 
+def _build_class_edges(ui_min: float, ui_max: float, step: float) -> list[tuple[str, float | None, float | None]]:
+    """Access-style Un/Ui classes: <= min, then [x, x+step), finally >= max."""
+    if step <= 0:
+        step = 0.01
+    if ui_max < ui_min:
+        ui_min, ui_max = ui_max, ui_min
+    edges: list[tuple[str, float | None, float | None]] = [
+        (f"<= {ui_min:g}", None, ui_min),
+    ]
+    cursor = ui_min
+    # Guard against float drift
+    while cursor + step / 2 < ui_max:
+        nxt = round(cursor + step, 6)
+        if nxt > ui_max:
+            break
+        edges.append((f"{cursor:g} - {nxt:g}", cursor, nxt))
+        cursor = nxt
+    edges.append((f">= {ui_max:g}", ui_max, None))
+    return edges
+
+
+def _class_for_value(value: float, edges: list[tuple[str, float | None, float | None]]) -> str:
+    for label, lo, hi in edges:
+        if lo is None and hi is not None and value <= hi:
+            return label
+        if hi is None and lo is not None and value >= lo:
+            return label
+        if lo is not None and hi is not None and lo <= value < hi:
+            return label
+    return edges[-1][0] if edges else ""
+
+
 @calc_router.get("/distribution")
 def voltage_distribution(
     electrolyzer: str | None = None,
     date_from: str | None = None,
     date_till: str | None = None,
+    ui_min: float = Query(default=3.0),
+    ui_max: float = Query(default=3.4),
+    step: float = Query(default=0.01),
     db: Session = Depends(get_db),
 ):
-    """Un / cell-voltage class histogram (latest day, or selected day / range)."""
-    classes = db.query(models.VoltageDistributionClass).order_by(models.VoltageDistributionClass.lower_bound).all()
+    """Access frmStatistikVerteilungUN: class histogram + detail rows (I, T, Ui, Un)."""
     start, end, readings = _select_readings(db, electrolyzer, date_from, date_till)
-    values = [v for v in (_reading_value(r) for r in readings) if v is not None]
 
-    buckets = []
-    for c in classes:
-        count = sum(
-            1
-            for v in values
-            if (c.lower_bound is None or v >= c.lower_bound) and (c.upper_bound is None or v < c.upper_bound)
+    # Parent normalization batches for I / temps / Co
+    norm_keys = {
+        (r.normalization_nr, (r.electrolyzer or "").strip().upper(), _parse_day(r.date), (r.time or "").strip())
+        for r in readings
+    }
+    norms: dict[tuple, models.ElectrolyzerNormalization] = {}
+    if readings:
+        qn = db.query(models.ElectrolyzerNormalization)
+        qn = _filter_electrolyzer(qn, models.ElectrolyzerNormalization.electrolyzer, electrolyzer)
+        if start and end:
+            qn = qn.filter(
+                func.date(models.ElectrolyzerNormalization.date) >= start.isoformat(),
+                func.date(models.ElectrolyzerNormalization.date) <= end.isoformat(),
+            )
+        for n in qn.all():
+            key = (n.normalization_nr, (n.electrolyzer or "").strip().upper(), _parse_day(n.date), (n.time or "").strip())
+            norms[key] = n
+            # also index without normalization_nr / time for looser match
+            norms[(None, key[1], key[2], key[3])] = n
+            norms[(None, key[1], key[2], "")] = n
+
+    edges = _build_class_edges(float(ui_min), float(ui_max), float(step))
+    # Prefer configured plant classes when present and caller left defaults unused? Always use Access params.
+
+    class_counts = {label: 0 for label, _, _ in edges}
+    detail_rows = []
+    values = []
+    for r in readings:
+        ui = float(r.voltage) if r.voltage is not None else None
+        un = float(r.standardized_voltage) if r.standardized_voltage is not None else ui
+        if un is None:
+            continue
+        values.append(un)
+        class_label = _class_for_value(un, edges)
+        class_counts[class_label] = class_counts.get(class_label, 0) + 1
+
+        day = _parse_day(r.date)
+        el_key = (r.electrolyzer or "").strip().upper()
+        n = (
+            norms.get((r.normalization_nr, el_key, day, (r.time or "").strip()))
+            or norms.get((None, el_key, day, (r.time or "").strip()))
+            or norms.get((None, el_key, day, ""))
         )
-        buckets.append(
-            {"label": c.label, "lower_bound": c.lower_bound, "upper_bound": c.upper_bound, "count": count}
+        i_total = n.total_current if n else None
+        i_dens = n.reference_current_density if n else None
+        if i_dens is None and i_total is not None:
+            i_dens = float(i_total) / 2.7
+        t_an = n.anolyte_temp if n else None
+        t_ca = n.catholyte_temp if n else None
+        tm = None
+        if t_an is not None and t_ca is not None:
+            tm = round((float(t_an) + float(t_ca)) / 2.0, 2)
+        elif t_an is not None:
+            tm = float(t_an)
+        elif t_ca is not None:
+            tm = float(t_ca)
+
+        detail_rows.append(
+            {
+                "electrolyzer": r.electrolyzer,
+                "position": r.position,
+                "date": day.isoformat() if day else None,
+                "time": r.time,
+                "i_total": i_total,
+                "i_density": round(float(i_dens), 3) if i_dens is not None else None,
+                "co_pct": n.cl2_pct if n else None,
+                "t_an": t_an,
+                "t_ca": t_ca,
+                "tm": tm,
+                "ui": ui,
+                "un": un,
+                "class_label": class_label,
+                "element_nr": r.element_nr,
+            }
         )
+
+    buckets = [
+        {"label": label, "lower_bound": lo, "upper_bound": hi, "count": class_counts.get(label, 0)}
+        for label, lo, hi in edges
+    ]
     return {
         "electrolyzer": electrolyzer,
         "date": start.isoformat() if start and start == end else None,
         "date_from": start.isoformat() if start else None,
         "date_till": end.isoformat() if end else None,
+        "ui_min": ui_min,
+        "ui_max": ui_max,
+        "step": step,
         "total_readings": len(values),
         "buckets": buckets,
+        "class_sum": sum(b["count"] for b in buckets),
+        "rows": detail_rows,
     }
 
 

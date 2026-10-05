@@ -61,11 +61,10 @@ export function AssemblyDataForm() {
   }, [searchParams]);
 
   const generationOptions = useMemo(() => {
-    const fixed = Array.from({ length: 8 }, (_, i) => String(i + 3)); // 3..10
-    const found = new Set<string>([...fixed, ...(generations.data || [])]);
-    return [...found]
-      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }))
-      .map((value) => ({ label: value, value }));
+    const fixed = ["3", "4", "5", "5+", "6", "6+", "Blue Star"];
+    const fixedKey = new Set(fixed.map((v) => v.toLowerCase()));
+    const extras = (generations.data || []).filter((v) => !fixedKey.has(String(v).trim().toLowerCase()));
+    return [...fixed, ...extras].map((value) => ({ label: value, value }));
   }, [generations.data]);
 
   const reasonOptions = useMemo(

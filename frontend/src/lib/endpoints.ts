@@ -320,6 +320,9 @@ export const voltageCalcApi = {
     electrolyzer?: string;
     date_from?: string;
     date_till?: string;
+    ui_min?: number;
+    ui_max?: number;
+    step?: number;
   }): Promise<T.VoltageDistribution> =>
     (await apiClient.get("/voltage/distribution", { params })).data,
   highDeviation: async (params?: {

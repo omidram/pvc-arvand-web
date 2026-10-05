@@ -8,9 +8,12 @@ import { useCrudResource } from "@/lib/use-resource";
 import type { AnalysisSample } from "@/lib/types";
 import {
   analysisForm,
+  brineFieldKey,
   buildParameters,
+  calculateBrineHclConcentration,
   cleanAnalysisTime,
   normalizeAnalysisScope,
+  readDraftNumber,
   readParam,
   type AnalysisField,
   type AnalysisFormSpec,
@@ -65,6 +68,7 @@ function FieldLine({
   onChange,
   label,
   basis,
+  compact,
 }: {
   field: AnalysisField;
   value: string;
@@ -72,13 +76,21 @@ function FieldLine({
   onChange: (value: string) => void;
   label: string;
   basis: string;
+  compact?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-[10.5rem_8.5rem_7.5rem] items-center gap-2">
-      <label className="text-right text-[12px]">{label}</label>
+    <div
+      className={
+        compact
+          ? "grid grid-cols-[9.5rem_7.5rem_6.5rem] items-start gap-x-2 gap-y-0.5"
+          : "grid grid-cols-[10.5rem_8.5rem_7.5rem] items-start gap-x-2 gap-y-0.5"
+      }
+    >
+      <label className="pt-1.5 text-right text-[12px]">{label}</label>
       <Input value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)} />
-      <span className="text-[11px] leading-tight text-[var(--win-muted)]">
-        {field.unit ? `[${field.unit}]` : ""}
+      <span className="pt-1 text-[11px] leading-tight text-[var(--win-muted)]">
+        {field.unit ? <span className="block">[{field.unit}]</span> : null}
+        {field.range ? <span className="block font-medium text-[var(--win-text)]">{field.range}</span> : null}
         {field.basis ? <span className="block">{basis}</span> : null}
       </span>
     </div>
@@ -181,6 +193,113 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
     setDraft((prev) => (prev ? { ...prev, params: { ...prev.params, [key]: value } } : prev));
   }
 
+  async function calculateBrineHcl() {
+    if (!form || !draft || analysisType !== "pure_brine") return;
+    const date = draft.date.trim();
+    const electrolyzer = draft.electrolyzer.trim();
+    if (!electrolyzer && !date) {
+      window.alert(t("analyses.calcNeedElectrolyzerDate"));
+      return;
+    }
+    if (!date) {
+      window.alert(t("analyses.calcNeedDate"));
+      return;
+    }
+
+    // Access reads tblAnalyseHClElektrolyseur (flow rate, HCl wt.%, Dichte).
+    const hclRows = await analysesApi.list({
+      analysis_type: "hcl",
+      scope: "electrolyzer",
+      electrolyzer: electrolyzer || undefined,
+      limit: 500,
+    });
+    const day = date.slice(0, 10);
+    const sameDay = hclRows.filter((row) => (row.date || "").slice(0, 10) === day);
+    const hcl =
+      electrolyzer
+        ? sameDay.find((row) => (row.electrolyzer || "").trim() === electrolyzer) || sameDay[0]
+        : sameDay.length === 1
+          ? sameDay[0]
+          : undefined;
+    if (!hcl) {
+      window.alert(electrolyzer || sameDay.length === 0 ? t("analyses.calcNoHclSample") : t("analyses.calcNeedElectrolyzer"));
+      return;
+    }
+    const bag = hcl.parameters || {};
+    const num = (keys: string[]) => {
+      for (const key of keys) {
+        const raw = bag[key];
+        if (raw === undefined || raw === null || String(raw) === "") continue;
+        const n = Number(String(raw).replace(",", "."));
+        if (Number.isFinite(n)) return n;
+      }
+      return null;
+    };
+    const vHclLh = num(["flow rate", "flow_rate"]);
+    const cHclWtPct = num(["HCl"]);
+    const rhoHclGl = num(["Dichte", "density", "density_20C"]);
+    if (vHclLh == null) {
+      window.alert(t("analyses.calcNoHclFlow"));
+      return;
+    }
+    if (cHclWtPct == null) {
+      window.alert(t("analyses.calcNoHclConc"));
+      return;
+    }
+    if (rhoHclGl == null) {
+      window.alert(t("analyses.calcNoHclDensity"));
+      return;
+    }
+
+    const flowKey = brineFieldKey(form, "flow rate");
+    const naohKey = brineFieldKey(form, "NaOH");
+    const na2co3Key = brineFieldKey(form, "Na2CO3");
+    const hclKey = brineFieldKey(form, "HCl");
+    const brineFlowM3h = readDraftNumber(draft.params, flowKey);
+    const naohGl = readDraftNumber(draft.params, naohKey);
+    const na2co3Gl = readDraftNumber(draft.params, na2co3Key);
+    if (brineFlowM3h == null) {
+      window.alert(t("analyses.calcNeedBrineFlow"));
+      return;
+    }
+    if (na2co3Gl == null) {
+      window.alert(t("analyses.calcNeedNa2CO3"));
+      return;
+    }
+    if (naohGl == null) {
+      window.alert(t("analyses.calcNeedNaOH"));
+      return;
+    }
+    if ((draft.params[hclKey] || "").trim() && !window.confirm(t("analyses.calcOverwriteHcl"))) return;
+
+    const result = calculateBrineHclConcentration({
+      vHclLh,
+      cHclWtPct,
+      rhoHclGl,
+      brineFlowM3h,
+      naohGl,
+      na2co3Gl,
+    });
+    if (!Number.isFinite(result)) {
+      window.alert(t("analyses.calcNoHclSample"));
+      return;
+    }
+    const rounded = Math.round((result + Number.EPSILON) * 1e6) / 1e6;
+    setDraft((prev) =>
+      prev
+        ? {
+            ...prev,
+            params: {
+              ...prev.params,
+              [hclKey]: String(rounded),
+              [naohKey]: "0",
+              [na2co3Key]: "0",
+            },
+          }
+        : prev
+    );
+  }
+
   function save() {
     if (!form || !draft) return;
     const shown = new Set(form.identity);
@@ -188,7 +307,7 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
       analysis_type: analysisType,
       scope: normalizedScope,
       date: draft.date || null,
-      time: draft.time || null,
+      time: cleanAnalysisTime(draft.time) || null,
       electrolyzer: shown.has("electrolyzer") ? draft.electrolyzer.trim() || null : isNew ? null : current?.electrolyzer ?? null,
       position: shown.has("position") ? draft.position.trim() || null : isNew ? null : current?.position ?? null,
       group_nr: shown.has("group") ? draft.group.trim() || null : isNew ? null : current?.group_nr ?? null,
@@ -211,12 +330,17 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
   const columns: Column<AnalysisSample>[] = form
     ? [
         ...identityColumns(form, t),
-        ...form.fields.map((field) => ({
-          key: field.key,
-          header: fieldLabel(field, t),
-          render: (row: AnalysisSample) => readParam(row.parameters, field) || "—",
-          filterText: (row: AnalysisSample) => readParam(row.parameters, field),
-        })),
+        ...form.fields.map((field) => {
+          const label = fieldLabel(field, t);
+          const unit = field.unit ? ` [${field.unit.replace(/^\[|\]$/g, "")}]` : "";
+          const range = field.range ? ` ${field.range}` : "";
+          return {
+            key: field.key,
+            header: `${label}${unit}${range}`,
+            render: (row: AnalysisSample) => readParam(row.parameters, field) || "—",
+            filterText: (row: AnalysisSample) => readParam(row.parameters, field),
+          };
+        }),
       ]
     : [];
 
@@ -361,6 +485,8 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
           identityLabel={(key) => identityLabel(key, t)}
           onIdentity={(key, value) => setDraft((prev) => (prev ? { ...prev, [key]: value } : prev))}
           onParam={setParam}
+          calculateLabel={analysisType === "pure_brine" ? t("analyses.calculateHcl") : null}
+          onCalculate={analysisType === "pure_brine" && editable ? () => void calculateBrineHcl() : undefined}
         />
       ) : null}
     </AccessFormWindow>
@@ -387,7 +513,14 @@ function identityColumns(form: AnalysisFormSpec, t: (path: string) => string): C
   if (form.identity.includes("group")) cols.push({ key: "group_nr", header: t("analyses.identity.group") });
   if (form.identity.includes("train")) cols.push({ key: "sub_plant", header: t("analyses.identity.train") });
   if (form.identity.includes("date")) cols.push({ key: "date", header: t("fields.date"), render: (row) => formatDate(row.date) });
-  if (form.identity.includes("time")) cols.push({ key: "time", header: t("fields.time") });
+  if (form.identity.includes("time")) {
+    cols.push({
+      key: "time",
+      header: t("fields.time"),
+      render: (row) => cleanAnalysisTime(row.time) || "—",
+      filterText: (row) => cleanAnalysisTime(row.time),
+    });
+  }
   return cols;
 }
 
@@ -400,6 +533,8 @@ function AnalysisRecordForm({
   identityLabel,
   onIdentity,
   onParam,
+  calculateLabel,
+  onCalculate,
 }: {
   form: AnalysisFormSpec;
   draft: Draft;
@@ -409,6 +544,8 @@ function AnalysisRecordForm({
   identityLabel: (key: AnalysisIdentity) => string;
   onIdentity: (key: "electrolyzer" | "position" | "group" | "train" | "date" | "time", value: string) => void;
   onParam: (key: string, value: string) => void;
+  calculateLabel?: string | null;
+  onCalculate?: () => void;
 }) {
   const identityValue: Record<AnalysisIdentity, string> = {
     electrolyzer: draft.electrolyzer,
@@ -418,6 +555,7 @@ function AnalysisRecordForm({
     date: draft.date,
     time: draft.time,
   };
+  const compact = form.layout === "split";
   const lines = (fields: AnalysisField[]) =>
     fields.map((field) => (
       <FieldLine
@@ -427,6 +565,7 @@ function AnalysisRecordForm({
         value={draft.params[field.key] ?? ""}
         disabled={disabled}
         basis={basis}
+        compact={compact}
         onChange={(value) => onParam(field.key, value)}
       />
     ));
@@ -434,26 +573,45 @@ function AnalysisRecordForm({
   return (
     <div className="access-sunken p-4">
       <div className="mb-4 max-w-md space-y-2">
-        {form.identity.map((key) => (
-          <div key={key} className="grid grid-cols-[10.5rem_8.5rem] items-center gap-2">
-            <label className="text-right text-[12px]">{identityLabel(key)}</label>
-            <Input
-              type={key === "date" ? "date" : "text"}
-              value={identityValue[key]}
-              disabled={disabled}
-              onChange={(e) => onIdentity(key, e.target.value)}
-            />
-          </div>
-        ))}
+        {form.identity.map((key) => {
+          const raw = identityValue[key];
+          const timeValue = key === "time" ? (cleanAnalysisTime(raw).slice(0, 5) || "") : raw;
+          return (
+            <div key={key} className="grid grid-cols-[10.5rem_8.5rem] items-center gap-2">
+              <label className="text-right text-[12px]">{identityLabel(key)}</label>
+              <Input
+                type={key === "date" ? "date" : key === "time" ? "time" : "text"}
+                step={key === "time" ? 60 : undefined}
+                value={key === "time" ? timeValue : raw}
+                disabled={disabled}
+                onChange={(e) => {
+                  if (key === "time") {
+                    const v = e.target.value;
+                    onIdentity(key, v ? (v.length === 5 ? `${v}:00` : v) : "");
+                    return;
+                  }
+                  onIdentity(key, e.target.value);
+                }}
+              />
+            </div>
+          );
+        })}
       </div>
       {form.layout === "split" ? (
-        <div className="grid items-start gap-x-8 gap-y-2 lg:grid-cols-2">
-          <div className="space-y-2">{lines(form.fields.filter((field) => field.side !== "right"))}</div>
-          <div className="space-y-2">{lines(form.fields.filter((field) => field.side === "right"))}</div>
+        <div className="grid grid-cols-2 items-start gap-x-6 gap-y-1">
+          <div className="min-w-0 space-y-1">{lines(form.fields.filter((field) => field.side !== "right"))}</div>
+          <div className="min-w-0 space-y-1">{lines(form.fields.filter((field) => field.side === "right"))}</div>
         </div>
       ) : (
         <div className="max-w-xl space-y-2">{lines(form.fields)}</div>
       )}
+      {calculateLabel && onCalculate ? (
+        <div className="mt-4">
+          <button type="button" className="access-menu-btn px-3 py-1 text-[12px]" disabled={disabled} onClick={onCalculate}>
+            {calculateLabel}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

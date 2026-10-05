@@ -13,12 +13,22 @@ DATA_DIR = data_root()
 
 
 def _ensure_seed_database() -> None:
+    """Copy the bundled seed DB only on first launch.
+
+    Never overwrite an existing plant database — upgrades must keep live data
+    under PVC_DATA_DIR / %LOCALAPPDATA%\\PVCArvand / Docker volume.
+    """
     dest = DATA_DIR / "pvc_arvand.db"
-    if dest.exists():
+    if dest.exists() and dest.stat().st_size > 0:
         return
     seed = seed_db_path()
-    if seed and seed.resolve() != dest.resolve():
-        shutil.copy2(seed, dest)
+    if not seed or not seed.is_file():
+        return
+    if seed.resolve() == dest.resolve():
+        return
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    # If a zero-byte placeholder exists, replace it once from seed.
+    shutil.copy2(seed, dest)
 
 
 def _persist_jwt_secret(current: str) -> str:

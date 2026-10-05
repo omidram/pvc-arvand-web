@@ -19,6 +19,7 @@ import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { DateInput } from "@/components/ui/date-input";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatNumber } from "@/lib/utils";
+import { compareElectrolyzers, formatElectrolyzer } from "@/lib/plant-topology";
 
 const CHART_TOOLTIP = {
   background: "#ffffff",
@@ -58,11 +59,14 @@ function StatQuad({
 function StatisticsMenu() {
   const { t } = useI18n();
   const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
-  const names = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean) as string[];
-  const [elNr, setElNr] = useState("1A");
+  const names = useMemo(() => {
+    const raw = (elQuery.data || []).map((e) => formatElectrolyzer(e.name || String(e.nr))).filter(Boolean);
+    return Array.from(new Set(raw)).sort(compareElectrolyzers);
+  }, [elQuery.data]);
+  const [elNr, setElNr] = useState("A1");
 
   useEffect(() => {
-    if (names.length && !names.includes(elNr)) setElNr(names[0]);
+    if (names.length && !names.includes(formatElectrolyzer(elNr))) setElNr(names[0]);
   }, [names, elNr]);
 
   return (
@@ -73,8 +77,10 @@ function StatisticsMenu() {
           <label className="mb-2 block text-[12px]">
             {t("menus.electrolyzer")}
             <select className="access-inset-field mt-1" value={elNr} onChange={(e) => setElNr(e.target.value)}>
-              {(names.length ? names : ["1A"]).map((n) => (
-                <option key={n}>{n}</option>
+              {(names.length ? names : ["A1"]).map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
               ))}
             </select>
           </label>
@@ -375,15 +381,21 @@ function ElectrolyzerPicker({
 }) {
   const { t } = useI18n();
   const elQuery = useQuery({ queryKey: ["electrolyzers"], queryFn: () => electrolyzersApi.list() });
-  const names = (elQuery.data || []).map((e) => e.name || String(e.nr)).filter(Boolean) as string[];
+  const names = useMemo(() => {
+    const raw = (elQuery.data || []).map((e) => formatElectrolyzer(e.name || String(e.nr))).filter(Boolean) as string[];
+    return Array.from(new Set(raw)).sort(compareElectrolyzers);
+  }, [elQuery.data]);
+  const display = formatElectrolyzer(value) || value;
   useEffect(() => {
-    if (!value && names[0]) onChange(names[0]);
-  }, [names, value, onChange]);
+    if (!display && names[0]) onChange(names[0]);
+    else if (display && names.length && !names.includes(display) && names[0]) onChange(names[0]);
+    else if (value && display !== value) onChange(display);
+  }, [names, value, display, onChange]);
   return (
     <label className="flex flex-col gap-1 text-[12px]">
       <span>{t("menus.electrolyzer")}</span>
-      <select className="access-inset-field w-[120px]" value={value} onChange={(e) => onChange(e.target.value)}>
-        {(names.length ? names : value ? [value] : ["1A"]).map((n) => (
+      <select className="access-inset-field w-[120px]" value={display} onChange={(e) => onChange(formatElectrolyzer(e.target.value) || e.target.value)}>
+        {(names.length ? names : display ? [display] : ["A1"]).map((n) => (
           <option key={n} value={n}>
             {n}
           </option>
@@ -393,20 +405,201 @@ function ElectrolyzerPicker({
   );
 }
 
+function UnDistributionForm() {
+  const { t } = useI18n();
+  const searchParams = useSearchParams();
+  const initialEl = formatElectrolyzer(searchParams.get("electrolyzer")) || "A1";
+  const [electrolyzer, setElectrolyzer] = useState(initialEl);
+  const [date, setDate] = useState("");
+  const [uiMin, setUiMin] = useState("3.000");
+  const [uiMax, setUiMax] = useState("3.400");
+  const [step, setStep] = useState("0.010");
+  const [showChart, setShowChart] = useState(false);
+  const [applied, setApplied] = useState({
+    electrolyzer: initialEl,
+    date: "",
+    uiMin: 3,
+    uiMax: 3.4,
+    step: 0.01,
+  });
+
+  const distQuery = useQuery({
+    queryKey: ["voltage", "distribution-access", applied],
+    queryFn: () =>
+      voltageCalcApi.distribution({
+        electrolyzer: applied.electrolyzer || undefined,
+        date_from: applied.date || undefined,
+        date_till: applied.date || undefined,
+        ui_min: applied.uiMin,
+        ui_max: applied.uiMax,
+        step: applied.step,
+      }),
+    enabled: !!applied.electrolyzer,
+  });
+
+  const chartData = useMemo(
+    () => (distQuery.data?.buckets || []).map((b) => ({ label: b.label || "", count: b.count })),
+    [distQuery.data]
+  );
+  const rows = distQuery.data?.rows || [];
+
+  function updateDisplay() {
+    setApplied({
+      electrolyzer,
+      date,
+      uiMin: Number(uiMin) || 3,
+      uiMax: Number(uiMax) || 3.4,
+      step: Number(step) || 0.01,
+    });
+  }
+
+  return (
+    <AccessHub title={t("menus.distributionUn")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
+      <div className="mb-3 flex flex-wrap items-end gap-3 border border-[#808080] bg-[#d4d0c8] p-2 text-[12px]">
+        <label className="flex flex-col gap-1">
+          <span>Date</span>
+          <DateInput className="access-inset-field w-[130px]" value={date} onChange={(e) => setDate(e.target.value)} />
+        </label>
+        <ElectrolyzerPicker value={electrolyzer} onChange={setElectrolyzer} />
+        <label className="flex flex-col gap-1">
+          <span>Ui min [V]</span>
+          <input className="access-inset-field w-[90px]" value={uiMin} onChange={(e) => setUiMin(e.target.value)} />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span>Ui max [V]</span>
+          <input className="access-inset-field w-[90px]" value={uiMax} onChange={(e) => setUiMax(e.target.value)} />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span>Step [V]</span>
+          <input className="access-inset-field w-[90px]" value={step} onChange={(e) => setStep(e.target.value)} />
+        </label>
+        <AccessBtn onClick={updateDisplay}>{t("menus.updateDisplay")}</AccessBtn>
+        <AccessBtn onClick={() => setShowChart((v) => !v)}>{showChart ? "Table" : "Chart"}</AccessBtn>
+        <AccessBtn href="/statistics">{t("statistics.title")}</AccessBtn>
+      </div>
+
+      {distQuery.isLoading ? <LoadingState /> : null}
+      {distQuery.isError ? <ErrorState message={(distQuery.error as Error).message} /> : null}
+
+      {!distQuery.isLoading && !distQuery.isError ? (
+        distQuery.data && distQuery.data.total_readings > 0 ? (
+          <div className="space-y-3">
+            <div className="grid gap-3 lg:grid-cols-[240px_1fr]">
+              <div className="overflow-auto border border-[#808080] bg-white">
+                <table className="stats-hier-table w-full">
+                  <thead>
+                    <tr>
+                      <th>Class [V]</th>
+                      <th>Number</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(distQuery.data.buckets || []).map((b) => (
+                      <tr key={b.label || ""}>
+                        <td className="is-left">{b.label}</td>
+                        <td>{b.count}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td className="is-left font-bold">Sum</td>
+                      <td className="font-bold">{distQuery.data.class_sum ?? distQuery.data.total_readings}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              {showChart ? (
+                <div className="access-sunken bg-white p-2" style={{ height: 260 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 40 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#b8b5ad" />
+                      <XAxis dataKey="label" stroke="#3f3f3f" fontSize={9} interval={0} angle={-45} textAnchor="end" height={60} />
+                      <YAxis stroke="#3f3f3f" fontSize={11} allowDecimals={false} />
+                      <Tooltip contentStyle={CHART_TOOLTIP} />
+                      <Bar dataKey="count" name={t("statistics.count")} fill="#0a246a" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="text-[12px] text-[#404040]">
+                  {t("statistics.reportDate")}:{" "}
+                  {distQuery.data.date
+                    ? formatDate(distQuery.data.date)
+                    : distQuery.data.date_from
+                      ? formatDate(distQuery.data.date_from)
+                      : "—"}
+                  <div className="mt-1 font-bold">
+                    {t("statistics.totalReadings")}: {distQuery.data.total_readings}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="overflow-auto border border-[#808080] bg-white" style={{ maxHeight: "52vh" }}>
+              <table className="stats-hier-table min-w-[1100px]">
+                <thead>
+                  <tr>
+                    <th>Electrolyzer</th>
+                    <th>Pos</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>I total [kA]</th>
+                    <th>i [kA/m²]</th>
+                    <th>Co [%]</th>
+                    <th>T An [°C]</th>
+                    <th>T Ca [°C]</th>
+                    <th>Tm [°C]</th>
+                    <th>Ui [V]</th>
+                    <th>Un [V]</th>
+                    <th>Class [V]</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, idx) => (
+                    <tr key={`${row.position}-${row.date}-${idx}`}>
+                      <td>{row.electrolyzer}</td>
+                      <td>{row.position}</td>
+                      <td>{row.date ? formatDate(row.date) : ""}</td>
+                      <td>{row.time || ""}</td>
+                      <td>{fmt(row.i_total, 2)}</td>
+                      <td>{fmt(row.i_density, 3)}</td>
+                      <td>{fmt(row.co_pct, 2)}</td>
+                      <td>{fmt(row.t_an, 1)}</td>
+                      <td>{fmt(row.t_ca, 1)}</td>
+                      <td>{fmt(row.tm, 1)}</td>
+                      <td>{fmt(row.ui, 3)}</td>
+                      <td>{fmt(row.un, 3)}</td>
+                      <td className="is-left">{row.class_label}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : (
+          <p className="text-[12px]">{t("statistics.noVoltageReadings")}</p>
+        )
+      ) : null}
+    </AccessHub>
+  );
+}
+
 function VoltageForms({ form }: { form: string }) {
   const { t } = useI18n();
   const searchParams = useSearchParams();
-  const [electrolyzer, setElectrolyzer] = useState(searchParams.get("electrolyzer") || "1A");
+  const initialEl = formatElectrolyzer(searchParams.get("electrolyzer")) || "A1";
+  const [electrolyzer, setElectrolyzer] = useState(initialEl);
   const [from, setFrom] = useState("");
   const [till, setTill] = useState("");
-  const [applied, setApplied] = useState<{ from: string; till: string }>({ from: "", till: "" });
+  const [minV, setMinV] = useState("");
+  const [maxV, setMaxV] = useState("");
+  const [applied, setApplied] = useState<{ from: string; till: string; minV: string; maxV: string }>({
+    from: "",
+    till: "",
+    minV: "",
+    maxV: "",
+  });
 
-  const title =
-    form === "distribution"
-      ? t("menus.distributionUn")
-      : form === "high"
-        ? t("menus.highVoltages")
-        : t("menus.elementVoltages");
+  const title = form === "high" ? t("menus.highVoltages") : t("menus.elementVoltages");
 
   const dateParams = useMemo(() => {
     const params: { date_from?: string; date_till?: string } = {};
@@ -415,11 +608,6 @@ function VoltageForms({ form }: { form: string }) {
     return params;
   }, [applied.from, applied.till]);
 
-  const distQuery = useQuery({
-    queryKey: ["voltage", "distribution", electrolyzer, dateParams],
-    queryFn: () => voltageCalcApi.distribution({ electrolyzer: electrolyzer || undefined, ...dateParams }),
-    enabled: form === "distribution" && !!electrolyzer,
-  });
   const highQuery = useQuery({
     queryKey: ["voltage", "high", electrolyzer, dateParams],
     queryFn: () => voltageCalcApi.highDeviation({ electrolyzer: electrolyzer || undefined, ...dateParams }),
@@ -431,17 +619,10 @@ function VoltageForms({ form }: { form: string }) {
     enabled: form === "voltages" && !!electrolyzer,
   });
 
-  const loading =
-    form === "high" ? highQuery.isLoading : form === "voltages" ? elementsQuery.isLoading : distQuery.isLoading;
-  const error = form === "high" ? highQuery.error : form === "voltages" ? elementsQuery.error : distQuery.error;
+  const loading = form === "high" ? highQuery.isLoading : elementsQuery.isLoading;
+  const error = form === "high" ? highQuery.error : elementsQuery.error;
 
-  const chartData = useMemo(
-    () => (distQuery.data?.buckets || []).map((b) => ({ label: b.label || "", count: b.count })),
-    [distQuery.data]
-  );
-
-  const activeMeta =
-    form === "high" ? highQuery.data : form === "voltages" ? elementsQuery.data : distQuery.data;
+  const activeMeta = form === "high" ? highQuery.data : elementsQuery.data;
   const rangeLabel = (() => {
     const a = activeMeta?.date_from || activeMeta?.date;
     const b = activeMeta?.date_till || activeMeta?.date;
@@ -455,6 +636,30 @@ function VoltageForms({ form }: { form: string }) {
     activeMeta.date_from !== activeMeta.date_till
   );
 
+  const filterMin = applied.minV.trim() === "" ? null : Number(applied.minV.replace(",", "."));
+  const filterMax = applied.maxV.trim() === "" ? null : Number(applied.maxV.replace(",", "."));
+  const elementRows = useMemo(() => {
+    const rows = elementsQuery.data?.rows || [];
+    return rows.filter((row) => {
+      const v = row.value;
+      if (v == null) return false;
+      if (filterMin != null && Number.isFinite(filterMin) && v < filterMin) return false;
+      if (filterMax != null && Number.isFinite(filterMax) && v > filterMax) return false;
+      return true;
+    });
+  }, [elementsQuery.data, filterMin, filterMax]);
+  const filteredStats = useMemo(() => {
+    const values = elementRows.map((r) => r.value).filter((v): v is number => v != null && Number.isFinite(v));
+    if (!values.length) return { count: 0, average: null as number | null, min: null as number | null, max: null as number | null };
+    const sum = values.reduce((a, b) => a + b, 0);
+    return {
+      count: values.length,
+      average: sum / values.length,
+      min: Math.min(...values),
+      max: Math.max(...values),
+    };
+  }, [elementRows]);
+
   return (
     <AccessHub title={title} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
       <div className="mb-3 flex flex-wrap items-end gap-3 text-[12px]">
@@ -467,12 +672,36 @@ function VoltageForms({ form }: { form: string }) {
           <span>{t("statistics.dateTill")}</span>
           <DateInput className="access-inset-field w-[130px]" value={till} onChange={(e) => setTill(e.target.value)} />
         </label>
-        <AccessBtn onClick={() => setApplied({ from, till })}>{t("statistics.applyDates")}</AccessBtn>
+        {form === "voltages" ? (
+          <>
+            <label className="flex flex-col gap-1">
+              <span>{t("statistics.min")} [V]</span>
+              <input
+                className="access-inset-field w-[90px]"
+                value={minV}
+                onChange={(e) => setMinV(e.target.value)}
+                placeholder="e.g. 2.90"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span>{t("statistics.max")} [V]</span>
+              <input
+                className="access-inset-field w-[90px]"
+                value={maxV}
+                onChange={(e) => setMaxV(e.target.value)}
+                placeholder="e.g. 3.40"
+              />
+            </label>
+          </>
+        ) : null}
+        <AccessBtn onClick={() => setApplied({ from, till, minV, maxV })}>{t("statistics.applyDates")}</AccessBtn>
         <AccessBtn
           onClick={() => {
             setFrom("");
             setTill("");
-            setApplied({ from: "", till: "" });
+            setMinV("");
+            setMaxV("");
+            setApplied({ from: "", till: "", minV: "", maxV: "" });
           }}
         >
           {t("statistics.useLatestDay")}
@@ -482,7 +711,7 @@ function VoltageForms({ form }: { form: string }) {
             const start = from || till || todayIso();
             setFrom(start);
             setTill(todayIso());
-            setApplied({ from: start, till: todayIso() });
+            setApplied({ from: start, till: todayIso(), minV, maxV });
           }}
         >
           {t("statistics.untilToday")}
@@ -497,51 +726,6 @@ function VoltageForms({ form }: { form: string }) {
 
       {loading ? <LoadingState /> : null}
       {error ? <ErrorState message={(error as Error).message} /> : null}
-
-      {form === "distribution" && !loading && !error ? (
-        distQuery.data && distQuery.data.total_readings > 0 ? (
-          <div className="space-y-3">
-            <div className="text-[12px] font-bold">
-              {t("statistics.totalReadings")}: {distQuery.data.total_readings}
-            </div>
-            <div className="access-sunken bg-white p-2" style={{ height: 260 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 40 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#b8b5ad" />
-                  <XAxis dataKey="label" stroke="#3f3f3f" fontSize={9} interval={0} angle={-45} textAnchor="end" height={60} />
-                  <YAxis stroke="#3f3f3f" fontSize={11} allowDecimals={false} />
-                  <Tooltip contentStyle={CHART_TOOLTIP} />
-                  <Bar dataKey="count" name={t("statistics.count")} fill="#0a246a" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="overflow-auto">
-              <table className="stats-hier-table max-w-xl">
-                <thead>
-                  <tr>
-                    <th>{t("statistics.classLabel")}</th>
-                    <th>{t("statistics.min")}</th>
-                    <th>{t("statistics.max")}</th>
-                    <th>{t("statistics.count")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {distQuery.data.buckets.map((b) => (
-                    <tr key={`${b.label}-${b.lower_bound}-${b.upper_bound}`}>
-                      <td className="is-left">{b.label}</td>
-                      <td>{fmt(b.lower_bound, 3)}</td>
-                      <td>{fmt(b.upper_bound, 3)}</td>
-                      <td>{b.count}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : (
-          <p className="text-[12px]">{t("statistics.noVoltageReadings")}</p>
-        )
-      ) : null}
 
       {form === "high" && !loading && !error ? (
         highQuery.data ? (
@@ -574,7 +758,7 @@ function VoltageForms({ form }: { form: string }) {
                     {highQuery.data.flagged.map((row, idx) => (
                       <tr key={`${row.date}-${row.position}-${row.element_nr}-${idx}`}>
                         {multiDay ? <td>{row.date ? formatDate(row.date) : ""}</td> : null}
-                        <td>{row.electrolyzer}</td>
+                        <td>{formatElectrolyzer(row.electrolyzer) || row.electrolyzer}</td>
                         <td>{row.position}</td>
                         <td>{row.element_nr || ""}</td>
                         <td>{fmt(row.value ?? row.standardized_voltage, 3)}</td>
@@ -596,17 +780,24 @@ function VoltageForms({ form }: { form: string }) {
           <div className="space-y-3">
             <div className="flex flex-wrap gap-4 text-[12px] font-bold">
               <span>
-                {t("statistics.count")}: {elementsQuery.data.count}
+                {t("statistics.count")}: {filteredStats.count}
+                {filteredStats.count !== elementsQuery.data.count ? ` / ${elementsQuery.data.count}` : ""}
               </span>
               <span>
-                {t("statistics.avg")}: {fmt(elementsQuery.data.average, 3)} V
+                {t("statistics.avg")}: {fmt(filteredStats.average, 3)} V
               </span>
               <span>
-                {t("statistics.min")}: {fmt(elementsQuery.data.min, 3)} V
+                {t("statistics.min")}: {fmt(filteredStats.min, 3)} V
               </span>
               <span>
-                {t("statistics.max")}: {fmt(elementsQuery.data.max, 3)} V
+                {t("statistics.max")}: {fmt(filteredStats.max, 3)} V
               </span>
+              {filterMin != null || filterMax != null ? (
+                <span className="font-normal text-[#404040]">
+                  {t("statistics.filterRange")}: {filterMin != null ? fmt(filterMin, 3) : "—"} …{" "}
+                  {filterMax != null ? fmt(filterMax, 3) : "—"} V
+                </span>
+              ) : null}
             </div>
             <div className="overflow-auto" style={{ maxHeight: "60vh" }}>
               <table className="stats-hier-table">
@@ -619,7 +810,7 @@ function VoltageForms({ form }: { form: string }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {elementsQuery.data.rows.map((row, idx) => (
+                  {elementRows.map((row, idx) => (
                     <tr key={`${row.date}-${row.position}-${idx}`}>
                       {multiDay ? <td>{row.date ? formatDate(row.date) : ""}</td> : null}
                       <td>{row.position}</td>
@@ -645,7 +836,8 @@ function StatisticsDetails() {
   if (form === "dol") return <MembraneDolForm />;
   if (form === "power") return <AveragePowerForm />;
   if (form === "groups") return <GroupsForm />;
-  if (form === "distribution" || form === "high" || form === "voltages") return <VoltageForms form={form} />;
+  if (form === "distribution") return <UnDistributionForm />;
+  if (form === "high" || form === "voltages") return <VoltageForms form={form} />;
   return (
     <AccessFormWindow caption="Statistics" backHref="/statistics">
       <StatisticsMenu />

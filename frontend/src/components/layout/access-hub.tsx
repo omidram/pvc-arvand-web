@@ -111,16 +111,11 @@ export function AccessPeriod({
 }) {
   const { t } = useI18n();
   return (
-    <div className="mb-3 flex flex-wrap items-end gap-3 text-[12px]">
+    <div className="access-period-bar mb-3 inline-flex flex-wrap items-center gap-2 px-3 py-1.5 text-[12px]">
       <span className="font-bold">{t("menus.timePeriodFrom")}</span>
-      <label className="inline-flex items-center gap-1">
-        {t("menus.from")}
-        <DateInput className="access-inset-field w-[118px]" value={from} onChange={(e) => onFrom(e.target.value)} />
-      </label>
-      <label className="inline-flex items-center gap-1">
-        {t("menus.till")}
-        <DateInput className="access-inset-field w-[118px]" value={till} onChange={(e) => onTill(e.target.value)} />
-      </label>
+      <DateInput className="access-inset-field w-[118px]" value={from} onChange={(e) => onFrom(e.target.value)} />
+      <span>{t("menus.till")}</span>
+      <DateInput className="access-inset-field w-[118px]" value={till} onChange={(e) => onTill(e.target.value)} />
     </div>
   );
 }

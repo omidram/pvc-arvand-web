@@ -100,6 +100,13 @@ Then open `http://SERVER-IP:8080/` in a browser.
 Data is stored in the named volume `pvc_arvand_data`. Automatic backups written
 from **Settings → Backup** land inside that volume as well.
 
+**Important — plant data survives updates only if you keep the volume:**
+
+- Update with `bash deploy/update.sh` or `deploy/update.ps1` (backs up DB, then rebuilds).
+- Do **not** run `docker compose down -v` — the `-v` flag deletes all plant records.
+- Do **not** delete `%LOCALAPPDATA%\PVCArvand` on Windows EXE installs (that is the live DB).
+- Replacing program files / rebuilding the image does **not** wipe the volume by itself.
+
 ### Useful commands
 
 ```powershell

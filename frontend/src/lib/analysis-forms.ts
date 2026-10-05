@@ -2,6 +2,9 @@
  * Field lists taken from the Access analysis forms (form / design view), one
  * spec per menu button. Parameter keys are the Access column names so rows
  * migrated from the MDB still open in the matching form.
+ *
+ * `range` values are the Access "Specification" / "Sollwerte" captions shown
+ * under each unit on the original forms.
  */
 
 export type AnalysisIdentity = "electrolyzer" | "position" | "group" | "train" | "date" | "time";
@@ -11,6 +14,8 @@ export type AnalysisField = {
   label: string;
   labelKey?: string;
   unit: string;
+  /** Access Specification / Sollwerte text (e.g. "85 - 88", "<12"). */
+  range?: string;
   aliases?: string[];
   side?: "left" | "right";
   /** Access prints "(100% basis)" beside this value. */
@@ -35,10 +40,33 @@ const IDENTITY: Record<string, AnalysisIdentity[]> = {
 function anolyteFields(plant: boolean): AnalysisField[] {
   const suffix = plant ? "" : " An";
   return [
-    { key: `NaCl${suffix}`, label: "NaCl", unit: "g/l", aliases: plant ? ["NaCl An"] : ["NaCl"] },
-    { key: `NaClO3${suffix}`, label: "NaClO3", unit: "g/l", aliases: plant ? ["NaClO3 An"] : ["NaClO3"] },
-    { key: `Na2SO4${suffix}`, label: "Na2SO4", unit: "g/l", aliases: plant ? ["Na2SO4 An"] : ["Na2SO4"] },
-    { key: `NaOCl${suffix}`, label: "NaOCl", unit: "g/l", aliases: plant ? ["NaOCl An"] : ["NaOCl"] },
+    {
+      key: `NaCl${suffix}`,
+      label: "NaCl",
+      unit: "g/l",
+      range: "220 - 230",
+      aliases: plant ? ["NaCl An"] : ["NaCl"],
+    },
+    {
+      key: `NaClO3${suffix}`,
+      label: "NaClO3",
+      unit: "g/l",
+      range: "<12",
+      aliases: plant ? ["NaClO3 An"] : ["NaClO3"],
+    },
+    {
+      key: `Na2SO4${suffix}`,
+      label: "Na2SO4",
+      unit: "g/l",
+      range: "<10",
+      aliases: plant ? ["Na2SO4 An"] : ["Na2SO4"],
+    },
+    {
+      key: `NaOCl${suffix}`,
+      label: "HOCl",
+      unit: "g/l",
+      aliases: plant ? ["NaOCl An", "HOCl", "HOCl An"] : ["NaOCl", "HOCl"],
+    },
     { key: plant ? "HCl" : "HCl An", label: "HCl", unit: "g/l", aliases: plant ? ["HCl An"] : ["HCl"] },
     {
       key: plant ? "density at 20°" : "density at 20° An",
@@ -49,11 +77,18 @@ function anolyteFields(plant: boolean): AnalysisField[] {
     },
     {
       key: plant ? "temperature" : "temperature An",
-      label: "t",
+      label: "T",
       unit: "°C",
+      range: "85 - 88",
       aliases: plant ? ["temperature An"] : ["temperature"],
     },
-    { key: plant ? "pH" : "pH An", label: "pH", unit: "/", aliases: plant ? ["pH An"] : ["pH"] },
+    {
+      key: plant ? "pH" : "pH An",
+      label: "pH",
+      unit: "/",
+      range: "2,4 - 4,4",
+      aliases: plant ? ["pH An"] : ["pH"],
+    },
   ];
 }
 
@@ -66,42 +101,42 @@ function catholyteFields(electrolyzer: boolean): AnalysisField[] {
       unit: "m³/h",
       aliases: ["make_up_water", "make up water"],
     },
-    { key: "temperature", label: "t", unit: "°C" },
-    { key: "NaOH", label: "NaOH", unit: "wt.%" },
-    { key: "NaCl", label: "NaCl", unit: "ppm w", basis: true },
-    { key: "NaClO3", label: "NaClO3", unit: "ppm w" },
-    { key: "Na2SO4", label: "Na2SO4", unit: "ppm w" },
-    { key: "Fe", label: "Fe", unit: "ppm w", basis: true },
+    { key: "temperature", label: "T", unit: "°C", range: "86 - 88" },
+    { key: "NaOH", label: "NaOH", unit: "wt.%", range: "31 - 33" },
+    { key: "NaCl", label: "NaCl", unit: "ppm w", range: "<100", basis: true },
+    { key: "NaClO3", label: "NaClO3", unit: "ppm w", range: "<30" },
+    { key: "Na2SO4", label: "Na2SO4", unit: "ppm w", range: "<80" },
+    { key: "Fe", label: "Fe", unit: "ppm w", range: "<0,3", basis: true },
   ];
 }
 
 function chlorineFields(plant: boolean, brUnit: string): AnalysisField[] {
   if (plant) {
     return [
-      { key: "Cl2 + CO2", label: "Cl2 + CO2", unit: "Vol.%", aliases: ["Cl2 + CO2 Cl", "Cl2_CO2"] },
-      { key: "Restgas", label: "Restgas", labelKey: "analyses.lbl.restgas", unit: "Vol.%", aliases: ["restgas Cl", "restgas"] },
-      { key: "O2", label: "O2", unit: "Vol.%", aliases: ["O2 Cl"] },
-      { key: "H2", label: "H2", unit: "Vol.%", aliases: ["H2 Cl"] },
-      { key: "N2", label: "N2", unit: "Vol.%", aliases: ["N2 Cl"] },
+      { key: "Cl2 + CO2", label: "Cl2 + CO2", unit: "Vol.%", range: ">98", aliases: ["Cl2 + CO2 Cl", "Cl2_CO2"] },
+      { key: "Restgas", label: "Restgas", labelKey: "analyses.lbl.restgas", unit: "Vol.%", range: "<2", aliases: ["restgas Cl", "restgas"] },
+      { key: "O2", label: "O2", unit: "Vol.%", range: "<1,5", aliases: ["O2 Cl"] },
+      { key: "H2", label: "H2", unit: "Vol.%", range: "<0,1", aliases: ["H2 Cl"] },
+      { key: "N2", label: "N2", unit: "Vol.%", range: "<0,15", aliases: ["N2 Cl"] },
       { key: "Br", label: "Br", unit: "Vol. ppm", aliases: ["Br Cl"] },
     ];
   }
   return [
-    { key: "Cl2 + CO2 Cl", label: "Cl2 + CO2", unit: "Vol.%", aliases: ["Cl2 + CO2", "Cl2_CO2"] },
-    { key: "restgas Cl", label: "Restgas", labelKey: "analyses.lbl.restgas", unit: "Vol.%", aliases: ["Restgas", "restgas"] },
-    { key: "O2 Cl", label: "O2", unit: "Vol.%", aliases: ["O2"] },
-    { key: "H2 Cl", label: "H2", unit: "Vol.%", aliases: ["H2"] },
-    { key: "N2 Cl", label: "N2", unit: "Vol.%", aliases: ["N2"] },
+    { key: "Cl2 + CO2 Cl", label: "Cl2 + CO2", unit: "Vol.%", range: ">98", aliases: ["Cl2 + CO2", "Cl2_CO2"] },
+    { key: "restgas Cl", label: "Restgas", labelKey: "analyses.lbl.restgas", unit: "Vol.%", range: "<2", aliases: ["Restgas", "restgas"] },
+    { key: "O2 Cl", label: "O2", unit: "Vol.%", range: "<1,5", aliases: ["O2"] },
+    { key: "H2 Cl", label: "H2", unit: "Vol.%", range: "<0,1", aliases: ["H2"] },
+    { key: "N2 Cl", label: "N2", unit: "Vol.%", range: "<0,15", aliases: ["N2"] },
     { key: "Br Cl", label: "Br", unit: brUnit, aliases: ["Br"] },
   ];
 }
 
-function brineFields(plant: boolean, withPeroxide: boolean): AnalysisField[] {
+function brineFields(plant: boolean): AnalysisField[] {
   const salt = (name: string) => (plant ? name : `${name} Pb`);
   const saltAlias = (name: string) => (plant ? [`${name} Pb`] : [name]);
   const left: AnalysisField[] = [
     { key: "flow rate", label: "Flow Rate", labelKey: "analyses.lbl.flowRate", unit: "m³/h", aliases: ["flow_rate"], side: "left" },
-    { key: "temperature", label: "Temperature", labelKey: "analyses.lbl.temperature", unit: "°C", side: "left" },
+    { key: "temperature", label: "Temperatur", unit: "°C", side: "left" },
     { key: "pH", label: "pH", unit: "-", side: "left" },
     {
       key: "density at 20 °C",
@@ -111,28 +146,42 @@ function brineFields(plant: boolean, withPeroxide: boolean): AnalysisField[] {
       aliases: ["density_20C", "density at 20°", "density at 20° An"],
       side: "left",
     },
-    { key: salt("NaCl"), label: "NaCl", unit: "g/l", aliases: saltAlias("NaCl"), side: "left" },
-    { key: salt("NaClO3"), label: "NaClO3", unit: "g/l", aliases: saltAlias("NaClO3"), side: "left" },
-    { key: salt("Na2CO3"), label: "Na2CO3", unit: "g/l", aliases: saltAlias("Na2CO3"), side: "left" },
-    { key: salt("NaOH"), label: "NaOH", unit: "g/l", aliases: saltAlias("NaOH"), side: "left" },
-    { key: salt("Na2SO4"), label: "Na2SO4", unit: "g/l", aliases: saltAlias("Na2SO4"), side: "left" },
-    { key: salt("NaOCl"), label: "NaOCl", unit: "g/l", aliases: saltAlias("NaOCl"), side: "left" },
+    { key: salt("NaCl"), label: "NaCl", unit: "g/l", range: "290 - 310", aliases: saltAlias("NaCl"), side: "left" },
+    { key: salt("NaClO3"), label: "NaClO3", unit: "g/l", range: "<10", aliases: saltAlias("NaClO3"), side: "left" },
+    { key: salt("Na2CO3"), label: "Na2CO3", unit: "g/l", range: "<0,4", aliases: saltAlias("Na2CO3"), side: "left" },
+    { key: salt("NaOH"), label: "NaOH", unit: "g/l", range: "<0,1", aliases: saltAlias("NaOH"), side: "left" },
+    { key: salt("Na2SO4"), label: "Na2SO4", unit: "g/l", range: "4 - 7", aliases: saltAlias("Na2SO4"), side: "left" },
+    {
+      key: salt("NaOCl"),
+      label: "HOCl",
+      unit: "g/l",
+      aliases: [...saltAlias("NaOCl"), plant ? "HOCl" : "HOCl Pb", "HOCl"],
+      side: "left",
+    },
     { key: salt("HCl"), label: "HCl", unit: "g/l", aliases: saltAlias("HCl"), side: "left" },
   ];
   const right: AnalysisField[] = [
-    { key: "Ca +Mg", label: "Ca+Mg", unit: "ppb w", aliases: ["Ca+Mg"], side: "right" },
-    { key: "Ba", label: "Ba", unit: "ppb w", side: "right" },
-    { key: "Sr", label: "Sr", unit: "ppb w", side: "right" },
-    { key: "Ni", label: "Ni", unit: "ppb w", side: "right" },
-    { key: "Fe", label: "Fe", unit: "ppb w", side: "right" },
-    { key: "Al", label: "Al", unit: "ppb w", side: "right" },
-    { key: "SiO2", label: "SiO2", unit: "ppb w", side: "right" },
-    { key: "I", label: "I", unit: "ppb w", side: "right" },
-    { key: "F", label: "F", unit: "ppb w", side: "right" },
-    { key: "Br", label: "Br", unit: "ppb w", side: "right" },
-    { key: "Organics", label: "Organics", labelKey: "analyses.lbl.organics", unit: "ppm w", aliases: ["organics"], side: "right" },
+    { key: "Ca +Mg", label: "Ca+Mg", unit: "ppb w", range: "<20", aliases: ["Ca+Mg"], side: "right" },
+    { key: "Ba", label: "Ba", unit: "ppb w", range: "<500", side: "right" },
+    { key: "Sr", label: "Sr", unit: "ppb w", range: "<400", side: "right" },
+    { key: "Ni", label: "Ni", unit: "ppb w", range: "<10", side: "right" },
+    { key: "Fe", label: "Fe", unit: "ppb w", range: "<1000", side: "right" },
+    { key: "Al", label: "Al", unit: "ppb w", range: "<100", side: "right" },
+    { key: "SiO2", label: "SiO2", unit: "ppb w", range: "<5000", side: "right" },
+    { key: "I", label: "I", unit: "ppb w", range: "<200", side: "right" },
+    { key: "F", label: "F", unit: "ppb w", range: "<1300", side: "right" },
+    { key: "Br", label: "Br", unit: "ppb w", range: "<50000", side: "right" },
+    {
+      key: "Organics",
+      label: "Organics",
+      labelKey: "analyses.lbl.organics",
+      unit: "ppm w",
+      range: "<7",
+      aliases: ["organics"],
+      side: "right",
+    },
+    { key: "H2O2", label: "H2O2", unit: "ppm w", side: "right" },
   ];
-  if (withPeroxide) right.push({ key: "H2O2", label: "H2O2", unit: "ppm w", side: "right" });
   return [...left, ...right];
 }
 
@@ -150,7 +199,7 @@ const CAUSTIC: AnalysisField[] = [
   { key: "flow rate", label: "flow rate", labelKey: "analyses.lbl.flowRate", unit: "m³/h", aliases: ["flow_rate"] },
   { key: "NaOH", label: "NaOH", unit: "wt. %" },
   { key: "Fe", label: "Fe", unit: "ppm w", basis: true },
-  { key: "temperature", label: "t", unit: "°C" },
+  { key: "temperature", label: "T", unit: "°C" },
 ];
 
 const DEMIN: AnalysisField[] = [
@@ -192,7 +241,7 @@ function buildForms(): Record<string, AnalysisFormSpec> {
     forms[`pure_brine:${scope}`] = spec(
       `analyses.formTitle.pure_brine.${scope}`,
       scope,
-      brineFields(plant, scope !== "sub_plant"),
+      brineFields(plant),
       "split"
     );
     forms[`chlorine_gas:${scope}`] = spec(
@@ -232,9 +281,24 @@ function formatParam(value: number | string): string {
 /** Access stores a time-only value as 1899-12-30 plus the clock time. */
 export function cleanAnalysisTime(value: string | null | undefined): string {
   if (!value) return "";
-  const clock = value.match(/(\d{2}:\d{2}:\d{2})/);
-  if (clock && (value.startsWith("1899") || value.includes("T"))) return clock[1];
-  return value;
+  const text = String(value).trim();
+  if (!text) return "";
+  const clock = text.match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
+  if (!clock) return text;
+  // Access sentinel date, ISO datetime, or any full date+time blob → keep clock only.
+  if (
+    text.startsWith("1899") ||
+    text.includes("1899-12-30") ||
+    text.includes("T") ||
+    /^\d{4}-\d{2}-\d{2}/.test(text)
+  ) {
+    const parts = clock[1].split(":");
+    const hh = parts[0].padStart(2, "0");
+    const mm = parts[1] ?? "00";
+    const ss = parts[2] ?? "00";
+    return `${hh}:${mm}:${ss}`;
+  }
+  return text;
 }
 
 export function readParam(
@@ -272,4 +336,44 @@ export function buildParameters(
     }
   }
   return parameters;
+}
+
+/**
+ * Access An Reinsole Befehl115 — Calculate HCl, NaOH and Na2CO3 Concentrations.
+ *
+ * HCl_g_l = (VHCl * rhoHCl * cHCl / 3647
+ *          - 1000 * Vbrine * (NaOH/40 + 2*Na2CO3/105.99))
+ *          * 36.47 / (Vbrine * 1000 + VHCl)
+ *
+ * Then NaOH and Na2CO3 are set to 0 (fully neutralized by the calculated HCl).
+ */
+export function calculateBrineHclConcentration(input: {
+  vHclLh: number;
+  cHclWtPct: number;
+  rhoHclGl: number;
+  brineFlowM3h: number;
+  naohGl: number;
+  na2co3Gl: number;
+}): number {
+  const { vHclLh, cHclWtPct, rhoHclGl, brineFlowM3h, naohGl, na2co3Gl } = input;
+  const denom = brineFlowM3h * 1000 + vHclLh;
+  if (!Number.isFinite(denom) || denom === 0) return NaN;
+  return (
+    ((vHclLh * rhoHclGl * cHclWtPct) / 3647 -
+      1000 * brineFlowM3h * (naohGl / 40 + (2 * na2co3Gl) / 105.99)) *
+    36.47 /
+    denom
+  );
+}
+
+export function brineFieldKey(form: AnalysisFormSpec, base: "NaOH" | "Na2CO3" | "HCl" | "flow rate"): string {
+  const hit = form.fields.find((field) => field.key === base || field.key === `${base} Pb` || field.aliases?.includes(base));
+  if (hit) return hit.key;
+  if (base === "flow rate") return "flow rate";
+  return form.fields.some((field) => field.key.endsWith(" Pb")) ? `${base} Pb` : base;
+}
+
+export function readDraftNumber(draft: Record<string, string>, key: string): number | null {
+  const parsed = parseParam(draft[key] ?? "");
+  return typeof parsed === "number" && Number.isFinite(parsed) ? parsed : null;
 }

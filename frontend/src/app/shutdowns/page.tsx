@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth/context";
 import { formatDate } from "@/lib/utils";
 import { useCalendar } from "@/lib/calendar/context";
 import { DateInput } from "@/components/ui/date-input";
+import { compareElectrolyzers, formatElectrolyzer } from "@/lib/plant-topology";
 
 const BASE_PLANT_PARTS = ["081", "082", "A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1", "J1", "K1", "L1", "M1"];
 
@@ -62,12 +63,14 @@ function PlantBar() {
   useCalendar();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const s = settingsQuery.data;
+  // Access header 4th box is the plant date (not Version — DB sometimes stores Format "d" there).
+  const headerDate = s?.date ? formatDate(s.date) : formatDate(new Date().toISOString().slice(0, 10));
   return (
     <div className="access-plant-bar shutdown-plant-bar">
       <span>{s?.customer || "PVC Arvand"}</span>
       <span>{t("menus.naclElectrolysis")}</span>
-      <span>{s?.uan || "E0-3031"}</span>
-      <span>{s?.version || (s?.date ? formatDate(s.date) : "")}</span>
+      <span>{s?.uan || "03-3039"}</span>
+      <span>{headerDate === "—" || headerDate === "d" ? formatDate(new Date().toISOString().slice(0, 10)) : headerDate}</span>
     </div>
   );
 }
@@ -101,7 +104,8 @@ function ShutdownMenu() {
 function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: string; dateTo?: string; showPeriodFilter?: boolean }) {
   const { t } = useI18n();
   const { canEdit, canEditField, canViewField } = useAuth();
-  const editable = canEdit("shutdowns");
+  // Time-period view is a report: only the from/till filter dates are interactive.
+  const editable = !showPeriodFilter && canEdit("shutdowns");
   const [active, setActive] = useState<number | "new" | null>(null);
   const [from, setFrom] = useState(dateFrom || "");
   const [to, setTo] = useState(dateTo || "");
@@ -136,11 +140,12 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   const totalHm = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, "0")}`;
 
   const plantParts = useMemo(() => {
-    const names = (elQuery.data || []).map((e) => e.name).filter(Boolean) as string[];
-    const existing = rows.map((r) => r.plant_part).filter(Boolean) as string[];
-    return Array.from(new Set([...BASE_PLANT_PARTS, ...names, ...existing])).sort((a, b) =>
-      a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" })
-    );
+    const names = (elQuery.data || []).map((e) => formatElectrolyzer(e.name)).filter(Boolean) as string[];
+    const existing = rows.map((r) => formatElectrolyzer(r.plant_part)).filter(Boolean) as string[];
+    return Array.from(new Set([...BASE_PLANT_PARTS, ...names, ...existing])).sort((a, b) => {
+      if (/^\d/.test(a) || /^\d/.test(b)) return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+      return compareElectrolyzers(a, b);
+    });
   }, [elQuery.data, rows]);
 
   function fieldEditable(field: string) {
@@ -218,42 +223,59 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 </td>
                 {fieldVisible("plant_part") ? (
                   <td>
-                    <select
-                      className="w-full"
-                      value={row.plant_part || ""}
-                      onChange={(e) => save(row, { plant_part: e.target.value || null })}
-                      disabled={!fieldEditable("plant_part")}
-                    >
-                      <option value="" />
-                      {plantParts.map((p) => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                      {row.plant_part && !plantParts.includes(row.plant_part) ? (
-                        <option value={row.plant_part}>{row.plant_part}</option>
-                      ) : null}
-                    </select>
+                    {showPeriodFilter ? (
+                      <span className="block px-1">{formatElectrolyzer(row.plant_part) || row.plant_part || "—"}</span>
+                    ) : (
+                      <select
+                        className="w-full"
+                        value={formatElectrolyzer(row.plant_part) || row.plant_part || ""}
+                        onChange={(e) =>
+                          save(row, { plant_part: formatElectrolyzer(e.target.value) || e.target.value || null })
+                        }
+                        disabled={!fieldEditable("plant_part")}
+                      >
+                        <option value="" />
+                        {plantParts.map((p) => (
+                          <option key={p} value={p}>
+                            {p}
+                          </option>
+                        ))}
+                        {row.plant_part &&
+                        !plantParts.includes(formatElectrolyzer(row.plant_part) || row.plant_part) ? (
+                          <option value={formatElectrolyzer(row.plant_part) || row.plant_part}>
+                            {formatElectrolyzer(row.plant_part) || row.plant_part}
+                          </option>
+                        ) : null}
+                      </select>
+                    )}
                   </td>
                 ) : null}
                 {fieldVisible("shutdown_time") ? (
                   <td>
-                    <DateInput
-                      type="datetime-local"
-                      value={toLocalInput(row.shutdown_time)}
-                      onChange={(e) => save(row, { shutdown_time: fromLocalInput(e.target.value) })}
-                      disabled={!fieldEditable("shutdown_time")}
-                    />
+                    {showPeriodFilter ? (
+                      <span className="block px-1 tabular-nums">{toLocalInput(row.shutdown_time).replace("T", " ") || "—"}</span>
+                    ) : (
+                      <DateInput
+                        type="datetime-local"
+                        value={toLocalInput(row.shutdown_time)}
+                        onChange={(e) => save(row, { shutdown_time: fromLocalInput(e.target.value) })}
+                        disabled={!fieldEditable("shutdown_time")}
+                      />
+                    )}
                   </td>
                 ) : null}
                 {fieldVisible("startup_time") ? (
                   <td>
-                    <DateInput
-                      type="datetime-local"
-                      value={toLocalInput(row.startup_time)}
-                      onChange={(e) => save(row, { startup_time: fromLocalInput(e.target.value) })}
-                      disabled={!fieldEditable("startup_time")}
-                    />
+                    {showPeriodFilter ? (
+                      <span className="block px-1 tabular-nums">{toLocalInput(row.startup_time).replace("T", " ") || "—"}</span>
+                    ) : (
+                      <DateInput
+                        type="datetime-local"
+                        value={toLocalInput(row.startup_time)}
+                        onChange={(e) => save(row, { startup_time: fromLocalInput(e.target.value) })}
+                        disabled={!fieldEditable("startup_time")}
+                      />
+                    )}
                   </td>
                 ) : null}
                 <td>
@@ -261,59 +283,75 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 </td>
                 {fieldVisible("code") ? (
                   <td>
-                    <input
-                      className="w-14"
-                      list="shutdown-codes"
-                      value={row.code || ""}
-                      onChange={(e) => applyCode(row, e.target.value)}
-                      disabled={!fieldEditable("code")}
-                    />
+                    {showPeriodFilter ? (
+                      <span className="block px-1">{row.code || "—"}</span>
+                    ) : (
+                      <input
+                        className="w-14"
+                        list="shutdown-codes"
+                        value={row.code || ""}
+                        onChange={(e) => applyCode(row, e.target.value)}
+                        disabled={!fieldEditable("code")}
+                      />
+                    )}
                   </td>
                 ) : null}
                 {fieldVisible("cause") ? (
                   <td>
-                    <input
-                      className="w-full"
-                      list="shutdown-causes"
-                      value={row.cause || ""}
-                      onChange={(e) => save(row, { cause: e.target.value || null })}
-                      disabled={!fieldEditable("cause")}
-                    />
+                    {showPeriodFilter ? (
+                      <span className="block px-1">{row.cause || "—"}</span>
+                    ) : (
+                      <input
+                        className="w-full"
+                        list="shutdown-causes"
+                        value={row.cause || ""}
+                        onChange={(e) => save(row, { cause: e.target.value || null })}
+                        disabled={!fieldEditable("cause")}
+                      />
+                    )}
                   </td>
                 ) : null}
                 {fieldVisible("category") ? (
                   <td>
-                    <select
-                      className="w-full"
-                      value={row.category || ""}
-                      onChange={(e) => save(row, { category: e.target.value || null })}
-                      disabled={!fieldEditable("category")}
-                    >
-                      <option value="" />
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.category || ""}>
-                          {c.category}
-                        </option>
-                      ))}
-                      {row.category && !categories.some((c) => c.category === row.category) ? (
-                        <option value={row.category}>{row.category}</option>
-                      ) : null}
-                    </select>
+                    {showPeriodFilter ? (
+                      <span className="block px-1">{row.category || "—"}</span>
+                    ) : (
+                      <select
+                        className="w-full"
+                        value={row.category || ""}
+                        onChange={(e) => save(row, { category: e.target.value || null })}
+                        disabled={!fieldEditable("category")}
+                      >
+                        <option value="" />
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.category || ""}>
+                            {c.category}
+                          </option>
+                        ))}
+                        {row.category && !categories.some((c) => c.category === row.category) ? (
+                          <option value={row.category}>{row.category}</option>
+                        ) : null}
+                      </select>
+                    )}
                   </td>
                 ) : null}
                 {fieldVisible("remarks") ? (
                   <td>
-                    <input
-                      className="w-full"
-                      value={row.remarks || ""}
-                      onChange={(e) => save(row, { remarks: e.target.value })}
-                      disabled={!fieldEditable("remarks")}
-                    />
+                    {showPeriodFilter ? (
+                      <span className="block px-1">{row.remarks || "—"}</span>
+                    ) : (
+                      <input
+                        className="w-full"
+                        value={row.remarks || ""}
+                        onChange={(e) => save(row, { remarks: e.target.value })}
+                        disabled={!fieldEditable("remarks")}
+                      />
+                    )}
                   </td>
                 ) : null}
               </tr>
             ))}
-            {fieldEditable("plant_part") ? (
+            {!showPeriodFilter && fieldEditable("plant_part") ? (
               <tr onClick={() => setActive("new")}>
                 <td className="access-selector">*</td>
                 <td />

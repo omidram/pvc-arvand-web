@@ -28,27 +28,38 @@ export function ReportColumn({
   onDisplay: () => void;
 }) {
   const { t } = useI18n();
+  // Access keeps "Results as" + Display Results pinned to the bottom of each column.
+  const bodyGroups = groups.filter((g) => g.name !== "result");
+  const resultGroup = groups.find((g) => g.name === "result");
+
+  function renderGroup(group: RadioGroupDef) {
+    return (
+      <AccessGroup key={group.name} legend={group.legend}>
+        {group.options.map((opt) => (
+          <AccessRadio
+            key={opt.value}
+            name={`${title}-${group.name}`}
+            value={opt.value}
+            checked={values[group.name] === opt.value}
+            onChange={(v) => onChange(group.name, v)}
+            label={opt.label}
+          />
+        ))}
+        {group.extra ? group.extra(values[group.name]) : null}
+      </AccessGroup>
+    );
+  }
+
   return (
     <div className="access-col flex min-h-[420px] flex-col">
       <div className="access-col-title">{title}</div>
       <div className="flex flex-1 flex-col">
-        {groups.map((group) => (
-          <AccessGroup key={group.name} legend={group.legend}>
-            {group.options.map((opt) => (
-              <AccessRadio
-                key={opt.value}
-                name={`${title}-${group.name}`}
-                value={opt.value}
-                checked={values[group.name] === opt.value}
-                onChange={(v) => onChange(group.name, v)}
-                label={opt.label}
-              />
-            ))}
-            {group.extra ? group.extra(values[group.name]) : null}
-          </AccessGroup>
-        ))}
+        {bodyGroups.map(renderGroup)}
         <div className="mt-auto pt-2">
-          <AccessBtn onClick={onDisplay}>{t("menus.displayResults")}</AccessBtn>
+          {resultGroup ? renderGroup(resultGroup) : null}
+          <div className="pt-1">
+            <AccessBtn onClick={onDisplay}>{t("menus.displayResults")}</AccessBtn>
+          </div>
         </div>
       </div>
     </div>

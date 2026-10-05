@@ -624,8 +624,28 @@ export interface VoltageDistribution {
   date?: string | null;
   date_from?: string | null;
   date_till?: string | null;
+  ui_min?: number;
+  ui_max?: number;
+  step?: number;
   total_readings: number;
+  class_sum?: number;
   buckets: { label: string | null; lower_bound: number | null; upper_bound: number | null; count: number }[];
+  rows?: {
+    electrolyzer: string | null;
+    position: string | null;
+    date: string | null;
+    time: string | null;
+    i_total: number | null;
+    i_density: number | null;
+    co_pct: number | null;
+    t_an: number | null;
+    t_ca: number | null;
+    tm: number | null;
+    ui: number | null;
+    un: number | null;
+    class_label: string | null;
+    element_nr: string | null;
+  }[];
 }
 
 export interface HighDeviation {

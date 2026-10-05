@@ -153,6 +153,56 @@ def power_consumption(
     return data
 
 
+def _el_aliases(name: str | None) -> set[str]:
+    if not name:
+        return set()
+    n = str(name).strip().upper()
+    if not n:
+        return set()
+    aliases = {n}
+    letters = "".join(c for c in n if c.isalpha())
+    digits = "".join(c for c in n if c.isdigit())
+    if letters and digits:
+        aliases.add(f"{letters}{digits}")
+        aliases.add(f"{digits}{letters}")
+    return aliases
+
+
+def _canonical_electrolyzer(name: str | None, master: dict[str, str]) -> str | None:
+    """Map A2/2A style names onto the plant Electrolyzer master list when possible."""
+    aliases = _el_aliases(name)
+    if not aliases:
+        return None
+    for alias in aliases:
+        if alias in master:
+            return master[alias]
+    # Prefer digit+letter (1A) over letter+digit (A1)
+    for alias in aliases:
+        if len(alias) >= 2 and alias[0].isdigit() and alias[-1].isalpha():
+            return alias
+    return next(iter(aliases))
+
+
+def _plausible_cell_un(total_voltage: float | None, element_count: int | None) -> float | None:
+    """Access Un ≈ U_gesamt / Elementzahl — skip corrupted counts that explode Un."""
+    if total_voltage is None:
+        return None
+    tv = float(total_voltage)
+    # Already a per-cell voltage
+    if 1.2 <= tv <= 5.5:
+        return tv
+    if element_count and element_count > 0:
+        un = tv / float(element_count)
+        if 1.2 <= un <= 5.5:
+            return un
+        # Stack voltage with bad element_count (e.g. 524 V / 1) → use typical Uhde count
+        if tv >= 50 and element_count < 80:
+            un2 = tv / 163.0
+            if 1.2 <= un2 <= 5.5:
+                return un2
+    return None
+
+
 @router.get("/average-power", dependencies=[Depends(require_form_access("statistics"))])
 def average_power(
     date_from: str | None = Query(default=None),
@@ -160,6 +210,17 @@ def average_power(
     db: Session = Depends(get_db),
 ):
     """Access Average Power Consumption form: i / Un / CE / SPC per electrolyzer."""
+    masters = db.query(models.Electrolyzer).order_by(models.Electrolyzer.nr).all()
+    master_map: dict[str, str] = {}
+    ordered_names: list[str] = []
+    for el in masters:
+        name = (el.name or str(el.nr) or "").strip()
+        if not name:
+            continue
+        ordered_names.append(name)
+        for alias in _el_aliases(name):
+            master_map[alias] = name
+
     q = db.query(models.ElectrolyzerNormalization).filter(models.ElectrolyzerNormalization.electrolyzer.isnot(None))
     start = datetime.fromisoformat(date_from) if date_from else None
     end = datetime.fromisoformat(date_till) if date_till else None
@@ -168,23 +229,19 @@ def average_power(
     if end:
         q = q.filter(models.ElectrolyzerNormalization.date <= end)
 
-    by_el: dict[str, dict[str, list[float]]] = {}
+    by_el: dict[str, dict[str, list[float]]] = {name: {"i": [], "un": [], "ce": [], "spc": []} for name in ordered_names}
     for row in q.all():
-        el = (row.electrolyzer or "").strip()
+        el = _canonical_electrolyzer(row.electrolyzer, master_map)
         if not el:
             continue
         bucket = by_el.setdefault(el, {"i": [], "un": [], "ce": [], "spc": []})
         i_val = row.reference_current_density
         if i_val is None and row.total_current is not None:
-            # fallback rough density if area ~2.7 m2 bipolar (kept only when Cc missing)
+            # Access Cc fallback: plant active area ≈ 2.7 m² bipolar stack reference
             i_val = row.total_current / 2.7
-        if i_val is not None:
+        if i_val is not None and 0.1 <= float(i_val) <= 20:
             bucket["i"].append(float(i_val))
-        un = None
-        if row.total_voltage is not None and row.element_count:
-            un = float(row.total_voltage) / float(row.element_count)
-        elif row.total_voltage is not None:
-            un = float(row.total_voltage)
+        un = _plausible_cell_un(row.total_voltage, row.element_count)
         if un is not None:
             bucket["un"].append(un)
 
@@ -197,10 +254,11 @@ def average_power(
     if end:
         ce_rows = ce_rows.filter(models.CurrentEfficiencyEntry.date <= end)
     for ce in ce_rows.all():
-        el = (ce.scope_ref or "").strip()
+        el = _canonical_electrolyzer(ce.scope_ref, master_map)
         if not el or el not in by_el or ce.value_pct is None:
             continue
-        by_el[el]["ce"].append(float(ce.value_pct))
+        if 0 < float(ce.value_pct) <= 120:
+            by_el[el]["ce"].append(float(ce.value_pct))
 
     # SPC [kWh/t NaOH] ≈ Un * 1000 / (1.492 * CE/100)
     for el, bucket in by_el.items():
@@ -209,14 +267,12 @@ def average_power(
             avg_ce = mean(bucket["ce"])
             if avg_ce:
                 bucket["spc"].append((avg_un * 1000.0) / (1.492 * (avg_ce / 100.0)))
-        elif bucket["un"]:
-            # CE unknown → leave SPC empty (Access shows blanks)
-            pass
 
+    display_order = ordered_names + [name for name in sorted(by_el.keys()) if name not in ordered_names]
     rows = []
     plant_avgs = {"i": [], "un": [], "ce": [], "spc": []}
-    for el in sorted(by_el.keys()):
-        bucket = by_el[el]
+    for el in display_order:
+        bucket = by_el.get(el) or {"i": [], "un": [], "ce": [], "spc": []}
         i_st = _stats(bucket["i"])
         un_st = _stats(bucket["un"])
         ce_st = _stats(bucket["ce"])
