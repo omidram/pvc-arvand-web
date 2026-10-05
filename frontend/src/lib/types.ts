@@ -606,6 +606,28 @@ export interface GroupStat {
   gap_mm: string | null;
 }
 
+/** Access Statistics → Groups Un masks */
+export interface GroupVoltageStat {
+  group_nr: string;
+  electrolyzer: string | null;
+  readings: number;
+  un_min: number | null;
+  un_max: number | null;
+  un_avg: number | null;
+  un_std: number | null;
+  anode_coating: string | null;
+  cathode_coating: string | null;
+  membrane_type: string | null;
+  gap_mm: string | null;
+}
+
+export interface GroupVoltageReport {
+  mode: string;
+  date: string | null;
+  electrolyzer: string | null;
+  rows: GroupVoltageStat[];
+}
+
 export interface ShutdownSummary {
   total_shutdowns: number;
   total_hours?: number;
@@ -654,7 +676,8 @@ export interface HighDeviation {
   date_from?: string | null;
   date_till?: string | null;
   average: number | null;
-  threshold_pct?: number;
+  threshold_pct?: number | null;
+  threshold_mv?: number | null;
   flagged: {
     electrolyzer: string | null;
     position: string | null;
@@ -664,6 +687,7 @@ export interface HighDeviation {
     standardized_voltage: number | null;
     value?: number | null;
     deviation_pct: number | null;
+    deviation_mv?: number | null;
   }[];
 }
 

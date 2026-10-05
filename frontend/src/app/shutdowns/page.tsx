@@ -20,6 +20,7 @@ import { formatDate } from "@/lib/utils";
 import { useCalendar } from "@/lib/calendar/context";
 import { DateInput } from "@/components/ui/date-input";
 import { formatElectrolyzer } from "@/lib/plant-topology";
+import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 
 function toLocalInput(value: string | null | undefined): string {
   if (!value) return "";
@@ -93,13 +94,56 @@ function ShutdownMenu() {
   );
 }
 
+function toApiDateTime(localValue: string): string | null {
+  const text = localValue.trim();
+  if (!text) return null;
+  // datetime-local → store as local wall-clock without Z (matches Access import style)
+  if (text.length === 16) return `${text}:00`;
+  return text;
+}
+
+function ComboInput({
+  listId,
+  options,
+  value,
+  onChange,
+  disabled,
+  className,
+}: {
+  listId: string;
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <>
+      <input
+        className={className || "w-full"}
+        list={listId}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
+        autoComplete="off"
+      />
+      <datalist id={listId}>
+        {options.map((opt) => (
+          <option key={opt} value={opt} />
+        ))}
+      </datalist>
+    </>
+  );
+}
+
 function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: string; dateTo?: string; showPeriodFilter?: boolean }) {
   const { t } = useI18n();
-  const { canViewField } = useAuth();
-  // Shut Down List / Time Period are reporting views: only from/till dates are interactive.
-  const [active, setActive] = useState<number | null>(null);
+  const { canEdit, canViewField } = useAuth();
+  const editable = canEdit("shutdowns") && !showPeriodFilter;
+  const [active, setActive] = useState<number | "new" | null>(null);
   const [from, setFrom] = useState(dateFrom || "");
   const [to, setTo] = useState(dateTo || "");
+  const [draft, setDraft] = useState<Partial<Shutdown>>({});
 
   const listParams = useMemo(() => {
     const params: Record<string, unknown> = { limit: 2000 };
@@ -112,13 +156,109 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     return params;
   }, [from, to]);
 
-  const { listQuery } = useCrudResource<Shutdown>("shutdowns", shutdownsApi, listParams);
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Shutdown>(
+    "shutdowns",
+    shutdownsApi,
+    listParams
+  );
+  const causesQuery = useQuery({
+    queryKey: ["shutdown-causes", "combo"],
+    queryFn: () => shutdownCausesApi.list({ limit: 500 }),
+  });
+  const categoriesQuery = useQuery({
+    queryKey: ["shutdown-categories", "combo"],
+    queryFn: () => shutdownCategoriesApi.list({ limit: 200 }),
+  });
+
   const rows = listQuery.data || [];
+  const causes = causesQuery.data || [];
+  const categoryOptions = useMemo(() => {
+    const fromTable = (categoriesQuery.data || []).map((c) => c.category || "").filter(Boolean);
+    const fromCauses = causes.map((c) => c.category || "").filter(Boolean);
+    return Array.from(new Set([...fromTable, ...fromCauses])).sort();
+  }, [categoriesQuery.data, causes]);
+  const codeOptions = useMemo(
+    () => Array.from(new Set(causes.map((c) => c.code || "").filter(Boolean))).sort(),
+    [causes]
+  );
+  const causeOptions = useMemo(
+    () => Array.from(new Set(causes.map((c) => c.cause || "").filter(Boolean))).sort(),
+    [causes]
+  );
+
   const totalMins = rows.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
   const totalHm = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, "0")}`;
 
   function fieldVisible(field: string) {
     return canViewField("shutdowns", field);
+  }
+
+  function saveRow(row: Shutdown, patch: Partial<Shutdown>) {
+    if (!editable) return;
+    updateMutation.mutate({
+      id: row.nr,
+      payload: {
+        plant_part: row.plant_part,
+        shutdown_time: row.shutdown_time,
+        startup_time: row.startup_time,
+        remarks: row.remarks,
+        code: row.code,
+        category: row.category,
+        cause: row.cause,
+        ...patch,
+      },
+    });
+  }
+
+  function applyCode(row: Shutdown | null, code: string, isNew: boolean) {
+    const match = causes.find((c) => (c.code || "").toLowerCase() === code.trim().toLowerCase());
+    const patch: Partial<Shutdown> = {
+      code: code || null,
+      cause: match?.cause ?? (isNew ? draft.cause ?? null : row?.cause ?? null),
+      category: match?.category ?? (isNew ? draft.category ?? null : row?.category ?? null),
+    };
+    if (match) {
+      patch.cause = match.cause;
+      patch.category = match.category;
+    }
+    if (isNew) setDraft((d) => ({ ...d, ...patch }));
+    else if (row) saveRow(row, patch);
+  }
+
+  function applyCause(row: Shutdown | null, cause: string, isNew: boolean) {
+    const match = causes.find((c) => (c.cause || "").toLowerCase() === cause.trim().toLowerCase());
+    const patch: Partial<Shutdown> = {
+      cause: cause || null,
+      code: match?.code ?? (isNew ? draft.code ?? null : row?.code ?? null),
+      category: match?.category ?? (isNew ? draft.category ?? null : row?.category ?? null),
+    };
+    if (match) {
+      patch.code = match.code;
+      patch.category = match.category;
+    }
+    if (isNew) setDraft((d) => ({ ...d, ...patch }));
+    else if (row) saveRow(row, patch);
+  }
+
+  function createNew() {
+    if (!editable) return;
+    createMutation.mutate(
+      {
+        plant_part: draft.plant_part || null,
+        shutdown_time: draft.shutdown_time || null,
+        startup_time: draft.startup_time || null,
+        remarks: draft.remarks || null,
+        code: draft.code || null,
+        category: draft.category || null,
+        cause: draft.cause || null,
+      } as never,
+      {
+        onSuccess: () => {
+          setDraft({});
+          setActive(null);
+        },
+      }
+    );
   }
 
   return (
@@ -127,7 +267,21 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       titleBlue
       backHref="/shutdowns"
       backLabel={t("mainMenu.shutDown")}
-      extraButtons={<ExportButtons prefix="/shutdowns" params={listParams} filenameBase="shutdowns" />}
+      extraButtons={
+        <>
+          <ExportButtons prefix="/shutdowns" params={listParams} filenameBase="shutdowns" />
+          {editable ? (
+            <AccessBtn
+              onClick={() => {
+                setActive("new");
+                setDraft({ shutdown_time: new Date().toISOString().slice(0, 16) });
+              }}
+            >
+              + {t("menus.shutdownList")}
+            </AccessBtn>
+          ) : null}
+        </>
+      }
     >
       <PlantBar />
       <div className="shutdown-list-toolbar mb-3 flex flex-wrap items-end justify-between gap-3 text-[12px]">
@@ -159,6 +313,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               {fieldVisible("cause") ? <th className="w-44">{t("fields.reason")}</th> : null}
               {fieldVisible("category") ? <th className="w-28">{t("fields.category")}</th> : null}
               {fieldVisible("remarks") ? <th>{t("fields.remarks")}</th> : null}
+              {editable ? <th className="w-16" /> : null}
             </tr>
           </thead>
           <tbody>
@@ -169,45 +324,189 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   <input className="w-12" value={row.nr} readOnly tabIndex={-1} />
                 </td>
                 {fieldVisible("plant_part") ? (
-                  <td>
-                    <span className="block px-1">{formatElectrolyzer(row.plant_part) || row.plant_part || "—"}</span>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    {editable ? (
+                      <ElectrolyzerCombo
+                        variant="access"
+                        className="w-full min-w-[4rem]"
+                        value={row.plant_part || ""}
+                        onChange={(v) => saveRow(row, { plant_part: formatElectrolyzer(v) || v || null })}
+                      />
+                    ) : (
+                      <span className="block px-1">{formatElectrolyzer(row.plant_part) || row.plant_part || "—"}</span>
+                    )}
                   </td>
                 ) : null}
                 {fieldVisible("shutdown_time") ? (
-                  <td>
-                    <span className="block px-1 tabular-nums">{toLocalInput(row.shutdown_time).replace("T", " ") || "—"}</span>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="datetime-local"
+                      className="w-full tabular-nums"
+                      value={toLocalInput(row.shutdown_time)}
+                      disabled={!editable}
+                      onChange={(e) => saveRow(row, { shutdown_time: toApiDateTime(e.target.value) })}
+                    />
                   </td>
                 ) : null}
                 {fieldVisible("startup_time") ? (
-                  <td>
-                    <span className="block px-1 tabular-nums">{toLocalInput(row.startup_time).replace("T", " ") || "—"}</span>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="datetime-local"
+                      className="w-full tabular-nums"
+                      value={toLocalInput(row.startup_time)}
+                      disabled={!editable}
+                      onChange={(e) => saveRow(row, { startup_time: toApiDateTime(e.target.value) })}
+                    />
                   </td>
                 ) : null}
                 <td>
                   <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(row)} readOnly tabIndex={-1} />
                 </td>
                 {fieldVisible("code") ? (
-                  <td>
-                    <span className="block px-1">{row.code || "—"}</span>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <ComboInput
+                      listId={`sd-code-${row.nr}`}
+                      options={codeOptions}
+                      value={row.code || ""}
+                      disabled={!editable}
+                      className="w-14"
+                      onChange={(v) => applyCode(row, v, false)}
+                    />
                   </td>
                 ) : null}
                 {fieldVisible("cause") ? (
-                  <td>
-                    <span className="block px-1">{row.cause || "—"}</span>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <ComboInput
+                      listId={`sd-cause-${row.nr}`}
+                      options={causeOptions}
+                      value={row.cause || ""}
+                      disabled={!editable}
+                      onChange={(v) => applyCause(row, v, false)}
+                    />
                   </td>
                 ) : null}
                 {fieldVisible("category") ? (
-                  <td>
-                    <span className="block px-1">{row.category || "—"}</span>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <ComboInput
+                      listId={`sd-cat-${row.nr}`}
+                      options={categoryOptions}
+                      value={row.category || ""}
+                      disabled={!editable}
+                      onChange={(v) => saveRow(row, { category: v || null })}
+                    />
                   </td>
                 ) : null}
                 {fieldVisible("remarks") ? (
-                  <td>
-                    <span className="block px-1">{row.remarks || "—"}</span>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <input
+                      className="w-full"
+                      value={row.remarks || ""}
+                      disabled={!editable}
+                      onChange={(e) => saveRow(row, { remarks: e.target.value || null })}
+                    />
+                  </td>
+                ) : null}
+                {editable ? (
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      className="access-btn text-[11px]"
+                      onClick={() => {
+                        if (confirm(t("shutdowns.confirmDelete", { nr: String(row.nr) }))) removeMutation.mutate(row.nr);
+                      }}
+                    >
+                      {t("common.delete")}
+                    </button>
                   </td>
                 ) : null}
               </tr>
             ))}
+            {editable && active === "new" ? (
+              <tr className="is-active-row">
+                <td className="access-selector">*</td>
+                <td>
+                  <input className="w-12" value="*" readOnly tabIndex={-1} />
+                </td>
+                {fieldVisible("plant_part") ? (
+                  <td>
+                    <ElectrolyzerCombo
+                      variant="access"
+                      className="w-full min-w-[4rem]"
+                      value={draft.plant_part || ""}
+                      onChange={(v) => setDraft((d) => ({ ...d, plant_part: formatElectrolyzer(v) || v || null }))}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("shutdown_time") ? (
+                  <td>
+                    <input
+                      type="datetime-local"
+                      className="w-full tabular-nums"
+                      value={toLocalInput(draft.shutdown_time)}
+                      onChange={(e) => setDraft((d) => ({ ...d, shutdown_time: toApiDateTime(e.target.value) }))}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("startup_time") ? (
+                  <td>
+                    <input
+                      type="datetime-local"
+                      className="w-full tabular-nums"
+                      value={toLocalInput(draft.startup_time)}
+                      onChange={(e) => setDraft((d) => ({ ...d, startup_time: toApiDateTime(e.target.value) }))}
+                    />
+                  </td>
+                ) : null}
+                <td>
+                  <input className="w-20 text-center" value="" readOnly tabIndex={-1} />
+                </td>
+                {fieldVisible("code") ? (
+                  <td>
+                    <ComboInput
+                      listId="sd-code-new"
+                      options={codeOptions}
+                      value={draft.code || ""}
+                      className="w-14"
+                      onChange={(v) => applyCode(null, v, true)}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("cause") ? (
+                  <td>
+                    <ComboInput
+                      listId="sd-cause-new"
+                      options={causeOptions}
+                      value={draft.cause || ""}
+                      onChange={(v) => applyCause(null, v, true)}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("category") ? (
+                  <td>
+                    <ComboInput
+                      listId="sd-cat-new"
+                      options={categoryOptions}
+                      value={draft.category || ""}
+                      onChange={(v) => setDraft((d) => ({ ...d, category: v || null }))}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("remarks") ? (
+                  <td>
+                    <input
+                      className="w-full"
+                      value={draft.remarks || ""}
+                      onChange={(e) => setDraft((d) => ({ ...d, remarks: e.target.value || null }))}
+                    />
+                  </td>
+                ) : null}
+                <td>
+                  <button type="button" className="access-btn text-[11px]" onClick={createNew} disabled={createMutation.isPending}>
+                    {t("common.save")}
+                  </button>
+                </td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>
@@ -226,7 +525,21 @@ function ReasonsForm() {
     shutdownCausesApi,
     { limit: 500 }
   );
+  const categoriesQuery = useQuery({
+    queryKey: ["shutdown-categories", "combo"],
+    queryFn: () => shutdownCategoriesApi.list({ limit: 200 }),
+  });
   const rows = listQuery.data || [];
+  const categoryOptions = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          ...(categoriesQuery.data || []).map((c) => c.category || "").filter(Boolean),
+          ...rows.map((r) => r.category || "").filter(Boolean),
+        ])
+      ).sort(),
+    [categoriesQuery.data, rows]
+  );
 
   function save(row: ShutdownCause, patch: Partial<ShutdownCause>) {
     if (!editable) return;
@@ -270,12 +583,13 @@ function ReasonsForm() {
                   disabled={!editable}
                 />
               </td>
-              <td>
-                <input
-                  className="w-full"
+              <td onClick={(e) => e.stopPropagation()}>
+                <ComboInput
+                  listId={`reason-cat-${row.id}`}
+                  options={categoryOptions}
                   value={row.category || ""}
-                  onChange={(e) => save(row, { category: e.target.value })}
                   disabled={!editable}
+                  onChange={(v) => save(row, { category: v })}
                 />
               </td>
             </tr>

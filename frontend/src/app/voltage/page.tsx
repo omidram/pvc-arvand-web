@@ -44,6 +44,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { ExportButtons } from "@/components/domain/export-buttons";
+import { DateInput } from "@/components/ui/date-input";
 
 type T = ReturnType<typeof useI18n>["t"];
 const TOOLTIP_STYLE = { background: "#ffffff", border: "1px solid #808080", borderRadius: 0, fontSize: 12, color: "#000" };
@@ -312,19 +313,43 @@ function ReadingsTab() {
   const [editing, setEditing] = useState<VoltageReading | null>(null);
   const [showImport, setShowImport] = useState(() => searchParams.get("import") === "1");
   const electrolyzerNames = useElectrolyzerNames();
+  const [filterEl, setFilterEl] = useState(() => formatElectrolyzer(searchParams.get("electrolyzer")) || "");
+  const [filterFrom, setFilterFrom] = useState("");
+  const [filterTill, setFilterTill] = useState("");
+  const [applied, setApplied] = useState({
+    electrolyzer: formatElectrolyzer(searchParams.get("electrolyzer")) || "",
+    date_from: "",
+    date_till: "",
+  });
+
   const readingFormFields = useMemo(
     () => readingFields(t, electrolyzerFieldOptions(electrolyzerNames)),
     [t, electrolyzerNames]
   );
+  const listParams = useMemo(() => {
+    const params: Record<string, unknown> = { limit: 500 };
+    if (applied.electrolyzer) params.electrolyzer = applied.electrolyzer;
+    if (applied.date_from) params.date_from = applied.date_from;
+    if (applied.date_till) params.date_till = applied.date_till;
+    return params;
+  }, [applied]);
+
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<VoltageReading>(
     "voltage-readings",
     voltageReadingsApi,
-    { limit: 10000 }
+    listParams
   );
 
   useEffect(() => {
     if (searchParams.get("import") === "1") setShowImport(true);
   }, [searchParams]);
+
+  useEffect(() => {
+    if (!filterEl && electrolyzerNames[0]) {
+      setFilterEl(electrolyzerNames[0]);
+      setApplied((prev) => ({ ...prev, electrolyzer: electrolyzerNames[0] }));
+    }
+  }, [filterEl, electrolyzerNames]);
 
   const rows = useMemo(
     () =>
@@ -343,12 +368,60 @@ function ReadingsTab() {
     { key: "time", header: ACCESS_VOLTAGE.time, render: (r) => accessTime(r.time) },
     { key: "voltage", header: ACCESS_VOLTAGE.uiV, render: (r) => formatNumber(r.voltage, 3) },
     { key: "voltage_prev", header: ACCESS_VOLTAGE.ukV, render: (r) => formatNumber(r.voltage_prev, 3) },
+    {
+      key: "standardized_voltage",
+      header: ACCESS_VOLTAGE.umV,
+      render: (r) => formatNumber(r.standardized_voltage, 3),
+    },
   ];
 
   return (
     <div>
+      <div className="mb-3 flex flex-wrap items-end gap-3 border border-[#808080] bg-[#d4d0c8] p-2 text-[12px]">
+        <label className="flex flex-col gap-1 font-bold">
+          <span>{t("menus.electrolyzer")}</span>
+          <ElectrolyzerCombo
+            variant="access"
+            className="w-[110px] font-normal"
+            value={filterEl}
+            onChange={setFilterEl}
+            extraOptions={electrolyzerNames}
+          />
+        </label>
+        <label className="flex flex-col gap-1 font-bold">
+          <span>{t("statistics.dateFrom")}</span>
+          <DateInput
+            className="access-inset-field w-[130px] font-normal"
+            value={filterFrom}
+            onChange={(e) => setFilterFrom(e.target.value)}
+          />
+        </label>
+        <label className="flex flex-col gap-1 font-bold">
+          <span>{t("statistics.dateTill")}</span>
+          <DateInput
+            className="access-inset-field w-[130px] font-normal"
+            value={filterTill}
+            onChange={(e) => setFilterTill(e.target.value)}
+          />
+        </label>
+        <Button
+          variant="secondary"
+          onClick={() =>
+            setApplied({
+              electrolyzer: formatElectrolyzer(filterEl) || filterEl,
+              date_from: filterFrom,
+              date_till: filterTill,
+            })
+          }
+        >
+          {t("menus.updateDisplay")}
+        </Button>
+        <span className="text-[11px] text-[#404040]">
+          {t("voltage.readingsBrowseHint", { n: rows.length })}
+        </span>
+      </div>
       <div className="mb-3 flex justify-end gap-2">
-        <ExportButtons prefix="/voltage-readings" filenameBase="voltage-readings" />
+        <ExportButtons prefix="/voltage-readings" filenameBase="voltage-readings" params={listParams} />
         {editable && isAdmin && (
           <>
             <Button variant="secondary" onClick={() => setShowImport(true)}>
@@ -852,8 +925,8 @@ function StandardizedVoltageBoard() {
   const arrangementsQuery = useQuery({ queryKey: ["arrangements"], queryFn: () => arrangementsApi.list() });
   const densityQuery = useQuery({ queryKey: ["correction-factors"], queryFn: () => correctionFactorsApi.list() });
   const readingsQuery = useQuery({
-    queryKey: ["voltage-readings", "board"],
-    queryFn: () => voltageReadingsApi.list({ limit: 5000 }),
+    queryKey: ["voltage-readings", "board", from, till],
+    queryFn: () => voltageReadingsApi.list({ limit: 2000, date_from: from || undefined, date_till: till || undefined }),
     enabled: Boolean(shown),
   });
   const normsQuery = useQuery({

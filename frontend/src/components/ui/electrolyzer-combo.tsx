@@ -3,12 +3,11 @@
 import { useId, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { relationsApi } from "@/lib/endpoints";
-import { compareElectrolyzers, formatElectrolyzer } from "@/lib/plant-topology";
+import { compareElectrolyzers, formatElectrolyzer, allElectrolyzers } from "@/lib/plant-topology";
 import type { FieldDef } from "@/components/ui/resource-form";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-/** Plant electrolyzer designations (A1, B2, …) from Settings / Assembly data. */
+/** Plant electrolyzer designations (A1, B2, …) — topology baseline + Settings / Assembly. */
 export function useElectrolyzerNames(extra?: readonly string[]) {
   const query = useQuery({
     queryKey: ["relations", "electrolyzers"],
@@ -17,7 +16,9 @@ export function useElectrolyzerNames(extra?: readonly string[]) {
   const extraKey = extra?.join("\u0000") ?? "";
   return useMemo(() => {
     const merged: string[] = [];
-    for (const raw of [...(query.data || []), ...(extra || [])]) {
+    // Always start from the full cell-room list so combos never collapse to one item
+    // (HTML datalist also filters by typed value — use <select> in ElectrolyzerCombo).
+    for (const raw of [...allElectrolyzers(), ...(query.data || []), ...(extra || [])]) {
       const name = formatElectrolyzer(raw);
       if (name) merged.push(name);
     }
@@ -33,7 +34,7 @@ export function electrolyzerFieldDef(label: string, names: string[], extra?: Par
   return {
     name: "electrolyzer",
     label,
-    type: "combo",
+    type: "select",
     options: electrolyzerFieldOptions(names),
     ...extra,
   };
@@ -54,6 +55,11 @@ type ElectrolyzerComboProps = {
   "aria-label"?: string;
 };
 
+/**
+ * Full electrolyzer dropdown (Access-style). Uses &lt;select&gt; so the browser
+ * always shows every option — unlike &lt;datalist&gt; which filters to the current value
+ * (e.g. only "A1" when A1 is selected).
+ */
 export function ElectrolyzerCombo({
   value,
   onChange,
@@ -67,46 +73,33 @@ export function ElectrolyzerCombo({
   "aria-label": ariaLabel,
 }: ElectrolyzerComboProps) {
   const autoId = useId();
-  const listId = id || `electrolyzer-list-${autoId.replace(/:/g, "")}`;
+  const selectId = id || `electrolyzer-${autoId.replace(/:/g, "")}`;
   const names = useElectrolyzerNames(extraOptions);
   const display = formatElectrolyzer(value) || value;
-
-  function commit(raw: string) {
-    const next = formatElectrolyzer(raw) || raw;
-    onChange(next);
-  }
-
-  const shared = {
-    list: listId,
-    required,
-    disabled,
-    value: display,
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value),
-    onBlur: (e: React.FocusEvent<HTMLInputElement>) => commit(e.target.value),
-    autoComplete: "off" as const,
-    "data-lpignore": "true",
-    "data-1p-ignore": "true",
-    "data-form-type": "other",
-    "aria-label": ariaLabel,
-  };
+  const options = useMemo(() => {
+    if (display && !names.includes(display)) return [...names, display];
+    return names;
+  }, [names, display]);
 
   return (
-    <>
-      {variant === "access" ? (
-        <input
-          {...shared}
-          className={cn("access-inset-field", className)}
-          placeholder={placeholder}
-        />
-      ) : (
-        <Input {...shared} className={className} placeholder={placeholder} />
+    <select
+      id={selectId}
+      required={required}
+      disabled={disabled}
+      value={display || ""}
+      aria-label={ariaLabel}
+      className={cn(
+        variant === "access" ? "access-inset-field" : "access-inset-field w-full",
+        className
       )}
-      <datalist id={listId}>
-        {names.map((name) => (
-          <option key={name} value={name} />
-        ))}
-        {display && !names.includes(display) ? <option value={display} /> : null}
-      </datalist>
-    </>
+      onChange={(e) => onChange(formatElectrolyzer(e.target.value) || e.target.value)}
+    >
+      {!display ? <option value="">{placeholder || "—"}</option> : null}
+      {options.map((name) => (
+        <option key={name} value={name}>
+          {name}
+        </option>
+      ))}
+    </select>
   );
 }

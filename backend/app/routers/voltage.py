@@ -140,8 +140,57 @@ readings_router = build_crud_router(
     prefix="/voltage-readings",
     tags=["voltage"],
     search_fields=["electrolyzer", "position", "element_nr"],
-    default_order="date",
+    default_order="id",  # PK order — date.desc() on ~1.5M rows freezes Input Elements
 )
+
+# Replace generic GET list with a filtered/paginated one (Access-style browse).
+_readings_get_routes = [
+    route
+    for route in readings_router.routes
+    if getattr(route, "path", None) in {"", "/"} and "GET" in (getattr(route, "methods", set()) or set())
+]
+for route in _readings_get_routes:
+    readings_router.routes.remove(route)
+
+
+@readings_router.get("", response_model=list[schemas.VoltageReadingRead])
+def list_voltage_readings(
+    q: str | None = Query(default=None),
+    electrolyzer: str | None = Query(default=None),
+    date_from: str | None = Query(default=None),
+    date_till: str | None = Query(default=None),
+    skip: int = 0,
+    limit: int = Query(default=500, le=2000),
+    db: Session = Depends(get_db),
+):
+    """Browse recent readings. Always capped — never dump the full plant history."""
+    query = db.query(models.VoltageReading)
+    aliases = _electrolyzer_aliases(electrolyzer)
+    if aliases:
+        query = query.filter(func.upper(models.VoltageReading.electrolyzer).in_(aliases))
+    start = _parse_day(date_from)
+    end = _parse_day(date_till)
+    if start and not end:
+        end = start
+    if end and not start:
+        start = end
+    if start and end:
+        query = query.filter(
+            func.date(models.VoltageReading.date) >= start.isoformat(),
+            func.date(models.VoltageReading.date) <= end.isoformat(),
+        )
+    if q:
+        like = f"%{q}%"
+        query = query.filter(
+            or_(
+                models.VoltageReading.electrolyzer.ilike(like),
+                models.VoltageReading.position.ilike(like),
+                models.VoltageReading.element_nr.ilike(like),
+            )
+        )
+    rows = query.order_by(models.VoltageReading.id.desc()).offset(skip).limit(limit).all()
+    return [schemas.VoltageReadingRead.model_validate(r) for r in rows]
+
 
 calc_router = APIRouter(prefix="/voltage", tags=["voltage"])
 
@@ -330,12 +379,25 @@ def voltage_distribution(
 @calc_router.get("/high-deviation")
 def high_deviation_elements(
     threshold: float = Query(0.05, description="Fractional deviation from average, e.g. 0.05 = 5%"),
+    threshold_mv: float | None = Query(
+        None, description="Access-style absolute deviation in mV from electrolyzer average (e.g. 100)"
+    ),
     electrolyzer: str | None = None,
     date_from: str | None = None,
     date_till: str | None = None,
     db: Session = Depends(get_db),
 ):
-    """Elements whose voltage differs from the electrolyzer average by more than threshold."""
+    """Elements whose voltage differs from the electrolyzer average by more than threshold.
+
+    Access frmStatistikAbweichungUn uses absolute mV (default 100 mV). Prefer
+    ``threshold_mv`` when provided; otherwise keep fractional ``threshold``.
+    """
+    use_mv = threshold_mv is not None
+    try:
+        thr_mv = float(threshold_mv) if use_mv else None
+    except (TypeError, ValueError):
+        thr_mv = 100.0
+        use_mv = True
     try:
         thr = float(threshold)
     except (TypeError, ValueError):
@@ -343,17 +405,25 @@ def high_deviation_elements(
     start, end, readings = _select_readings(db, electrolyzer, date_from, date_till)
     valued = [(r, _reading_value(r)) for r in readings]
     valued = [(r, v) for r, v in valued if v is not None]
+    empty = {
+        "electrolyzer": electrolyzer,
+        "date": start.isoformat() if start and start == end else None,
+        "date_from": start.isoformat() if start else None,
+        "date_till": end.isoformat() if end else None,
+        "average": None,
+        "threshold_pct": None if use_mv else thr * 100,
+        "threshold_mv": thr_mv if use_mv else None,
+        "flagged": [],
+    }
     if not valued:
-        return {
-            "electrolyzer": electrolyzer,
-            "date": start.isoformat() if start and start == end else None,
-            "date_from": start.isoformat() if start else None,
-            "date_till": end.isoformat() if end else None,
-            "average": None,
-            "threshold_pct": thr * 100,
-            "flagged": [],
-        }
+        return empty
     avg = sum(v for _, v in valued) / len(valued)
+
+    def _is_high(v: float) -> bool:
+        if use_mv:
+            return abs(v - avg) * 1000.0 > (thr_mv or 0.0)
+        return bool(avg) and abs(v - avg) / avg > thr
+
     flagged = [
         {
             "electrolyzer": r.electrolyzer,
@@ -364,18 +434,24 @@ def high_deviation_elements(
             "standardized_voltage": r.standardized_voltage,
             "value": v,
             "deviation_pct": round((v - avg) / avg * 100, 2) if avg else None,
+            "deviation_mv": round((v - avg) * 1000.0, 2),
         }
         for r, v in valued
-        if avg and abs(v - avg) / avg > thr
+        if _is_high(v)
     ]
+    flagged.sort(
+        key=lambda x: abs(x.get("deviation_mv") if use_mv else x.get("deviation_pct") or 0),
+        reverse=True,
+    )
     return {
         "electrolyzer": electrolyzer,
         "date": start.isoformat() if start and start == end else None,
         "date_from": start.isoformat() if start else None,
         "date_till": end.isoformat() if end else None,
         "average": round(avg, 4),
-        "threshold_pct": thr * 100,
-        "flagged": sorted(flagged, key=lambda x: abs(x["deviation_pct"] or 0), reverse=True),
+        "threshold_pct": None if use_mv else thr * 100,
+        "threshold_mv": thr_mv if use_mv else None,
+        "flagged": flagged,
     }
 
 

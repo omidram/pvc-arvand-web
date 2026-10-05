@@ -327,6 +327,7 @@ export const voltageCalcApi = {
     (await apiClient.get("/voltage/distribution", { params })).data,
   highDeviation: async (params?: {
     threshold?: number;
+    threshold_mv?: number;
     electrolyzer?: string;
     date_from?: string;
     date_till?: string;
@@ -480,6 +481,12 @@ export const statisticsApi = {
     }>;
   }> => (await apiClient.get("/statistics/power-consumption", { params })).data,
   groups: async (): Promise<T.GroupStat[]> => (await apiClient.get("/statistics/groups")).data,
+  groupVoltages: async (params: {
+    mode: string;
+    date?: string;
+    electrolyzer?: string;
+  }): Promise<T.GroupVoltageReport> =>
+    (await apiClient.get("/statistics/group-voltages", { params })).data,
 };
 
 // ---------------------------------------------------------------- Reports & Analysis

@@ -224,16 +224,13 @@ function AveragePowerForm() {
       titleBlue
       backHref="/statistics"
       backLabel={t("statistics.title")}
-      extraButtons={<AccessBtn href="/statistics">{t("statistics.title")}</AccessBtn>}
     >
-      <div className="mb-3 flex flex-wrap items-end gap-3 text-[12px]">
+      <div className="mb-3 flex flex-wrap items-end gap-3 border border-[#808080] bg-[#d4d0c8] p-2 text-[12px]">
         <span className="font-bold">{t("statistics.averagePowerFrom")}</span>
         <DateInput className="access-inset-field" value={from} onChange={(e) => setFrom(e.target.value)} />
         <span>{t("menus.till")}</span>
         <DateInput className="access-inset-field" value={till} onChange={(e) => setTill(e.target.value)} />
         <AccessBtn onClick={() => setApplied({ from, till })}>{t("menus.updateDisplay")}</AccessBtn>
-        <AccessBtn href="/statistics">{t("statistics.title")}</AccessBtn>
-        <span className="ms-auto border border-[#808080] bg-white px-2 py-1">{todayIso()}</span>
       </div>
       <p className="mb-2 text-[11px] text-[#404040]">{powerQuery.data?.basis}</p>
       {powerQuery.isLoading ? <LoadingState /> : null}
@@ -321,24 +318,89 @@ function GroupsForm() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode") || "avg-date";
+  const names = useElectrolyzerNames();
   const title =
     mode === "by-date"
       ? t("menus.groupByDate")
       : mode === "avg-el-date"
         ? t("menus.groupAvgByElDate")
         : t("menus.groupAvgByDate");
-  const groupsQuery = useQuery({ queryKey: ["statistics", "groups"], queryFn: statisticsApi.groups });
+
+  const [date, setDate] = useState("");
+  const [electrolyzer, setElectrolyzer] = useState(names[0] || "A1");
+  const [applied, setApplied] = useState({ date: "", electrolyzer: names[0] || "A1" });
+
+  useEffect(() => {
+    if (!names.length) return;
+    if (!names.includes(formatElectrolyzer(electrolyzer))) {
+      setElectrolyzer(names[0]);
+      setApplied((prev) => ({ ...prev, electrolyzer: names[0] }));
+    }
+  }, [names, electrolyzer]);
+
+  const needEl = mode === "avg-el-date";
+  const query = useQuery({
+    queryKey: ["statistics", "group-voltages", mode, applied],
+    queryFn: () =>
+      statisticsApi.groupVoltages({
+        mode,
+        date: applied.date || undefined,
+        electrolyzer: needEl ? applied.electrolyzer : undefined,
+      }),
+    enabled: !needEl || !!applied.electrolyzer,
+  });
+
+  const rows = query.data?.rows || [];
+
   return (
     <AccessHub title={title} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
-      <p className="mb-2 text-[11px] text-[#404040]">{t("statistics.groupStatsTitle")}</p>
-      {groupsQuery.isLoading ? <LoadingState /> : null}
-      {groupsQuery.isError ? <ErrorState message={(groupsQuery.error as Error).message} /> : null}
-      <div className="overflow-auto">
-        <table className="stats-hier-table">
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-[#808080] bg-[#d4d0c8] px-3 py-2 text-[12px]">
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("fields.date")}</span>
+          <DateInput className="access-inset-field w-[130px] font-normal" value={date} onChange={(e) => setDate(e.target.value)} />
+        </label>
+        {needEl ? (
+          <label className="inline-flex items-center gap-2 font-bold">
+            <span>{t("menus.electrolyzer")}</span>
+            <ElectrolyzerCombo
+              variant="access"
+              className="w-[100px] font-normal"
+              value={electrolyzer}
+              onChange={setElectrolyzer}
+              extraOptions={names}
+            />
+          </label>
+        ) : null}
+        <AccessBtn
+          onClick={() =>
+            setApplied({
+              date,
+              electrolyzer: formatElectrolyzer(electrolyzer) || electrolyzer,
+            })
+          }
+        >
+          {t("menus.updateDisplay")}
+        </AccessBtn>
+        {query.data?.date ? (
+          <span className="font-bold">
+            {t("statistics.reportDate")}: {formatDate(query.data.date)}
+          </span>
+        ) : null}
+      </div>
+      <p className="mb-2 text-[11px] text-[#404040]">{t("statistics.groupUnHint")}</p>
+      {query.isLoading ? <LoadingState /> : null}
+      {query.isError ? <ErrorState message={(query.error as Error).message} /> : null}
+      <div className="overflow-auto border border-[#808080] bg-white">
+        <table className="stats-hier-table min-w-[900px]">
           <thead>
             <tr>
               <th>{t("fields.groupNr")}</th>
-              <th>{t("fields.elementCount")}</th>
+              {mode === "by-date" ? <th>{t("menus.electrolyzer")}</th> : null}
+              <th>{t("statistics.readings")}</th>
+              <th>Un {t("statistics.min")} [V]</th>
+              <th>Un {t("statistics.max")} [V]</th>
+              <th>Un {t("statistics.avg")} [V]</th>
+              <th>Un {t("statistics.stdDev")} [V]</th>
               <th>{t("fields.anodeCoating")}</th>
               <th>{t("fields.cathodeCoating")}</th>
               <th>{t("fields.membraneType")}</th>
@@ -346,16 +408,26 @@ function GroupsForm() {
             </tr>
           </thead>
           <tbody>
-            {(groupsQuery.data || []).map((row) => (
-              <tr key={row.group_nr}>
-                <td>{row.group_nr}</td>
-                <td>{row.element_count}</td>
-                <td>{row.anode_coating || ""}</td>
-                <td>{row.cathode_coating || ""}</td>
-                <td>{row.membrane_type || ""}</td>
+            {rows.map((row, idx) => (
+              <tr key={`${row.group_nr}-${row.electrolyzer || ""}-${idx}`}>
+                <td className="is-left">{row.group_nr}</td>
+                {mode === "by-date" ? <td>{row.electrolyzer || ""}</td> : null}
+                <td>{row.readings}</td>
+                <td>{fmt(row.un_min, 3)}</td>
+                <td>{fmt(row.un_max, 3)}</td>
+                <td>{fmt(row.un_avg, 3)}</td>
+                <td>{fmt(row.un_std, 3)}</td>
+                <td className="is-left">{row.anode_coating || ""}</td>
+                <td className="is-left">{row.cathode_coating || ""}</td>
+                <td className="is-left">{row.membrane_type || ""}</td>
                 <td>{row.gap_mm || ""}</td>
               </tr>
             ))}
+            {!rows.length && !query.isLoading ? (
+              <tr>
+                <td colSpan={mode === "by-date" ? 11 : 10}>{t("statistics.noData")}</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>
@@ -366,7 +438,8 @@ function GroupsForm() {
 function UnDistributionForm() {
   const { t } = useI18n();
   const searchParams = useSearchParams();
-  const initialEl = formatElectrolyzer(searchParams.get("electrolyzer")) || "A1";
+  const names = useElectrolyzerNames();
+  const initialEl = formatElectrolyzer(searchParams.get("electrolyzer")) || names[0] || "A1";
   const [electrolyzer, setElectrolyzer] = useState(initialEl);
   const [date, setDate] = useState("");
   const [uiMin, setUiMin] = useState("3.000");
@@ -380,6 +453,16 @@ function UnDistributionForm() {
     uiMax: 3.4,
     step: 0.01,
   });
+
+  useEffect(() => {
+    if (!names.length) return;
+    const current = formatElectrolyzer(electrolyzer);
+    if (!current || !names.includes(current)) {
+      const next = names.includes(formatElectrolyzer(initialEl)) ? formatElectrolyzer(initialEl) : names[0];
+      setElectrolyzer(next);
+      setApplied((prev) => ({ ...prev, electrolyzer: next }));
+    }
+  }, [names, electrolyzer, initialEl]);
 
   const distQuery = useQuery({
     queryKey: ["voltage", "distribution-access", applied],
@@ -403,7 +486,7 @@ function UnDistributionForm() {
 
   function updateDisplay() {
     setApplied({
-      electrolyzer,
+      electrolyzer: formatElectrolyzer(electrolyzer) || electrolyzer,
       date,
       uiMin: Number(uiMin) || 3,
       uiMax: Number(uiMax) || 3.4,
@@ -413,30 +496,36 @@ function UnDistributionForm() {
 
   return (
     <AccessHub title={t("menus.distributionUn")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
-      <div className="mb-3 flex flex-wrap items-end gap-3 border border-[#808080] bg-[#d4d0c8] p-2 text-[12px]">
-        <label className="flex flex-col gap-1">
-          <span>Date</span>
-          <DateInput className="access-inset-field w-[130px]" value={date} onChange={(e) => setDate(e.target.value)} />
+      {/* Access frmStatistikVerteilungUN filter strip */}
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-[#808080] bg-[#d4d0c8] px-3 py-2 text-[12px]">
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("fields.date")}</span>
+          <DateInput className="access-inset-field w-[130px] font-normal" value={date} onChange={(e) => setDate(e.target.value)} />
         </label>
-        <label className="flex flex-col gap-1 text-[12px]">
+        <label className="inline-flex items-center gap-2 font-bold">
           <span>{t("menus.electrolyzer")}</span>
-          <ElectrolyzerCombo variant="access" className="w-[120px]" value={electrolyzer} onChange={setElectrolyzer} />
+          <ElectrolyzerCombo
+            variant="access"
+            className="w-[100px] font-normal"
+            value={electrolyzer}
+            onChange={setElectrolyzer}
+            extraOptions={names}
+          />
         </label>
-        <label className="flex flex-col gap-1">
-          <span>Ui min [V]</span>
-          <input className="access-inset-field w-[90px]" value={uiMin} onChange={(e) => setUiMin(e.target.value)} />
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("statistics.uMin")}</span>
+          <input className="access-inset-field w-[80px] font-normal tabular-nums" value={uiMin} onChange={(e) => setUiMin(e.target.value)} />
         </label>
-        <label className="flex flex-col gap-1">
-          <span>Ui max [V]</span>
-          <input className="access-inset-field w-[90px]" value={uiMax} onChange={(e) => setUiMax(e.target.value)} />
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("statistics.uMax")}</span>
+          <input className="access-inset-field w-[80px] font-normal tabular-nums" value={uiMax} onChange={(e) => setUiMax(e.target.value)} />
         </label>
-        <label className="flex flex-col gap-1">
-          <span>Step [V]</span>
-          <input className="access-inset-field w-[90px]" value={step} onChange={(e) => setStep(e.target.value)} />
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("statistics.stepV")}</span>
+          <input className="access-inset-field w-[80px] font-normal tabular-nums" value={step} onChange={(e) => setStep(e.target.value)} />
         </label>
         <AccessBtn onClick={updateDisplay}>{t("menus.updateDisplay")}</AccessBtn>
-        <AccessBtn onClick={() => setShowChart((v) => !v)}>{showChart ? "Table" : "Chart"}</AccessBtn>
-        <AccessBtn href="/statistics">{t("statistics.title")}</AccessBtn>
+        <AccessBtn onClick={() => setShowChart((v) => !v)}>{showChart ? t("statistics.table") : t("statistics.chart")}</AccessBtn>
       </div>
 
       {distQuery.isLoading ? <LoadingState /> : null}
@@ -445,13 +534,13 @@ function UnDistributionForm() {
       {!distQuery.isLoading && !distQuery.isError ? (
         distQuery.data && distQuery.data.total_readings > 0 ? (
           <div className="space-y-3">
-            <div className="grid gap-3 lg:grid-cols-[240px_1fr]">
+            <div className="grid gap-3 lg:grid-cols-[220px_1fr]">
               <div className="overflow-auto border border-[#808080] bg-white">
                 <table className="stats-hier-table w-full">
                   <thead>
                     <tr>
-                      <th>Class [V]</th>
-                      <th>Number</th>
+                      <th>{t("statistics.classV")}</th>
+                      <th>{t("statistics.number")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -462,7 +551,7 @@ function UnDistributionForm() {
                       </tr>
                     ))}
                     <tr>
-                      <td className="is-left font-bold">Sum</td>
+                      <td className="is-left font-bold">{t("statistics.sum")}</td>
                       <td className="font-bold">{distQuery.data.class_sum ?? distQuery.data.total_readings}</td>
                     </tr>
                   </tbody>
@@ -481,15 +570,19 @@ function UnDistributionForm() {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="text-[12px] text-[#404040]">
-                  {t("statistics.reportDate")}:{" "}
-                  {distQuery.data.date
-                    ? formatDate(distQuery.data.date)
-                    : distQuery.data.date_from
-                      ? formatDate(distQuery.data.date_from)
-                      : "—"}
-                  <div className="mt-1 font-bold">
-                    {t("statistics.totalReadings")}: {distQuery.data.total_readings}
+                <div className="flex items-start text-[12px] text-[#404040]">
+                  <div>
+                    <div>
+                      {t("statistics.reportDate")}:{" "}
+                      {distQuery.data.date
+                        ? formatDate(distQuery.data.date)
+                        : distQuery.data.date_from
+                          ? formatDate(distQuery.data.date_from)
+                          : "—"}
+                    </div>
+                    <div className="mt-1 font-bold">
+                      {t("statistics.totalReadings")}: {distQuery.data.total_readings}
+                    </div>
                   </div>
                 </div>
               )}
@@ -499,25 +592,25 @@ function UnDistributionForm() {
               <table className="stats-hier-table min-w-[1100px]">
                 <thead>
                   <tr>
-                    <th>Electrolyzer</th>
-                    <th>Pos</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>I total [kA]</th>
-                    <th>i [kA/m²]</th>
-                    <th>Co [%]</th>
-                    <th>T An [°C]</th>
-                    <th>T Ca [°C]</th>
-                    <th>Tm [°C]</th>
+                    <th>{t("menus.electrolyzer")}</th>
+                    <th>{t("fields.positionShort")}</th>
+                    <th>{t("fields.date")}</th>
+                    <th>{t("fields.time")}</th>
+                    <th>{t("statistics.iTotal")}</th>
+                    <th>{t("statistics.iDensity")}</th>
+                    <th>{t("statistics.coPct")}</th>
+                    <th>{t("statistics.tAn")}</th>
+                    <th>{t("statistics.tCa")}</th>
+                    <th>{t("statistics.tm")}</th>
                     <th>Ui [V]</th>
                     <th>Un [V]</th>
-                    <th>Class [V]</th>
+                    <th>{t("statistics.classV")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row, idx) => (
                     <tr key={`${row.position}-${row.date}-${idx}`}>
-                      <td>{row.electrolyzer}</td>
+                      <td>{formatElectrolyzer(row.electrolyzer) || row.electrolyzer}</td>
                       <td>{row.position}</td>
                       <td>{row.date ? formatDate(row.date) : ""}</td>
                       <td>{row.time || ""}</td>
@@ -544,10 +637,141 @@ function UnDistributionForm() {
   );
 }
 
+function HighVoltagesForm() {
+  const { t } = useI18n();
+  const searchParams = useSearchParams();
+  const names = useElectrolyzerNames();
+  const initialEl = formatElectrolyzer(searchParams.get("electrolyzer")) || names[0] || "A1";
+  const [electrolyzer, setElectrolyzer] = useState(initialEl);
+  const [date, setDate] = useState("");
+  const [deviationMv, setDeviationMv] = useState("100.00");
+  const [applied, setApplied] = useState({ electrolyzer: initialEl, date: "", thresholdMv: 100 });
+
+  useEffect(() => {
+    if (!names.length) return;
+    const current = formatElectrolyzer(electrolyzer);
+    if (!current || !names.includes(current)) {
+      const next = names.includes(formatElectrolyzer(initialEl)) ? formatElectrolyzer(initialEl) : names[0];
+      setElectrolyzer(next);
+      setApplied((prev) => ({ ...prev, electrolyzer: next }));
+    }
+  }, [names, electrolyzer, initialEl]);
+
+  const highQuery = useQuery({
+    queryKey: ["voltage", "high", applied],
+    queryFn: () =>
+      voltageCalcApi.highDeviation({
+        electrolyzer: applied.electrolyzer || undefined,
+        date_from: applied.date || undefined,
+        date_till: applied.date || undefined,
+        threshold_mv: applied.thresholdMv,
+      }),
+    enabled: !!applied.electrolyzer,
+  });
+
+  function updateDisplay() {
+    const mv = Number(String(deviationMv).replace(",", "."));
+    setApplied({
+      electrolyzer: formatElectrolyzer(electrolyzer) || electrolyzer,
+      date,
+      thresholdMv: Number.isFinite(mv) ? mv : 100,
+    });
+  }
+
+  const data = highQuery.data;
+
+  return (
+    <AccessHub title={t("menus.highVoltages")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
+      {/* Access frmStatistikAbweichungUn filter strip */}
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-[#808080] bg-[#d4d0c8] px-3 py-2 text-[12px]">
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("fields.date")}</span>
+          <DateInput className="access-inset-field w-[130px] font-normal" value={date} onChange={(e) => setDate(e.target.value)} />
+        </label>
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("menus.electrolyzer")}</span>
+          <ElectrolyzerCombo
+            variant="access"
+            className="w-[100px] font-normal"
+            value={electrolyzer}
+            onChange={setElectrolyzer}
+            extraOptions={names}
+          />
+        </label>
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("statistics.deviationGt")}</span>
+          <input
+            className="access-inset-field w-[90px] font-normal tabular-nums"
+            value={deviationMv}
+            onChange={(e) => setDeviationMv(e.target.value)}
+          />
+          <span>{t("statistics.mvFromElAverage")}</span>
+        </label>
+        <AccessBtn onClick={updateDisplay}>{t("menus.updateDisplay")}</AccessBtn>
+      </div>
+
+      {highQuery.isLoading ? <LoadingState /> : null}
+      {highQuery.isError ? <ErrorState message={(highQuery.error as Error).message} /> : null}
+
+      {data && !highQuery.isLoading && !highQuery.isError ? (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-4 text-[12px] font-bold">
+            <span>
+              {t("statistics.avgVoltage")}: {data.average != null ? fmt(data.average, 3) : "—"} V
+            </span>
+            <span>
+              {t("statistics.threshold")}: {fmt(data.threshold_mv ?? applied.thresholdMv, 2)} mV
+            </span>
+            <span>
+              {t("statistics.count")}: {data.flagged.length}
+            </span>
+            {data.date || data.date_from ? (
+              <span>
+                {t("statistics.reportDate")}: {formatDate(data.date || data.date_from || "")}
+              </span>
+            ) : null}
+          </div>
+          {data.flagged.length ? (
+            <div className="overflow-auto border border-[#808080] bg-white">
+              <table className="stats-hier-table">
+                <thead>
+                  <tr>
+                    <th>{t("menus.electrolyzer")}</th>
+                    <th>{t("statistics.position")}</th>
+                    <th>{t("fields.elementNr")}</th>
+                    <th>{t("statistics.voltageV")}</th>
+                    <th>{t("statistics.deviationMv")}</th>
+                    <th>{t("statistics.deviationPct")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.flagged.map((row, idx) => (
+                    <tr key={`${row.date}-${row.position}-${row.element_nr}-${idx}`}>
+                      <td>{formatElectrolyzer(row.electrolyzer) || row.electrolyzer}</td>
+                      <td>{row.position}</td>
+                      <td>{row.element_nr || ""}</td>
+                      <td>{fmt(row.value ?? row.standardized_voltage, 3)}</td>
+                      <td>{fmt(row.deviation_mv, 2)}</td>
+                      <td>{fmt(row.deviation_pct, 2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-[12px]">{t("statistics.noHighVoltages")}</p>
+          )}
+        </div>
+      ) : null}
+    </AccessHub>
+  );
+}
+
 function VoltageForms({ form }: { form: string }) {
   const { t } = useI18n();
   const searchParams = useSearchParams();
-  const initialEl = formatElectrolyzer(searchParams.get("electrolyzer")) || "A1";
+  const names = useElectrolyzerNames();
+  const initialEl = formatElectrolyzer(searchParams.get("electrolyzer")) || names[0] || "A1";
   const [electrolyzer, setElectrolyzer] = useState(initialEl);
   const [from, setFrom] = useState("");
   const [till, setTill] = useState("");
@@ -560,7 +784,13 @@ function VoltageForms({ form }: { form: string }) {
     maxV: "",
   });
 
-  const title = form === "high" ? t("menus.highVoltages") : t("menus.elementVoltages");
+  useEffect(() => {
+    if (!names.length) return;
+    const current = formatElectrolyzer(electrolyzer);
+    if (!current || !names.includes(current)) {
+      setElectrolyzer(names.includes(formatElectrolyzer(initialEl)) ? formatElectrolyzer(initialEl) : names[0]);
+    }
+  }, [names, electrolyzer, initialEl]);
 
   const dateParams = useMemo(() => {
     const params: { date_from?: string; date_till?: string } = {};
@@ -569,21 +799,15 @@ function VoltageForms({ form }: { form: string }) {
     return params;
   }, [applied.from, applied.till]);
 
-  const highQuery = useQuery({
-    queryKey: ["voltage", "high", electrolyzer, dateParams],
-    queryFn: () => voltageCalcApi.highDeviation({ electrolyzer: electrolyzer || undefined, ...dateParams }),
-    enabled: form === "high" && !!electrolyzer,
-  });
   const elementsQuery = useQuery({
     queryKey: ["voltage", "element-voltages", electrolyzer, dateParams],
     queryFn: () => voltageCalcApi.elementVoltages({ electrolyzer, ...dateParams }),
     enabled: form === "voltages" && !!electrolyzer,
   });
 
-  const loading = form === "high" ? highQuery.isLoading : elementsQuery.isLoading;
-  const error = form === "high" ? highQuery.error : elementsQuery.error;
-
-  const activeMeta = form === "high" ? highQuery.data : elementsQuery.data;
+  const loading = elementsQuery.isLoading;
+  const error = elementsQuery.error;
+  const activeMeta = elementsQuery.data;
   const rangeLabel = (() => {
     const a = activeMeta?.date_from || activeMeta?.date;
     const b = activeMeta?.date_till || activeMeta?.date;
@@ -622,42 +846,34 @@ function VoltageForms({ form }: { form: string }) {
   }, [elementRows]);
 
   return (
-    <AccessHub title={title} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
-      <div className="mb-3 flex flex-wrap items-end gap-3 text-[12px]">
-        <label className="flex flex-col gap-1 text-[12px]">
+    <AccessHub title={t("menus.elementVoltages")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
+      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-[#808080] bg-[#d4d0c8] px-3 py-2 text-[12px]">
+        <label className="inline-flex items-center gap-2 font-bold">
           <span>{t("menus.electrolyzer")}</span>
-          <ElectrolyzerCombo variant="access" className="w-[120px]" value={electrolyzer} onChange={setElectrolyzer} />
+          <ElectrolyzerCombo
+            variant="access"
+            className="w-[100px] font-normal"
+            value={electrolyzer}
+            onChange={setElectrolyzer}
+            extraOptions={names}
+          />
         </label>
-        <label className="flex flex-col gap-1">
+        <label className="inline-flex items-center gap-2 font-bold">
           <span>{t("statistics.dateFrom")}</span>
-          <DateInput className="access-inset-field w-[130px]" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <DateInput className="access-inset-field w-[130px] font-normal" value={from} onChange={(e) => setFrom(e.target.value)} />
         </label>
-        <label className="flex flex-col gap-1">
+        <label className="inline-flex items-center gap-2 font-bold">
           <span>{t("statistics.dateTill")}</span>
-          <DateInput className="access-inset-field w-[130px]" value={till} onChange={(e) => setTill(e.target.value)} />
+          <DateInput className="access-inset-field w-[130px] font-normal" value={till} onChange={(e) => setTill(e.target.value)} />
         </label>
-        {form === "voltages" ? (
-          <>
-            <label className="flex flex-col gap-1">
-              <span>{t("statistics.min")} [V]</span>
-              <input
-                className="access-inset-field w-[90px]"
-                value={minV}
-                onChange={(e) => setMinV(e.target.value)}
-                placeholder="e.g. 2.90"
-              />
-            </label>
-            <label className="flex flex-col gap-1">
-              <span>{t("statistics.max")} [V]</span>
-              <input
-                className="access-inset-field w-[90px]"
-                value={maxV}
-                onChange={(e) => setMaxV(e.target.value)}
-                placeholder="e.g. 3.40"
-              />
-            </label>
-          </>
-        ) : null}
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("statistics.min")} [V]</span>
+          <input className="access-inset-field w-[90px] font-normal" value={minV} onChange={(e) => setMinV(e.target.value)} />
+        </label>
+        <label className="inline-flex items-center gap-2 font-bold">
+          <span>{t("statistics.max")} [V]</span>
+          <input className="access-inset-field w-[90px] font-normal" value={maxV} onChange={(e) => setMaxV(e.target.value)} />
+        </label>
         <AccessBtn onClick={() => setApplied({ from, till, minV, maxV })}>{t("statistics.applyDates")}</AccessBtn>
         <AccessBtn
           onClick={() => {
@@ -670,76 +886,17 @@ function VoltageForms({ form }: { form: string }) {
         >
           {t("statistics.useLatestDay")}
         </AccessBtn>
-        <AccessBtn
-          onClick={() => {
-            const start = from || till || todayIso();
-            setFrom(start);
-            setTill(todayIso());
-            setApplied({ from: start, till: todayIso(), minV, maxV });
-          }}
-        >
-          {t("statistics.untilToday")}
-        </AccessBtn>
         {rangeLabel ? (
           <div className="font-bold">
             {t("statistics.reportDate")}: {rangeLabel}
           </div>
         ) : null}
       </div>
-      <p className="mb-3 text-[11px] text-[#404040]">{t("statistics.dateRangeHint")}</p>
 
       {loading ? <LoadingState /> : null}
       {error ? <ErrorState message={(error as Error).message} /> : null}
 
-      {form === "high" && !loading && !error ? (
-        highQuery.data ? (
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-4 text-[12px] font-bold">
-              <span>
-                {t("statistics.avgVoltage")}: {highQuery.data.average != null ? fmt(highQuery.data.average, 3) : "—"} V
-              </span>
-              <span>
-                {t("statistics.threshold")}: ±{fmt(highQuery.data.threshold_pct ?? 5, 0)}%
-              </span>
-              <span>
-                {t("statistics.count")}: {highQuery.data.flagged.length}
-              </span>
-            </div>
-            {highQuery.data.flagged.length ? (
-              <div className="overflow-auto">
-                <table className="stats-hier-table">
-                  <thead>
-                    <tr>
-                      {multiDay ? <th>{t("statistics.reportDate")}</th> : null}
-                      <th>{t("menus.electrolyzer")}</th>
-                      <th>{t("statistics.position")}</th>
-                      <th>{t("fields.elementNr")}</th>
-                      <th>{t("statistics.voltageV")}</th>
-                      <th>{t("statistics.deviationPct")}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {highQuery.data.flagged.map((row, idx) => (
-                      <tr key={`${row.date}-${row.position}-${row.element_nr}-${idx}`}>
-                        {multiDay ? <td>{row.date ? formatDate(row.date) : ""}</td> : null}
-                        <td>{formatElectrolyzer(row.electrolyzer) || row.electrolyzer}</td>
-                        <td>{row.position}</td>
-                        <td>{row.element_nr || ""}</td>
-                        <td>{fmt(row.value ?? row.standardized_voltage, 3)}</td>
-                        <td>{fmt(row.deviation_pct, 2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-[12px]">{t("statistics.noHighVoltages")}</p>
-            )}
-          </div>
-        ) : null
-      ) : null}
-
-      {form === "voltages" && !loading && !error ? (
+      {!loading && !error ? (
         elementsQuery.data && elementsQuery.data.count > 0 ? (
           <div className="space-y-3">
             <div className="flex flex-wrap gap-4 text-[12px] font-bold">
@@ -756,12 +913,6 @@ function VoltageForms({ form }: { form: string }) {
               <span>
                 {t("statistics.max")}: {fmt(filteredStats.max, 3)} V
               </span>
-              {filterMin != null || filterMax != null ? (
-                <span className="font-normal text-[#404040]">
-                  {t("statistics.filterRange")}: {filterMin != null ? fmt(filterMin, 3) : "—"} …{" "}
-                  {filterMax != null ? fmt(filterMax, 3) : "—"} V
-                </span>
-              ) : null}
             </div>
             <div className="overflow-auto" style={{ maxHeight: "60vh" }}>
               <table className="stats-hier-table">
@@ -801,7 +952,8 @@ function StatisticsDetails() {
   if (form === "power") return <AveragePowerForm />;
   if (form === "groups") return <GroupsForm />;
   if (form === "distribution") return <UnDistributionForm />;
-  if (form === "high" || form === "voltages") return <VoltageForms form={form} />;
+  if (form === "high") return <HighVoltagesForm />;
+  if (form === "voltages") return <VoltageForms form={form} />;
   return (
     <AccessFormWindow caption="Statistics" backHref="/statistics">
       <StatisticsMenu />

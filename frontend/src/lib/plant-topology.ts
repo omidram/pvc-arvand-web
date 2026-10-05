@@ -16,6 +16,11 @@ export function electrolyzerName(train: TrainId, letter: string): string {
   return `${letter.toUpperCase()}${train}`;
 }
 
+/** Full cell-room list (24): A1–M1 and A2–M2 (no I). */
+export function allElectrolyzers(): string[] {
+  return TRAIN_LETTERS.flatMap((letter) => [`${letter}1`, `${letter}2`]);
+}
+
 /** Normalize 1A / A1 / a1 → A1. Leaves non-cell-room names unchanged. */
 export function formatElectrolyzer(name: string | null | undefined): string {
   const raw = (name || "").trim().toUpperCase();

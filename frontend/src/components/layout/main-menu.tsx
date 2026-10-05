@@ -9,6 +9,7 @@ import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
 import { useCalendar } from "@/lib/calendar/context";
+import { APP_VERSION } from "@/lib/app-version";
 
 function MenuButton({
   href,
@@ -106,7 +107,7 @@ export function MainMenu() {
               </span>
               <span className="inline-flex items-center gap-1">
                 <span className="font-bold">{t("mainMenu.version")}:</span>
-                <span className="access-field-box">{settings?.version || "—"}</span>
+                <span className="access-field-box">{APP_VERSION}</span>
               </span>
               <span className="inline-flex items-center gap-1">
                 <span className="font-bold">{t("mainMenu.date")}:</span>

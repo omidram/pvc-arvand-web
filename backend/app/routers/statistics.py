@@ -343,3 +343,176 @@ def group_statistics(db: Session = Depends(get_db)):
             }
         )
     return result
+
+
+def _el_aliases(name: str | None) -> set[str]:
+    if not name:
+        return set()
+    n = str(name).strip().upper()
+    if not n:
+        return set()
+    aliases = {n}
+    letters = "".join(c for c in n if c.isalpha())
+    digits = "".join(c for c in n if c.isdigit())
+    if letters and digits:
+        aliases.add(f"{letters}{digits}")
+        aliases.add(f"{digits}{letters}")
+    return aliases
+
+
+def _parse_stat_day(value):
+    from datetime import date as date_cls
+
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date_cls):
+        return value
+    text = str(value).strip()
+    if not text:
+        return None
+    if "T" in text:
+        text = text.split("T", 1)[0]
+    if " " in text:
+        text = text.split(" ", 1)[0]
+    try:
+        return date_cls.fromisoformat(text[:10])
+    except ValueError:
+        return None
+
+
+def _reading_un(row: models.VoltageReading) -> float | None:
+    if row.standardized_voltage is not None:
+        return float(row.standardized_voltage)
+    if row.voltage is not None:
+        return float(row.voltage)
+    return None
+
+
+@router.get("/group-voltages", dependencies=[Depends(require_form_access("statistics"))])
+def group_voltages(
+    mode: str = Query("avg-date", description="avg-date | by-date | avg-el-date"),
+    date: str | None = None,
+    electrolyzer: str | None = None,
+    db: Session = Depends(get_db),
+):
+    """Access Statistics → Groups (Uhde manual):
+
+    - avg-date: Group Avg. Sel. by Date — Un average per group for one day
+    - by-date: Group Sel. by Date — Un average per group × electrolyzer
+    - avg-el-date: Group Avg. Sel. by El. and Date — Un avg per group for one electrolyzer
+    """
+    from ..plant_topology import format_electrolyzer_name
+
+    mode_key = (mode or "avg-date").strip().lower()
+    if mode_key not in {"avg-date", "by-date", "avg-el-date"}:
+        mode_key = "avg-date"
+
+    value_ok = (
+        models.VoltageReading.standardized_voltage.isnot(None)
+        | models.VoltageReading.voltage.isnot(None)
+    )
+    day = _parse_stat_day(date)
+    if day is None:
+        latest = db.query(func.max(models.VoltageReading.date)).filter(value_ok).scalar()
+        day = _parse_stat_day(latest)
+
+    empty = {
+        "mode": mode_key,
+        "date": day.isoformat() if day else None,
+        "electrolyzer": electrolyzer,
+        "rows": [],
+    }
+    if day is None:
+        return empty
+
+    day_text = day.isoformat()
+    # Prefer SQL date filter; fall back to Python if dialect returns nothing.
+    readings = (
+        db.query(models.VoltageReading)
+        .filter(value_ok)
+        .filter(func.date(models.VoltageReading.date) == day_text)
+        .all()
+    )
+    if not readings:
+        readings = [
+            row
+            for row in db.query(models.VoltageReading).filter(value_ok).limit(500000).all()
+            if _parse_stat_day(row.date) == day
+        ]
+
+    el_filter = _el_aliases(electrolyzer) if mode_key == "avg-el-date" else set()
+    if mode_key == "avg-el-date" and el_filter:
+        readings = [r for r in readings if (r.electrolyzer or "").strip().upper() in el_filter]
+
+    # Map element_nr and electrolyzer+position → group
+    elements = (
+        db.query(models.Element)
+        .filter(models.Element.group_nr.isnot(None), models.Element.group_nr != "")
+        .all()
+    )
+    by_nr: dict[str, models.Element] = {}
+    by_el_pos: dict[tuple[str, str], models.Element] = {}
+    for el in elements:
+        if el.element_nr:
+            by_nr[str(el.element_nr).strip().upper()] = el
+        for alias in _el_aliases(el.electrolyzer):
+            by_el_pos[(alias, str(el.position or "").strip())] = el
+
+    definitions = {d.group_nr: d for d in db.query(models.GroupDefinition).all()}
+
+    # Accumulate Un values keyed by aggregation level
+    buckets: dict[tuple, list[float]] = {}
+    for row in readings:
+        un = _reading_un(row)
+        if un is None:
+            continue
+        el = None
+        if row.element_nr:
+            el = by_nr.get(str(row.element_nr).strip().upper())
+        if el is None:
+            pos = str(row.position or "").strip()
+            for alias in _el_aliases(row.electrolyzer):
+                el = by_el_pos.get((alias, pos))
+                if el:
+                    break
+        if el is None or not el.group_nr:
+            continue
+        group_nr = str(el.group_nr).strip()
+        el_name = (row.electrolyzer or el.electrolyzer or "").strip()
+        el_disp = format_electrolyzer_name(el_name) or el_name
+        if mode_key == "by-date":
+            key = (group_nr, el_disp)
+        else:
+            key = (group_nr,)
+        buckets.setdefault(key, []).append(un)
+
+    out_rows = []
+    for key, values in buckets.items():
+        group_nr = key[0]
+        d = definitions.get(group_nr)
+        st = _stats(values)
+        item = {
+            "group_nr": group_nr,
+            "electrolyzer": key[1] if mode_key == "by-date" else (format_electrolyzer_name(electrolyzer) if mode_key == "avg-el-date" else None),
+            "readings": st["count"],
+            "un_min": st["min"],
+            "un_max": st["max"],
+            "un_avg": st["avg"],
+            "un_std": st["std"],
+            "anode_coating": d.anode_coating if d else None,
+            "cathode_coating": d.cathode_coating if d else None,
+            "membrane_type": d.membrane_type if d else None,
+            "gap_mm": d.gap_mm if d else None,
+        }
+        out_rows.append(item)
+
+    out_rows.sort(key=lambda r: (str(r["group_nr"]), str(r.get("electrolyzer") or "")))
+    return {
+        "mode": mode_key,
+        "date": day_text,
+        "electrolyzer": format_electrolyzer_name(electrolyzer) if electrolyzer else None,
+        "rows": out_rows,
+    }
+

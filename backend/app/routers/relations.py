@@ -123,10 +123,20 @@ def lookup(name: str, db: Session = Depends(get_db)):
     elif name == "element-numbers":
         values = _values(db.query(models.Element.element_nr).distinct().all())
     elif name == "electrolyzers":
-        rows = db.query(models.Electrolyzer.name).order_by(models.Electrolyzer.nr).all()
-        values = _values(rows)
-        if not values:
-            values = _values(db.query(models.Element.electrolyzer).distinct().all())
+        from ..plant_topology import all_electrolyzers, format_electrolyzer_name
+
+        found: set[str] = set()
+        for source in (
+            db.query(models.Electrolyzer.name).all(),
+            db.query(models.Element.electrolyzer).distinct().all(),
+        ):
+            for (raw,) in source:
+                name_el = format_electrolyzer_name(raw)
+                if name_el:
+                    found.add(name_el)
+        for raw in all_electrolyzers():
+            found.add(raw)
+        values = sorted(found, key=lambda s: (s[0], s[1:] if len(s) > 1 else ""))
     elif name == "sub-plants":
         values = _values(db.query(models.SubPlant.name).distinct().all())
     elif name == "inspection-reasons":

@@ -77,7 +77,7 @@ function anolyteFields(plant: boolean): AnalysisField[] {
     },
     {
       key: plant ? "temperature" : "temperature An",
-      label: "T",
+      label: "t",
       unit: "°C",
       range: "85 - 88",
       aliases: plant ? ["temperature An"] : ["temperature"],
@@ -101,7 +101,7 @@ function catholyteFields(electrolyzer: boolean): AnalysisField[] {
       unit: "m³/h",
       aliases: ["make_up_water", "make up water"],
     },
-    { key: "temperature", label: "T", unit: "°C", range: "86 - 88" },
+    { key: "temperature", label: "t", unit: "°C", range: "86 - 88" },
     { key: "NaOH", label: "NaOH", unit: "wt.%", range: "31 - 33" },
     { key: "NaCl", label: "NaCl", unit: "ppm w", range: "<100", basis: true },
     { key: "NaClO3", label: "NaClO3", unit: "ppm w", range: "<30" },
@@ -136,7 +136,7 @@ function brineFields(plant: boolean): AnalysisField[] {
   const saltAlias = (name: string) => (plant ? [`${name} Pb`] : [name]);
   const left: AnalysisField[] = [
     { key: "flow rate", label: "Flow Rate", labelKey: "analyses.lbl.flowRate", unit: "m³/h", aliases: ["flow_rate"], side: "left" },
-    { key: "temperature", label: "Temperatur", unit: "°C", side: "left" },
+    { key: "temperature", label: "t", unit: "°C", side: "left" },
     { key: "pH", label: "pH", unit: "-", side: "left" },
     {
       key: "density at 20 °C",
@@ -199,7 +199,7 @@ const CAUSTIC: AnalysisField[] = [
   { key: "flow rate", label: "flow rate", labelKey: "analyses.lbl.flowRate", unit: "m³/h", aliases: ["flow_rate"] },
   { key: "NaOH", label: "NaOH", unit: "wt. %" },
   { key: "Fe", label: "Fe", unit: "ppm w", basis: true },
-  { key: "temperature", label: "T", unit: "°C" },
+  { key: "temperature", label: "t", unit: "°C" },
 ];
 
 const DEMIN: AnalysisField[] = [

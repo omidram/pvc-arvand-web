@@ -64,3 +64,15 @@ def arrangement_name(electrolyzer: str) -> str | None:
     if not train or not letter:
         return None
     return f"{train}{letter}"
+
+
+def format_electrolyzer_name(name: str | None) -> str:
+    """Normalize A1 / 1A / a1 → A1. Leaves non-cell-room names unchanged."""
+    raw = (name or "").strip().upper()
+    if not raw:
+        return ""
+    if len(raw) >= 2 and raw[0] in LETTERS and raw[-1] in {"1", "2"}:
+        return f"{raw[0]}{raw[-1]}"
+    if len(raw) >= 2 and raw[0] in {"1", "2"} and raw[1] in LETTERS:
+        return f"{raw[1]}{raw[0]}"
+    return raw

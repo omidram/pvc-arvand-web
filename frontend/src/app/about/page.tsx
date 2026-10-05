@@ -6,7 +6,7 @@ import { AccessFormWindow } from "@/components/layout/access-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n/context";
 
-const APP_VERSION = "1.0.0";
+import { APP_VERSION } from "@/lib/app-version";
 
 export default function AboutPage() {
   const { t } = useI18n();
