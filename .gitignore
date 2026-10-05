@@ -25,11 +25,24 @@ backend/build/
 # frontend/.env.local
 *.pem
 
-# Runtime data (keep schema via migrations; do not ship live plant DB)
+# SQLite databases (live/runtime — never commit)
+# Committed plant snapshot (Git): docs/plant-data/pvc_arvand_plant_seed.db
+backend/instance/pvc_arvand.db
+backend/instance/pvc_arvand_plant_seed.db
+backend/instance/backups/*.db
+backend/instance/backups/pvc_arvand_backup_*.db
+backend/data/pvc_arvand.db
+backend/data/pvc_arvand_*.db
+**/pvc_arvand_backup_*.db
+**/pre_update_*.db
+**/pre_plant_seed_*.db
+**/pvc_arvand_pre_seed_*.db
+backend/seed/pvc_arvand.db
 backend/instance/*.db
 backend/instance/backups/
 backend/instance/*.json
 !backend/instance/.gitkeep
+!docs/plant-data/pvc_arvand_plant_seed.db
 
 # Packaging artifacts (large)
 packaging/output/

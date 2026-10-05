@@ -8,6 +8,8 @@ import { DateInput } from "@/components/ui/date-input";
 import { elementsApi, inspectionGridsApi, relationsApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
+import { fieldDefsFromKeys, labelFieldOrHumanize } from "@/lib/access-datasheet-fields";
+import type { FieldDef } from "@/components/ui/resource-form";
 
 /** Columns written by the CZ-03-00-189-A sheet. Order matches the printed form, then the older flags. */
 export const INSPECTION_SHEET_FIELDS = [
@@ -76,6 +78,46 @@ export const INSPECTION_SHEET_FIELDS = [
   "sign_proc_image",
   "sign_proc_at",
 ] as const;
+
+const INSPECTION_DATASHEET_SKIP = new Set(["sign_insp_image", "sign_maint_image", "sign_proc_image", "signature"]);
+
+const INSPECTION_DATASHEET_BOOL = new Set<string>([
+  "sample_cathode",
+  "sample_anode",
+  "sample_membrane",
+  "anode_tube_ok",
+  "cathode_tube_ok",
+  "anode_spacer_ok",
+  "cathode_spacer_ok",
+  "frame_gasket_ok",
+]);
+
+const INSPECTION_DATASHEET_DATE = new Set(["inspection_date", "sign_insp_at", "sign_maint_at", "sign_proc_at"]);
+
+const INSPECTION_DATASHEET_TEXTAREA = new Set([
+  "general_remarks",
+  "blister_remarks",
+  "sample_cathode_note",
+  "sample_anode_note",
+  "sample_membrane_note",
+  "anode_tube_remark",
+  "cathode_tube_remark",
+  "anode_spacer_remark",
+  "cathode_spacer_remark",
+  "frame_gasket_remark",
+]);
+
+/** All CZ-03 sheet columns for AccessWorkspace datasheet view (matches form fields). */
+export function inspectionDatasheetFields(t: (path: string) => string): FieldDef[] {
+  const keys = INSPECTION_SHEET_FIELDS.filter((name) => !INSPECTION_DATASHEET_SKIP.has(name));
+  const hints: Partial<Record<string, FieldDef["type"]>> = {};
+  for (const name of keys) {
+    if (INSPECTION_DATASHEET_BOOL.has(name)) hints[name] = "checkbox";
+    else if (INSPECTION_DATASHEET_DATE.has(name)) hints[name] = "datetime-local";
+    else if (INSPECTION_DATASHEET_TEXTAREA.has(name)) hints[name] = "textarea";
+  }
+  return fieldDefsFromKeys(keys, (name) => labelFieldOrHumanize(t, name), hints);
+}
 
 const GRID_TYPES = ["membrane_as", "membrane_ks", "membrane_lt", "anode_half", "cathode_half"] as const;
 

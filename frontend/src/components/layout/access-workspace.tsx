@@ -55,7 +55,7 @@ export function AccessWorkspace<T extends object>({
   newDefaults,
   newDefaultsKey,
   validate,
-  /** "summary" = only the table `columns` in datasheet (faster for large lists). */
+  /** Default: datasheet shows every form field. Use "summary" only for a short column list. */
   sheetMode = "fields",
 }: {
   caption: string;

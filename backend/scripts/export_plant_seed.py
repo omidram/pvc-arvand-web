@@ -40,8 +40,17 @@ def export_seed() -> None:
     for table in DROP:
         dst.execute(f"DROP TABLE IF EXISTS [{table}]")
     dst.commit()
-    dst.execute("VACUUM")
     dst.close()
+    # In-place VACUUM can leave a huge sparse/trailing file after VACUUM INTO from a
+    # multi-GB source (Windows). Re-pack into a fresh file so GitHub gets ~7 MB, not ~800 MB.
+    compact = SEED.with_name(SEED.stem + "._compact.db")
+    if compact.exists():
+        compact.unlink()
+    repack = sqlite3.connect(SEED)
+    repack.execute("VACUUM INTO ?", (str(compact),))
+    repack.close()
+    SEED.unlink()
+    compact.rename(SEED)
     mb = SEED.stat().st_size / (1024 * 1024)
     print(f"Wrote {SEED} ({mb:.1f} MB)")
 

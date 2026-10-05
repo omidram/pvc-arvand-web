@@ -7,7 +7,12 @@ import { useCrudResource } from "@/lib/use-resource";
 import type { InspectionReport } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
 import { InspectionRelations } from "@/components/domain/access-relations";
-import { InspectionSheet, inspectionSheetGrids, inspectionSheetPayload } from "@/components/domain/inspection-sheet";
+import {
+  InspectionSheet,
+  inspectionDatasheetFields,
+  inspectionSheetGrids,
+  inspectionSheetPayload,
+} from "@/components/domain/inspection-sheet";
 import type { Column } from "@/components/ui/data-table";
 import { formatDateTime } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
@@ -30,6 +35,8 @@ export default function InspectionsPage() {
   const [saving, setSaving] = useState(false);
   const { listQuery, removeMutation } = useCrudResource<InspectionReport>("inspections", inspectionsApi, { limit: 500 });
 
+  const fields = inspectionDatasheetFields(t);
+
   const columns: Column<InspectionReport>[] = [
     { key: "element_nr", header: t("fields.elementNr") },
     { key: "anode_nr", header: t("fields.anodeNr") },
@@ -37,9 +44,19 @@ export default function InspectionsPage() {
     { key: "membrane_nr", header: t("fields.membraneNr") },
     { key: "electrolyzer", header: t("fields.electrolyzer") },
     { key: "position", header: t("fields.position") },
-    { key: "inspection_reason", header: t("inspections.reason"), render: (row) => inspectionReasonLabel(row.inspection_reason, t) },
+    {
+      key: "inspection_reason",
+      header: t("inspections.reason"),
+      render: (row) => inspectionReasonLabel(row.inspection_reason, t),
+      filterText: (row) => inspectionReasonLabel(row.inspection_reason, t),
+    },
     { key: "inspector_name", header: t("fields.inspector") },
-    { key: "inspection_date", header: t("fields.date"), render: (row) => formatDateTime(row.inspection_date) },
+    {
+      key: "inspection_date",
+      header: t("fields.date"),
+      render: (row) => formatDateTime(row.inspection_date),
+      filterText: (row) => formatDateTime(row.inspection_date),
+    },
   ];
 
   async function persist(id: string | number | null, values: Record<string, unknown>) {
@@ -73,7 +90,7 @@ export default function InspectionsPage() {
       records={listQuery.data}
       isLoading={listQuery.isLoading}
       error={listQuery.error as Error | null}
-      fields={[]}
+      fields={fields}
       columns={columns}
       idField="id"
       canEdit={editable}

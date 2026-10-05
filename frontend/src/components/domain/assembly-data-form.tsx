@@ -180,7 +180,6 @@ export function AssemblyDataForm() {
         idField="id"
         recordParam="element_nr"
         canEdit={editable}
-        sheetMode="summary"
         newDefaults={() => ({ element_nr: nextNrQuery.data?.element_nr ?? "" })}
         newDefaultsKey={nextNrQuery.data?.element_nr ?? ""}
         validate={(values) => assemblyPositionError(values.position, t)}
