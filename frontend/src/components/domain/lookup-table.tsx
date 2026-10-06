@@ -11,6 +11,7 @@ import { LoadingState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { ExportButtons } from "./export-buttons";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 interface CrudApi<T> {
   list: (p?: Record<string, unknown>) => Promise<T[]>;
@@ -88,7 +89,9 @@ export function LookupTable<T extends object>({
                       variant="ghost"
                       onClick={() => {
                         const id = (row as Record<string, unknown>)[keyField] as string | number;
-                        if (confirm(t("common.confirmDeleteNamed", { item: title }))) removeMutation.mutate(id);
+                        void appConfirm(t("common.confirmDeleteNamed", { item: title })).then((ok) => {
+                          if (ok) removeMutation.mutate(id);
+                        });
                       }}
                     >
                       <Trash2 size={13} className="text-[var(--win-danger)]" />

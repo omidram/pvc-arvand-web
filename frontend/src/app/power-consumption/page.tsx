@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
 import { statisticsApi } from "@/lib/endpoints";
-import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
+import { ElectrolyzerCombo, useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
+import { AccessSeveralBox } from "@/components/ui/access-several-box";
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
 
@@ -58,6 +59,10 @@ export default function PowerConsumptionPage() {
   const [elNr, setElNr] = useState("1B");
   const [groupNr, setGroupNr] = useState("1");
   const [elementNr, setElementNr] = useState("");
+  const [severalEl, setSeveralEl] = useState<string[]>([]);
+  const [severalGroups, setSeveralGroups] = useState<string[]>([]);
+  const [severalElements, setSeveralElements] = useState<string[]>([]);
+  const elNames = useElectrolyzerNames();
 
   const apiGroup =
     shown?.scope === "train"
@@ -183,6 +188,15 @@ export default function PowerConsumptionPage() {
               extra: (v) =>
                 v === "individual" ? (
                   <ElectrolyzerCombo variant="access" className="mt-1 w-full max-w-[120px]" value={elNr} onChange={setElNr} />
+                ) : v === "several" ? (
+                  <AccessSeveralBox
+                    mode="electrolyzer"
+                    values={severalEl}
+                    onChange={setSeveralEl}
+                    options={elNames}
+                    placeholder="A1, B2, …"
+                    aria-label={t("menus.severalElectrolyzers")}
+                  />
                 ) : null,
             },
             {
@@ -234,6 +248,15 @@ export default function PowerConsumptionPage() {
                     value={groupNr}
                     onChange={(e) => setGroupNr(e.target.value)}
                   />
+                ) : v === "several" ? (
+                  <AccessSeveralBox
+                    mode="free"
+                    values={severalGroups}
+                    onChange={setSeveralGroups}
+                    options={["1", "2", "3", "4", "5"]}
+                    placeholder="1, 2, …"
+                    aria-label={t("menus.severalGroups")}
+                  />
                 ) : null,
             },
             {
@@ -284,6 +307,15 @@ export default function PowerConsumptionPage() {
                     className="access-inset-field mt-1 w-full max-w-[120px]"
                     value={elementNr}
                     onChange={(e) => setElementNr(e.target.value)}
+                  />
+                ) : v === "several" ? (
+                  <AccessSeveralBox
+                    mode="pair"
+                    values={severalElements}
+                    onChange={setSeveralElements}
+                    options={elNames}
+                    placeholder="A1|12"
+                    aria-label={t("menus.severalElements")}
                   />
                 ) : null,
             },

@@ -11,6 +11,7 @@ import { AccessFormWindow, AccessNav } from "@/components/layout/access-form";
 import { useI18n } from "@/lib/i18n/context";
 import { ExportButtons } from "@/components/domain/export-buttons";
 import { formatDate, humanizeKey, sameNr } from "@/lib/utils";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 const HIDDEN_SHEET_KEYS = new Set(["sign_insp_image", "sign_maint_image", "sign_proc_image", "signature"]);
 
@@ -281,7 +282,7 @@ export function AccessWorkspace<T extends object>({
   function handleDelete() {
     if (!current) return;
     const msg = confirmDelete ? confirmDelete(current) : t("common.confirmDeleteGeneric");
-    if (confirm(msg)) onDelete(readId(current));
+    void appConfirm(msg).then((ok) => { if (ok) onDelete(readId(current)); });
   }
 
   const yes = t("common.yes");
@@ -361,7 +362,7 @@ export function AccessWorkspace<T extends object>({
             canEdit
               ? (row) => {
                   const msg = confirmDelete ? confirmDelete(row) : t("common.confirmDeleteGeneric");
-                  if (confirm(msg)) onDelete(readId(row));
+                  void appConfirm(msg).then((ok) => { if (ok) onDelete(readId(row)); });
                 }
               : undefined
           }

@@ -12,6 +12,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDateTime } from "@/lib/utils";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 const ALL_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 type Day = (typeof ALL_DAYS)[number];
@@ -234,7 +235,7 @@ export function BackupTab() {
                   size="sm"
                   variant="ghost"
                   onClick={() => {
-                    if (window.confirm(t("backup.confirmDelete"))) deleteMutation.mutate(row.filename);
+                    void appConfirm(t("backup.confirmDelete")).then((ok) => { if (ok) deleteMutation.mutate(row.filename); });
                   }}
                   title={t("backup.delete")}
                 >

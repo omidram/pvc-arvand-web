@@ -11,7 +11,16 @@ export type RadioGroupDef = {
   legend: string;
   name: string;
   options: { value: string; label: string }[];
+  /** Rendered directly under the currently selected option (Access subform slot). */
   extra?: (value: string) => React.ReactNode;
+};
+
+export type AccessTableColumn = {
+  key: string;
+  header: string;
+  align?: "left" | "right" | "center";
+  /** Format cell; dates use formatDisplayedDate by default when key hints date. */
+  format?: (value: unknown, row: Record<string, unknown>) => string;
 };
 
 export function ReportColumn({
@@ -28,24 +37,25 @@ export function ReportColumn({
   onDisplay: () => void;
 }) {
   const { t } = useI18n();
-  // Access keeps "Results as" + Display Results pinned to the bottom of each column.
   const bodyGroups = groups.filter((g) => g.name !== "result");
   const resultGroup = groups.find((g) => g.name === "result");
 
   function renderGroup(group: RadioGroupDef) {
+    const selected = values[group.name];
     return (
       <AccessGroup key={group.name} legend={group.legend}>
         {group.options.map((opt) => (
-          <AccessRadio
-            key={opt.value}
-            name={`${title}-${group.name}`}
-            value={opt.value}
-            checked={values[group.name] === opt.value}
-            onChange={(v) => onChange(group.name, v)}
-            label={opt.label}
-          />
+          <div key={opt.value}>
+            <AccessRadio
+              name={`${title}-${group.name}`}
+              value={opt.value}
+              checked={selected === opt.value}
+              onChange={(v) => onChange(group.name, v)}
+              label={opt.label}
+            />
+            {selected === opt.value && group.extra ? group.extra(opt.value) : null}
+          </div>
         ))}
-        {group.extra ? group.extra(values[group.name]) : null}
       </AccessGroup>
     );
   }
@@ -66,6 +76,59 @@ export function ReportColumn({
   );
 }
 
+function cellText(col: AccessTableColumn, row: Record<string, unknown>): string {
+  const raw = row[col.key];
+  if (col.format) return col.format(raw, row);
+  if (raw == null || raw === "") return "";
+  if (col.key.toLowerCase().includes("date") || col.key === "label") {
+    return formatDisplayedDate(raw);
+  }
+  return String(raw);
+}
+
+export function AccessDataTable({
+  columns,
+  rows,
+  caption,
+}: {
+  columns: AccessTableColumn[];
+  rows: Record<string, unknown>[];
+  caption?: string;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      {caption ? <div className="mb-1 text-[11px] text-[#404040]">{caption}</div> : null}
+      <table className="access-cont-table">
+        <thead>
+          <tr>
+            {columns.map((c) => (
+              <th key={c.key} className={c.align === "right" ? "text-right" : c.align === "center" ? "text-center" : undefined}>
+                {c.header}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={i}>
+              {columns.map((c) => (
+                <td
+                  key={c.key}
+                  className={
+                    c.align === "right" ? "text-right tabular-nums" : c.align === "center" ? "text-center tabular-nums" : undefined
+                  }
+                >
+                  {cellText(c, row)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 export function ResultsPane({
   mode,
   title,
@@ -73,6 +136,8 @@ export function ResultsPane({
   xKey,
   yKey,
   yLabel,
+  columns,
+  basisNote,
 }: {
   mode: "chart" | "table";
   title: string;
@@ -80,6 +145,9 @@ export function ResultsPane({
   xKey: string;
   yKey: string;
   yLabel: string;
+  /** Access multi-column table; when set, table mode uses these instead of 2-col. */
+  columns?: AccessTableColumn[];
+  basisNote?: string;
 }) {
   const { t } = useI18n();
   useCalendar();
@@ -88,7 +156,8 @@ export function ResultsPane({
   }
   return (
     <div className="access-sunken mt-3">
-      <div className="mb-2 text-[12px] font-bold">{title}</div>
+      <div className="mb-1 text-[12px] font-bold">{title}</div>
+      {basisNote ? <div className="mb-2 text-[11px] text-[#404040]">{basisNote}</div> : null}
       {mode === "chart" ? (
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={rows}>
@@ -99,6 +168,8 @@ export function ResultsPane({
             <Bar dataKey={yKey} name={yLabel} fill="#0a246a" />
           </BarChart>
         </ResponsiveContainer>
+      ) : columns?.length ? (
+        <AccessDataTable columns={columns} rows={rows} />
       ) : (
         <table className="access-cont-table">
           <thead>

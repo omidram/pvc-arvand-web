@@ -139,6 +139,27 @@ def lookup(name: str, db: Session = Depends(get_db)):
         values = sorted(found, key=lambda s: (s[0], s[1:] if len(s) > 1 else ""))
     elif name == "sub-plants":
         values = _values(db.query(models.SubPlant.name).distinct().all())
+    elif name == "plant-parts":
+        # Access Leistungstests combo: Teilanlagen UNION Gesamtanlagen (by language)
+        values = _values(db.query(models.SubPlant.name).distinct().all())
+        settings_row = db.query(models.PlantSettings).first()
+        lang = ((settings_row.language if settings_row else None) or "EN").upper()
+        lang_id = 1 if lang == "DE" else 2
+        full = _values(
+            db.query(models.FullPlant.name)
+            .filter(
+                (models.FullPlant.language_id == lang_id) | (models.FullPlant.language_id.is_(None))
+            )
+            .distinct()
+            .all()
+        )
+        if not full:
+            full = _values(db.query(models.FullPlant.name).distinct().all())
+        seen = set(values)
+        for item in full:
+            if item not in seen:
+                values.append(item)
+                seen.add(item)
     elif name == "inspection-reasons":
         raw = _values(
             db.query(models.InspectionReason.reason).distinct().all(),

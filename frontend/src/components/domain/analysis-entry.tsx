@@ -30,6 +30,7 @@ import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useCalendar } from "@/lib/calendar/context";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 type Draft = {
   electrolyzer: string;
@@ -199,11 +200,11 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
     const date = draft.date.trim();
     const electrolyzer = draft.electrolyzer.trim();
     if (!electrolyzer && !date) {
-      window.alert(t("analyses.calcNeedElectrolyzerDate"));
+      await appAlert(t("analyses.calcNeedElectrolyzerDate"));
       return;
     }
     if (!date) {
-      window.alert(t("analyses.calcNeedDate"));
+      await appAlert(t("analyses.calcNeedDate"));
       return;
     }
 
@@ -223,7 +224,7 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
           ? sameDay[0]
           : undefined;
     if (!hcl) {
-      window.alert(electrolyzer || sameDay.length === 0 ? t("analyses.calcNoHclSample") : t("analyses.calcNeedElectrolyzer"));
+      await appAlert(electrolyzer || sameDay.length === 0 ? t("analyses.calcNoHclSample") : t("analyses.calcNeedElectrolyzer"));
       return;
     }
     const bag = hcl.parameters || {};
@@ -240,15 +241,15 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
     const cHclWtPct = num(["HCl"]);
     const rhoHclGl = num(["Dichte", "density", "density_20C"]);
     if (vHclLh == null) {
-      window.alert(t("analyses.calcNoHclFlow"));
+      await appAlert(t("analyses.calcNoHclFlow"));
       return;
     }
     if (cHclWtPct == null) {
-      window.alert(t("analyses.calcNoHclConc"));
+      await appAlert(t("analyses.calcNoHclConc"));
       return;
     }
     if (rhoHclGl == null) {
-      window.alert(t("analyses.calcNoHclDensity"));
+      await appAlert(t("analyses.calcNoHclDensity"));
       return;
     }
 
@@ -260,18 +261,18 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
     const naohGl = readDraftNumber(draft.params, naohKey);
     const na2co3Gl = readDraftNumber(draft.params, na2co3Key);
     if (brineFlowM3h == null) {
-      window.alert(t("analyses.calcNeedBrineFlow"));
+      await appAlert(t("analyses.calcNeedBrineFlow"));
       return;
     }
     if (na2co3Gl == null) {
-      window.alert(t("analyses.calcNeedNa2CO3"));
+      await appAlert(t("analyses.calcNeedNa2CO3"));
       return;
     }
     if (naohGl == null) {
-      window.alert(t("analyses.calcNeedNaOH"));
+      await appAlert(t("analyses.calcNeedNaOH"));
       return;
     }
-    if ((draft.params[hclKey] || "").trim() && !window.confirm(t("analyses.calcOverwriteHcl"))) return;
+    if ((draft.params[hclKey] || "").trim() && !(await appConfirm(t("analyses.calcOverwriteHcl")))) return;
 
     const result = calculateBrineHclConcentration({
       vHclLh,
@@ -282,7 +283,7 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
       na2co3Gl,
     });
     if (!Number.isFinite(result)) {
-      window.alert(t("analyses.calcNoHclSample"));
+      await appAlert(t("analyses.calcNoHclSample"));
       return;
     }
     const rounded = Math.round((result + Number.EPSILON) * 1e6) / 1e6;
@@ -412,14 +413,16 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
           onDelete={
             editable && current
               ? () => {
-                  if (!window.confirm(t("analyses.confirmDelete", { type: title }))) return;
-                  const id = current.id;
-                  removeMutation.mutate(id, {
-                    onSuccess: () => {
-                      setIndex((i) => Math.max(0, i - 1));
-                      if (filtered.length <= 1) setIsNew(true);
-                      queryClient.invalidateQueries({ queryKey: ["analyses"] });
-                    },
+                  void appConfirm(t("analyses.confirmDelete", { type: title })).then((ok) => {
+                    if (!ok) return;
+                    const id = current.id;
+                    removeMutation.mutate(id, {
+                      onSuccess: () => {
+                        setIndex((i) => Math.max(0, i - 1));
+                        if (filtered.length <= 1) setIsNew(true);
+                        queryClient.invalidateQueries({ queryKey: ["analyses"] });
+                      },
+                    });
                   });
                 }
               : undefined
@@ -464,13 +467,15 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
           onDelete={
             editable
               ? (row) => {
-                  if (!window.confirm(t("analyses.confirmDelete", { type: title }))) return;
-                  removeMutation.mutate(row.id, {
-                    onSuccess: () => {
-                      setIndex((i) => Math.max(0, i - 1));
-                      if (rows.length <= 1) setIsNew(true);
-                      queryClient.invalidateQueries({ queryKey: ["analyses"] });
-                    },
+                  void appConfirm(t("analyses.confirmDelete", { type: title })).then((ok) => {
+                    if (!ok) return;
+                    removeMutation.mutate(row.id, {
+                      onSuccess: () => {
+                        setIndex((i) => Math.max(0, i - 1));
+                        if (rows.length <= 1) setIsNew(true);
+                        queryClient.invalidateQueries({ queryKey: ["analyses"] });
+                      },
+                    });
                   });
                 }
               : undefined

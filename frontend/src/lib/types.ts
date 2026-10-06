@@ -433,12 +433,16 @@ export interface ElectrolyzerNormalization {
   date: string | null;
   time: string | null;
   total_current: number | null;
+  /** Access Cc [%] in many plant DBs (legacy column name). */
   reference_current_density: number | null;
   anolyte_temp: number | null;
   catholyte_temp: number | null;
   zero_voltage: number | null;
   total_voltage: number | null;
   element_count: number | null;
+  rack_a_avg: number | null;
+  rack_b_avg: number | null;
+  catholyte_conc: number | null;
   cl2_pct: number | null;
   h2_pct: number | null;
   delta_p: number | null;

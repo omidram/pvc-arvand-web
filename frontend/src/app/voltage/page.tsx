@@ -17,12 +17,21 @@ import {
   arrangementsApi,
   correctionFactorsApi,
   elementsApi,
+  electrodeAreasApi,
+  groupDefinitionsApi,
 } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { ElectrolyzerNormalization, VoltageReading, CurrentEfficiencyEntry } from "@/lib/types";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { AccessBtn, AccessPeriod } from "@/components/layout/access-hub";
-import { ReportColumn, ResultsPane, useColumnState, type RadioGroupDef } from "@/components/layout/access-report";
+import {
+  ReportColumn,
+  ResultsPane,
+  useColumnState,
+  type AccessTableColumn,
+  type RadioGroupDef,
+} from "@/components/layout/access-report";
+import { AccessSeveralBox } from "@/components/ui/access-several-box";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
@@ -45,6 +54,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { ExportButtons } from "@/components/domain/export-buttons";
 import { DateInput } from "@/components/ui/date-input";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 type T = ReturnType<typeof useI18n>["t"];
 const TOOLTIP_STYLE = { background: "#ffffff", border: "1px solid #808080", borderRadius: 0, fontSize: 12, color: "#000" };
@@ -270,7 +280,11 @@ function NormalizationsTab() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => confirm(t("voltage.confirmDeleteNormalization")) && removeMutation.mutate(row.id)}
+                      onClick={() => {
+                        void appConfirm(t("voltage.confirmDeleteNormalization")).then((ok) => {
+                          if (ok) removeMutation.mutate(row.id);
+                        });
+                      }}
                     >
                       <Trash2 size={14} className="text-[var(--win-danger)]" />
                     </Button>
@@ -464,7 +478,11 @@ function ReadingsTab() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => confirm(t("voltage.confirmDeleteReading")) && removeMutation.mutate(row.id)}
+                      onClick={() => {
+                        void appConfirm(t("voltage.confirmDeleteReading")).then((ok) => {
+                          if (ok) removeMutation.mutate(row.id);
+                        });
+                      }}
                     >
                       <Trash2 size={14} className="text-[var(--win-danger)]" />
                     </Button>
@@ -839,7 +857,11 @@ function CurrentEfficiencyTab() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => confirm(t("voltage.confirmDeleteEntry")) && removeMutation.mutate(row.id)}
+                        onClick={() => {
+                          void appConfirm(t("voltage.confirmDeleteEntry")).then((ok) => {
+                            if (ok) removeMutation.mutate(row.id);
+                          });
+                        }}
                       >
                         <Trash2 size={14} className="text-[var(--win-danger)]" />
                       </Button>
@@ -878,13 +900,6 @@ function CurrentEfficiencyTab() {
  * The actual computation reuses the app's generic aggregation engine instead of
  * the ~50 separate static Access report forms the original buttons opened.
  */
-function parseList(csv: string): string[] {
-  return csv
-    .split(/[,\s]+/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
 function avgByKey(
   rows: { key: string | null | undefined; value: number | null | undefined }[]
 ): { label: string; value: number }[] {
@@ -898,6 +913,30 @@ function avgByKey(
   return Object.entries(byKey)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([label, v]) => ({ label, value: Number((v.sum / v.n).toFixed(3)) }));
+}
+
+function numOrEmpty(v: number | null | undefined, digits = 3): string {
+  if (v == null || Number.isNaN(v)) return "";
+  return String(Number(v.toFixed(digits)));
+}
+
+function umOf(n: ElectrolyzerNormalization): number | null {
+  if (n.total_voltage == null || !n.element_count) return null;
+  return n.total_voltage / Math.max(n.element_count, 1);
+}
+
+function tmOf(n: ElectrolyzerNormalization): number | null {
+  if (n.anolyte_temp == null || n.catholyte_temp == null) return null;
+  return (n.anolyte_temp + n.catholyte_temp) / 2;
+}
+
+function ccOf(n: ElectrolyzerNormalization): number | null {
+  return n.catholyte_conc ?? n.reference_current_density;
+}
+
+function iOf(n: ElectrolyzerNormalization, areaM2: number): number | null {
+  if (n.total_current == null || !areaM2) return null;
+  return n.total_current / areaM2;
 }
 
 function StandardizedVoltageBoard() {
@@ -914,33 +953,44 @@ function StandardizedVoltageBoard() {
   const element = useColumnState({ usedTable: "allElements", calc: "individual", result: "chart" });
 
   const [elNr, setElNr] = useState("");
-  const [severalEl, setSeveralEl] = useState("");
+  const [severalEl, setSeveralEl] = useState<string[]>([]);
   const [trainNr, setTrainNr] = useState("");
   const [groupNr, setGroupNr] = useState("1");
-  const [severalGroups, setSeveralGroups] = useState("");
-  const [severalElements, setSeveralElements] = useState("");
+  const [severalGroups, setSeveralGroups] = useState<string[]>([]);
+  const [severalElements, setSeveralElements] = useState<string[]>([]);
 
   const elNames = useElectrolyzerNames();
   const subPlantsQuery = useQuery({ queryKey: ["sub-plants"], queryFn: () => subPlantsApi.list() });
   const arrangementsQuery = useQuery({ queryKey: ["arrangements"], queryFn: () => arrangementsApi.list() });
   const densityQuery = useQuery({ queryKey: ["correction-factors"], queryFn: () => correctionFactorsApi.list() });
+  const areasQuery = useQuery({ queryKey: ["electrode-areas"], queryFn: () => electrodeAreasApi.list() });
+  const groupsDefQuery = useQuery({ queryKey: ["group-definitions"], queryFn: () => groupDefinitionsApi.list() });
   const readingsQuery = useQuery({
     queryKey: ["voltage-readings", "board", from, till],
-    queryFn: () => voltageReadingsApi.list({ limit: 2000, date_from: from || undefined, date_till: till || undefined }),
+    queryFn: () => voltageReadingsApi.list({ limit: 5000, date_from: from || undefined, date_till: till || undefined }),
     enabled: Boolean(shown),
   });
   const normsQuery = useQuery({
     queryKey: ["voltage-normalizations", "board"],
-    queryFn: () => voltageNormalizationsApi.list({ limit: 2000 }),
+    queryFn: () => voltageNormalizationsApi.list({ limit: 5000 }),
     enabled: Boolean(shown),
   });
   const elementsMapQuery = useQuery({
     queryKey: ["elements", "group-map"],
     queryFn: () => elementsApi.list({ limit: 5000 }),
-    enabled: shown?.key === "groups",
+    enabled: shown?.key === "groups" || shown?.key === "elements",
   });
 
   const trainNames = (subPlantsQuery.data || []).map((p) => p.name || String(p.nr)).filter(Boolean);
+  const groupNames = useMemo(() => {
+    const fromDef = (groupsDefQuery.data || []).map((g) => g.group_nr).filter(Boolean) as string[];
+    const fromEl = (elementsMapQuery.data || []).map((e) => e.group_nr).filter(Boolean) as string[];
+    return Array.from(new Set([...fromDef, ...fromEl])).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+  }, [groupsDefQuery.data, elementsMapQuery.data]);
+  const areaM2 = useMemo(() => {
+    const areas = (areasQuery.data || []).map((a) => a.area_m2).filter((v): v is number => v != null && v > 0);
+    return areas.sort((a, b) => b - a)[0] || 2.72;
+  }, [areasQuery.data]);
   const densities = Array.from(
     new Set((densityQuery.data || []).map((d) => d.reference_current_density).filter((v): v is number => v != null))
   ).sort((a, b) => a - b);
@@ -980,83 +1030,308 @@ function StandardizedVoltageBoard() {
   const normValue = (r: ElectrolyzerNormalization) =>
     r.total_voltage != null && r.element_count ? r.total_voltage / Math.max(r.element_count, 1) : null;
   const readingValue = (r: VoltageReading) => r.standardized_voltage ?? r.voltage;
-  // Reads either row shape; VoltageReading uniquely has a `voltage` field.
-  const anyValue = (r: VoltageReading | ElectrolyzerNormalization): number | null =>
-    "voltage" in r ? readingValue(r) : normValue(r);
 
-  const rows = useMemo(() => {
-    if (!shown) return [];
+  const membraneOfGroup = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const g of groupsDefQuery.data || []) {
+      if (g.group_nr) map[g.group_nr] = g.membrane_type || "";
+    }
+    for (const e of elementsMapQuery.data || []) {
+      if (e.group_nr && e.membrane_type && !map[e.group_nr]) map[e.group_nr] = e.membrane_type;
+    }
+    return map;
+  }, [groupsDefQuery.data, elementsMapQuery.data]);
+
+  const normByKey = useMemo(() => {
+    const map: Record<string, ElectrolyzerNormalization> = {};
+    for (const n of normsQuery.data || []) {
+      const day = n.date?.slice(0, 10) || "";
+      const elName = n.electrolyzer || "";
+      if (!day || !elName) continue;
+      map[`${elName}|${day}`] = n;
+      if (n.normalization_nr != null) map[`nr|${n.normalization_nr}`] = n;
+    }
+    return map;
+  }, [normsQuery.data]);
+
+  const result = useMemo(() => {
+    const empty = {
+      chartRows: [] as Record<string, unknown>[],
+      tableRows: [] as Record<string, unknown>[],
+      columns: [] as AccessTableColumn[],
+      basisNote: "",
+      yLabel: "Un [V]",
+    };
+    if (!shown) return empty;
     const norms = (normsQuery.data || []).filter((r) => inPeriod(r.date));
     const readings = (readingsQuery.data || []).filter((r) => inPeriod(r.date));
+
+    const elColsFull: AccessTableColumn[] = [
+      { key: "electrolyzer", header: "Electrolyser" },
+      { key: "date", header: "Date" },
+      { key: "time", header: "Time" },
+      { key: "i_total", header: "I total [kA]", align: "right" },
+      { key: "i", header: "i [kA/m²]", align: "right" },
+      { key: "cc", header: "Cc [%]", align: "right" },
+      { key: "t_an", header: "t An [°C]", align: "right" },
+      { key: "t_ka", header: "t Ka [°C]", align: "right" },
+      { key: "tm", header: "tm [°C]", align: "right" },
+      { key: "um", header: "Um [V]", align: "right" },
+      { key: "un", header: "Un [V]", align: "right" },
+    ];
+    const elColsSimple: AccessTableColumn[] = [
+      { key: "electrolyzer", header: "Electrolyser" },
+      { key: "date", header: "Date" },
+      { key: "i", header: "i [kA/m²]", align: "right" },
+      { key: "cc", header: "Cath. Conc [%]", align: "right" },
+      { key: "t_an", header: "t An [°C]", align: "right" },
+      { key: "t_ka", header: "t Ca. [°C]", align: "right" },
+      { key: "un", header: "Un [V]", align: "right" },
+    ];
+    const groupCols: AccessTableColumn[] = [
+      { key: "group", header: "Group" },
+      { key: "date", header: "Date" },
+      { key: "n", header: "Number", align: "right" },
+      { key: "membrane", header: "Membrane Type" },
+      { key: "un", header: "Un [V]", align: "right" },
+    ];
+    const elementCols: AccessTableColumn[] = [
+      { key: "electrolyzer", header: "Electrolyser" },
+      { key: "position", header: "Position" },
+      { key: "date", header: "Date" },
+      { key: "i", header: "i [kA/m²]", align: "right" },
+      { key: "cc", header: "Cath. Conc [%]", align: "right" },
+      { key: "t_an", header: "t An [°C]", align: "right" },
+      { key: "t_ka", header: "t Ca. [°C]", align: "right" },
+      { key: "un", header: "Un [V]", align: "right" },
+    ];
+    const plantCols: AccessTableColumn[] = [
+      { key: "date", header: "Date" },
+      { key: "i", header: "i [kA/m²]", align: "right" },
+      { key: "cc", header: "Cath. Conc [%]", align: "right" },
+      { key: "t_an", header: "t An [°C]", align: "right" },
+      { key: "t_ka", header: "t Ca. [°C]", align: "right" },
+      { key: "un", header: "Un [V]", align: "right" },
+    ];
+    const trainCols: AccessTableColumn[] = [
+      { key: "train", header: "Train" },
+      { key: "date", header: "Date" },
+      { key: "i", header: "i [kA/m²]", align: "right" },
+      { key: "cc", header: "Cath. Conc [%]", align: "right" },
+      { key: "t_an", header: "t An [°C]", align: "right" },
+      { key: "t_ka", header: "t Ca. [°C]", align: "right" },
+      { key: "un", header: "Un [V]", align: "right" },
+    ];
+
+    const normRow = (n: ElectrolyzerNormalization, unOverride?: number | null) => {
+      const um = umOf(n);
+      const un = unOverride ?? um;
+      return {
+        electrolyzer: n.electrolyzer || "",
+        date: n.date?.slice(0, 10) || "",
+        time: accessTime(n.time),
+        i_total: numOrEmpty(n.total_current, 2),
+        i: numOrEmpty(iOf(n, areaM2), 3),
+        cc: numOrEmpty(ccOf(n), 2),
+        t_an: numOrEmpty(n.anolyte_temp, 2),
+        t_ka: numOrEmpty(n.catholyte_temp, 2),
+        tm: numOrEmpty(tmOf(n), 2),
+        um: numOrEmpty(um, 3),
+        un: numOrEmpty(un, 3),
+        label: n.date?.slice(0, 10) || n.electrolyzer || "",
+        value: un != null ? Number(un.toFixed(3)) : null,
+      };
+    };
 
     switch (shown.key) {
       case "plant": {
         const useReadings = plant.values.usedTable === "allElements";
-        return useReadings
+        const chartRows = useReadings
           ? avgByKey(readings.map((r) => ({ key: r.date?.slice(0, 10), value: readingValue(r) })))
           : avgByKey(norms.map((r) => ({ key: r.date?.slice(0, 10), value: normValue(r) })));
+        const byDay: Record<string, ElectrolyzerNormalization[]> = {};
+        for (const n of norms) {
+          const d = n.date?.slice(0, 10) || "";
+          if (!d) continue;
+          (byDay[d] ||= []).push(n);
+        }
+        const tableRows = Object.keys(byDay)
+          .sort()
+          .map((d) => {
+            const list = byDay[d];
+            const avg = (pick: (n: ElectrolyzerNormalization) => number | null) => {
+              const vals = list.map(pick).filter((v): v is number => v != null);
+              return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+            };
+            return {
+              date: d,
+              i: numOrEmpty(avg((n) => iOf(n, areaM2)), 3),
+              cc: numOrEmpty(avg(ccOf), 2),
+              t_an: numOrEmpty(avg((n) => n.anolyte_temp), 2),
+              t_ka: numOrEmpty(avg((n) => n.catholyte_temp), 2),
+              un: numOrEmpty(avg(normValue), 3),
+              label: d,
+              value: avg(normValue),
+            };
+          });
+        return {
+          chartRows,
+          tableRows,
+          columns: plantCols,
+          basisNote: useReadings ? "Basis: Sum Single Elements" : "Basis: Table Un Electrolyzers",
+          yLabel: "Un [V]",
+        };
       }
       case "train": {
         const useReadings = train.values.usedTable === "allElements";
-        const source: (VoltageReading | ElectrolyzerNormalization)[] = useReadings ? readings : norms;
+        let list = norms;
         if (train.values.calc === "individual" && trainNr) {
-          return avgByKey(
-            source
-              .filter((r) => trainOfElectrolyzer[r.electrolyzer || ""] === trainNr)
-              .map((r) => ({ key: r.date?.slice(0, 10), value: anyValue(r) }))
-          );
+          list = list.filter((r) => trainOfElectrolyzer[r.electrolyzer || ""] === trainNr);
         }
-        return avgByKey(
-          source.map((r) => ({ key: trainOfElectrolyzer[r.electrolyzer || ""] || "—", value: anyValue(r) }))
+        const chartRows = avgByKey(
+          list.map((r) => ({
+            key: train.values.calc === "individual" ? r.date?.slice(0, 10) : trainOfElectrolyzer[r.electrolyzer || ""] || "—",
+            value: normValue(r),
+          }))
         );
+        const tableRows = list.map((n) => ({
+          ...normRow(n),
+          train: trainOfElectrolyzer[n.electrolyzer || ""] || "—",
+          label: train.values.calc === "individual" ? n.date?.slice(0, 10) : trainOfElectrolyzer[n.electrolyzer || ""] || "—",
+        }));
+        return {
+          chartRows,
+          tableRows,
+          columns: trainCols,
+          basisNote: useReadings
+            ? "Basis: Table Un all Elements per Electrolyzer"
+            : "Basis: Table Un Electrolyzers",
+          yLabel: "Un [V]",
+        };
       }
       case "electrolyzer": {
         const useReadings = el.values.usedTable === "allElements";
-        const source: (VoltageReading | ElectrolyzerNormalization)[] = useReadings ? readings : norms;
-        if (el.values.calc === "individual" && elNr) {
-          return avgByKey(
-            source.filter((r) => r.electrolyzer === elNr).map((r) => ({ key: r.date?.slice(0, 10), value: anyValue(r) }))
-          );
-        }
+        let list = norms;
+        if (el.values.calc === "individual" && elNr) list = list.filter((r) => r.electrolyzer === elNr);
         if (el.values.calc === "several") {
-          const list = parseList(severalEl);
-          return avgByKey(
-            source
-              .filter((r) => list.length === 0 || list.includes(r.electrolyzer || ""))
-              .map((r) => ({ key: r.electrolyzer, value: anyValue(r) }))
-          );
+          const wanted = severalEl.filter(Boolean);
+          if (wanted.length) list = list.filter((r) => wanted.includes(r.electrolyzer || ""));
         }
-        return avgByKey(source.map((r) => ({ key: r.electrolyzer, value: anyValue(r) })));
+        const chartRows =
+          el.values.calc === "individual"
+            ? avgByKey(list.map((r) => ({ key: r.date?.slice(0, 10), value: normValue(r) })))
+            : avgByKey(list.map((r) => ({ key: r.electrolyzer, value: normValue(r) })));
+        const tableRows = list.map((n) => ({
+          ...normRow(n),
+          label: el.values.calc === "individual" ? n.date?.slice(0, 10) || "" : n.electrolyzer || "",
+        }));
+        const severalLike = el.values.calc === "several" || el.values.calc === "all";
+        return {
+          chartRows,
+          tableRows,
+          columns: severalLike ? elColsFull : elColsSimple,
+          basisNote: useReadings
+            ? "Basis: Table Un all Elements per Electrolyzer"
+            : severalLike
+              ? "Basis: Tabelle Un Elektrolyseure"
+              : "Basis: Table Un Electrolyzers",
+          yLabel: "Un [V]",
+        };
       }
       case "groups": {
-        const byGroup = group.values.usedTable === "groups";
         let list = readings;
         if (group.values.calc === "individual" && groupNr) {
           list = list.filter((r) => groupOfElement[r.element_nr || ""] === groupNr);
         } else if (group.values.calc === "several") {
-          const wanted = parseList(severalGroups);
+          const wanted = severalGroups.filter(Boolean);
           if (wanted.length) list = list.filter((r) => wanted.includes(groupOfElement[r.element_nr || ""] || ""));
         }
-        return avgByKey(
-          list.map((r) => ({
-            key: byGroup ? groupOfElement[r.element_nr || ""] || "—" : r.electrolyzer,
-            value: readingValue(r),
-          }))
-        );
+        const buckets: Record<string, { sum: number; n: number; group: string; date: string }> = {};
+        for (const r of list) {
+          const g = groupOfElement[r.element_nr || ""] || "—";
+          const d = r.date?.slice(0, 10) || "";
+          const un = readingValue(r);
+          if (un == null || !d) continue;
+          const key = `${g}|${d}`;
+          buckets[key] = buckets[key] || { sum: 0, n: 0, group: g, date: d };
+          buckets[key].sum += un;
+          buckets[key].n += 1;
+        }
+        const tableRows = Object.values(buckets)
+          .sort((a, b) => a.date.localeCompare(b.date) || String(a.group).localeCompare(String(b.group)))
+          .map((b) => ({
+            group: b.group,
+            date: b.date,
+            n: String(b.n),
+            membrane: membraneOfGroup[b.group] || "",
+            un: numOrEmpty(b.sum / b.n, 3),
+            label: `${b.group} ${b.date}`,
+            value: Number((b.sum / b.n).toFixed(3)),
+          }));
+        const chartRows = avgByKey(tableRows.map((r) => ({ key: String(r.group), value: r.value as number })));
+        return {
+          chartRows,
+          tableRows,
+          columns: groupCols,
+          basisNote: group.values.usedTable === "groups" ? "Basis: Table Un Groups" : "Basis: Table Un Gruppen",
+          yLabel: "Un [V]",
+        };
       }
       default: {
-        // elements
         let list = readings;
         if (element.values.calc === "individual" && elNr) {
           list = list.filter((r) => r.electrolyzer === elNr);
-          return avgByKey(list.map((r) => ({ key: r.position || r.element_nr || String(r.id), value: readingValue(r) })));
+        } else if (element.values.calc === "several") {
+          const wanted = severalElements.filter(Boolean);
+          if (wanted.length) {
+            list = list.filter((r) => {
+              const elName = r.electrolyzer || "";
+              const pos = r.position || "";
+              return wanted.some((w) => {
+                if (w.includes("|")) {
+                  const [we, wp = ""] = w.split("|");
+                  return we === elName && (!wp || wp === pos);
+                }
+                return w === elName || w === pos || w === (r.element_nr || "");
+              });
+            });
+          }
         }
-        if (element.values.calc === "several") {
-          const wanted = parseList(severalElements);
-          if (wanted.length) list = list.filter((r) => wanted.includes(r.electrolyzer || ""));
-          return avgByKey(list.map((r) => ({ key: r.electrolyzer, value: readingValue(r) })));
-        }
-        return avgByKey(list.map((r) => ({ key: r.electrolyzer || r.date?.slice(0, 10), value: readingValue(r) })));
+        const tableRows = list.slice(0, 2000).map((r) => {
+          const day = r.date?.slice(0, 10) || "";
+          const n =
+            (r.normalization_nr != null ? normByKey[`nr|${r.normalization_nr}`] : undefined) ||
+            normByKey[`${r.electrolyzer || ""}|${day}`];
+          const un = readingValue(r);
+          return {
+            electrolyzer: r.electrolyzer || "",
+            position: r.position || r.element_nr || "",
+            date: day,
+            i: n ? numOrEmpty(iOf(n, areaM2), 3) : "",
+            cc: n ? numOrEmpty(ccOf(n), 2) : "",
+            t_an: n ? numOrEmpty(n.anolyte_temp, 2) : "",
+            t_ka: n ? numOrEmpty(n.catholyte_temp, 2) : "",
+            un: numOrEmpty(un, 3),
+            label: `${r.electrolyzer || ""} ${r.position || ""}`.trim() || day,
+            value: un != null ? Number(un.toFixed(3)) : null,
+          };
+        });
+        const chartRows = avgByKey(
+          tableRows.map((r) => ({
+            key: element.values.calc === "individual" ? String(r.position) : String(r.electrolyzer),
+            value: r.value as number | null,
+          }))
+        );
+        return {
+          chartRows,
+          tableRows,
+          columns: elementCols,
+          basisNote:
+            element.values.calc === "several"
+              ? "Basis: Single Element Voltage Measurement; t An, T Cath, c NaOH Electrolyzer Average"
+              : "Basis: Table Un Elements",
+          yLabel: "Un [V]",
+        };
       }
     }
   }, [
@@ -1081,6 +1356,9 @@ function StandardizedVoltageBoard() {
     element.values.calc,
     trainOfElectrolyzer,
     groupOfElement,
+    membraneOfGroup,
+    normByKey,
+    areaM2,
   ]);
 
   const resultGroup: RadioGroupDef = {
@@ -1214,11 +1492,13 @@ function StandardizedVoltageBoard() {
                 v === "individual" ? (
                   <ElectrolyzerCombo variant="access" className="mt-1 w-full" value={elNr} onChange={setElNr} />
                 ) : v === "several" ? (
-                  <input
-                    className="access-inset-field mt-1 w-full"
-                    placeholder="1G, 2G, ..."
-                    value={severalEl}
-                    onChange={(e) => setSeveralEl(e.target.value)}
+                  <AccessSeveralBox
+                    mode="electrolyzer"
+                    values={severalEl}
+                    onChange={setSeveralEl}
+                    options={elNames}
+                    placeholder="A1, B2, …"
+                    aria-label={t("menus.severalElectrolyzers")}
                   />
                 ) : null,
             },
@@ -1244,11 +1524,13 @@ function StandardizedVoltageBoard() {
                 v === "individual" ? (
                   <input className="access-inset-field mt-1 w-16" value={groupNr} onChange={(e) => setGroupNr(e.target.value)} />
                 ) : v === "several" ? (
-                  <input
-                    className="access-inset-field mt-1 w-full"
-                    placeholder="1, 2, ..."
-                    value={severalGroups}
-                    onChange={(e) => setSeveralGroups(e.target.value)}
+                  <AccessSeveralBox
+                    mode="free"
+                    values={severalGroups}
+                    onChange={setSeveralGroups}
+                    options={groupNames}
+                    placeholder="1, 2, …"
+                    aria-label={t("menus.severalGroups")}
                   />
                 ) : null,
             },
@@ -1274,11 +1556,13 @@ function StandardizedVoltageBoard() {
                 v === "individual" ? (
                   <ElectrolyzerCombo variant="access" className="mt-1 w-full" value={elNr} onChange={setElNr} />
                 ) : v === "several" ? (
-                  <input
-                    className="access-inset-field mt-1 w-full"
-                    placeholder="1G, 2G, ..."
-                    value={severalElements}
-                    onChange={(e) => setSeveralElements(e.target.value)}
+                  <AccessSeveralBox
+                    mode="pair"
+                    values={severalElements}
+                    onChange={setSeveralElements}
+                    options={elNames}
+                    placeholder="A1|12"
+                    aria-label={t("menus.severalElements")}
                   />
                 ) : null,
             },
@@ -1286,7 +1570,26 @@ function StandardizedVoltageBoard() {
           ]}
         />
       </div>
-      {shown ? <ResultsPane mode={shown.mode} title={shown.title} rows={rows} xKey="label" yKey="value" yLabel="Un [V]" /> : null}
+      {shown ? (
+        <ResultsPane
+          mode={shown.mode}
+          title={
+            shown.key === "electrolyzer" && el.values.calc === "several"
+              ? "Standarized Voltage Several Electrolysers"
+              : shown.key === "groups" && group.values.calc === "several"
+                ? "Standardized Voltage of Several Groups"
+                : shown.key === "elements" && element.values.calc === "several"
+                  ? "Standardized Voltage Element"
+                  : shown.title
+          }
+          rows={shown.mode === "chart" ? result.chartRows : result.tableRows}
+          xKey="label"
+          yKey="value"
+          yLabel={result.yLabel}
+          columns={result.columns}
+          basisNote={result.basisNote}
+        />
+      ) : null}
     </div>
   );
 }

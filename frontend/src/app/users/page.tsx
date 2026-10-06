@@ -18,6 +18,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { isPasswordStrong } from "@/lib/password-policy";
 import { formatDate } from "@/lib/utils";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 const ROLE_COLORS: Record<UserRole, "violet" | "cyan" | "slate"> = { admin: "violet", user: "cyan", visitor: "slate" };
 
@@ -204,15 +205,15 @@ function UsersTab({ formKeys, formFields }: { formKeys: string[]; formFields: Re
 
   function handleDelete(u: UserAccount) {
     if (currentUser?.id === u.id) {
-      alert(t("users.cannotDeleteSelf"));
+      void appAlert(t("users.cannotDeleteSelf"));
       return;
     }
-    if (confirm(t("users.confirmDelete", { name: u.username }))) removeMutation.mutate(u.id);
+    void appConfirm(t("users.confirmDelete", { name: u.username })).then((ok) => { if (ok) removeMutation.mutate(u.id); });
   }
 
   function handleSetPassword(u: UserAccount) {
     if ((u.auth_source || "local") === "ad") {
-      alert(t("users.adPasswordLocked"));
+      void appAlert(t("users.adPasswordLocked"));
       return;
     }
     setPasswordTarget(u);
@@ -342,15 +343,17 @@ function RolesTab({ formKeys, formFields }: { formKeys: string[]; formFields: Re
       queryClient.invalidateQueries({ queryKey: ["roles"] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
-    onError: (e: Error) => alert(e.message),
+    onError: (e: Error) => {
+      void appAlert(e.message);
+    },
   });
 
   function handleDelete(role: AppRole) {
     if (role.is_system) {
-      alert(t("users.cannotDeleteSystemRole"));
+      void appAlert(t("users.cannotDeleteSystemRole"));
       return;
     }
-    if (confirm(t("users.confirmDeleteRole", { name: role.name }))) removeMutation.mutate(role.id);
+    void appConfirm(t("users.confirmDeleteRole", { name: role.name })).then((ok) => { if (ok) removeMutation.mutate(role.id); });
   }
 
   const columns: Column<AppRole>[] = [

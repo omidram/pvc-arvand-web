@@ -11,6 +11,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDateTime } from "@/lib/utils";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 function formatBytes(bytes: number | null | undefined): string {
   if (bytes == null) return "—";
@@ -161,8 +162,9 @@ function SwitchForm({ status }: { status: DatabaseStatus }) {
           type="button"
           disabled={switchMutation.isPending}
           onClick={() => {
-            if (!window.confirm(t("database.confirmSwitch"))) return;
-            switchMutation.mutate();
+            void appConfirm(t("database.confirmSwitch")).then((ok) => {
+              if (ok) switchMutation.mutate();
+            });
           }}
         >
           <RefreshCw size={14} /> {switchMutation.isPending ? t("database.switching") : t("database.switch")}

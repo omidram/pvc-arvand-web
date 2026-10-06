@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/auth/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 const FORM_KEY = { anode: "anodes", cathode: "cathodes", membrane: "membranes" } as const;
 const LOOKUP = { anode: "anode-numbers", cathode: "cathode-numbers", membrane: "membrane-numbers" } as const;
@@ -298,7 +299,9 @@ export function MaintenanceReportPanel({ kind }: { kind: MaintenanceReportKind }
                         type="button"
                         className="report-mini-btn"
                         onClick={() => {
-                          if (window.confirm(t("maintenanceReports.removeReport"))) removeMutation.mutate(report.id);
+                          void appConfirm(t("maintenanceReports.removeReport")).then((ok) => {
+                            if (ok) removeMutation.mutate(report.id);
+                          });
                         }}
                       >
                         {t("maintenanceReports.remove")}
@@ -314,9 +317,11 @@ export function MaintenanceReportPanel({ kind }: { kind: MaintenanceReportKind }
                         file={file}
                         canEdit={editable}
                         onRemove={() => {
-                          if (window.confirm(t("maintenanceReports.removeFile"))) {
-                            removeFileMutation.mutate({ reportId: report.id, fileId: file.id });
-                          }
+                          void appConfirm(t("maintenanceReports.removeFile")).then((ok) => {
+                            if (ok) {
+                              removeFileMutation.mutate({ reportId: report.id, fileId: file.id });
+                            }
+                          });
                         }}
                       />
                     ))}

@@ -16,6 +16,7 @@ import type { AssemblyInspectionReport } from "@/lib/types";
 import { useCrudResource } from "@/lib/use-resource";
 import { formatDate } from "@/lib/utils";
 import { assemblyInspectionDatasheetFields } from "@/lib/access-datasheet-fields";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 function checklistSummary(checks: Record<string, boolean> | null | undefined): string {
   const entries = checks ? Object.entries(checks) : [];
@@ -90,7 +91,7 @@ export default function AssemblyInspectionPage() {
       await queryClient.invalidateQueries({ queryKey: ["assembly-inspections"] });
     } catch (err) {
       const detail = saveError(err);
-      window.alert(detail ? `${t("assemblyInspection.saveFailed")} ${detail}` : t("assemblyInspection.saveFailed"));
+      await appAlert(detail ? `${t("assemblyInspection.saveFailed")} ${detail}` : t("assemblyInspection.saveFailed"));
     } finally {
       setSaving(false);
     }

@@ -14,6 +14,7 @@ import { ResourceForm, type FieldDef } from "@/components/ui/resource-form";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { humanizeKey } from "@/lib/utils";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 type Row = Record<string, unknown> & { _id: number };
 
@@ -130,8 +131,9 @@ export function ArchiveTableSection({ table }: { table: DbArchiveTable }) {
 
   function handleDelete() {
     if (selectedId == null) return;
-    if (!window.confirm(t("allTables.confirmDeleteRecord"))) return;
-    deleteMutation.mutate(selectedId);
+    void appConfirm(t("allTables.confirmDeleteRecord")).then((ok) => {
+      if (ok) deleteMutation.mutate(selectedId);
+    });
   }
 
   const categoryLabel = t(`allTables.cat.${table.category}`);

@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
 import { currentEfficiencyEntriesApi } from "@/lib/endpoints";
-import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
+import { ElectrolyzerCombo, useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
+import { AccessSeveralBox } from "@/components/ui/access-several-box";
 import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 
@@ -22,6 +23,10 @@ export default function CurrentEfficiencyPage() {
   const [trainNr, setTrainNr] = useState("2");
   const [elNr, setElNr] = useState("2C");
   const [groupNr, setGroupNr] = useState("1");
+  const [severalEl, setSeveralEl] = useState<string[]>([]);
+  const [severalGroups, setSeveralGroups] = useState<string[]>([]);
+  const [severalElements, setSeveralElements] = useState<string[]>([]);
+  const elNames = useElectrolyzerNames();
 
   const ceQuery = useQuery({
     queryKey: ["current-efficiency-entries"],
@@ -172,6 +177,15 @@ export default function CurrentEfficiencyPage() {
               extra: (v) =>
                 v === "individual" ? (
                   <ElectrolyzerCombo variant="access" className="mt-1 w-full" value={elNr} onChange={setElNr} />
+                ) : v === "various" || v === "several" ? (
+                  <AccessSeveralBox
+                    mode="electrolyzer"
+                    values={severalEl}
+                    onChange={setSeveralEl}
+                    options={elNames}
+                    placeholder="A1, B2, …"
+                    aria-label={t("menus.severalElectrolyzers")}
+                  />
                 ) : null,
             },
             {
@@ -209,6 +223,15 @@ export default function CurrentEfficiencyPage() {
               extra: (v) =>
                 v === "individual" ? (
                   <input className="access-inset-field mt-1 w-16" value={groupNr} onChange={(e) => setGroupNr(e.target.value)} />
+                ) : v === "several" ? (
+                  <AccessSeveralBox
+                    mode="free"
+                    values={severalGroups}
+                    onChange={setSeveralGroups}
+                    options={["1", "2", "3", "4", "5"]}
+                    placeholder="1, 2, …"
+                    aria-label={t("menus.severalGroups")}
+                  />
                 ) : null,
             },
             {
@@ -243,6 +266,24 @@ export default function CurrentEfficiencyPage() {
                 { value: "several", label: t("menus.severalElements") },
                 { value: "all", label: t("menus.allElements") },
               ],
+              extra: (v) =>
+                v === "individual" ? (
+                  <input
+                    className="access-inset-field mt-1 w-full"
+                    value={elNr}
+                    onChange={(e) => setElNr(e.target.value)}
+                    placeholder="Element / Pos"
+                  />
+                ) : v === "several" ? (
+                  <AccessSeveralBox
+                    mode="pair"
+                    values={severalElements}
+                    onChange={setSeveralElements}
+                    options={elNames}
+                    placeholder="A1|12"
+                    aria-label={t("menus.severalElements")}
+                  />
+                ) : null,
             },
             {
               legend: t("menus.resultsAs"),

@@ -21,6 +21,7 @@ import { useCalendar } from "@/lib/calendar/context";
 import { DateInput } from "@/components/ui/date-input";
 import { formatElectrolyzer } from "@/lib/plant-topology";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 function toLocalInput(value: string | null | undefined): string {
   if (!value) return "";
@@ -412,7 +413,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                       type="button"
                       className="access-btn text-[11px]"
                       onClick={() => {
-                        if (confirm(t("shutdowns.confirmDelete", { nr: String(row.nr) }))) removeMutation.mutate(row.nr);
+                        void appConfirm(t("shutdowns.confirmDelete", { nr: String(row.nr) })).then((ok) => { if (ok) removeMutation.mutate(row.nr); });
                       }}
                     >
                       {t("common.delete")}

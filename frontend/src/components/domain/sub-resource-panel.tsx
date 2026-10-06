@@ -11,6 +11,7 @@ import { ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { ExportButtons } from "./export-buttons";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 interface CrudApi<TRead, TWrite> {
   list: (params?: Record<string, unknown>) => Promise<TRead[]>;
@@ -66,10 +67,11 @@ export function SubResourcePanel<TRow extends object>({
   }
 
   function handleDelete(row: TRow) {
-    if (confirm(t("common.confirmDeleteGeneric"))) {
+    void appConfirm(t("common.confirmDeleteGeneric")).then((ok) => {
+      if (!ok) return;
       const id = (row as Record<string, unknown>)[keyField as string] as string | number;
       removeMutation.mutate(id);
-    }
+    });
   }
 
   return (

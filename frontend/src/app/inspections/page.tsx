@@ -19,6 +19,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { canWorkInspections } from "@/lib/inspection-access";
 import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 function saveError(err: unknown): string {
   const detail = (err as { response?: { data?: { detail?: unknown } } })?.response?.data?.detail;
@@ -75,7 +76,7 @@ export default function InspectionsPage() {
       await queryClient.invalidateQueries({ queryKey: ["inspection-grids", saved.id] });
     } catch (err) {
       const detail = saveError(err);
-      window.alert(detail ? `${t("inspections.saveFailed")} ${detail}` : t("inspections.saveFailed"));
+      await appAlert(detail ? `${t("inspections.saveFailed")} ${detail}` : t("inspections.saveFailed"));
     } finally {
       setSaving(false);
     }

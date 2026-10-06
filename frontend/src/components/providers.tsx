@@ -8,6 +8,7 @@ import { IdleSessionGuard } from "@/lib/auth/idle-session";
 import { ThemeProvider } from "@/lib/theme/context";
 import { UiStyleProvider } from "@/lib/ui-style/context";
 import { CalendarProvider } from "@/lib/calendar/context";
+import { DialogProvider } from "@/lib/dialog";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -29,10 +30,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <UiStyleProvider>
           <CalendarProvider>
             <I18nProvider>
-              <AuthProvider>
-                <IdleSessionGuard />
-                {children}
-              </AuthProvider>
+              <DialogProvider>
+                <AuthProvider>
+                  <IdleSessionGuard />
+                  {children}
+                </AuthProvider>
+              </DialogProvider>
             </I18nProvider>
           </CalendarProvider>
         </UiStyleProvider>

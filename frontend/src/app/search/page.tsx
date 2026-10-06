@@ -12,6 +12,7 @@ import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { DateInput } from "@/components/ui/date-input";
 import { useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
+import { appAlert, appConfirm } from "@/lib/dialog";
 
 type SearchKind =
   | "element"
@@ -144,7 +145,7 @@ export default function SearchPage() {
 
   function runKind(kind: SearchKind, needsTerm?: boolean) {
     if (needsTerm && !term.trim()) {
-      alert(t("search.termRequired"));
+      void appAlert(t("search.termRequired"));
       return;
     }
     setDateQuery(null);
@@ -153,7 +154,7 @@ export default function SearchPage() {
 
   function runDate(field: string) {
     if (!date) {
-      alert(t("search.pickDate"));
+      void appAlert(t("search.pickDate"));
       return;
     }
     setKindQuery(null);
