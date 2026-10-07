@@ -7,6 +7,7 @@ import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/a
 import { statisticsApi } from "@/lib/endpoints";
 import { ElectrolyzerCombo, useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
 import { AccessSeveralBox } from "@/components/ui/access-several-box";
+import { CellPicker } from "@/components/ui/cell-picker";
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
 
@@ -58,11 +59,13 @@ export default function PowerConsumptionPage() {
 
   const [elNr, setElNr] = useState("1B");
   const [groupNr, setGroupNr] = useState("1");
-  const [elementNr, setElementNr] = useState("");
+  const [pickedCellEl, setCellEl] = useState("");
+  const [cellPos, setCellPos] = useState("");
   const [severalEl, setSeveralEl] = useState<string[]>([]);
   const [severalGroups, setSeveralGroups] = useState<string[]>([]);
   const [severalElements, setSeveralElements] = useState<string[]>([]);
   const elNames = useElectrolyzerNames();
+  const cellEl = pickedCellEl || elNames[0] || "";
 
   const apiGroup =
     shown?.scope === "train"
@@ -80,7 +83,10 @@ export default function PowerConsumptionPage() {
         group: apiGroup,
         date_from: from,
         date_till: till,
-        electrolyzer: shown?.scope === "electrolyzer" && shown.calc === "individual" ? shown.ref : undefined,
+        electrolyzer:
+          shown?.calc === "individual" && (shown.scope === "electrolyzer" || shown.scope === "element")
+            ? shown.ref.split("|")[0] || undefined
+            : undefined,
       }),
     enabled: !!shown,
   });
@@ -275,7 +281,7 @@ export default function PowerConsumptionPage() {
           title={t("menus.elements")}
           values={element.values}
           onChange={element.onChange}
-          onDisplay={() => display("element", t("menus.elements"), element, elementNr)}
+          onDisplay={() => display("element", t("menus.elements"), element, cellPos ? `${cellEl}|${cellPos}` : "")}
           groups={[
             {
               legend: t("menus.tableUn"),
@@ -303,10 +309,11 @@ export default function PowerConsumptionPage() {
               ],
               extra: (v) =>
                 v === "individual" ? (
-                  <input
-                    className="access-inset-field mt-1 w-full max-w-[120px]"
-                    value={elementNr}
-                    onChange={(e) => setElementNr(e.target.value)}
+                  <CellPicker
+                    electrolyzer={cellEl}
+                    position={cellPos}
+                    onElectrolyzerChange={setCellEl}
+                    onPositionChange={setCellPos}
                   />
                 ) : v === "several" ? (
                   <AccessSeveralBox
