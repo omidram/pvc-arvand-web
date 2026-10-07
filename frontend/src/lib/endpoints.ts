@@ -139,6 +139,15 @@ export const elementsApi = {
     (await apiClient.get(`/elements/by-element-nr/${encodeURIComponent(elementNr)}/history`)).data,
   duplicates: async (componentType: "anode" | "cathode" | "membrane"): Promise<Record<string, T.Element[]>> =>
     (await apiClient.get(`/elements/duplicates/${componentType}`)).data,
+  integrityReport: async (): Promise<{
+    elements: number;
+    duplicate_installations: number;
+    unclosed_replaced_installations: number;
+    unpadded_positions: number;
+  }> => (await apiClient.get("/elements/integrity/report")).data,
+  integrityRepair: async (): Promise<{
+    applied: { duplicates_removed: number; installations_closed: number; positions_padded: number };
+  }> => (await apiClient.post("/elements/integrity/repair")).data,
   groupsOverview: async (): Promise<{ group_nr: string; element_count: number }[]> =>
     (await apiClient.get("/elements/groups/overview")).data,
   importAssemblyExcel: async (

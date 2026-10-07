@@ -140,7 +140,18 @@ export function AccessWorkspace<T extends object>({
       skipUrlSync.current = false;
       return;
     }
-    const wanted = new URLSearchParams(window.location.search).get(paramName);
+    const query = new URLSearchParams(window.location.search);
+    // A record number can be reused (Element Nr, serials), so an explicit row id wins.
+    const idParam = paramName !== String(idField) ? query.get(String(idField)) : null;
+    if (idParam && rows.length > 0) {
+      const byId = rows.findIndex((row) => String(readId(row)) === String(idParam));
+      if (byId >= 0) {
+        setIsNew(false);
+        setIndex(byId);
+        return;
+      }
+    }
+    const wanted = query.get(paramName);
     if (!wanted || rows.length === 0) return;
     const found = rows.findIndex((row) => {
       if (String(readId(row)) === String(wanted)) return true;
@@ -209,6 +220,7 @@ export function AccessWorkspace<T extends object>({
       // Keep other query keys (e.g. tab=). Record id is for navigation/selection only —
       // list pages must not treat it as a search filter.
       url.searchParams.set(paramName, String(token));
+      if (paramName !== String(idField)) url.searchParams.set(String(idField), String(readId(rows[clamped])));
       router.replace(`${url.pathname}?${url.searchParams.toString()}`, { scroll: false });
     }
   }

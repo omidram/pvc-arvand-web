@@ -9,6 +9,14 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..cell_component_names import industrial_english
 from ..inspection_reason_names import industrial_reason
+from ..assembly_integrity import (
+    apply_repairs,
+    close_all_superseded,
+    close_superseded_by,
+    find_same_installation,
+    plan_repairs,
+    summarize,
+)
 from ..calculations import installation_dol
 from ..warehouse import compact_eq, compact_nr, ensure_indexed, import_contractor_repairs, load_compact_index
 from ..crud import build_crud_router
@@ -97,6 +105,21 @@ def _sync_saved_element(db: Session, obj: models.Element) -> None:
     ensure_indexed(db, models.Anode, "anode_nr", obj.anode_nr, None)
     ensure_indexed(db, models.Cathode, "cathode_nr", obj.cathode_nr, None)
     ensure_indexed(db, models.Membrane, "membrane_nr", obj.membrane_nr, None, extra={"membrane_type": obj.membrane_type})
+    # A newer installation of the same cell / anode / cathode / membrane ends the earlier one.
+    close_superseded_by(db, obj)
+
+
+def _reject_same_installation(db: Session, obj: models.Element) -> None:
+    other = find_same_installation(db, obj, exclude_id=obj.id)
+    if other is not None:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"This installation already exists (Element {other.element_nr or other.id}: "
+                f"{other.electrolyzer} / {other.position}, anode {other.anode_nr}, cathode {other.cathode_nr})."
+            ),
+        )
 
 
 @router.get("", response_model=list[schemas.ElementRead])
@@ -304,6 +327,9 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
         if progress and (done == total or done % 25 == 0):
             progress(done, total)
 
+    db.flush()
+    closed_replaced = close_all_superseded(db) if mode != "disassembly" else 0
+
     dol_updated = 0
     for el in db.query(models.Element).all():
         computed = installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date)
@@ -322,6 +348,7 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
         "updated": updated,
         "skipped": skipped,
         "dol_updated": dol_updated,
+        "closed_replaced": closed_replaced,
         "catalogs_created": catalogs,
         "mode": mode,
         "mapped": [
@@ -488,6 +515,7 @@ def create_element(payload: schemas.ElementBase, db: Session = Depends(get_db)):
     if not str(data.get("element_nr") or "").strip():
         data["element_nr"] = _next_element_nr(db)
     obj = models.Element(**data)
+    _reject_same_installation(db, obj)
     db.add(obj)
     _sync_saved_element(db, obj)
     db.commit()
@@ -507,6 +535,7 @@ def update_element(item_id: int, payload: schemas.ElementBase, db: Session = Dep
         data["position"] = _normalize_position(data.get("position"))
     for key, value in data.items():
         setattr(obj, key, value)
+    _reject_same_installation(db, obj)
     _sync_saved_element(db, obj)
     db.commit()
     db.refresh(obj)
@@ -526,13 +555,29 @@ def delete_element(item_id: int, db: Session = Depends(get_db)):
 @router.get("/by-element-nr/{element_nr}/history", response_model=list[schemas.ElementRead])
 def element_history(element_nr: str, db: Session = Depends(get_db)):
     """All installations of a given element number over time (it can be reused)."""
+    wanted = compact_nr(element_nr)
+    if not wanted:
+        return []
     items = (
         db.query(models.Element)
-        .filter(models.Element.element_nr == element_nr)
-        .order_by(models.Element.assembly_date.asc())
+        .filter(func.upper(func.replace(models.Element.element_nr, " ", "")) == wanted)
         .all()
     )
+    items.sort(key=lambda row: (row.assembly_date or row.commissioning_date or date.min, row.id or 0))
     return [_enrich(i) for i in items]
+
+
+@router.get("/integrity/report")
+def integrity_report(_admin=Depends(require_admin), db: Session = Depends(get_db)):
+    """What the relationship repair would change (nothing is written)."""
+    return summarize(plan_repairs(db))
+
+
+@router.post("/integrity/repair")
+def integrity_repair(_admin=Depends(require_admin), db: Session = Depends(get_db)):
+    """Drop exact duplicate installations and close installations that a newer one replaced."""
+    plan = plan_repairs(db)
+    return {"found": summarize(plan), "applied": apply_repairs(db, plan)}
 
 
 @router.get("/duplicates/{component_type}")
