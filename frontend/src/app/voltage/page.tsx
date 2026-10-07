@@ -959,6 +959,8 @@ function StandardizedVoltageBoard() {
   const [groupNr, setGroupNr] = useState("1");
   const [severalGroups, setSeveralGroups] = useState<string[]>([]);
   const [severalElements, setSeveralElements] = useState<string[]>([]);
+  const [cellEl, setCellEl] = useState("");
+  const [cellPos, setCellPos] = useState("");
 
   const elNames = useElectrolyzerNames();
   const subPlantsQuery = useQuery({ queryKey: ["sub-plants"], queryFn: () => subPlantsApi.list() });
@@ -999,6 +1001,45 @@ function StandardizedVoltageBoard() {
   useEffect(() => {
     if (!elNr && elNames[0]) setElNr(elNames[0]);
   }, [elNr, elNames]);
+  useEffect(() => {
+    if (!cellEl && elNames[0]) setCellEl(elNames[0]);
+  }, [cellEl, elNames]);
+
+  const cellReadingsQuery = useQuery({
+    queryKey: ["voltage-readings", "cell-positions", cellEl],
+    queryFn: () => voltageReadingsApi.list({ electrolyzer: cellEl, limit: 2000 }),
+    enabled: Boolean(cellEl),
+    staleTime: 5 * 60_000,
+  });
+
+  const cellOptions = useMemo(() => {
+    const want = formatElectrolyzer(cellEl) || cellEl;
+    const found = new Set<number>();
+    const extra = new Set<string>();
+    for (const a of arrangementsQuery.data || []) {
+      if ((formatElectrolyzer(a.name) || a.name) !== want) continue;
+      const start = Number(a.start_position);
+      const end = Number(a.end_position);
+      if (Number.isFinite(start) && Number.isFinite(end) && end >= start && end - start < 1000) {
+        for (let p = start; p <= end; p++) found.add(p);
+      }
+    }
+    for (const r of cellReadingsQuery.data || []) {
+      const raw = String(r.position ?? "").trim();
+      if (!raw) continue;
+      const n = Number(raw);
+      if (Number.isFinite(n)) found.add(n);
+      else extra.add(raw);
+    }
+    return [
+      ...Array.from(found).sort((a, b) => a - b).map(String),
+      ...Array.from(extra).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })),
+    ];
+  }, [arrangementsQuery.data, cellReadingsQuery.data, cellEl]);
+
+  useEffect(() => {
+    if (cellOptions.length && !cellOptions.includes(cellPos)) setCellPos(cellOptions[0]);
+  }, [cellOptions, cellPos]);
   useEffect(() => {
     if (!trainNr && trainNames[0]) setTrainNr(trainNames[0]);
   }, [trainNr, trainNames]);
@@ -1280,8 +1321,18 @@ function StandardizedVoltageBoard() {
       }
       default: {
         let list = readings;
-        if (element.values.calc === "individual" && elNr) {
-          list = list.filter((r) => r.electrolyzer === elNr);
+        if (element.values.calc === "individual" && cellEl && cellPos) {
+          const wantEl = formatElectrolyzer(cellEl) || cellEl;
+          const samePos = (p: string | null | undefined) => {
+            const a = String(p ?? "").trim();
+            if (a === cellPos) return true;
+            const na = Number(a);
+            const nb = Number(cellPos);
+            return Number.isFinite(na) && Number.isFinite(nb) && na === nb;
+          };
+          list = list.filter(
+            (r) => (formatElectrolyzer(r.electrolyzer) || r.electrolyzer) === wantEl && samePos(r.position)
+          );
         } else if (element.values.calc === "several") {
           const wanted = severalElements.filter(Boolean);
           if (wanted.length) {
@@ -1319,7 +1370,7 @@ function StandardizedVoltageBoard() {
         });
         const chartRows = avgByKey(
           tableRows.map((r) => ({
-            key: element.values.calc === "individual" ? String(r.position) : String(r.electrolyzer),
+            key: element.values.calc === "individual" ? String(r.date) : String(r.electrolyzer),
             value: r.value as number | null,
           }))
         );
@@ -1347,6 +1398,8 @@ function StandardizedVoltageBoard() {
     groupNr,
     severalGroups,
     severalElements,
+    cellEl,
+    cellPos,
     plant.values.usedTable,
     train.values.usedTable,
     train.values.calc,
@@ -1556,7 +1609,33 @@ function StandardizedVoltageBoard() {
               ],
               extra: (v) =>
                 v === "individual" ? (
-                  <ElectrolyzerCombo variant="access" className="mt-1 w-full" value={elNr} onChange={setElNr} />
+                  <div className="mt-1 space-y-1">
+                    <select
+                      className="access-inset-field w-full"
+                      value={cellPos}
+                      onChange={(e) => setCellPos(e.target.value)}
+                      aria-label={t("menus.cellNo")}
+                    >
+                      {cellOptions.length === 0 ? <option value="">—</option> : null}
+                      {cellOptions.map((p) => (
+                        <option key={p} value={p}>
+                          {t("menus.cellNo")} {p}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="flex items-center gap-1 text-[11px]">
+                      <span className="shrink-0">{t("menus.inElectrolyzer")}</span>
+                      <ElectrolyzerCombo
+                        variant="access"
+                        className="w-full"
+                        value={cellEl}
+                        onChange={(next) => {
+                          setCellEl(next);
+                          setCellPos("");
+                        }}
+                      />
+                    </div>
+                  </div>
                 ) : v === "several" ? (
                   <AccessSeveralBox
                     mode="pair"
