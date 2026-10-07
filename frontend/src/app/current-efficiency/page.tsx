@@ -9,6 +9,8 @@ import { CurrentEfficiencyDataInput, type CeInputMode } from "@/components/domai
 import { currentEfficiencyEntriesApi } from "@/lib/endpoints";
 import { ElectrolyzerCombo, useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
 import { AccessSeveralBox } from "@/components/ui/access-several-box";
+import { CellPicker, samePosition } from "@/components/ui/cell-picker";
+import { formatElectrolyzer } from "@/lib/plant-topology";
 import { LoadingState } from "@/components/ui/spinner";
 import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
@@ -29,7 +31,10 @@ function CeBoard() {
   const [severalEl, setSeveralEl] = useState<string[]>([]);
   const [severalGroups, setSeveralGroups] = useState<string[]>([]);
   const [severalElements, setSeveralElements] = useState<string[]>([]);
+  const [pickedCellEl, setCellEl] = useState("");
+  const [cellPos, setCellPos] = useState("");
   const elNames = useElectrolyzerNames();
+  const cellEl = pickedCellEl || elNames[0] || "";
 
   const ceQuery = useQuery({
     queryKey: ["current-efficiency-entries"],
@@ -47,14 +52,33 @@ function CeBoard() {
         if (shown.scope === "train") return r.scope === "sub_plant";
         if (shown.scope === "electrolyzer") return r.scope === "electrolyzer";
         if (shown.scope === "group") return r.scope === "group";
-        return r.scope === "element";
+        if (r.scope !== "element") return false;
+        const rowEl = formatElectrolyzer(r.scope_ref) || r.scope_ref || "";
+        if (element.values.calc === "individual") {
+          const wantEl = formatElectrolyzer(cellEl) || cellEl;
+          return Boolean(cellPos) && rowEl === wantEl && samePosition(r.position, cellPos);
+        }
+        if (element.values.calc === "several") {
+          const wanted = severalElements.filter((w) => w && w !== "|");
+          if (!wanted.length) return true;
+          return wanted.some((w) => {
+            const [we, wp = ""] = w.split("|");
+            return (formatElectrolyzer(we) || we) === rowEl && (!wp || samePosition(r.position, wp));
+          });
+        }
+        return true;
       })
       .map((r) => ({
-        label: r.scope_ref || r.position || formatDate(r.date) || String(r.id),
+        label:
+          r.scope === "element"
+            ? element.values.calc === "individual"
+              ? formatDate(r.date) || String(r.id)
+              : `${formatElectrolyzer(r.scope_ref) || r.scope_ref || ""} ${r.position || ""}`.trim()
+            : r.scope_ref || r.position || formatDate(r.date) || String(r.id),
         value: r.value_pct,
         date: formatDate(r.date),
       }));
-  }, [ceQuery.data, shown, from, till]);
+  }, [ceQuery.data, shown, from, till, element.values.calc, cellEl, cellPos, severalElements]);
 
   function display(title: string, col: { values: Record<string, string> }, scope: string) {
     setShown({ title, mode: col.values.result === "table" ? "table" : "chart", scope });
@@ -272,11 +296,11 @@ function CeBoard() {
               ],
               extra: (v) =>
                 v === "individual" ? (
-                  <input
-                    className="access-inset-field mt-1 w-full"
-                    value={elNr}
-                    onChange={(e) => setElNr(e.target.value)}
-                    placeholder="Element / Pos"
+                  <CellPicker
+                    electrolyzer={cellEl}
+                    position={cellPos}
+                    onElectrolyzerChange={setCellEl}
+                    onPositionChange={setCellPos}
                   />
                 ) : v === "several" ? (
                   <AccessSeveralBox

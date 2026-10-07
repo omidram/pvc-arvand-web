@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useMemo, useState } from "react";
+import { CellSelect } from "@/components/ui/cell-picker";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { cn } from "@/lib/utils";
 
@@ -144,19 +145,20 @@ export function AccessSeveralBox({
                 value={el}
                 disabled={disabled}
                 onChange={(v) => {
-                  const next = `${v}|${pos}`;
+                  const next = `${v}|`;
                   if (!values.length) onChange(v ? [next] : []);
                   else updateAt(index, next);
                 }}
               />
-              <input
-                className="access-inset-field w-14 text-[11px]"
-                placeholder="Pos"
-                disabled={disabled}
+              <CellSelect
+                electrolyzer={el}
+                className="w-24 text-[11px]"
+                disabled={disabled || !el}
                 value={pos}
-                onChange={(e) => {
-                  const next = `${el}|${e.target.value}`;
-                  if (!values.length) onChange(el || e.target.value ? [next] : []);
+                onChange={(p) => {
+                  if (p === pos) return;
+                  const next = `${el}|${p}`;
+                  if (!values.length) onChange(el || p ? [next] : []);
                   else updateAt(index, next);
                 }}
               />
