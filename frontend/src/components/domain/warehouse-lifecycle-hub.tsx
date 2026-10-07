@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { ExternalLink, History, Search, Send } from "lucide-react";
 import { WarehouseInventoryPanel } from "@/components/domain/warehouse-inventory-panel";
@@ -15,6 +15,7 @@ import {
   type WhCompany,
   type WhDispatch,
   type WhElementTimeline,
+  type WhLifecycleDashboard,
   type WhPurchase,
   type WhReceiving,
 } from "@/lib/endpoints";
@@ -122,10 +123,17 @@ export function WarehouseLifecycleHub() {
   );
 }
 
-function DashboardPanel({ dash, t }: { dash: ReturnType<typeof useQuery>; t: (k: string) => string }) {
+function DashboardPanel({
+  dash,
+  t,
+}: {
+  dash: UseQueryResult<WhLifecycleDashboard>;
+  t: (k: string) => string;
+}) {
   if (dash.isLoading) return <LoadingState />;
   if (dash.isError) return <ErrorState message={(dash.error as Error).message} />;
   const c = dash.data?.counts ?? {};
+  const recent = dash.data?.recent ?? [];
   const kpis = [
     ["in_plant", "emerald"],
     ["at_coater", "cyan"],
@@ -146,7 +154,7 @@ function DashboardPanel({ dash, t }: { dash: ReturnType<typeof useQuery>; t: (k:
       </div>
       <h3>{t("wh.dashboard.recent")}</h3>
       <ul className="wh-timeline wh-timeline-compact">
-        {(dash.data?.recent ?? []).map((ev) => (
+        {recent.map((ev) => (
           <li key={ev.id}>
             <span className="wh-tl-date">{formatDate(ev.event_date)}</span>
             <span className="wh-tl-title">
@@ -154,7 +162,7 @@ function DashboardPanel({ dash, t }: { dash: ReturnType<typeof useQuery>; t: (k:
             </span>
           </li>
         ))}
-        {!dash.data?.recent?.length ? <li className="wh-muted">{t("wh.empty")}</li> : null}
+        {!recent.length ? <li className="wh-muted">{t("wh.empty")}</li> : null}
       </ul>
     </div>
   );
