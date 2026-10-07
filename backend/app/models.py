@@ -23,7 +23,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .database import Base
+from .database import Base, SafeDate
 
 
 # ==========================================================================
@@ -687,10 +687,11 @@ class ElectrodeSegregation(Base):
     electrode_kind: Mapped[str | None] = mapped_column(String(20))  # anode | cathode | unknown
     company: Mapped[str | None] = mapped_column(String(100))  # from Element anode/cathode coating
     service_life: Mapped[str | None] = mapped_column(String(100))
-    install_date: Mapped[date | None] = mapped_column(Date)
-    decommission_date: Mapped[date | None] = mapped_column(Date)
-    disassemble_date: Mapped[date | None] = mapped_column(Date)
-    inspection_date: Mapped[date | None] = mapped_column(Date)
+    # SafeDate: Access imports sometimes store truncated junk like "20-60"
+    install_date: Mapped[date | None] = mapped_column(SafeDate)
+    decommission_date: Mapped[date | None] = mapped_column(SafeDate)
+    disassemble_date: Mapped[date | None] = mapped_column(SafeDate)
+    inspection_date: Mapped[date | None] = mapped_column(SafeDate)
     xrf: Mapped[str | None] = mapped_column(String(100))
     pair_serial_nr: Mapped[str | None] = mapped_column(String(50))
     pair_xrf: Mapped[str | None] = mapped_column(String(100))
