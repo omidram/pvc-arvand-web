@@ -420,6 +420,16 @@ const en = {
     days: "d",
     importAssembly: "Import Assembly Excel",
     importAssemblyTitle: "Import Assembly Data (Montagedaten)",
+    checkRelations: "Check relations",
+    relationsTitle: "Assembly Data relations check",
+    relationsIntro:
+      "Checks every installation against the others: the same installation stored twice, installations still open although a newer one took over the same cell or the same anode / cathode / membrane (their days on line keep counting), and cell positions.",
+    relationsDuplicates: "Duplicate installations (identical copies)",
+    relationsUnclosed: "Replaced installations still open",
+    relationsPadding: "Cell positions without 3 digits",
+    relationsClean: "All relations are consistent.",
+    relationsFix: "Fix now",
+    relationsFixed: "Fixed: {dup} duplicates removed, {closed} installations closed, {pad} positions corrected.",
     importAssemblyHelp:
       "Upload the montage / demontage workbook. Assembly Date is the C90 date from 1395 onward. Dismantle date fills Decommission and Disassembly; توضیحات → Decommission Reason; وضعیت فعلی المان → Remarks; membrane use → Membrane Remark; coating company → Anode/Cathode Coating (آند و کاتد X becomes آند X and کاتد X); shells are Denora Italy except L2/M2 (Bluestar China).",
     importDisassemblyTitle: "Import Disassembly Data (Demontagedaten)",
@@ -2653,6 +2663,16 @@ const fa: DeepPartialStrings<typeof en> = {
     days: "روز",
     importAssembly: "وارد کردن اکسل مونتاژ",
     importAssemblyTitle: "وارد کردن داده‌های مونتاژ (Montagedaten)",
+    checkRelations: "بررسی روابط",
+    relationsTitle: "بررسی روابط داده‌های مونتاژ",
+    relationsIntro:
+      "هر نصب با بقیه مقایسه می‌شود: نصب تکراری، نصب‌هایی که باز مانده‌اند در حالی که نصب جدیدتری همان سلول یا همان آند / کاتد / ممبران را گرفته (روز بهره‌برداری آن‌ها تا امروز بالا می‌رود) و شماره سلول.",
+    relationsDuplicates: "نصب‌های تکراری (کپی کاملاً یکسان)",
+    relationsUnclosed: "نصب‌های جایگزین‌شدهٔ هنوز باز",
+    relationsPadding: "شمارهٔ سلول بدون ۳ رقم",
+    relationsClean: "همهٔ روابط سازگار است.",
+    relationsFix: "اصلاح کن",
+    relationsFixed: "اصلاح شد: {dup} تکراری حذف، {closed} نصب بسته، {pad} شماره سلول اصلاح شد.",
     importAssemblyHelp:
       "فایل مونتاژ و دمونتاژ را بارگذاری کنید. تاریخ Assembly از تاریخ C90 از سال ۱۳۹۵ به بعد است. تاریخ دی‌مونتاژ روی Decommission و Disassembly می‌نشیند؛ توضیحات → دلیل خروج؛ وضعیت فعلی المان → Remarks؛ استفاده از ممبران → Membrane Remark؛ شرکت پوشش‌دهنده → پوشش آند/کاتد (آند و کاتد … می‌شود آند … و کاتد …)؛ پوسته برای همه دنوار ایتالیا است مگر L2 و M2 که بلو استار چین است.",
     importDisassemblyTitle: "وارد کردن داده‌های دمونتاژ (Demontagedaten)",

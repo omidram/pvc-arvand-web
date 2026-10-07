@@ -32,6 +32,7 @@ export function AssemblyDataForm() {
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [showImport, setShowImport] = useState<"assembly" | "disassembly" | null>(null);
+  const [showRelations, setShowRelations] = useState(false);
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Element>(
     "elements",
     elementsApi,
@@ -229,6 +230,9 @@ export function AssemblyDataForm() {
               <Button size="sm" variant="secondary" onClick={() => setShowImport("disassembly")}>
                 <Upload size={14} /> {t("menus.importDemontage")}
               </Button>
+              <Button size="sm" variant="secondary" onClick={() => setShowRelations(true)}>
+                {t("elements.checkRelations")}
+              </Button>
             </>
           ) : null
         }
@@ -236,7 +240,76 @@ export function AssemblyDataForm() {
       {editable && isAdmin && showImport ? (
         <ImportAssemblyModal mode={showImport} onClose={() => setShowImport(null)} />
       ) : null}
+      {editable && isAdmin && showRelations ? <RelationsModal onClose={() => setShowRelations(false)} /> : null}
     </>
+  );
+}
+
+function RelationsModal({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
+  const [fixed, setFixed] = useState<string | null>(null);
+  const report = useQuery({
+    queryKey: ["elements", "integrity-report"],
+    queryFn: () => elementsApi.integrityReport(),
+    gcTime: 0,
+  });
+  const repair = useMutation({
+    mutationFn: () => elementsApi.integrityRepair(),
+    onSuccess: (data) => {
+      setFixed(
+        t("elements.relationsFixed", {
+          dup: data.applied.duplicates_removed,
+          closed: data.applied.installations_closed,
+          pad: data.applied.positions_padded,
+        })
+      );
+      queryClient.invalidateQueries({ queryKey: ["elements"] });
+    },
+  });
+  const data = report.data;
+  const rows: [string, number][] = data
+    ? [
+        [t("elements.relationsDuplicates"), data.duplicate_installations],
+        [t("elements.relationsUnclosed"), data.unclosed_replaced_installations],
+        [t("elements.relationsPadding"), data.unpadded_positions],
+      ]
+    : [];
+  const clean = !!data && rows.every(([, n]) => n === 0);
+
+  return (
+    <Modal open onClose={onClose} title={t("elements.relationsTitle")}>
+      <div className="space-y-3">
+        <p className="text-xs text-[var(--win-muted)]">{t("elements.relationsIntro")}</p>
+        {report.isLoading ? <p className="text-sm">…</p> : null}
+        {report.isError ? <ErrorState message={(report.error as Error).message} /> : null}
+        {data && !fixed ? (
+          <table className="w-full text-sm">
+            <tbody>
+              {rows.map(([label, n]) => (
+                <tr key={label} className="border-b border-[var(--win-face-dark)]">
+                  <td className="py-1">{label}</td>
+                  <td className={`py-1 text-end font-semibold ${n ? "text-[var(--win-danger)]" : ""}`}>{n}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+        {clean && !fixed ? <p className="text-sm font-semibold text-[#0d5c0d]">{t("elements.relationsClean")}</p> : null}
+        {fixed ? (
+          <div className="border-2 border-[#5fa85f] bg-[#d9f0d9] px-3 py-2 text-sm font-semibold text-[#0d5c0d]">{fixed}</div>
+        ) : null}
+        {repair.isError ? <ErrorState message={(repair.error as Error).message} /> : null}
+        <div className="flex justify-end gap-2 border-t-2 border-[var(--win-face-dark)] pt-3">
+          <Button variant="secondary" onClick={onClose}>
+            {t("common.close")}
+          </Button>
+          <Button disabled={!data || clean || !!fixed || repair.isPending} onClick={() => repair.mutate()}>
+            {t("elements.relationsFix")}
+          </Button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 

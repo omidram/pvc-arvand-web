@@ -140,17 +140,24 @@ export function ElementRelations({ row }: { row: Element }) {
     queryFn: () => elementsApi.history(row.element_nr!),
     enabled: !!row.element_nr,
   });
+  // Inspections are stored per Element Nr, and the search box is a substring match
+  // ("10" also finds "1000000"): keep exact element numbers only.
   const inspectionsQuery = useQuery({
-    queryKey: ["inspections", { q: row.element_nr, limit: 200 }],
-    queryFn: () => inspectionsApi.list({ q: row.element_nr, limit: 200 }),
+    queryKey: ["inspections", { q: row.element_nr, limit: 2000 }],
+    queryFn: () => inspectionsApi.list({ q: row.element_nr, limit: 2000 }),
     enabled: !!row.element_nr,
   });
+  const inspections = (inspectionsQuery.data || []).filter((r) => sameNr(r.element_nr, row.element_nr));
 
   const historyCols: Column<Element>[] = [
+    { key: "electrolyzer", header: t("fields.electrolyzer") },
+    { key: "position", header: t("fields.positionShort") },
     { key: "assembly_date", header: t("fields.assemblyDate"), render: (r) => formatDate(r.assembly_date) },
+    { key: "disassembly_date", header: t("fields.disassemblyDate"), render: (r) => formatDate(r.disassembly_date) },
     { key: "anode_nr", header: t("fields.anode") },
     { key: "cathode_nr", header: t("fields.cathode") },
     { key: "membrane_nr", header: t("fields.membrane") },
+    { key: "computed_dol_days", header: t("fields.dolDays"), render: (r) => r.computed_dol_days ?? "—" },
     { key: "status", header: t("fields.status") },
   ];
   const inspectionCols: Column<InspectionReport>[] = [
@@ -168,13 +175,16 @@ export function ElementRelations({ row }: { row: Element }) {
           data={historyQuery.data}
           keyField="id"
           isLoading={historyQuery.isLoading}
+          onRowClick={(r) => {
+            window.location.href = `/elements/assembly?element_nr=${encodeURIComponent(r.element_nr || "")}&id=${r.id}`;
+          }}
           emptyTitle={t("common.noRecordsFound")}
         />
       </AccessSubform>
       <AccessSubform caption={t("access.relatedInspections")}>
         <DataTable
           columns={inspectionCols}
-          data={inspectionsQuery.data}
+          data={inspections}
           keyField="id"
           isLoading={inspectionsQuery.isLoading}
           onRowClick={(r) => {
