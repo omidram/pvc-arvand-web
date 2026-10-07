@@ -188,6 +188,63 @@ class VoltageSyncRunResult(BaseModel):
     mode: str | None = None
 
 
+# ---------------------------------------------------------------- AriaLims sync (lab analyses)
+
+class AriaLimsSyncSettingsBase(ORMModel):
+    enabled: bool = False
+    base_url: str | None = None
+    username: str | None = None
+    daily_time: str = "01:00"
+    lookback_days: int = Field(default=7, ge=1, le=90)
+    # Comma-separated analysis types; empty = all catalogued types.
+    analysis_types: str | None = None
+
+
+class AriaLimsSyncSettingsUpdate(AriaLimsSyncSettingsBase):
+    # Omit or blank = keep previously saved secret.
+    password: str | None = None
+    api_token: str | None = None
+
+
+class AriaLimsSyncSettingsRead(AriaLimsSyncSettingsBase):
+    id: int
+    password_set: bool = False
+    api_token_set: bool = False
+    last_run_at: datetime | None = None
+    last_run_status: str | None = None
+    last_run_message: str | None = None
+    next_run_at: str | None = None
+    contract_ready: bool = False
+    catalog: list[dict] = []
+
+
+class AriaLimsSyncRunResult(BaseModel):
+    ok: bool
+    mode: str | None = "api"
+    files_scanned: int = 0
+    files_applied: int = 0
+    rows_upserted: int = 0
+    message: str = ""
+    details: list[dict] = []
+    catalog: list[dict] = []
+    date_from: str | None = None
+    date_to: str | None = None
+    contract_ready: bool = False
+
+
+class AriaLimsTestResult(BaseModel):
+    ok: bool
+    status_code: int | None = None
+    path_tried: str | None = None
+    message: str = ""
+    payload_preview: str | None = None
+
+
+class AriaLimsManualIngest(BaseModel):
+    analysis_type: str
+    payload: dict | list
+
+
 # ---------------------------------------------------------------- Monitoring / alerts
 
 class AlertRuleBase(ORMModel):
@@ -868,6 +925,38 @@ class VoltageReadingBase(ORMModel):
 
 
 class VoltageReadingRead(VoltageReadingBase):
+    id: int
+
+
+class VoltageUnElementInputBase(ORMModel):
+    electrolyzer: str | None = None
+    position: str | None = None
+    date: datetime | None = None
+    time: str | None = None
+    total_current: float | None = None
+    naoh_pct: float | None = None
+    anolyte_temp: float | None = None
+    catholyte_temp: float | None = None
+    voltage: float | None = None
+
+
+class VoltageUnElementInputRead(VoltageUnElementInputBase):
+    id: int
+
+
+class VoltageUnGroupInputBase(ORMModel):
+    group_nr: str | None = None
+    date: datetime | None = None
+    time: str | None = None
+    total_current: float | None = None
+    naoh_pct: float | None = None
+    anolyte_temp: float | None = None
+    catholyte_temp: float | None = None
+    total_voltage: float | None = None
+    element_count: int | None = None
+
+
+class VoltageUnGroupInputRead(VoltageUnGroupInputBase):
     id: int
 
 

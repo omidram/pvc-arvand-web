@@ -161,6 +161,9 @@ function ImportAnalysesDialog({ onClose }: { onClose: () => void }) {
           </button>
         </div>
         <p className="mb-3 text-[11px] text-[var(--win-muted)]">{t("analyses.importLabHelp")}</p>
+        <div className="mb-3 border border-[#c9a227] bg-[#fff8d9] px-2 py-1 text-[11px] text-[#5c4a00]">
+          {t("analyses.ariaLimsPendingNote")}
+        </div>
         <label className="mb-3 block text-[12px]">
           {t("analyses.labExcelFile")}
           <input

@@ -135,6 +135,28 @@ class VoltageSyncSettings(Base):
     processed_state: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class AriaLimsSyncSettings(Base):
+    """AriaLims REST API → Analysis samples (scaffold until endpoint contract arrives)."""
+    __tablename__ = "arialims_sync_settings"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Base URL of AriaLims API, e.g. http://192.168.x.x:port/api
+    base_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    username: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    password: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    # Optional bearer / API key when AriaLims uses token auth instead of basic login.
+    api_token: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    daily_time: Mapped[str] = mapped_column(String(5), default="01:00")
+    lookback_days: Mapped[int] = mapped_column(Integer, default=7)
+    # Comma-separated analysis types to pull; empty = all supported types.
+    analysis_types: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    last_run_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    last_run_message: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    # JSON bookmark for incremental sync (cursor / last sample id / last timestamp).
+    sync_cursor: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
 class AlertRule(Base):
     """Configurable warning/danger thresholds for plant monitoring."""
     __tablename__ = "alert_rules"
@@ -760,16 +782,48 @@ class VoltageReading(Base):
     standardized_voltage: Mapped[float | None] = mapped_column(Float)  # computed Un, cached
 
 
+class VoltageUnElementInput(Base):
+    """Access frmEingabeUnElement / tblEingabeUnElement — single-element Un conditions."""
+
+    __tablename__ = "voltage_un_element_inputs"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    electrolyzer: Mapped[str | None] = mapped_column(String(50), index=True)
+    position: Mapped[str | None] = mapped_column(String(50))
+    date: Mapped[datetime | None] = mapped_column(DateTime)
+    time: Mapped[str | None] = mapped_column(String(20))
+    total_current: Mapped[float | None] = mapped_column(Float)  # I Gesamt
+    naoh_pct: Mapped[float | None] = mapped_column(Float)  # Cc [% w/w]
+    anolyte_temp: Mapped[float | None] = mapped_column(Float)  # t An
+    catholyte_temp: Mapped[float | None] = mapped_column(Float)  # t Ka
+    voltage: Mapped[float | None] = mapped_column(Float)  # U
+
+
+class VoltageUnGroupInput(Base):
+    """Access frmEingabeUnGruppe / tblEingabeUnGruppe — group Un conditions."""
+
+    __tablename__ = "voltage_un_group_inputs"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    group_nr: Mapped[str | None] = mapped_column(String(50), index=True)  # Gruppe
+    date: Mapped[datetime | None] = mapped_column(DateTime)
+    time: Mapped[str | None] = mapped_column(String(20))
+    total_current: Mapped[float | None] = mapped_column(Float)  # I Gesamt
+    naoh_pct: Mapped[float | None] = mapped_column(Float)  # Cc [% w/w]
+    anolyte_temp: Mapped[float | None] = mapped_column(Float)
+    catholyte_temp: Mapped[float | None] = mapped_column(Float)
+    total_voltage: Mapped[float | None] = mapped_column(Float)  # U Gesamt
+    element_count: Mapped[int | None] = mapped_column(Integer)  # n
+
+
 # ==========================================================================
 # Current Efficiency
 # ==========================================================================
 
 class CurrentEfficiencyEntry(Base):
-    """Unifies tblEingabeCEElementNaOH / CEElektrolyseurNaOH / CETeilanlageNaOH."""
+    """Unifies Access tblEingabeCE*NaOH (Total Plant / Train / Electrolyzer / Group / Element)."""
     __tablename__ = "current_efficiency_entries"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    scope: Mapped[str] = mapped_column(String(20))  # element | electrolyzer | sub_plant
-    scope_ref: Mapped[str | None] = mapped_column(String(50))  # electrolyzer/subplant nr
+    scope: Mapped[str] = mapped_column(String(20))  # plant | sub_plant | electrolyzer | group | element
+    scope_ref: Mapped[str | None] = mapped_column(String(50))  # train / electrolyzer / group nr
     position: Mapped[str | None] = mapped_column(String(50))  # only for scope=element
     date: Mapped[datetime | None] = mapped_column(DateTime)
     value_pct: Mapped[float | None] = mapped_column(Float)  # CE (%)
@@ -793,3 +847,145 @@ class AnalysisSample(Base):
     date: Mapped[datetime | None] = mapped_column(DateTime, index=True)
     time: Mapped[str | None] = mapped_column(String(20))
     parameters: Mapped[dict] = mapped_column(JSON, default=dict)  # {"NaOH": 32.1, "pH": 7.2, ...}
+
+
+# ==========================================================================
+# Warehouse — anode/cathode lifecycle (dispatch, receive, purchase, punch)
+# Current location/status is stored on WhElementState; history is WhLifecycleEvent.
+# ==========================================================================
+
+
+class WhCompany(Base):
+    __tablename__ = "wh_companies"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(200), unique=True, index=True)
+    is_coating: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_supplier: Mapped[bool] = mapped_column(Boolean, default=False)
+    contact_person: Mapped[str | None] = mapped_column(String(120))
+    phone: Mapped[str | None] = mapped_column(String(80))
+    address: Mapped[str | None] = mapped_column(Text)
+    contract_ref: Mapped[str | None] = mapped_column(String(120))
+    contract_valid_until: Mapped[date | None] = mapped_column(Date)
+    remarks: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class WhElementState(Base):
+    """Current lifecycle snapshot for one anode or cathode serial (not a history log)."""
+
+    __tablename__ = "wh_element_states"
+    __table_args__ = (UniqueConstraint("element_kind", "serial", name="uq_wh_element_state"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    element_kind: Mapped[str] = mapped_column(String(10), index=True)  # anode | cathode
+    serial: Mapped[str] = mapped_column(String(50), index=True)
+    lifecycle_status: Mapped[str] = mapped_column(String(30), index=True)
+    # in_plant | ready_dispatch | at_coater | pending_receive | decommissioned
+    company_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("wh_companies.id"), index=True)
+    coating_status: Mapped[str | None] = mapped_column(String(80))
+    appearance_status: Mapped[str | None] = mapped_column(String(80))
+    qc_result: Mapped[str | None] = mapped_column(String(80))
+    open_dispatch_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class WhCoatingDispatch(Base):
+    __tablename__ = "wh_coating_dispatches"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    send_no: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    company_id: Mapped[int] = mapped_column(Integer, ForeignKey("wh_companies.id"), index=True)
+    dispatch_date: Mapped[date] = mapped_column(Date, index=True)
+    status: Mapped[str] = mapped_column(String(20), index=True)  # sent | partial | received | cancelled
+    remarks: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class WhCoatingDispatchItem(Base):
+    __tablename__ = "wh_coating_dispatch_items"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    dispatch_id: Mapped[int] = mapped_column(Integer, ForeignKey("wh_coating_dispatches.id"), index=True)
+    element_kind: Mapped[str] = mapped_column(String(10))
+    serial: Mapped[str] = mapped_column(String(50), index=True)
+    received: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class WhCoatingReceiving(Base):
+    __tablename__ = "wh_coating_receivings"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    receive_no: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    dispatch_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("wh_coating_dispatches.id"), index=True)
+    receive_date: Mapped[date] = mapped_column(Date, index=True)
+    remarks: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class WhCoatingReceivingItem(Base):
+    __tablename__ = "wh_coating_receiving_items"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    receiving_id: Mapped[int] = mapped_column(Integer, ForeignKey("wh_coating_receivings.id"), index=True)
+    dispatch_item_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("wh_coating_dispatch_items.id"), index=True)
+    element_kind: Mapped[str] = mapped_column(String(10))
+    serial: Mapped[str] = mapped_column(String(50), index=True)
+    coating_status: Mapped[str | None] = mapped_column(String(80))
+    appearance_status: Mapped[str | None] = mapped_column(String(80))
+    qc_result: Mapped[str | None] = mapped_column(String(80))
+    vendor_report_no: Mapped[str | None] = mapped_column(String(80))
+    remarks: Mapped[str | None] = mapped_column(Text)
+
+
+class WhPurchase(Base):
+    __tablename__ = "wh_purchases"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    purchase_no: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    supplier_id: Mapped[int] = mapped_column(Integer, ForeignKey("wh_companies.id"), index=True)
+    purchase_date: Mapped[date] = mapped_column(Date, index=True)
+    element_kind: Mapped[str] = mapped_column(String(10))
+    remarks: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class WhPurchaseItem(Base):
+    __tablename__ = "wh_purchase_items"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    purchase_id: Mapped[int] = mapped_column(Integer, ForeignKey("wh_purchases.id"), index=True)
+    serial: Mapped[str] = mapped_column(String(50), index=True)
+
+
+class WhPunch(Base):
+    __tablename__ = "wh_punches"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    company_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("wh_companies.id"), index=True)
+    dispatch_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("wh_coating_dispatches.id"), index=True)
+    send_no: Mapped[str | None] = mapped_column(String(40), index=True)
+    element_kind: Mapped[str] = mapped_column(String(10), index=True)
+    serial: Mapped[str] = mapped_column(String(50), index=True)
+    punch_no: Mapped[str | None] = mapped_column(String(80))
+    punch_date: Mapped[date | None] = mapped_column(Date, index=True)
+    remarks: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class WhDecommission(Base):
+    __tablename__ = "wh_decommissions"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    element_kind: Mapped[str] = mapped_column(String(10), index=True)
+    serial: Mapped[str] = mapped_column(String(50), index=True)
+    decommission_date: Mapped[date] = mapped_column(Date, index=True)
+    reason: Mapped[str] = mapped_column(String(40))
+    remarks: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class WhLifecycleEvent(Base):
+    """Append-only audit trail; UI timeline is built from this table."""
+
+    __tablename__ = "wh_lifecycle_events"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    element_kind: Mapped[str] = mapped_column(String(10), index=True)
+    serial: Mapped[str] = mapped_column(String(50), index=True)
+    event_type: Mapped[str] = mapped_column(String(30), index=True)
+    event_date: Mapped[date] = mapped_column(Date, index=True)
+    title: Mapped[str] = mapped_column(String(200))
+    ref_kind: Mapped[str | None] = mapped_column(String(30))
+    ref_id: Mapped[int | None] = mapped_column(Integer)
+    details: Mapped[dict | None] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime)

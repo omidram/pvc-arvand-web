@@ -311,8 +311,18 @@ def apply_excel_bytes(
     )
 
 
-def scan_and_apply(db: Session, row: models.VoltageSyncSettings | None = None) -> dict[str, Any]:
-    """Scan watch folder; apply new/changed Excel files; update settings status."""
+def scan_and_apply(
+    db: Session,
+    row: models.VoltageSyncSettings | None = None,
+    *,
+    record_run: bool = True,
+) -> dict[str, Any]:
+    """Scan watch folder; apply new/changed Excel files; update settings status.
+
+    ``record_run=False`` keeps an earlier AriaORMS last_run_* untouched when this
+    is only a follow-up folder scan after a successful HTTP pull (empty folder
+    must not look like \"sync never ran\" / overwrite the real sync clock).
+    """
     if row is None:
         row = db.query(models.VoltageSyncSettings).first()
         if row is None:
@@ -334,10 +344,11 @@ def scan_and_apply(db: Session, row: models.VoltageSyncSettings | None = None) -
         )
     except OSError as exc:
         msg = f"Cannot read watch folder {watch}: {exc}"
-        row.last_run_at = datetime.utcnow()
-        row.last_run_status = "error"
-        row.last_run_message = msg[:500]
-        db.commit()
+        if record_run:
+            row.last_run_at = datetime.utcnow()
+            row.last_run_status = "error"
+            row.last_run_message = msg[:500]
+            db.commit()
         return {
             "ok": False,
             "files_scanned": 0,
@@ -388,18 +399,20 @@ def scan_and_apply(db: Session, row: models.VoltageSyncSettings | None = None) -
             details.append({"file": rel, "status": "error", "message": str(exc)})
 
     _save_state(db, row, state)
-    row.last_run_at = datetime.utcnow()
-    if any(d.get("status") == "error" for d in details) and files_applied == 0 and scanned > 0:
-        row.last_run_status = "error"
+    has_errors = any(d.get("status") == "error" for d in details) and files_applied == 0 and scanned > 0
+    if has_errors:
         err = next(d for d in details if d.get("status") == "error")
-        row.last_run_message = f"{err.get('file')}: {err.get('message')}"[:500]
+        message = f"{err.get('file')}: {err.get('message')}"
         ok = False
-        message = row.last_run_message or "Sync errors"
     else:
-        row.last_run_status = "success"
-        message = f"Scanned {scanned}, applied {files_applied}, upserted {rows_total} rows"
-        row.last_run_message = message[:500]
+        message = f"Folder scan: {scanned} file(s), applied {files_applied}, upserted {rows_total} row(s)"
         ok = True
+    # Only stamp last successful/failed run when this scan is the primary action,
+    # or when it actually applied files / hit a real error.
+    if record_run or files_applied > 0 or has_errors:
+        row.last_run_at = datetime.utcnow()
+        row.last_run_status = "error" if not ok else "success"
+        row.last_run_message = message[:500]
     db.commit()
 
     return {
@@ -567,11 +580,22 @@ def pull_from_ariaorms(
         logger.exception("Alert evaluation after AriaORMS pull failed")
 
     ok = errors == 0
-    message = (
-        f"AriaORMS {start_day.isoformat()}..{end_day.isoformat()}: "
-        f"electrolyzers {files_applied}/{total}, upserted {rows_total} rows"
-        + (f", errors {errors}" if errors else "")
-    )
+    empty_count = sum(1 for d in details if d.get("status") == "empty")
+    if ok and rows_total == 0:
+        message = (
+            f"AriaORMS sync succeeded {start_day.isoformat()}..{end_day.isoformat()}: "
+            f"no new rows (checked {total} electrolyzer(s)"
+            + (f", {empty_count} empty sheet(s)" if empty_count else "")
+            + "). Sync ran successfully — source had no data in this range."
+        )
+    else:
+        message = (
+            f"AriaORMS {start_day.isoformat()}..{end_day.isoformat()}: "
+            f"electrolyzers {files_applied}/{total}, upserted {rows_total} rows"
+            + (f", empty {empty_count}" if empty_count else "")
+            + (f", errors {errors}" if errors else "")
+        )
+    # Always stamp last successful attempt time — even when 0 rows were returned.
     row.last_run_at = datetime.utcnow()
     row.last_run_status = "success" if ok else "error"
     row.last_run_message = message[:500]

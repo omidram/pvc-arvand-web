@@ -41,8 +41,8 @@ export function AccessFormWindow({
           </>
         }
       >
+        {nav ? <div className="access-form-nav access-form-nav-top">{nav}</div> : null}
         {children}
-        {nav ? <div className="access-form-nav mt-3">{nav}</div> : null}
       </AccessHub>
     );
   }
@@ -56,8 +56,8 @@ export function AccessFormWindow({
         {helpKey ? <HelpButton helpKey={helpKey} /> : null}
         <span className="ms-auto flex items-center gap-1">{commands}</span>
       </div>
+      {nav ? <div className="access-form-nav access-form-nav-top">{nav}</div> : null}
       <div className="access-form-body">{children}</div>
-      {nav ? <div className="access-form-nav">{nav}</div> : null}
     </div>
   );
 }

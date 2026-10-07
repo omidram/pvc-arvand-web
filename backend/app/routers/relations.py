@@ -123,7 +123,7 @@ def lookup(name: str, db: Session = Depends(get_db)):
     elif name == "element-numbers":
         values = _values(db.query(models.Element.element_nr).distinct().all())
     elif name == "electrolyzers":
-        from ..plant_topology import all_electrolyzers, format_electrolyzer_name
+        from ..plant_topology import all_electrolyzers, format_electrolyzer_name, is_valid_electrolyzer_name
 
         found: set[str] = set()
         for source in (
@@ -131,6 +131,8 @@ def lookup(name: str, db: Session = Depends(get_db)):
             db.query(models.Element.electrolyzer).distinct().all(),
         ):
             for (raw,) in source:
+                if not is_valid_electrolyzer_name(raw):
+                    continue
                 name_el = format_electrolyzer_name(raw)
                 if name_el:
                     found.add(name_el)

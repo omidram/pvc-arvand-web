@@ -53,6 +53,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { ExportButtons } from "@/components/domain/export-buttons";
+import { VoltageDataInput } from "@/components/domain/voltage-data-input";
 import { DateInput } from "@/components/ui/date-input";
 import { appAlert, appConfirm } from "@/lib/dialog";
 
@@ -1407,17 +1408,18 @@ function StandardizedVoltageBoard() {
         <div className="access-sunken inline-block px-3 py-2">
           <div className="mb-2 text-[12px] font-bold">{t("menus.dataInput")}</div>
           <div className="flex flex-wrap gap-2">
+            {/* Access Betriebsdaten captions: Electrolyzers / All Elements / Groups / Single Elements */}
             <AccessBtn className="!w-auto px-3" href="/voltage?form=input-electrolyzer">
-              {t("menus.dataInputElectrolyzers")}
+              {t("menus.svElectrolyzers")}
             </AccessBtn>
             <AccessBtn className="!w-auto px-3" href="/voltage?form=input-elements">
-              {t("menus.dataInputElements")}
+              {t("menus.svAllElements")}
             </AccessBtn>
             <AccessBtn className="!w-auto px-3" href="/voltage?form=input-group">
-              {t("menus.inputGroup")}
+              {t("menus.svGroups")}
             </AccessBtn>
             <AccessBtn className="!w-auto px-3" href="/voltage?form=input-single">
-              {t("menus.inputSingleElement")}
+              {t("menus.svSingleElements")}
             </AccessBtn>
           </div>
         </div>
@@ -1601,37 +1603,34 @@ function VoltagePageInner() {
 
   if (!form || form === "tables") return <StandardizedVoltageBoard />;
 
+  if (form === "input-electrolyzer" || form === "normalizations") {
+    return <VoltageDataInput mode="electrolyzers" />;
+  }
+  if (form === "input-elements" || form === "readings") {
+    return <VoltageDataInput mode="elements" />;
+  }
+  if (form === "input-group") {
+    return <VoltageDataInput mode="group" />;
+  }
+  if (form === "input-single") {
+    return <VoltageDataInput mode="single" />;
+  }
+
   const caption =
-    form === "input-electrolyzer" || form === "normalizations"
-      ? t("voltage.inputElectrolyzerTitle")
-      : form === "input-elements" || form === "readings"
-        ? t("voltage.inputElementsTitle")
-        : form === "input-single"
-          ? t("voltage.inputSingleTitle")
-          : form === "input-group"
-            ? t("voltage.inputGroupTitle")
-            : form === "distribution"
-              ? t("menus.distributionUn")
-              : t("mainMenu.standardizedVoltage");
+    form === "distribution" ? t("menus.distributionUn") : t("mainMenu.standardizedVoltage");
 
   const defaultTab =
-    form === "input-electrolyzer" || form === "normalizations" || form === "input-group"
-      ? "normalizations"
-      : form === "input-elements" || form === "readings" || form === "input-single"
-        ? "readings"
-        : form === "calculator" || form === "current-efficiency"
-          ? "calculator"
-          : form === "distribution"
-            ? "distribution"
-            : "normalizations";
+    form === "calculator" || form === "current-efficiency"
+      ? "calculator"
+      : form === "distribution"
+        ? "distribution"
+        : "calculator";
 
   return (
     <AccessFormWindow caption={caption} helpKey="voltage" backHref="/voltage" backLabel={t("mainMenu.standardizedVoltage")}>
       <Tabs
         defaultTab={defaultTab}
         tabs={[
-          { key: "normalizations", label: t("menus.inputElectrolyzers"), content: <NormalizationsTab /> },
-          { key: "readings", label: t("menus.inputElements"), content: <ReadingsTab /> },
           { key: "calculator", label: t("voltage.tabCalculator"), content: <CalculatorTab /> },
           { key: "distribution", label: t("voltage.tabDistribution"), content: <DistributionTab /> },
         ]}

@@ -70,7 +70,12 @@ def run_voltage_sync_now(db: Session = Depends(get_db)):
             progress=progress,
         )
         try:
-            folder = voltage_sync.scan_and_apply(session, session.query(models.VoltageSyncSettings).first())
+            # Do not overwrite AriaORMS last_run_* when the watch folder is empty.
+            folder = voltage_sync.scan_and_apply(
+                session,
+                session.query(models.VoltageSyncSettings).first(),
+                record_run=False,
+            )
             if folder.get("files_applied"):
                 result["files_applied"] = int(result.get("files_applied") or 0) + int(
                     folder.get("files_applied") or 0
@@ -79,6 +84,10 @@ def run_voltage_sync_now(db: Session = Depends(get_db)):
                     folder.get("rows_upserted") or 0
                 )
                 result["message"] = f"{result.get('message')}; folder: {folder.get('message')}"
+                # Folder actually contributed data — refresh the stamp from AriaORMS row.
+                row2 = session.query(models.VoltageSyncSettings).first()
+                if row2:
+                    result["last_run_at"] = row2.last_run_at.isoformat() if row2.last_run_at else None
         except Exception:  # noqa: BLE001
             pass
         return result

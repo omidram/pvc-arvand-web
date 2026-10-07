@@ -45,6 +45,7 @@ import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { ImportExportTab } from "@/components/domain/import-export-tab";
 import { BackupTab } from "@/components/domain/backup-tab";
 import { VoltageSyncTab } from "@/components/domain/voltage-sync-tab";
+import { AriaLimsSyncTab } from "@/components/domain/arialims-sync-tab";
 import { DatabaseTab } from "@/components/domain/database-tab";
 import { DirectoryTab } from "@/components/domain/directory-tab";
 import { useI18n } from "@/lib/i18n/context";
@@ -634,6 +635,9 @@ function SettingsPageInner() {
           ...(canEdit("settings") ? [{ key: "backup", label: t("backup.title"), content: <BackupTab /> }] : []),
           ...(canEdit("settings")
             ? [{ key: "voltage-sync", label: t("voltageSync.title"), content: <VoltageSyncTab /> }]
+            : []),
+          ...(canEdit("settings")
+            ? [{ key: "arialims-sync", label: t("ariaLimsSync.title"), content: <AriaLimsSyncTab /> }]
             : []),
           ...(isAdmin ? [{ key: "database", label: t("database.title"), content: <DatabaseTab /> }] : []),
           ...(isAdmin ? [{ key: "directory", label: t("directory.title"), content: <DirectoryTab /> }] : []),

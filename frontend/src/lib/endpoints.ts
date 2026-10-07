@@ -302,6 +302,8 @@ export const shutdownSummaryApi = {
 // ---------------------------------------------------------------- Voltage
 export const voltageNormalizationsApi = resource<T.ElectrolyzerNormalization>("/voltage-normalizations");
 export const voltageReadingsApi = resource<T.VoltageReading>("/voltage-readings");
+export const voltageUnElementInputsApi = resource<T.VoltageUnElementInput>("/voltage-un-element-inputs");
+export const voltageUnGroupInputsApi = resource<T.VoltageUnGroupInput>("/voltage-un-group-inputs");
 export const currentEfficiencyEntriesApi = resource<T.CurrentEfficiencyEntry>("/current-efficiency-entries");
 
 export const voltageCalcApi = {
@@ -700,6 +702,163 @@ export const storageApi = {
     (await apiClient.post("/storage/board/move", payload)).data,
 };
 
+export type WhCompany = {
+  id: number;
+  name: string;
+  is_coating: boolean;
+  is_supplier: boolean;
+  contact_person: string | null;
+  phone: string | null;
+  address: string | null;
+  contract_ref: string | null;
+  contract_valid_until: string | null;
+  remarks: string | null;
+};
+
+export type WhLifecycleDashboard = {
+  counts: Record<string, number>;
+  recent: {
+    id: number;
+    element_kind: string;
+    serial: string;
+    event_type: string;
+    event_date: string;
+    title: string;
+    details: Record<string, unknown>;
+  }[];
+};
+
+export type WhDispatch = {
+  id: number;
+  send_no: string;
+  company_id: number;
+  company_name: string | null;
+  dispatch_date: string;
+  status: string;
+  remarks: string | null;
+  items: { id: number; element_kind: string; serial: string; received: boolean }[];
+};
+
+export type WhReceiving = {
+  id: number;
+  receive_no: string;
+  dispatch_id: number | null;
+  send_no: string | null;
+  receive_date: string;
+  remarks: string | null;
+  items: { id: number; element_kind: string; serial: string; coating_status: string | null; qc_result: string | null }[];
+};
+
+export type WhPurchase = {
+  id: number;
+  purchase_no: string;
+  supplier_id: number;
+  supplier_name: string | null;
+  purchase_date: string;
+  element_kind: string;
+  remarks: string | null;
+  serials: string[];
+};
+
+export type WhElementTimeline = {
+  kind: string;
+  serial: string;
+  current: {
+    lifecycle_status: string | null;
+    company_id: number | null;
+    company_name: string | null;
+    coating_status: string | null;
+    appearance_status: string | null;
+    qc_result: string | null;
+    open_dispatch_id: number | null;
+    updated_at: string | null;
+  };
+  events: {
+    id: number;
+    event_type: string;
+    event_date: string;
+    title: string;
+    ref_kind: string | null;
+    ref_id: number | null;
+    details: Record<string, unknown>;
+  }[];
+};
+
+export const warehouseLifecycleApi = {
+  meta: async (): Promise<{ lifecycle_statuses: string[] }> =>
+    (await apiClient.get("/warehouse-lifecycle/meta")).data,
+  dashboard: async (): Promise<WhLifecycleDashboard> =>
+    (await apiClient.get("/warehouse-lifecycle/dashboard")).data,
+  companies: async (params?: { q?: string; coating?: boolean; supplier?: boolean }): Promise<WhCompany[]> =>
+    (await apiClient.get("/warehouse-lifecycle/companies", { params })).data,
+  saveCompany: async (body: Partial<WhCompany> & { name: string }, id?: number): Promise<WhCompany> =>
+    id
+      ? (await apiClient.put(`/warehouse-lifecycle/companies/${id}`, body)).data
+      : (await apiClient.post("/warehouse-lifecycle/companies", body)).data,
+  companyHistory: async (id: number) => (await apiClient.get(`/warehouse-lifecycle/companies/${id}/history`)).data,
+  elementStates: async (params?: { kind?: string; status?: string; q?: string }) =>
+    (await apiClient.get("/warehouse-lifecycle/elements/state", { params })).data,
+  elementTimeline: async (kind: "anode" | "cathode", serial: string): Promise<WhElementTimeline> =>
+    (await apiClient.get(`/warehouse-lifecycle/elements/${kind}/${encodeURIComponent(serial)}/timeline`)).data,
+  dispatches: async (params?: { status?: string; company_id?: number }): Promise<WhDispatch[]> =>
+    (await apiClient.get("/warehouse-lifecycle/dispatches", { params })).data,
+  createDispatch: async (body: {
+    company_id: number;
+    dispatch_date: string;
+    send_no?: string;
+    remarks?: string;
+    items: { element_kind: "anode" | "cathode"; serial: string }[];
+  }) => (await apiClient.post("/warehouse-lifecycle/dispatches", body)).data,
+  receivings: async (): Promise<WhReceiving[]> => (await apiClient.get("/warehouse-lifecycle/receivings")).data,
+  createReceiving: async (body: {
+    dispatch_id?: number;
+    receive_date: string;
+    receive_no?: string;
+    remarks?: string;
+    items: {
+      dispatch_item_id?: number;
+      element_kind: "anode" | "cathode";
+      serial: string;
+      coating_status?: string;
+      appearance_status?: string;
+      qc_result?: string;
+      vendor_report_no?: string;
+      remarks?: string;
+    }[];
+  }) => (await apiClient.post("/warehouse-lifecycle/receivings", body)).data,
+  purchases: async (): Promise<WhPurchase[]> => (await apiClient.get("/warehouse-lifecycle/purchases")).data,
+  createPurchase: async (body: {
+    supplier_id: number;
+    purchase_date: string;
+    element_kind: "anode" | "cathode";
+    purchase_no?: string;
+    remarks?: string;
+    serials: string[];
+  }) => (await apiClient.post("/warehouse-lifecycle/purchases", body)).data,
+  punches: async (params?: { company_id?: number; serial?: string }) =>
+    (await apiClient.get("/warehouse-lifecycle/punches", { params })).data,
+  createPunch: async (body: {
+    company_id?: number;
+    dispatch_id?: number;
+    send_no?: string;
+    element_kind: "anode" | "cathode";
+    serial: string;
+    punch_no?: string;
+    punch_date?: string;
+    remarks?: string;
+  }) => (await apiClient.post("/warehouse-lifecycle/punches", body)).data,
+  decommissions: async () => (await apiClient.get("/warehouse-lifecycle/decommissions")).data,
+  createDecommission: async (body: {
+    element_kind: "anode" | "cathode";
+    serial: string;
+    decommission_date: string;
+    reason: string;
+    remarks?: string;
+  }) => (await apiClient.post("/warehouse-lifecycle/decommissions", body)).data,
+  search: async (params: Record<string, string | number | undefined>) =>
+    (await apiClient.get("/warehouse-lifecycle/search", { params })).data,
+};
+
 export type DbArchiveTable = {
   slug: string;
   name: string;
@@ -936,6 +1095,32 @@ export const voltageSyncApi = {
     });
     return followImport(data, onProgress);
   },
+};
+
+// ---------------------------------------------------------------- AriaLims sync (lab analyses)
+export const ariaLimsSyncApi = {
+  getSettings: async (): Promise<T.AriaLimsSyncSettings> =>
+    (await apiClient.get("/arialims-sync/settings")).data,
+  updateSettings: async (
+    payload: Partial<{
+      enabled: boolean;
+      base_url: string | null;
+      username: string | null;
+      password: string;
+      api_token: string;
+      daily_time: string;
+      lookback_days: number;
+      analysis_types: string | null;
+    }>
+  ): Promise<T.AriaLimsSyncSettings> => (await apiClient.put("/arialims-sync/settings", payload)).data,
+  testConnection: async (): Promise<T.AriaLimsTestResult> =>
+    (await apiClient.post("/arialims-sync/test")).data,
+  runNow: async (onProgress?: (progress: ImportProgress) => void): Promise<T.AriaLimsSyncRunResult> => {
+    const { data } = await apiClient.post("/arialims-sync/run");
+    return followImport(data, onProgress);
+  },
+  getCatalog: async (): Promise<{ items: T.AriaLimsCatalogItem[]; contract_ready: boolean }> =>
+    (await apiClient.get("/arialims-sync/catalog")).data,
 };
 
 // ---------------------------------------------------------------- Monitoring / alerts

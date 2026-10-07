@@ -1,16 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
+import { CurrentEfficiencyDataInput, type CeInputMode } from "@/components/domain/current-efficiency-data-input";
 import { currentEfficiencyEntriesApi } from "@/lib/endpoints";
 import { ElectrolyzerCombo, useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
 import { AccessSeveralBox } from "@/components/ui/access-several-box";
+import { LoadingState } from "@/components/ui/spinner";
 import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 
-export default function CurrentEfficiencyPage() {
+function CeBoard() {
   const { t } = useI18n();
   const [from, setFrom] = useState("2006-06-01");
   const [till, setTill] = useState("2016-10-04");
@@ -40,10 +43,10 @@ export default function CurrentEfficiencyPage() {
         const d = r.date ? r.date.slice(0, 10) : "";
         if (from && d && d < from) return false;
         if (till && d && d > till) return false;
-        if (shown.scope === "plant") return r.scope === "plant" || !r.scope_ref;
+        if (shown.scope === "plant") return r.scope === "plant";
         if (shown.scope === "train") return r.scope === "sub_plant";
         if (shown.scope === "electrolyzer") return r.scope === "electrolyzer";
-        if (shown.scope === "group") return r.scope === "group" || Boolean(r.scope_ref && r.scope !== "electrolyzer" && r.scope !== "element");
+        if (shown.scope === "group") return r.scope === "group";
         return r.scope === "element";
       })
       .map((r) => ({
@@ -74,19 +77,20 @@ export default function CurrentEfficiencyPage() {
           <div className="text-[12px] font-bold">{t("menus.dataInput")}</div>
           <div className="mb-2 text-[11px]">{t("menus.ceFromNaoh")}</div>
           <div className="flex flex-wrap gap-1">
-            <AccessBtn className="!w-auto" onClick={() => display("Total Plant", plant, "plant")}>
+            {/* Access Anodische Bilanz → frmTabelleEingabeCE*NaOH */}
+            <AccessBtn className="!w-auto" href="/current-efficiency?form=input-plant">
               {t("menus.totalPlant")}
             </AccessBtn>
-            <AccessBtn className="!w-auto" onClick={() => display("Train", train, "train")}>
+            <AccessBtn className="!w-auto" href="/current-efficiency?form=input-train">
               {t("menus.trains")}
             </AccessBtn>
-            <AccessBtn className="!w-auto" onClick={() => display("Electrolyzers", el, "electrolyzer")}>
+            <AccessBtn className="!w-auto" href="/current-efficiency?form=input-electrolyzer">
               {t("menus.electrolyzers")}
             </AccessBtn>
-            <AccessBtn className="!w-auto" onClick={() => display("Groups", group, "group")}>
+            <AccessBtn className="!w-auto" href="/current-efficiency?form=input-group">
               {t("menus.groups")}
             </AccessBtn>
-            <AccessBtn className="!w-auto" onClick={() => display("Elements", element, "element")}>
+            <AccessBtn className="!w-auto" href="/current-efficiency?form=input-element">
               {t("menus.elements")}
             </AccessBtn>
           </div>
@@ -308,5 +312,29 @@ export default function CurrentEfficiencyPage() {
         />
       ) : null}
     </AccessHub>
+  );
+}
+
+const INPUT_FORMS: Record<string, CeInputMode> = {
+  "input-plant": "plant",
+  "input-train": "train",
+  "input-electrolyzer": "electrolyzer",
+  "input-group": "group",
+  "input-element": "element",
+};
+
+function CurrentEfficiencyPageInner() {
+  const searchParams = useSearchParams();
+  const form = searchParams.get("form") || undefined;
+  const mode = form ? INPUT_FORMS[form] : undefined;
+  if (mode) return <CurrentEfficiencyDataInput mode={mode} />;
+  return <CeBoard />;
+}
+
+export default function CurrentEfficiencyPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <CurrentEfficiencyPageInner />
+    </Suspense>
   );
 }

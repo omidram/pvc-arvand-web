@@ -11,6 +11,14 @@ export type TrainId = "1" | "2";
 
 const LETTER_SET = new Set<string>(TRAIN_LETTERS);
 
+/** Placeholder / legacy tags that must never appear in electrolyzer combos. */
+export const INVALID_ELECTROLYZER_NAMES = new Set(["0", "NO", "REJ", "-", "—", "*", "N/A", "NA", "NONE"]);
+
+export function isValidElectrolyzerName(name: string | null | undefined): boolean {
+  const raw = (name || "").trim().toUpperCase();
+  return Boolean(raw) && !INVALID_ELECTROLYZER_NAMES.has(raw);
+}
+
 /** Canonical UI / plant form: letter then train digit — A1, B2, K2, … */
 export function electrolyzerName(train: TrainId, letter: string): string {
   return `${letter.toUpperCase()}${train}`;
@@ -24,7 +32,7 @@ export function allElectrolyzers(): string[] {
 /** Normalize 1A / A1 / a1 → A1. Leaves non-cell-room names unchanged. */
 export function formatElectrolyzer(name: string | null | undefined): string {
   const raw = (name || "").trim().toUpperCase();
-  if (!raw) return "";
+  if (!raw || !isValidElectrolyzerName(raw)) return "";
   const letterFirst = raw.match(/^([A-HJ-M])([12])$/);
   if (letterFirst) return `${letterFirst[1]}${letterFirst[2]}`;
   const digitFirst = raw.match(/^([12])([A-HJ-M])$/);

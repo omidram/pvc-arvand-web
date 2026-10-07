@@ -3,7 +3,12 @@
 import { useId, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { relationsApi } from "@/lib/endpoints";
-import { compareElectrolyzers, formatElectrolyzer, allElectrolyzers } from "@/lib/plant-topology";
+import {
+  compareElectrolyzers,
+  formatElectrolyzer,
+  allElectrolyzers,
+  isValidElectrolyzerName,
+} from "@/lib/plant-topology";
 import type { FieldDef } from "@/components/ui/resource-form";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +24,7 @@ export function useElectrolyzerNames(extra?: readonly string[]) {
     // Always start from the full cell-room list so combos never collapse to one item
     // (HTML datalist also filters by typed value — use <select> in ElectrolyzerCombo).
     for (const raw of [...allElectrolyzers(), ...(query.data || []), ...(extra || [])]) {
+      if (!isValidElectrolyzerName(raw)) continue;
       const name = formatElectrolyzer(raw);
       if (name) merged.push(name);
     }

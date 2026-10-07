@@ -461,6 +461,34 @@ export interface VoltageReading {
   standardized_voltage: number | null;
 }
 
+/** Access tblEingabeUnElement / frmEingabeUnElement */
+export interface VoltageUnElementInput {
+  id: number;
+  electrolyzer: string | null;
+  position: string | null;
+  date: string | null;
+  time: string | null;
+  total_current: number | null;
+  naoh_pct: number | null;
+  anolyte_temp: number | null;
+  catholyte_temp: number | null;
+  voltage: number | null;
+}
+
+/** Access tblEingabeUnGruppe / frmEingabeUnGruppe */
+export interface VoltageUnGroupInput {
+  id: number;
+  group_nr: string | null;
+  date: string | null;
+  time: string | null;
+  total_current: number | null;
+  naoh_pct: number | null;
+  anolyte_temp: number | null;
+  catholyte_temp: number | null;
+  total_voltage: number | null;
+  element_count: number | null;
+}
+
 export interface CurrentEfficiencyEntry {
   id: number;
   scope: string;
@@ -872,6 +900,54 @@ export interface VoltageSyncRunResult {
   message: string;
   details: Record<string, unknown>[];
   mode?: string | null;
+}
+
+// ---------------------------------------------------------------- AriaLims sync (lab analyses)
+export interface AriaLimsCatalogItem {
+  analysis_type: string;
+  path: string;
+  description: string;
+  status: string;
+}
+
+export interface AriaLimsSyncSettings {
+  id: number;
+  enabled: boolean;
+  base_url: string | null;
+  username: string | null;
+  password_set: boolean;
+  api_token_set: boolean;
+  daily_time: string;
+  lookback_days: number;
+  analysis_types: string | null;
+  last_run_at: string | null;
+  last_run_status: string | null;
+  last_run_message: string | null;
+  next_run_at: string | null;
+  contract_ready: boolean;
+  catalog: AriaLimsCatalogItem[];
+}
+
+export interface AriaLimsSyncRunResult {
+  ok: boolean;
+  mode?: string | null;
+  files_scanned: number;
+  files_applied: number;
+  rows_upserted: number;
+  message: string;
+  details: Record<string, unknown>[];
+  catalog?: AriaLimsCatalogItem[];
+  date_from?: string | null;
+  date_to?: string | null;
+  contract_ready?: boolean;
+}
+
+export interface AriaLimsTestResult {
+  ok: boolean;
+  status_code: number | null;
+  path_tried: string | null;
+  message: string;
+  payload_preview: string | null;
 }
 
 // ---------------------------------------------------------------- Monitoring / alerts

@@ -156,7 +156,22 @@ function patternRoute(name: string): Route {
   if (n.includes("leistungstest") || n.includes("test run")) return { href: "/test-run-results", formKey: "voltage" };
   if (n.includes("unce") || n.includes("un-ce") || n.includes("unce")) return { href: "/un-ce", formKey: "reports" };
   if (n.includes("energieverbrauch") || n.includes("power")) return { href: "/power-consumption", formKey: "statistics" };
-  if (n.includes("diagrammce") || n.includes("tabellece") || n.includes("eingabece") || n.includes("current efficiency")) {
+  if (n.includes("eingabecegesamt") || n.includes("eingabecegesam")) {
+    return { href: "/current-efficiency?form=input-plant", formKey: "voltage" };
+  }
+  if (n.includes("eingabeceteilanlage")) {
+    return { href: "/current-efficiency?form=input-train", formKey: "voltage" };
+  }
+  if (n.includes("eingabeceelektrolyseur")) {
+    return { href: "/current-efficiency?form=input-electrolyzer", formKey: "voltage" };
+  }
+  if (n.includes("eingabecegruppe")) {
+    return { href: "/current-efficiency?form=input-group", formKey: "voltage" };
+  }
+  if (n.includes("eingabeceelement")) {
+    return { href: "/current-efficiency?form=input-element", formKey: "voltage" };
+  }
+  if (n.includes("diagrammce") || n.includes("tabellece") || n.includes("eingabece") || n.includes("current efficiency") || n.includes("anodische bilanz")) {
     return { href: "/current-efficiency", formKey: "voltage" };
   }
   if (n.includes("spc") || n.includes("verteilung") || n.includes("statistik") || n.includes("abweichung") || n.includes("dol")) {

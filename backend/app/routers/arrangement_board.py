@@ -43,18 +43,22 @@ def arrangement_board(
     for the selected electrolyzer, list positions (from arrangement start..end)
     and fill with active Montage/element data when present.
     """
-    # Distinct electrolyzer names from arrangement definitions (and elements as fallback)
+    from ..plant_topology import all_electrolyzers, format_electrolyzer_name, is_valid_electrolyzer_name
+
+    # Distinct electrolyzer names from arrangement definitions (and elements as fallback).
+    # Never offer placeholder tags like 0 / NO / REJ in the combo.
     names = sorted(
         {
-            (r.name or "").strip()
+            format_electrolyzer_name(r.name) or (r.name or "").strip()
             for r in db.query(models.ElectrolyzerArrangement).all()
-            if (r.name or "").strip()
+            if is_valid_electrolyzer_name(r.name)
         }
         | {
-            (r.electrolyzer or "").strip()
+            format_electrolyzer_name(r.electrolyzer) or (r.electrolyzer or "").strip()
             for r in db.query(models.Element.electrolyzer).distinct().all()
-            if (r.electrolyzer or "").strip()
+            if is_valid_electrolyzer_name(r.electrolyzer)
         }
+        | set(all_electrolyzers())
     )
 
     selected = (electrolyzer or "").strip() or (names[0] if names else "")

@@ -8,10 +8,20 @@ from __future__ import annotations
 
 LETTERS = ("A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M")
 
+# Placeholder / legacy tags that must never appear in electrolyzer combos.
+INVALID_ELECTROLYZER_NAMES = frozenset({"0", "NO", "REJ", "-", "—", "*", "N/A", "NA", "NONE"})
+
 RACKS = (
     {"id": "1", "start": 1, "end": 84},
     {"id": "2", "start": 85, "end": 168},
 )
+
+
+def is_valid_electrolyzer_name(name: str | None) -> bool:
+    raw = (name or "").strip().upper()
+    if not raw or raw in INVALID_ELECTROLYZER_NAMES:
+        return False
+    return True
 
 
 def norm_pos(value) -> str:
@@ -69,7 +79,7 @@ def arrangement_name(electrolyzer: str) -> str | None:
 def format_electrolyzer_name(name: str | None) -> str:
     """Normalize A1 / 1A / a1 → A1. Leaves non-cell-room names unchanged."""
     raw = (name or "").strip().upper()
-    if not raw:
+    if not raw or not is_valid_electrolyzer_name(raw):
         return ""
     if len(raw) >= 2 and raw[0] in LETTERS and raw[-1] in {"1", "2"}:
         return f"{raw[0]}{raw[-1]}"

@@ -178,6 +178,7 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
           {initial.last_run_at ? formatDateTime(initial.last_run_at) : t("voltageSync.lastRunNever")}
           {initial.last_run_status ? ` · ${initial.last_run_status}` : ""}
         </div>
+        <div className="mt-0.5 text-xs text-[var(--win-text-dim)]">{t("voltageSync.lastRunHint")}</div>
         {initial.next_run_at ? (
           <div className="mt-1">
             <span className="font-semibold">{t("voltageSync.nextRun")}: </span>

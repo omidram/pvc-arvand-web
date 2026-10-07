@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import inspect, text
 
-from . import alerts_engine, audit, backup_scheduler, models, voltage_sync_scheduler
+from . import alerts_engine, arialims_sync_scheduler, audit, backup_scheduler, models, voltage_sync_scheduler
 from .audit_middleware import AuditMiddleware
 from .auth import INSPECTION_COLLAB_KEYS, require_any_form_access, require_form_access, seed_default_admin
 from .cell_component_names import persist_industrial_names
@@ -40,9 +40,11 @@ from .routers import (
     shutdowns,
     statistics,
     storage as storage_router_module,
+    warehouse_lifecycle as warehouse_lifecycle_router_module,
     users as users_router_module,
     voltage,
     voltage_sync as voltage_sync_router_module,
+    arialims_sync as arialims_sync_router_module,
 )
 
 Base.metadata.create_all(bind=engine)
@@ -242,6 +244,20 @@ def _ensure_voltage_sync_columns() -> None:
 _ensure_voltage_sync_columns()
 
 
+def _ensure_arialims_sync_table() -> None:
+    """Ensure arialims_sync_settings exists (create_all already does; keep for future ALTERs)."""
+    try:
+        tables = set(inspect(engine).get_table_names())
+    except Exception:
+        return
+    if "arialims_sync_settings" in tables:
+        return
+    models.AriaLimsSyncSettings.__table__.create(bind=engine, checkfirst=True)
+
+
+_ensure_arialims_sync_table()
+
+
 def _ensure_assembly_inspection_columns() -> None:
     insp = inspect(engine)
     if "assembly_inspection_reports" not in insp.get_table_names():
@@ -261,7 +277,7 @@ with SessionLocal() as _db:
     persist_industrial_names(_db)
     persist_industrial_reasons(_db)
 
-app = FastAPI(title="Arvand Electrolyzer Management Program", version="1.0.0")
+app = FastAPI(title="Arvand Electrolyzer Management Program", version="1.10")
 
 # Register SQLAlchemy audit listeners (imported for side effects).
 _ = audit
@@ -303,12 +319,14 @@ def _safe_static_file(full_path: str):
 def _start_schedulers() -> None:
     backup_scheduler.init_scheduler_from_db()
     voltage_sync_scheduler.init_scheduler_from_db()
+    arialims_sync_scheduler.init_scheduler_from_db()
 
 
 @app.on_event("shutdown")
 def _stop_schedulers() -> None:
     backup_scheduler.shutdown_scheduler()
     voltage_sync_scheduler.shutdown_scheduler()
+    arialims_sync_scheduler.shutdown_scheduler()
 
 app.add_middleware(
     CORSMiddleware,
@@ -421,12 +439,15 @@ _api(shutdowns.summary_router, dependencies=_perm("shutdowns"))
 # --- Voltage / standardized voltage / current efficiency ---
 _api(voltage.normalizations_router, dependencies=_perm("voltage"))
 _api(voltage.readings_router, dependencies=_perm("voltage"))
+_api(voltage.un_element_inputs_router, dependencies=_perm("voltage"))
+_api(voltage.un_group_inputs_router, dependencies=_perm("voltage"))
 _api(voltage.calc_router, dependencies=_perm("voltage"))
 _api(voltage.current_efficiency_router, dependencies=_perm("voltage"))
 _api(voltage.ce_calc_router, dependencies=_perm("voltage"))
 
 # --- Lagerbestand (Access: frmLagerbestandAnoden/Kathoden/Membranen) ---
 _api(storage_router_module.router)
+_api(warehouse_lifecycle_router_module.router)
 
 # --- Analyses ---
 _api(analyses.router, dependencies=_perm("analyses"))
@@ -449,6 +470,7 @@ _api(db_tables.router)
 # --- Automatic / manual backup ---
 _api(backup_router_module.router, dependencies=_perm("settings"))
 _api(voltage_sync_router_module.router, dependencies=_perm("settings"))
+_api(arialims_sync_router_module.router, dependencies=_perm("settings"))
 # Monitoring uses voltage access (or admin); form_key "monitoring" is for finer grants in Users.
 _api(monitoring_router_module.router, dependencies=_perm("voltage"))
 

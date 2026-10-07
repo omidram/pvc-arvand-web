@@ -429,8 +429,8 @@ export function AccessWorkspace<T extends object>({
   if (!framed) {
     return (
       <div>
+        <div className="access-form-nav access-form-nav-top mb-2">{nav}</div>
         {body}
-        <div className="access-form-nav mt-2">{nav}</div>
       </div>
     );
   }

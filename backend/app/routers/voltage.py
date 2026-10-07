@@ -133,6 +133,26 @@ normalizations_router = build_crud_router(
     default_order="date",
 )
 
+un_element_inputs_router = build_crud_router(
+    model=models.VoltageUnElementInput,
+    read_schema=schemas.VoltageUnElementInputRead,
+    write_schema=schemas.VoltageUnElementInputBase,
+    prefix="/voltage-un-element-inputs",
+    tags=["voltage"],
+    search_fields=["electrolyzer", "position"],
+    default_order="date",
+)
+
+un_group_inputs_router = build_crud_router(
+    model=models.VoltageUnGroupInput,
+    read_schema=schemas.VoltageUnGroupInputRead,
+    write_schema=schemas.VoltageUnGroupInputBase,
+    prefix="/voltage-un-group-inputs",
+    tags=["voltage"],
+    search_fields=["group_nr"],
+    default_order="date",
+)
+
 readings_router = build_crud_router(
     model=models.VoltageReading,
     read_schema=schemas.VoltageReadingRead,
