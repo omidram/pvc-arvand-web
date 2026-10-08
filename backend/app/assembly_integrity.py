@@ -238,19 +238,33 @@ def plan_repairs(db: Session) -> dict:
 
 
 def apply_repairs(db: Session, plan: dict | None = None) -> dict:
-    plan = plan or plan_repairs(db)
-    removed = 0
-    for group in plan["duplicates"]:
-        for element_id in group[1:]:
-            row = db.query(models.Element).filter(models.Element.id == element_id).first()
-            if row is not None:
-                db.delete(row)
-                removed += 1
-    db.flush()
+    """Repeat until clean: closing a copy can make it identical to its twin."""
+    total = {"duplicates_removed": 0, "installations_closed": 0, "positions_padded": 0}
+    for _ in range(5):
+        plan = plan or plan_repairs(db)
+        if not (plan["duplicates"] or plan["superseded"] or plan["padding"]):
+            break
+        for key, value in _apply_once(db, plan).items():
+            total[key] += value
+        plan = None
+    return total
 
+
+def _apply_once(db: Session, plan: dict) -> dict:
+    drop_ids = [element_id for group in plan["duplicates"] for element_id in group[1:]]
+    removed = 0
+    for start in range(0, len(drop_ids), 500):
+        chunk = drop_ids[start : start + 500]
+        removed += (
+            db.query(models.Element)
+            .filter(models.Element.id.in_(chunk))
+            .delete(synchronize_session=False)
+        )
+
+    by_id = {row.id: row for row in db.query(models.Element).all()}
     closed = 0
     for element_id, end in plan["superseded"].items():
-        row = db.query(models.Element).filter(models.Element.id == element_id).first()
+        row = by_id.get(element_id)
         if row is None or not is_open(row):
             continue
         row.disassembly_date = end
@@ -259,7 +273,7 @@ def apply_repairs(db: Session, plan: dict | None = None) -> dict:
 
     padded = 0
     for element_id, value in plan["padding"]:
-        row = db.query(models.Element).filter(models.Element.id == element_id).first()
+        row = by_id.get(element_id)
         if row is not None and row.position != value:
             row.position = value
             padded += 1

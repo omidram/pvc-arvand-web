@@ -266,6 +266,11 @@ function RelationsModal({ onClose }: { onClose: () => void }) {
       );
       queryClient.invalidateQueries({ queryKey: ["elements"] });
     },
+    // The proxy can give up before a long repair finishes on the server: show the real state.
+    onError: () => {
+      void report.refetch();
+      queryClient.invalidateQueries({ queryKey: ["elements"] });
+    },
   });
   const data = report.data;
   const rows: [string, number][] = data
