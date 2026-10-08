@@ -123,7 +123,6 @@ function MembraneDolForm() {
       titleBlue
       backHref="/statistics"
       backLabel={t("statistics.title")}
-      extraButtons={<AccessBtn href="/statistics">{t("statistics.title")}</AccessBtn>}
     >
       {dolQuery.isLoading ? <LoadingState /> : null}
       {dolQuery.isError ? <ErrorState message={(dolQuery.error as Error).message} /> : null}
