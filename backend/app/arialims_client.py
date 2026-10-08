@@ -96,7 +96,7 @@ def _get(cfg: AriaLimsConfig, path: str, query: dict[str, Any] | None = None) ->
     if not base:
         raise AriaLimsNotConfigured("AriaLIMS base URL is not set")
     url = base + (path if path.startswith("/") else f"/{path}")
-    if query:
+    if query:  # (callers may also put the query string in ``path``)
         url += "?" + urllib.parse.urlencode({k: v for k, v in query.items() if v is not None})
     req = urllib.request.Request(url, headers=_build_headers(cfg), method="GET")
     try:
@@ -137,19 +137,28 @@ def _as_day(value: date | datetime) -> str:
 
 def fetch_results(
     cfg: AriaLimsConfig,
-    scid: int,
+    scids: int | list[int],
     date_from: date | datetime,
     date_to: date | datetime,
 ) -> list[dict[str, Any]]:
-    """Results of one sampling point between two dates."""
-    status, payload = _get(
-        cfg,
-        RESULTS_PATH,
-        {"SCIDs": int(scid), "StartTime": _as_day(date_from), "EndTime": _as_day(date_to)},
+    """Results of one or several sampling points between two dates.
+
+    Several SCIDs go in one request as a repeated parameter:
+    ``?SCIDs=938&SCIDs=962&StartTime=…&EndTime=…``.
+    """
+    wanted = [int(s) for s in ([scids] if isinstance(scids, int) else scids)]
+    wanted = list(dict.fromkeys(wanted))
+    base = normalize_base_url(cfg.base_url)
+    if not base:
+        raise AriaLimsNotConfigured("AriaLIMS base URL is not set")
+    query = urllib.parse.urlencode(
+        [("SCIDs", s) for s in wanted] + [("StartTime", _as_day(date_from)), ("EndTime", _as_day(date_to))]
     )
+    status, payload = _get(cfg, f"{RESULTS_PATH}?{query}")
     if not 200 <= status < 300:
         detail = payload if isinstance(payload, str) else json.dumps(payload, ensure_ascii=False) if payload else ""
-        raise RuntimeError(f"AriaLIMS HTTP {status} for SCID {scid}" + (f": {detail[:200]}" if detail else ""))
+        label = f"SCID {wanted[0]}" if len(wanted) == 1 else f"{len(wanted)} SCIDs"
+        raise RuntimeError(f"AriaLIMS HTTP {status} for {label}" + (f": {detail[:200]}" if detail else ""))
     return extract_results(payload)
 
 

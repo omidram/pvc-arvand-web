@@ -1958,6 +1958,10 @@ const en = {
     pointsTitle: "Sampling points (SCID)",
     pointsHelp: "Each SCID is one sampling point in AriaLIMS. Choose the analysis type and where its results belong; use Preview to see what AriaLIMS returns.",
     pointsEmpty: "No sampling points yet.",
+    importPoints: "Import sample-point list (Excel)",
+    importPointsHelp:
+      "Columns SCID, SCNo, Location, UnitID, UnitTag. The electrolyzer is read from SCNo (e.g. 01-Brine- elec. A1 → A1) and the sample kind from UnitTag. Existing points keep their own mapping.",
+    importDone: "Imported: {created} new, {updated} updated, {skipped} skipped.",
     scid: "SCID",
     pointName: "Sampling point",
     pointType: "Analysis type",
@@ -4226,6 +4230,10 @@ const fa: DeepPartialStrings<typeof en> = {
     pointsTitle: "نقاط نمونه‌برداری (SCID)",
     pointsHelp: "هر SCID یک نقطه نمونه‌برداری در AriaLIMS است. نوع آنالیز و مقصد نتایج را انتخاب کنید؛ با «پیش‌نمایش» ببینید AriaLIMS چه برمی‌گرداند.",
     pointsEmpty: "هنوز نقطه نمونه‌برداری‌ای تعریف نشده است.",
+    importPoints: "وارد کردن فهرست نقاط نمونه‌برداری (اکسل)",
+    importPointsHelp:
+      "ستون‌ها: SCID, SCNo, Location, UnitID, UnitTag. الکترولایزر از SCNo خوانده می‌شود (مثلاً 01-Brine- elec. A1 ← A1) و نوع نمونه از UnitTag. نقاط موجود نگاشت خودشان را نگه می‌دارند.",
+    importDone: "وارد شد: {created} جدید، {updated} به‌روزرسانی، {skipped} ردشده.",
     scid: "SCID",
     pointName: "نقطه نمونه‌برداری",
     pointType: "نوع آنالیز",

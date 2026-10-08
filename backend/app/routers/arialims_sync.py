@@ -1,10 +1,11 @@
 """AriaLIMS REST → Analysis samples (sampling points, preview, pull)."""
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from .. import arialims_sync, models, schemas
 from ..arialims_client import ANALYSIS_TYPES, AriaLimsNotConfigured, endpoint_catalog
 from ..database import get_db
+from ..excel_import import read_xlsx
 from ..import_jobs import spawn_import
 
 router = APIRouter(prefix="/arialims-sync", tags=["arialims-sync"])
@@ -118,6 +119,19 @@ def _clean_point(payload: schemas.AriaLimsSamplingPointBase) -> dict:
         str(k).strip(): str(v).strip() for k, v in (data["parameter_map"] or {}).items() if str(k).strip() and str(v).strip()
     }
     return data
+
+
+@router.post("/points/import-xlsx")
+async def import_sampling_points(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    """Load the AriaLIMS sample-point list (SCID, SCNo, Location, UnitID, UnitTag)."""
+    content = await read_xlsx(file)
+    try:
+        entries = arialims_sync.parse_sample_points_xlsx(content)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if not entries:
+        raise HTTPException(status_code=400, detail="No sample points found in the file")
+    return arialims_sync.import_sample_points(db, entries)
 
 
 @router.get("/points", response_model=list[schemas.AriaLimsSamplingPointRead])

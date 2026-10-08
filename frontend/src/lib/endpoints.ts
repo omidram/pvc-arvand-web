@@ -1135,6 +1135,15 @@ export const ariaLimsSyncApi = {
     (await apiClient.post("/arialims-sync/points", payload)).data,
   updatePoint: async (id: number, payload: Omit<T.AriaLimsSamplingPoint, "id">): Promise<T.AriaLimsSamplingPoint> =>
     (await apiClient.put(`/arialims-sync/points/${id}`, payload)).data,
+  importPoints: async (
+    file: File
+  ): Promise<{ created: number; updated: number; total: number; skipped: { scid: number; name: string | null; reason: string }[] }> => {
+    const form = new FormData();
+    form.append("file", file);
+    return (
+      await apiClient.post("/arialims-sync/points/import-xlsx", form, { headers: { "Content-Type": "multipart/form-data" } })
+    ).data;
+  },
   deletePoint: async (id: number): Promise<void> => {
     await apiClient.delete(`/arialims-sync/points/${id}`);
   },

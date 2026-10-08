@@ -35,6 +35,164 @@ VALID_SCOPES = {"element", "group", "sub_plant", "electrolyzer", "total_plant"}
 
 _NUMBER = re.compile(r"^[+-]?\d+(?:[.,]\d+)?(?:[eE][+-]?\d+)?$")
 
+# AriaLIMS analysis name (lower case) → parameter key of the Analysis forms (per-electrolyzer
+# / per-cell / per-train / per-group forms; see routers/analyses.py). A point's own
+# ``parameter_map`` overrides these. Names not listed are stored under the AriaLIMS name.
+DEFAULT_PARAMETER_MAPS: dict[str, dict[str, str]] = {
+    "anolyte": {
+        "ph": "pH An",
+        "nacl": "NaCl An",
+        "naclo3": "NaClO3 An",
+        "na2so4": "Na2SO4 An",
+        "naocl": "NaOCl An",
+        "hcl": "HCl An",
+        "density at 20'c": "density at 20° An",
+        "temperature": "temperature An",
+    },
+    "catholyte": {
+        "naoh": "NaOH",
+        "nacl": "NaCl",
+        "naclo3": "NaClO3",
+        "na2so4": "Na2SO4",
+        "fe": "Fe",
+        "temperature": "temperature",
+    },
+    "pure_brine": {
+        "ph": "pH",
+        "density at 20'c": "density at 20 °C",
+        "nacl": "NaCl Pb",
+        "naclo3": "NaClO3 Pb",
+        "na2co3": "Na2CO3 Pb",
+        "naoh": "NaOH Pb",
+        "na2so4": "Na2SO4 Pb",
+        "naocl": "NaOCl Pb",
+        "hcl": "HCl Pb",
+        "ca+mg": "Ca +Mg",
+        "sio2": "SiO2",
+        "toc": "Organics",
+    },
+    "chlorine_gas": {
+        "cl2 (dry bas.)": "Cl2",
+        "co2": "CO2",
+        "rest gas": "restgas Cl",
+        "o2 (dry bas.)": "O2 Cl",
+        "h2": "H2 Cl",
+        "n2": "N2 Cl",
+        "br": "Br Cl",
+    },
+    "hcl": {"hcl": "HCl", "density at 20'c": "Dichte"},
+}
+
+CL2_CO2_KEY = "Cl2 + CO2 Cl"
+BATCH_SIZE = 30  # SCIDs per request
+
+# "UnitTag" column of the AriaLIMS sample-point list → analysis type.
+UNIT_TAG_TYPES = (
+    ("pure brine", "pure_brine"),
+    ("anolyte", "anolyte"),
+    ("catholyte", "catholyte"),
+    ("cl2", "chlorine_gas"),
+    ("chlorine", "chlorine_gas"),
+    ("hcl", "hcl"),
+)
+_SCNO = re.compile(r"^\s*\d+\s*-\s*.+?\s*-\s*elec\.?\s*([A-Za-z]\d+)\s*$", re.I)
+
+
+def parse_sample_points_xlsx(content: bytes) -> list[dict[str, Any]]:
+    """AriaLIMS sample-point list (SCID, SCNo, Location, UnitID, UnitTag) → point dicts.
+
+    ``SCNo`` ("01-Brine- elec. A1") carries the electrolyzer, ``UnitTag`` the sample kind.
+    """
+    import io
+
+    from openpyxl import load_workbook
+
+    ws = load_workbook(io.BytesIO(content), read_only=True, data_only=True).active
+    rows = list(ws.iter_rows(values_only=True))
+    if not rows:
+        return []
+    header = {str(v or "").strip().lower(): i for i, v in enumerate(rows[0])}
+    for required in ("scid", "scno"):
+        if required not in header:
+            raise ValueError(f"Column '{required.upper()}' not found in the first row")
+    tag_col = header.get("unittag")
+    out: list[dict[str, Any]] = []
+    for row in rows[1:]:
+        try:
+            scid = int(row[header["scid"]])
+        except (TypeError, ValueError):
+            continue
+        scno = str(row[header["scno"]] or "").strip()
+        tag = str(row[tag_col] or "").strip().lower() if tag_col is not None else ""
+        scno_l = scno.lower()
+        analysis_type = next((t for needle, t in UNIT_TAG_TYPES if needle in tag), None) or next(
+            (t for needle, t in UNIT_TAG_TYPES if needle in scno_l), None
+        )
+        match = _SCNO.match(scno)
+        if not analysis_type or not match:
+            out.append({"scid": scid, "name": scno, "error": "Could not read sample kind / electrolyzer from SCNo"})
+            continue
+        out.append(
+            {
+                "scid": scid,
+                "name": scno,
+                "analysis_type": analysis_type,
+                "scope": "electrolyzer",
+                "electrolyzer": match.group(1).upper(),
+            }
+        )
+    return out
+
+
+def import_sample_points(db: Session, entries: list[dict[str, Any]]) -> dict[str, Any]:
+    """Create/update sampling points; keeps a point's own mapping and on/off switch."""
+    created = updated = 0
+    skipped: list[dict[str, Any]] = []
+    for entry in entries:
+        if entry.get("error"):
+            skipped.append({"scid": entry["scid"], "name": entry.get("name"), "reason": entry["error"]})
+            continue
+        point = db.query(models.AriaLimsSamplingPoint).filter(models.AriaLimsSamplingPoint.scid == entry["scid"]).first()
+        if point is None:
+            db.add(models.AriaLimsSamplingPoint(parameter_map={}, enabled=True, **entry))
+            created += 1
+        else:
+            for key in ("name", "analysis_type", "scope", "electrolyzer"):
+                setattr(point, key, entry[key])
+            updated += 1
+    db.commit()
+    return {"created": created, "updated": updated, "skipped": skipped, "total": len(entries)}
+
+
+def _norm_name(name: str) -> str:
+    return re.sub(r"\s+", " ", str(name or "").strip()).lower()
+
+
+def _plant_key(analysis_type: str, key: str) -> str:
+    """The whole-plant forms drop the per-electrolyzer suffixes (" An", " Pb", " Cl")."""
+    if analysis_type == "anolyte":
+        if key == "density at 20° An":
+            return "density at 20°"
+        return key[:-3] if key.endswith(" An") else key
+    if analysis_type == "pure_brine":
+        return key[:-3] if key.endswith(" Pb") else key
+    if analysis_type == "chlorine_gas":
+        if key == "restgas Cl":
+            return "Restgas"
+        return key[:-3] if key.endswith(" Cl") else key
+    return key
+
+
+def mapped_key(analysis_type: str | None, scope: str | None, name: str, custom: dict[str, str]) -> str:
+    """Parameter key an AriaLIMS analysis is stored under."""
+    wanted = _norm_name(name)
+    if wanted in custom:
+        return custom[wanted]
+    key = DEFAULT_PARAMETER_MAPS.get(analysis_type or "", {}).get(wanted)
+    if not key:
+        return str(name).strip()
+    return _plant_key(analysis_type or "", key) if scope == "total_plant" else key
+
 
 def default_settings() -> models.AriaLimsSyncSettings:
     return models.AriaLimsSyncSettings(
@@ -127,10 +285,12 @@ def results_to_samples(
 ) -> list[dict[str, Any]]:
     """Group AriaLIMS result rows into ``AnalysisSample`` field dicts (one per sampling time)."""
     mapping = {
-        str(k).strip().lower(): str(v).strip()
+        _norm_name(k): str(v).strip()
         for k, v in ((point.parameter_map if point else None) or {}).items()
         if str(v).strip()
     }
+    the_type = (point.analysis_type if point else analysis_type) or ""
+    the_scope = (point.scope if point else None) or "total_plant"
     by_time: dict[datetime, dict[str, Any]] = {}
     for row in rows:
         sampled = _sampled_at(row.get("samplingTime") or row.get("samplingtime"))
@@ -139,11 +299,18 @@ def results_to_samples(
             continue
         if window and not (window[0] <= sampled.date() <= window[1]):
             continue
-        key = mapping.get(name.lower()) or name
+        key = mapped_key(the_type, the_scope, name, mapping)
         by_time.setdefault(sampled, {})[key] = _value(row.get("value"))
 
     samples = []
     for sampled, params in sorted(by_time.items()):
+        if the_type == "chlorine_gas":
+            # The Access form has one "Cl2 + CO2" figure; AriaLIMS reports them separately.
+            cl2, co2 = params.get("Cl2"), params.get("CO2")
+            if isinstance(cl2, (int, float)) and isinstance(co2, (int, float)):
+                params[_plant_key("chlorine_gas", CL2_CO2_KEY) if the_scope == "total_plant" else CL2_CO2_KEY] = round(
+                    cl2 + co2, 4
+                )
         samples.append(
             {
                 "analysis_type": point.analysis_type if point else analysis_type,
@@ -258,36 +425,66 @@ def pull_from_arialims(
     if progress:
         progress(0, total)
     failures = 0
-    for idx, point in enumerate(points, start=1):
-        detail: dict[str, Any] = {"scid": point.scid, "name": point.name, "analysis_type": point.analysis_type}
+    done = 0
+    for start_idx in range(0, total, BATCH_SIZE):
+        batch = points[start_idx : start_idx + BATCH_SIZE]
         try:
             # EndTime may be exclusive on the server: ask one day further, filter locally.
-            rows = fetch_results(cfg, point.scid, start, end + timedelta(days=1))
-            samples = results_to_samples(point, rows, window=(start, end))
-            counts = upsert_samples(db, samples)
-            result["rows_upserted"] += counts["created"] + counts["updated"]
-            detail.update(
-                status="ok", received=len(rows), samples=len(samples), created=counts["created"], updated=counts["updated"]
-            )
-            if not point.name:
-                point.name = point_label(rows)
+            rows = fetch_results(cfg, [p.scid for p in batch], start, end + timedelta(days=1))
         except AriaLimsNotConfigured as exc:
             result["message"] = str(exc)
             _mark_run(db, row, status="error", message=result["message"][:480])
             return result
         except Exception as exc:  # noqa: BLE001
-            logger.warning("AriaLIMS SCID %s failed: %s", point.scid, exc)
-            db.rollback()
-            failures += 1
-            detail.update(status="error", error=str(exc)[:300])
-        result["details"].append(detail)
-        if progress:
-            progress(idx, total)
+            logger.warning("AriaLIMS batch of %s SCID(s) failed: %s", len(batch), exc)
+            failures += len(batch)
+            for point in batch:
+                result["details"].append(
+                    {"scid": point.scid, "name": point.name, "analysis_type": point.analysis_type, "status": "error", "error": str(exc)[:300]}
+                )
+            done += len(batch)
+            if progress:
+                progress(done, total)
+            continue
+
+        by_scid: dict[int, list[dict[str, Any]]] = {}
+        for item in rows:
+            try:
+                by_scid.setdefault(int(item.get("scid")), []).append(item)
+            except (TypeError, ValueError):
+                continue
+        for point in batch:
+            detail: dict[str, Any] = {"scid": point.scid, "name": point.name, "analysis_type": point.analysis_type}
+            point_rows = by_scid.get(point.scid, [])
+            try:
+                samples = results_to_samples(point, point_rows, window=(start, end))
+                counts = upsert_samples(db, samples)
+                result["rows_upserted"] += counts["created"] + counts["updated"]
+                detail.update(
+                    status="ok",
+                    received=len(point_rows),
+                    samples=len(samples),
+                    created=counts["created"],
+                    updated=counts["updated"],
+                )
+                if not point.name:
+                    point.name = point_label(point_rows)
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("AriaLIMS SCID %s failed: %s", point.scid, exc)
+                db.rollback()
+                failures += 1
+                detail.update(status="error", error=str(exc)[:300])
+            result["details"].append(detail)
+            done += 1
+            if progress:
+                progress(done, total)
 
     db.commit()
     result["ok"] = failures == 0
+    received = sum(int(d.get("received") or 0) for d in result["details"])
     result["message"] = (
-        f"Updated {result['rows_upserted']} analysis sample(s) from {total - failures}/{total} sampling point(s)."
+        f"Updated {result['rows_upserted']} analysis sample(s) from {total - failures}/{total} sampling point(s) "
+        f"({received} result row(s) received)."
         + ("" if not failures else f" {failures} point(s) failed: see details.")
     )
     _mark_run(db, row, status="success" if failures == 0 else "error", message=result["message"][:480])

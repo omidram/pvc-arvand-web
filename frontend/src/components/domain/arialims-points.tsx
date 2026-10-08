@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Save, Search, Trash2 } from "lucide-react";
+import { Plus, Save, Search, Trash2, Upload } from "lucide-react";
 import { ariaLimsSyncApi } from "@/lib/endpoints";
 import type { AriaLimsPreview, AriaLimsSamplingPoint } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -115,6 +115,22 @@ export function AriaLimsPoints() {
     },
   });
 
+  const [importMessage, setImportMessage] = useState<string | null>(null);
+  const importMutation = useMutation({
+    mutationFn: (file: File) => ariaLimsSyncApi.importPoints(file),
+    onSuccess: (data) => {
+      setImportMessage(
+        t("ariaLimsSync.importDone", {
+          created: String(data.created),
+          updated: String(data.updated),
+          skipped: String(data.skipped.length),
+        })
+      );
+      queryClient.invalidateQueries({ queryKey: ["arialims-points"] });
+    },
+    onError: () => setImportMessage(null),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => ariaLimsSyncApi.deletePoint(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["arialims-points"] }),
@@ -130,7 +146,26 @@ export function AriaLimsPoints() {
     <div className="space-y-4">
       <p className="text-sm text-[var(--win-text-dim)]">{t("ariaLimsSync.pointsHelp")}</p>
 
-      <div className="overflow-x-auto">
+      <div className="flex flex-wrap items-center gap-2 rounded border border-[var(--win-shadow)] p-3">
+        <Upload className="h-4 w-4" />
+        <span className="text-sm font-semibold">{t("ariaLimsSync.importPoints")}</span>
+        <input
+          type="file"
+          accept=".xlsx"
+          disabled={importMutation.isPending}
+          className="text-sm"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) importMutation.mutate(file);
+            e.target.value = "";
+          }}
+        />
+        {importMessage ? <span className="text-sm font-semibold text-green-700">{importMessage}</span> : null}
+        <p className="w-full text-xs text-[var(--win-text-dim)]">{t("ariaLimsSync.importPointsHelp")}</p>
+        {importMutation.isError ? <ErrorState message={(importMutation.error as Error).message} /> : null}
+      </div>
+
+      <div className="max-h-80 overflow-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[var(--win-shadow)] text-start">
