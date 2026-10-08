@@ -250,9 +250,8 @@ def _ensure_arialims_sync_table() -> None:
         tables = set(inspect(engine).get_table_names())
     except Exception:
         return
-    if "arialims_sync_settings" in tables:
-        return
     models.AriaLimsSyncSettings.__table__.create(bind=engine, checkfirst=True)
+    models.AriaLimsSamplingPoint.__table__.create(bind=engine, checkfirst=True)
 
 
 _ensure_arialims_sync_table()

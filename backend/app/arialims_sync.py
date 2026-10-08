@@ -1,15 +1,14 @@
-"""AriaLims → analysis_samples sync (scaffold).
+"""AriaLIMS → analysis_samples sync.
 
-When AriaLims API docs arrive:
-1. Confirm paths in ``arialims_client.ANALYSIS_ENDPOINT_CATALOG``.
-2. Implement ``normalize_sample`` for the real JSON shape.
-3. Remove the ``AriaLimsContractPending`` gate in ``fetch_analysis_page``.
-4. Enable scheduler (mirror voltage_sync_scheduler) if daily pull is required.
+Each configured sampling point (``AriaLimsSamplingPoint``, keyed by SCID) is requested from
+``/api/AriaLIMS/results``. The API returns one row per measured parameter; rows of one point
+that share a ``samplingTime`` become one ``AnalysisSample`` whose ``parameters`` hold
+``{analysis name (or mapped key): value}``.
 """
 from __future__ import annotations
 
-import json
 import logging
+import re
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Callable
 
@@ -17,12 +16,12 @@ from sqlalchemy.orm import Session
 
 from . import models
 from .arialims_client import (
-    ANALYSIS_ENDPOINT_CATALOG,
+    ANALYSIS_TYPES,
     AriaLimsConfig,
-    AriaLimsContractPending,
     AriaLimsNotConfigured,
     endpoint_catalog,
-    fetch_analysis_page,
+    extract_results,
+    fetch_results,
     normalize_base_url,
     test_connection,
 )
@@ -31,8 +30,10 @@ logger = logging.getLogger("pvc_arvand.arialims")
 
 ProgressCb = Callable[[int, int], None] | None
 
-# Access Analyse scopes we may receive from LIMS.
+# Access Analyse scopes a sampling point can feed.
 VALID_SCOPES = {"element", "group", "sub_plant", "electrolyzer", "total_plant"}
+
+_NUMBER = re.compile(r"^[+-]?\d+(?:[.,]\d+)?(?:[eE][+-]?\d+)?$")
 
 
 def default_settings() -> models.AriaLimsSyncSettings:
@@ -41,7 +42,7 @@ def default_settings() -> models.AriaLimsSyncSettings:
         base_url="",
         daily_time="01:00",
         lookback_days=7,
-        analysis_types=",".join(ANALYSIS_ENDPOINT_CATALOG.keys()),
+        analysis_types=",".join(ANALYSIS_TYPES.keys()),
     )
 
 
@@ -68,9 +69,9 @@ def config_from_settings(row: models.AriaLimsSyncSettings) -> AriaLimsConfig:
 def selected_analysis_types(row: models.AriaLimsSyncSettings) -> list[str]:
     raw = (row.analysis_types or "").strip()
     if not raw:
-        return list(ANALYSIS_ENDPOINT_CATALOG.keys())
+        return list(ANALYSIS_TYPES.keys())
     wanted = [p.strip() for p in raw.replace(";", ",").split(",") if p.strip()]
-    return [t for t in wanted if t in ANALYSIS_ENDPOINT_CATALOG]
+    return [t for t in wanted if t in ANALYSIS_TYPES]
 
 
 def date_window(*, end: date | None = None, lookback_days: int = 7, include_today: bool = True) -> tuple[date, date]:
@@ -82,121 +83,133 @@ def date_window(*, end: date | None = None, lookback_days: int = 7, include_toda
     return start_day, end_day
 
 
-def normalize_sample(raw: dict[str, Any], *, analysis_type: str) -> dict[str, Any] | None:
-    """Map one AriaLims JSON row → fields for ``AnalysisSample``.
-
-    Placeholder tolerant mapping — adjust field names when the real API arrives.
-    Expected output keys: analysis_type, scope, electrolyzer, position, group_nr,
-    sub_plant, date (ISO), time, parameters (dict).
-    """
-    if not isinstance(raw, dict):
-        return None
-    # Common aliases we may see from LIMS / Excel-style exports
-    scope = (
-        raw.get("scope")
-        or raw.get("Scope")
-        or raw.get("level")
-        or "electrolyzer"
-    )
-    scope = str(scope).strip().lower().replace(" ", "_")
-    if scope in ("plant", "gesamtanlage", "total"):
-        scope = "total_plant"
-    if scope in ("train", "teilanlage", "subplant"):
-        scope = "sub_plant"
-    if scope not in VALID_SCOPES:
-        scope = "electrolyzer"
-
-    dt_raw = raw.get("date") or raw.get("Date") or raw.get("samplingDate") or raw.get("SamplingTime")
-    time_raw = raw.get("time") or raw.get("Time") or raw.get("samplingTime")
-    date_iso: str | None = None
-    if isinstance(dt_raw, datetime):
-        date_iso = dt_raw.date().isoformat()
-        if not time_raw:
-            time_raw = dt_raw.strftime("%H:%M")
-    elif isinstance(dt_raw, date):
-        date_iso = dt_raw.isoformat()
-    elif isinstance(dt_raw, str) and dt_raw.strip():
-        text = dt_raw.strip().replace("Z", "+00:00")
+def _value(raw: Any) -> Any:
+    """'1.32' → 1.32; text such as '<0.1' stays text."""
+    if isinstance(raw, (int, float)):
+        return raw
+    text = str(raw).strip() if raw is not None else ""
+    if _NUMBER.match(text):
         try:
-            parsed = datetime.fromisoformat(text)
-            date_iso = parsed.date().isoformat()
-            if not time_raw and "T" in text:
-                time_raw = parsed.strftime("%H:%M")
+            return float(text.replace(",", "."))
         except ValueError:
-            date_iso = text[:10]
+            return text
+    return text
 
-    params = raw.get("parameters") or raw.get("Parameters") or raw.get("results") or {}
-    if not isinstance(params, dict):
-        params = {}
-    # Flatten numeric top-level analyte keys into parameters
-    skip = {
-        "date", "Date", "time", "Time", "scope", "Scope", "level",
-        "electrolyzer", "Electrolyzer", "position", "Position",
-        "group", "group_nr", "Group", "sub_plant", "Train", "parameters",
-        "results", "id", "Id", "analysis_type", "type",
+
+def _sampled_at(raw: Any) -> datetime | None:
+    text = str(raw or "").strip().replace("Z", "+00:00")
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        try:
+            parsed = datetime.fromisoformat(text[:10])
+        except ValueError:
+            return None
+    return parsed.replace(tzinfo=None)
+
+
+def point_label(rows: list[dict[str, Any]]) -> str | None:
+    for row in rows:
+        name = str(row.get("scno") or "").strip()
+        if name:
+            return name
+    return None
+
+
+def results_to_samples(
+    point: models.AriaLimsSamplingPoint | None,
+    rows: list[dict[str, Any]],
+    *,
+    analysis_type: str | None = None,
+    window: tuple[date, date] | None = None,
+) -> list[dict[str, Any]]:
+    """Group AriaLIMS result rows into ``AnalysisSample`` field dicts (one per sampling time)."""
+    mapping = {
+        str(k).strip().lower(): str(v).strip()
+        for k, v in ((point.parameter_map if point else None) or {}).items()
+        if str(v).strip()
     }
-    for key, value in raw.items():
-        if key in skip:
+    by_time: dict[datetime, dict[str, Any]] = {}
+    for row in rows:
+        sampled = _sampled_at(row.get("samplingTime") or row.get("samplingtime"))
+        name = str(row.get("analysisname") or "").strip()
+        if sampled is None or not name:
             continue
-        if isinstance(value, (int, float, str)) and value != "":
-            params.setdefault(key, value)
+        if window and not (window[0] <= sampled.date() <= window[1]):
+            continue
+        key = mapping.get(name.lower()) or name
+        by_time.setdefault(sampled, {})[key] = _value(row.get("value"))
 
-    return {
-        "analysis_type": analysis_type,
-        "scope": scope,
-        "electrolyzer": raw.get("electrolyzer") or raw.get("Electrolyzer") or raw.get("unit"),
-        "position": raw.get("position") or raw.get("Position"),
-        "group_nr": raw.get("group_nr") or raw.get("group") or raw.get("Group"),
-        "sub_plant": raw.get("sub_plant") or raw.get("train") or raw.get("Train"),
-        "date": date_iso,
-        "time": str(time_raw).strip() if time_raw else None,
-        "parameters": params,
-        "external_id": raw.get("id") or raw.get("sampleId") or raw.get("SampleId"),
-    }
+    samples = []
+    for sampled, params in sorted(by_time.items()):
+        samples.append(
+            {
+                "analysis_type": point.analysis_type if point else analysis_type,
+                "scope": (point.scope if point else None) or "total_plant",
+                "electrolyzer": point.electrolyzer if point else None,
+                "position": point.position if point else None,
+                "group_nr": point.group_nr if point else None,
+                "sub_plant": point.sub_plant if point else None,
+                "date": sampled.date().isoformat(),
+                "time": sampled.strftime("%H:%M"),
+                "parameters": params,
+            }
+        )
+    return samples
 
 
-def upsert_samples(db: Session, samples: list[dict[str, Any]]) -> int:
-    """Insert normalized samples. Dedup by type+scope+date+time+electrolyzer+position when possible."""
-    created = 0
+def upsert_samples(db: Session, samples: list[dict[str, Any]]) -> dict[str, int]:
+    """Insert samples; a sample for the same point and moment gets its parameters merged."""
+    created = updated = 0
     for sample in samples:
-        if not sample:
+        if not sample or not sample.get("analysis_type"):
             continue
-        dt = None
+        day = None
         if sample.get("date"):
             try:
-                dt = datetime.fromisoformat(str(sample["date"])[:10])
+                day = datetime.fromisoformat(str(sample["date"])[:10])
             except ValueError:
-                dt = None
-        q = db.query(models.AnalysisSample).filter(
-            models.AnalysisSample.analysis_type == sample["analysis_type"],
-            models.AnalysisSample.scope == sample.get("scope") or "electrolyzer",
-            models.AnalysisSample.date == dt,
-            models.AnalysisSample.time == sample.get("time"),
-            models.AnalysisSample.electrolyzer == sample.get("electrolyzer"),
-            models.AnalysisSample.position == sample.get("position"),
+                day = None
+        scope = sample.get("scope") or "total_plant"
+        existing = (
+            db.query(models.AnalysisSample)
+            .filter(
+                models.AnalysisSample.analysis_type == sample["analysis_type"],
+                models.AnalysisSample.scope == scope,
+                models.AnalysisSample.date == day,
+                models.AnalysisSample.time == sample.get("time"),
+                models.AnalysisSample.electrolyzer == sample.get("electrolyzer"),
+                models.AnalysisSample.position == sample.get("position"),
+                models.AnalysisSample.group_nr == sample.get("group_nr"),
+                models.AnalysisSample.sub_plant == sample.get("sub_plant"),
+            )
+            .first()
         )
-        existing = q.first()
+        incoming = sample.get("parameters") or {}
         if existing:
-            existing.parameters = sample.get("parameters") or existing.parameters or {}
-            existing.group_nr = sample.get("group_nr") or existing.group_nr
-            existing.sub_plant = sample.get("sub_plant") or existing.sub_plant
+            merged = {**(existing.parameters or {}), **incoming}
+            if merged != (existing.parameters or {}):
+                existing.parameters = merged
+                updated += 1
             continue
         db.add(
             models.AnalysisSample(
                 analysis_type=sample["analysis_type"],
-                scope=sample.get("scope") or "electrolyzer",
+                scope=scope,
                 electrolyzer=sample.get("electrolyzer"),
                 position=sample.get("position"),
                 group_nr=sample.get("group_nr"),
                 sub_plant=sample.get("sub_plant"),
-                date=dt,
+                date=day,
                 time=sample.get("time"),
-                parameters=sample.get("parameters") or {},
+                parameters=incoming,
             )
         )
         created += 1
     db.commit()
-    return created
+    return {"created": created, "updated": updated}
 
 
 def pull_from_arialims(
@@ -206,10 +219,10 @@ def pull_from_arialims(
     include_today: bool = True,
     progress: ProgressCb = None,
 ) -> dict[str, Any]:
-    """Orchestrate a pull. Returns structured status; does not raise for pending contract."""
+    """Pull every enabled sampling point. One failing point does not stop the others."""
     row = row or get_or_create_settings(db)
     cfg = config_from_settings(row)
-    types = selected_analysis_types(row)
+    types = set(selected_analysis_types(row))
     start, end = date_window(lookback_days=row.lookback_days or 7, include_today=include_today)
 
     result: dict[str, Any] = {
@@ -223,65 +236,62 @@ def pull_from_arialims(
         "catalog": endpoint_catalog(),
         "date_from": start.isoformat(),
         "date_to": end.isoformat(),
-        "contract_ready": False,
+        "contract_ready": True,
     }
 
     if not cfg.base_url:
-        result["message"] = "AriaLims base URL is not configured (Settings → AriaLims Sync)."
+        result["message"] = "AriaLIMS base URL is not configured (Settings → AriaLims Sync)."
         _mark_run(db, row, status="error", message=result["message"])
         return result
 
-    total = max(len(types), 1)
+    points = [
+        p
+        for p in db.query(models.AriaLimsSamplingPoint).order_by(models.AriaLimsSamplingPoint.scid).all()
+        if p.enabled and p.analysis_type in types
+    ]
+    if not points:
+        result["message"] = "No sampling points configured. Add the SCIDs to pull under Settings → AriaLims Sync."
+        _mark_run(db, row, status="error", message=result["message"])
+        return result
+
+    total = len(points)
     if progress:
         progress(0, total)
-
-    try:
-        # Prove wiring by attempting the first type; expect ContractPending until docs arrive.
-        for idx, analysis_type in enumerate(types, start=1):
-            try:
-                payload = fetch_analysis_page(
-                    cfg,
-                    analysis_type,
-                    date_from=start,
-                    date_to=end,
-                    cursor=row.sync_cursor,
-                )
-            except AriaLimsContractPending as pending:
-                result["message"] = str(pending)
-                result["details"].append({"analysis_type": analysis_type, "status": "pending_contract"})
-                _mark_run(db, row, status="pending", message=result["message"][:480])
-                if progress:
-                    progress(total, total)
-                return result
-            except AriaLimsNotConfigured as exc:
-                result["message"] = str(exc)
-                _mark_run(db, row, status="error", message=result["message"][:480])
-                return result
-
-            items = []
-            if isinstance(payload, dict):
-                items = payload.get("items") or payload.get("data") or payload.get("results") or []
-            elif isinstance(payload, list):
-                items = payload
-            normalized = [n for n in (normalize_sample(item, analysis_type=analysis_type) for item in items) if n]
-            upserted = upsert_samples(db, normalized)
-            result["rows_upserted"] += upserted
-            result["details"].append(
-                {"analysis_type": analysis_type, "status": "ok", "received": len(items), "upserted": upserted}
+    failures = 0
+    for idx, point in enumerate(points, start=1):
+        detail: dict[str, Any] = {"scid": point.scid, "name": point.name, "analysis_type": point.analysis_type}
+        try:
+            # EndTime may be exclusive on the server: ask one day further, filter locally.
+            rows = fetch_results(cfg, point.scid, start, end + timedelta(days=1))
+            samples = results_to_samples(point, rows, window=(start, end))
+            counts = upsert_samples(db, samples)
+            result["rows_upserted"] += counts["created"] + counts["updated"]
+            detail.update(
+                status="ok", received=len(rows), samples=len(samples), created=counts["created"], updated=counts["updated"]
             )
-            if progress:
-                progress(idx, total)
+            if not point.name:
+                point.name = point_label(rows)
+        except AriaLimsNotConfigured as exc:
+            result["message"] = str(exc)
+            _mark_run(db, row, status="error", message=result["message"][:480])
+            return result
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("AriaLIMS SCID %s failed: %s", point.scid, exc)
+            db.rollback()
+            failures += 1
+            detail.update(status="error", error=str(exc)[:300])
+        result["details"].append(detail)
+        if progress:
+            progress(idx, total)
 
-        result["ok"] = True
-        result["contract_ready"] = True
-        result["message"] = f"Upserted {result['rows_upserted']} analysis sample(s) from AriaLims."
-        _mark_run(db, row, status="success", message=result["message"][:480])
-        return result
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("AriaLims pull failed")
-        result["message"] = str(exc)
-        _mark_run(db, row, status="error", message=result["message"][:480])
-        return result
+    db.commit()
+    result["ok"] = failures == 0
+    result["message"] = (
+        f"Updated {result['rows_upserted']} analysis sample(s) from {total - failures}/{total} sampling point(s)."
+        + ("" if not failures else f" {failures} point(s) failed: see details.")
+    )
+    _mark_run(db, row, status="success" if failures == 0 else "error", message=result["message"][:480])
+    return result
 
 
 def _mark_run(db: Session, row: models.AriaLimsSyncSettings, *, status: str, message: str) -> None:
@@ -291,21 +301,55 @@ def _mark_run(db: Session, row: models.AriaLimsSyncSettings, *, status: str, mes
     db.commit()
 
 
-def ping(row: models.AriaLimsSyncSettings) -> dict[str, Any]:
-    return test_connection(config_from_settings(row))
+def ping(db: Session, row: models.AriaLimsSyncSettings) -> dict[str, Any]:
+    probe = (
+        db.query(models.AriaLimsSamplingPoint)
+        .filter(models.AriaLimsSamplingPoint.enabled.is_(True))
+        .order_by(models.AriaLimsSamplingPoint.scid)
+        .first()
+    )
+    return test_connection(config_from_settings(row), probe.scid if probe else None)
 
 
-def apply_manual_payload(db: Session, payload: dict[str, Any] | list[Any], *, analysis_type: str) -> dict[str, Any]:
-    """Dev helper: ingest a pasted JSON payload shaped like the future AriaLims response."""
-    if analysis_type not in ANALYSIS_ENDPOINT_CATALOG:
+def preview_point(db: Session, row: models.AriaLimsSyncSettings, scid: int, days: int = 7) -> dict[str, Any]:
+    """Fetch one SCID without saving: what the API returns and how it would be grouped."""
+    start, end = date_window(lookback_days=days, include_today=True)
+    rows = fetch_results(config_from_settings(row), scid, start, end + timedelta(days=1))
+    point = db.query(models.AriaLimsSamplingPoint).filter(models.AriaLimsSamplingPoint.scid == scid).first()
+    in_window = [r for r in rows if (s := _sampled_at(r.get("samplingTime"))) and start <= s.date() <= end]
+    units: dict[str, str] = {}
+    for r in rows:
+        name = str(r.get("analysisname") or "").strip()
+        if name:
+            units.setdefault(name, str(r.get("unitofmeaserment") or r.get("unitofmeasurement") or "").strip())
+    return {
+        "scid": scid,
+        "name": point_label(rows),
+        "date_from": start.isoformat(),
+        "date_to": end.isoformat(),
+        "received": len(rows),
+        "analyses": [{"name": n, "unit": u} for n, u in units.items()],
+        "rows": in_window[:60],
+        "mapped": point is not None,
+    }
+
+
+def apply_manual_payload(db: Session, payload: dict | list, *, analysis_type: str) -> dict[str, Any]:
+    """Ingest a pasted AriaLIMS response (``{"results": [...]}``). Known SCIDs use their mapping,
+    others are stored as ``analysis_type`` for the whole plant."""
+    if analysis_type not in ANALYSIS_TYPES:
         raise ValueError(f"Unsupported analysis_type '{analysis_type}'")
-    items: list[Any]
-    if isinstance(payload, list):
-        items = payload
-    elif isinstance(payload, dict):
-        items = payload.get("items") or payload.get("data") or payload.get("results") or [payload]
-    else:
+    rows = extract_results(payload)
+    if not rows and not isinstance(payload, (dict, list)):
         raise ValueError("JSON must be an object or array")
-    normalized = [n for n in (normalize_sample(item, analysis_type=analysis_type) for item in items if isinstance(item, dict)) if n]
-    upserted = upsert_samples(db, normalized)
-    return {"ok": True, "received": len(items), "upserted": upserted, "analysis_type": analysis_type}
+    by_scid: dict[Any, list[dict[str, Any]]] = {}
+    for item in rows:
+        by_scid.setdefault(item.get("scid"), []).append(item)
+    samples: list[dict[str, Any]] = []
+    for scid, group in by_scid.items():
+        point = None
+        if scid is not None:
+            point = db.query(models.AriaLimsSamplingPoint).filter(models.AriaLimsSamplingPoint.scid == int(scid)).first()
+        samples.extend(results_to_samples(point, group, analysis_type=analysis_type))
+    counts = upsert_samples(db, samples)
+    return {"ok": True, "received": len(rows), "upserted": counts["created"] + counts["updated"], "analysis_type": analysis_type}

@@ -1,4 +1,4 @@
-"""Daily AriaLims pull scheduler (armed when enabled; pull stays gated until API contract)."""
+"""Daily AriaLIMS pull scheduler (runs every enabled sampling point when sync is enabled)."""
 import logging
 
 from apscheduler.schedulers.background import BackgroundScheduler

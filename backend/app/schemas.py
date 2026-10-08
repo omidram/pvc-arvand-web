@@ -245,6 +245,28 @@ class AriaLimsManualIngest(BaseModel):
     payload: dict | list
 
 
+class AriaLimsSamplingPointBase(ORMModel):
+    scid: int = Field(ge=1)
+    name: str | None = None
+    analysis_type: str
+    scope: str = "total_plant"
+    electrolyzer: str | None = None
+    position: str | None = None
+    group_nr: str | None = None
+    sub_plant: str | None = None
+    parameter_map: dict[str, str] = Field(default_factory=dict)
+    enabled: bool = True
+
+
+class AriaLimsSamplingPointRead(AriaLimsSamplingPointBase):
+    id: int
+
+
+class AriaLimsPreviewRequest(BaseModel):
+    scid: int = Field(ge=1)
+    days: int = Field(default=7, ge=1, le=90)
+
+
 # ---------------------------------------------------------------- Monitoring / alerts
 
 class AlertRuleBase(ORMModel):

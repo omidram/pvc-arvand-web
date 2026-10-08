@@ -1130,6 +1130,16 @@ export const ariaLimsSyncApi = {
   },
   getCatalog: async (): Promise<{ items: T.AriaLimsCatalogItem[]; contract_ready: boolean }> =>
     (await apiClient.get("/arialims-sync/catalog")).data,
+  listPoints: async (): Promise<T.AriaLimsSamplingPoint[]> => (await apiClient.get("/arialims-sync/points")).data,
+  createPoint: async (payload: Omit<T.AriaLimsSamplingPoint, "id">): Promise<T.AriaLimsSamplingPoint> =>
+    (await apiClient.post("/arialims-sync/points", payload)).data,
+  updatePoint: async (id: number, payload: Omit<T.AriaLimsSamplingPoint, "id">): Promise<T.AriaLimsSamplingPoint> =>
+    (await apiClient.put(`/arialims-sync/points/${id}`, payload)).data,
+  deletePoint: async (id: number): Promise<void> => {
+    await apiClient.delete(`/arialims-sync/points/${id}`);
+  },
+  preview: async (scid: number, days = 7): Promise<T.AriaLimsPreview> =>
+    (await apiClient.post("/arialims-sync/preview", { scid, days })).data,
 };
 
 // ---------------------------------------------------------------- Monitoring / alerts

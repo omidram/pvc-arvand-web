@@ -157,6 +157,27 @@ class AriaLimsSyncSettings(Base):
     sync_cursor: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class AriaLimsSamplingPoint(Base):
+    """One AriaLIMS sampling point (SCID) and where its results land in the Analysis module.
+
+    The API returns one row per measured parameter for a sampling point; the plant decides
+    which analysis type / scope (and electrolyzer, group, train) a point belongs to.
+    """
+    __tablename__ = "arialims_sampling_points"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    scid: Mapped[int] = mapped_column(Integer, unique=True, index=True)
+    name: Mapped[str | None] = mapped_column(String(200), nullable=True)  # AriaLIMS "scno"
+    analysis_type: Mapped[str] = mapped_column(String(30))
+    scope: Mapped[str] = mapped_column(String(20), default="total_plant")
+    electrolyzer: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    position: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    group_nr: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    sub_plant: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    # {"Content active substance": "NaOH"} — AriaLIMS analysis name → Analysis parameter key.
+    parameter_map: Mapped[dict] = mapped_column(JSON, default=dict)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
 class AlertRule(Base):
     """Configurable warning/danger thresholds for plant monitoring."""
     __tablename__ = "alert_rules"

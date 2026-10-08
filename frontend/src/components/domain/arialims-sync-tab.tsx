@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Save, Play, RefreshCw, Wifi } from "lucide-react";
 import { ariaLimsSyncApi, type ImportProgress } from "@/lib/endpoints";
 import { ImportProgressBar } from "@/components/domain/import-progress";
+import { AriaLimsPoints } from "@/components/domain/arialims-points";
 import type { AriaLimsSyncRunResult, AriaLimsSyncSettings } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -215,6 +216,13 @@ function SyncForm({ initial }: { initial: AriaLimsSyncSettings }) {
           <div className="mt-1 text-xs text-[var(--win-text-dim)]">
             {t("ariaLimsSync.summary", { rows: String(lastResult.rows_upserted) })}
           </div>
+          {lastResult.details
+            .filter((d) => d.status === "error")
+            .map((d) => (
+              <div key={String(d.scid)} className="mt-1 text-xs text-red-700">
+                SCID {String(d.scid)}: {String(d.error)}
+              </div>
+            ))}
         </div>
       ) : null}
     </div>
@@ -243,6 +251,14 @@ export function AriaLimsSyncTab() {
 
   return (
     <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("ariaLimsSync.pointsTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AriaLimsPoints />
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>{t("ariaLimsSync.scheduleTitle")}</CardTitle>

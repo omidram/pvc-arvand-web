@@ -942,6 +942,31 @@ export interface AriaLimsSyncRunResult {
   contract_ready?: boolean;
 }
 
+export interface AriaLimsSamplingPoint {
+  id: number;
+  scid: number;
+  name: string | null;
+  analysis_type: string;
+  scope: string;
+  electrolyzer: string | null;
+  position: string | null;
+  group_nr: string | null;
+  sub_plant: string | null;
+  parameter_map: Record<string, string>;
+  enabled: boolean;
+}
+
+export interface AriaLimsPreview {
+  scid: number;
+  name: string | null;
+  date_from: string;
+  date_to: string;
+  received: number;
+  analyses: { name: string; unit: string }[];
+  rows: Record<string, unknown>[];
+  mapped: boolean;
+}
+
 export interface AriaLimsTestResult {
   ok: boolean;
   status_code: number | null;
