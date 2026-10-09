@@ -23,18 +23,16 @@ Each SCID is one sample point = one electrolyzer + one sample type
 | `results-all-test.json` | Sample response of the API for all test points (used for offline tests). |
 | `results-sample-scid242.json` | Sample response for a single SCID. |
 
-## Setup (after `bash deploy/update.sh`)
+## Setup (after update)
 
-No `.env` change is needed; everything is stored in the database.
+Nothing to configure: on first start after an update the app fills in the Server URL
+(`http://192.168.20.12:8090`), schedule defaults, all analysis types and loads the bundled
+sample-point list (`backend/app/data/ElecSamplePoint.xlsx`, 120 points) once.
 
-1. Log in as admin, open **Settings -> AriaLims Sync**.
-2. Set **Server URL** to `http://192.168.20.12:8090` and save.
-   The VM / Docker host must be able to reach that address (same network).
-3. In **Sampling points** use **Import sample points (Excel)** and choose `ElecSamplePoint.xlsx`.
-   Re-importing is safe (no duplicates, manual mappings are kept).
-4. Click **Test connection**, then **Pull from AriaLims now**.
-5. Optionally enable the schedule (interval / days back).
+1. Restart the backend (Docker: `bash deploy/update.sh`).
+2. Settings -> AriaLims Sync -> **Test connection**.
+3. Enable the daily sync when the test is OK.
 
-Requests are sent in batches of 30 SCIDs. Parameter names are mapped to the
-Analysis form keys by default; unmapped names are stored under the AriaLIMS name
-and can be mapped per point (edit point -> parameter mapping).
+The VM must reach `192.168.20.12:8090`. Parameter names are mapped to Analysis form keys by default;
+unmapped names are stored under the AriaLIMS name and can be mapped per point.
+

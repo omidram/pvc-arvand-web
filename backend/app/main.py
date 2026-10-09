@@ -275,6 +275,12 @@ with SessionLocal() as _db:
     alerts_engine.ensure_default_rules(_db)
     persist_industrial_names(_db)
     persist_industrial_reasons(_db)
+    try:
+        from . import arialims_sync as _arialims_sync
+
+        _arialims_sync.get_or_create_settings(_db)  # default URL + bundled sample points
+    except Exception:  # noqa: BLE001
+        _db.rollback()
 
 app = FastAPI(title="Arvand Electrolyzer Management Program", version="1.10")
 

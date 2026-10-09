@@ -7,9 +7,11 @@ that share a ``samplingTime`` become one ``AnalysisSample`` whose ``parameters``
 """
 from __future__ import annotations
 
+import json
 import logging
 import re
 from datetime import date, datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any, Callable
 
 from sqlalchemy.orm import Session
@@ -194,10 +196,60 @@ def mapped_key(analysis_type: str | None, scope: str | None, name: str, custom: 
     return _plant_key(analysis_type or "", key) if scope == "total_plant" else key
 
 
+DEFAULT_BASE_URL = "http://192.168.20.12:8090"
+BUNDLED_POINTS_XLSX = Path(__file__).resolve().parent / "data" / "ElecSamplePoint.xlsx"
+_SEED_MARKER = "bundled_points_seeded"
+
+
+def _seed_flags(row: models.AriaLimsSyncSettings) -> dict[str, Any]:
+    try:
+        data = json.loads(row.sync_cursor or "{}")
+        return data if isinstance(data, dict) else {}
+    except ValueError:
+        return {}
+
+
+def ensure_defaults(db: Session, row: models.AriaLimsSyncSettings) -> None:
+    """Fill the empty settings and load the bundled sample-point list once, so an update needs no manual setup."""
+    changed = False
+    if not (row.base_url or "").strip():
+        row.base_url = DEFAULT_BASE_URL
+        changed = True
+    if not (row.analysis_types or "").strip():
+        row.analysis_types = ",".join(ANALYSIS_TYPES.keys())
+        changed = True
+    if not (row.daily_time or "").strip():
+        row.daily_time = "01:00"
+        changed = True
+    if not row.lookback_days:
+        row.lookback_days = 7
+        changed = True
+    flags = _seed_flags(row)
+    if not flags.get(_SEED_MARKER):
+        if db.query(models.AriaLimsSamplingPoint).count() == 0 and BUNDLED_POINTS_XLSX.is_file():
+            try:
+                entries = parse_sample_points_xlsx(BUNDLED_POINTS_XLSX.read_bytes())
+                import_sample_points(db, [e for e in entries if not e.get("error")])
+            except Exception:  # noqa: BLE001
+                logger.exception("Could not load the bundled AriaLIMS sample points")
+                db.rollback()
+                if changed:
+                    db.add(row)
+                    db.commit()
+                return
+        flags[_SEED_MARKER] = True
+        row.sync_cursor = json.dumps(flags)
+        changed = True
+    if changed:
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+
+
 def default_settings() -> models.AriaLimsSyncSettings:
     return models.AriaLimsSyncSettings(
         enabled=False,
-        base_url="",
+        base_url=DEFAULT_BASE_URL,
         daily_time="01:00",
         lookback_days=7,
         analysis_types=",".join(ANALYSIS_TYPES.keys()),
@@ -206,12 +258,12 @@ def default_settings() -> models.AriaLimsSyncSettings:
 
 def get_or_create_settings(db: Session) -> models.AriaLimsSyncSettings:
     row = db.query(models.AriaLimsSyncSettings).first()
-    if row:
-        return row
-    row = default_settings()
-    db.add(row)
-    db.commit()
-    db.refresh(row)
+    if not row:
+        row = default_settings()
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+    ensure_defaults(db, row)
     return row
 
 

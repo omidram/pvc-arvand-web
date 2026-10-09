@@ -13,7 +13,10 @@ FRONTEND_OUT = ROOT / "frontend" / "out"
 SEED_DB = BACKEND / "instance" / "pvc_arvand.db"
 ICON = SPECDIR / "pvc-arvand.ico"
 
-datas = [(str(FRONTEND_OUT), "static")]
+datas = [
+    (str(FRONTEND_OUT), "static"),
+    (str(BACKEND / "app" / "data" / "ElecSamplePoint.xlsx"), "app/data"),
+]
 if SEED_DB.is_file():
     datas.append((str(SEED_DB), "seed"))
 

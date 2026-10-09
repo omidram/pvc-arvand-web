@@ -136,6 +136,7 @@ async def import_sampling_points(file: UploadFile = File(...), db: Session = Dep
 
 @router.get("/points", response_model=list[schemas.AriaLimsSamplingPointRead])
 def list_sampling_points(db: Session = Depends(get_db)):
+    _get_or_create(db)  # first call after an update loads the bundled sample-point list
     return db.query(models.AriaLimsSamplingPoint).order_by(models.AriaLimsSamplingPoint.scid).all()
 
 
