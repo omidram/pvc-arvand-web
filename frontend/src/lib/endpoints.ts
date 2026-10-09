@@ -697,7 +697,31 @@ export type ActivityCellShopDay = {
   counts: ActivityCounts;
   distinct_elements: number;
   users: { username: string; counts: ActivityCounts; total: number }[];
-  elements: { element_nr: string; electrolyzer: string | null; position: string | null; actions: string[]; users: string[] }[];
+  electrolyzers: { electrolyzer: string; counts: ActivityCounts; total: number }[];
+  elements: {
+    element_nr: string;
+    electrolyzer: string | null;
+    position: string | null;
+    actions: string[];
+    users: string[];
+    events: { at: string; username: string; metric: string; id: number }[];
+  }[];
+};
+export type ActivityCellShop = {
+  metrics: string[];
+  totals: { counts: ActivityCounts; distinct_elements: number };
+  by_user: { username: string; counts: ActivityCounts; total: number }[];
+  by_electrolyzer: { electrolyzer: string; counts: ActivityCounts; total: number }[];
+  days: ActivityCellShopDay[];
+};
+export type ActivityLabEntry = {
+  label: string;
+  analysis_type: string;
+  sample_time: string;
+  username: string;
+  entered_at: string | null;
+  parameters: number;
+  expected: boolean;
 };
 export type ActivityLabDay = {
   date: string;
@@ -706,13 +730,16 @@ export type ActivityLabDay = {
   entered: number;
   missing: number;
   missing_items: string[];
+  types: { analysis_type: string; expected: number; entered: number; missing: number }[];
+  entries: ActivityLabEntry[];
   users: { username: string; count: number }[];
 };
 export type ActivityLab = {
   source: "sampling_points" | "habitual";
+  filtered: boolean;
   expected_per_day: number;
   summary: { expected: number; entered: number; missing: number; completeness_pct: number | null };
-  missing_by_type: { analysis_type: string; missing: number }[];
+  missing_by_type: { analysis_type: string; expected: number; missing: number }[];
   entered_by_user: { username: string; count: number }[];
   days: ActivityLabDay[];
 };
@@ -725,6 +752,24 @@ export type ActivityInspectionRow = {
   failed?: number;
   incomplete?: number;
 };
+export type ActivityInspectionReport = {
+  id: number;
+  date: string;
+  element_nr: string | null;
+  electrolyzer: string | null;
+  position: string | null;
+  inspector: string;
+  signed: string[];
+  entered_by: string | null;
+  reason?: string;
+  operation_days?: string | null;
+  findings?: string[];
+  status?: "passed" | "failed" | "incomplete";
+  checked?: number;
+  total_checks?: number;
+  failed_checks?: string[];
+  distance?: string | null;
+};
 export type ActivityInspections = {
   note: string;
   inspection_reports: {
@@ -734,6 +779,7 @@ export type ActivityInspections = {
     by_inspector: ActivityInspectionRow[];
     by_reason: { reason: string; count: number }[];
     top_findings: { field: string; count: number }[];
+    reports: ActivityInspectionReport[];
   };
   assembly_reports: {
     total: number;
@@ -743,30 +789,93 @@ export type ActivityInspections = {
     by_day: ActivityInspectionRow[];
     by_inspector: ActivityInspectionRow[];
     top_failed_checks: { check: string; count: number }[];
+    reports: ActivityInspectionReport[];
   };
 };
+export type ActivityWarehouseRow = {
+  date: string;
+  kind: "dispatch" | "receiving" | "purchase" | "punch" | "decommission";
+  number: string | null;
+  company: string | null;
+  items: number;
+  detail: string;
+  status: string | null;
+  users: string[];
+  remarks: string;
+};
+export type ActivityWarehouse = {
+  summary: { kind: string; documents: number; items: number }[];
+  by_user: { username: string; counts: Record<string, number>; total: number }[];
+  rows: ActivityWarehouseRow[];
+};
+export type ActivityEventChange = { field: string; old: string; new: string };
 export type ActivityEvent = {
+  id: number;
   at: string;
   username: string;
+  full_name: string | null;
+  department: string | null;
+  group: string | null;
   metric: string;
+  action: string;
   resource: string;
   resource_id: string | null;
   element_nr: string | null;
   electrolyzer: string | null;
   position: string | null;
   bulk: boolean;
+  target: Record<string, string>;
+  changes: ActivityEventChange[];
+  ip: string | null;
+  path: string | null;
+};
+export type ActivityEventList = {
+  total: number;
+  items: ActivityEvent[];
+  resources: { resource: string; count: number }[];
+  metrics: { metric: string; count: number }[];
+};
+export type ActivityEventFilters = ActivityFilters & {
+  group?: string;
+  metric?: string;
+  resource?: string;
+  q?: string;
+  include_bulk?: boolean;
+  skip?: number;
+  limit?: number;
+};
+export type ActivityUserDetail = {
+  person: ActivityPerson;
+  total: number;
+  bulk: number;
+  active_days: number;
+  by_metric: Record<string, number>;
+  by_resource: { resource: string; count: number }[];
+  hours: number[];
+  days: {
+    date: string;
+    first_at: string | null;
+    last_at: string | null;
+    span_minutes: number;
+    total: number;
+    bulk: number;
+    counts: Record<string, number>;
+    resources: Record<string, number>;
+  }[];
+  logins: { at: string; success: boolean; ip: string | null; agent: string | null }[];
 };
 
 export const activityApi = {
   meta: async (): Promise<ActivityMeta> => (await apiClient.get("/activity/meta")).data,
   summary: async (params: ActivityFilters): Promise<ActivitySummary> => (await apiClient.get("/activity/summary", { params })).data,
-  cellShop: async (params: ActivityFilters): Promise<{ days: ActivityCellShopDay[] }> =>
-    (await apiClient.get("/activity/cell-shop", { params })).data,
+  cellShop: async (params: ActivityFilters): Promise<ActivityCellShop> => (await apiClient.get("/activity/cell-shop", { params })).data,
+  warehouse: async (params: ActivityFilters): Promise<ActivityWarehouse> => (await apiClient.get("/activity/warehouse", { params })).data,
   lab: async (params: ActivityFilters): Promise<ActivityLab> => (await apiClient.get("/activity/lab-compliance", { params })).data,
   inspections: async (params: ActivityFilters): Promise<ActivityInspections> =>
     (await apiClient.get("/activity/inspections", { params })).data,
-  events: async (params: ActivityFilters & { metric?: string; group?: string; limit?: number }): Promise<{ total: number; items: ActivityEvent[] }> =>
-    (await apiClient.get("/activity/events", { params })).data,
+  events: async (params: ActivityEventFilters): Promise<ActivityEventList> => (await apiClient.get("/activity/events", { params })).data,
+  userDetail: async (params: ActivityFilters & { username: string }): Promise<ActivityUserDetail> =>
+    (await apiClient.get("/activity/user-detail", { params })).data,
 };
 
 export type StorageSummary = {

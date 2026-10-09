@@ -284,6 +284,7 @@ def _audit_before_flush(session: Session, _flush_context, _instances) -> None:
                 "summary": f"Created {table}",
                 "after_data": after,
                 "changes": _diff(None, after),
+                "_obj": obj,  # primary key is only known after the flush (see _audit_after_flush)
             },
         )
 
@@ -335,6 +336,21 @@ def _audit_before_flush(session: Session, _flush_context, _instances) -> None:
                 "changes": _diff(before, None),
             },
         )
+
+
+@event.listens_for(Session, "after_flush")
+def _audit_after_flush(session: Session, _flush_context) -> None:
+    """New rows get their primary key during the flush: store it so reports can tell who created which record."""
+    if session.info.get("skip_audit"):
+        return
+    for ev in session.info.get("audit_events", []):
+        obj = ev.pop("_obj", None)
+        if obj is None or ev.get("resource_id"):
+            continue
+        try:
+            ev["resource_id"] = pk_str(obj)
+        except Exception:
+            pass
 
 
 @event.listens_for(Session, "after_commit")
