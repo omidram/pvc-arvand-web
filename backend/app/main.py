@@ -14,6 +14,7 @@ from .config import settings
 from .database import Base, SessionLocal, engine
 from .paths import static_dir
 from .routers import (
+    activity as activity_router_module,
     analyses,
     arrangement_board as arrangement_board_router_module,
     assembly_inspections,
@@ -366,6 +367,8 @@ _api(imports_router_module.router)
 _api(users_router_module.router)
 _api(roles_router_module.router)
 _api(logs_router_module.router)
+# Who did what, per day / week / month (granted per role via the "activity" form key).
+_api(activity_router_module.router, dependencies=_perm("activity"))
 
 # --- Plant configuration / settings ---
 _api(config_router.electrolyzers_router, dependencies=_perm("settings"))

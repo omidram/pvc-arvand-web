@@ -40,6 +40,7 @@ FORM_KEYS: list[str] = [
     "remarks",
     "settings",
     "import_export",
+    "activity",
 ]
 
 # Per-form table fields that can be granted view/edit independently of the

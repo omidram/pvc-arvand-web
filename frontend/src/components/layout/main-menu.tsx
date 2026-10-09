@@ -201,6 +201,7 @@ export function MainMenu() {
             <MenuButton href="/settings" label={t("mainMenu.settings")} allowed={canView("settings")} className="col-start-7 row-start-3" />
             <MenuButton href="/users" label={t("nav.users")} allowed={isAdmin} className="col-start-7 row-start-4" />
             <MenuButton href="/logs" label={t("nav.logs")} allowed={isAdmin} className="col-start-7 row-start-5" />
+            <MenuButton href="/activity" label={t("nav.activity")} allowed={canView("activity")} className="col-start-5 row-start-2" />
             <MenuButton onClick={logout} label={t("mainMenu.exit")} allowed className="col-start-7 row-start-6" />
           </div>
         </section>

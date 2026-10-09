@@ -654,6 +654,121 @@ export const logsApi = {
   get: async (id: number): Promise<T.AuditLog> => (await apiClient.get(`/logs/${id}`)).data,
 };
 
+// ---------------------------------------------------------------- Work activity (who did what)
+
+export type ActivityCounts = Record<string, number>;
+export type ActivityFilters = {
+  date_from?: string;
+  date_to?: string;
+  username?: string;
+  role_id?: number;
+  granularity?: "day" | "week" | "month";
+  calendar?: "gregorian" | "jalali";
+};
+export type ActivityPerson = { username: string; full_name: string | null; department: string | null };
+export type ActivityRow = ActivityPerson & {
+  counts: ActivityCounts;
+  total: number;
+  bulk: number;
+  distinct_elements: number;
+  active_days: number;
+  first_at: string | null;
+  last_at: string | null;
+  period?: string;
+  period_start?: string;
+  period_end?: string;
+};
+export type ActivityMeta = {
+  metrics: { key: string; group: string }[];
+  departments: { id: number; name: string }[];
+  users: { username: string; full_name: string | null; role_id: number | null }[];
+};
+export type ActivitySummary = {
+  date_from: string;
+  date_to: string;
+  metrics: { key: string; group: string }[];
+  rows: ActivityRow[];
+  user_totals: ActivityRow[];
+  period_totals: { period: string; period_start: string; period_end: string; counts: ActivityCounts; users: number; bulk: number }[];
+  inactive_users: ActivityPerson[];
+};
+export type ActivityCellShopDay = {
+  date: string;
+  counts: ActivityCounts;
+  distinct_elements: number;
+  users: { username: string; counts: ActivityCounts; total: number }[];
+  elements: { element_nr: string; electrolyzer: string | null; position: string | null; actions: string[]; users: string[] }[];
+};
+export type ActivityLabDay = {
+  date: string;
+  open: boolean;
+  expected: number;
+  entered: number;
+  missing: number;
+  missing_items: string[];
+  users: { username: string; count: number }[];
+};
+export type ActivityLab = {
+  source: "sampling_points" | "habitual";
+  expected_per_day: number;
+  summary: { expected: number; entered: number; missing: number; completeness_pct: number | null };
+  missing_by_type: { analysis_type: string; missing: number }[];
+  entered_by_user: { username: string; count: number }[];
+  days: ActivityLabDay[];
+};
+export type ActivityInspectionRow = {
+  key: string;
+  reports: number;
+  elements: number;
+  with_findings?: number;
+  passed?: number;
+  failed?: number;
+  incomplete?: number;
+};
+export type ActivityInspections = {
+  note: string;
+  inspection_reports: {
+    total: number;
+    with_findings: number;
+    by_day: ActivityInspectionRow[];
+    by_inspector: ActivityInspectionRow[];
+    by_reason: { reason: string; count: number }[];
+    top_findings: { field: string; count: number }[];
+  };
+  assembly_reports: {
+    total: number;
+    passed: number;
+    failed: number;
+    incomplete: number;
+    by_day: ActivityInspectionRow[];
+    by_inspector: ActivityInspectionRow[];
+    top_failed_checks: { check: string; count: number }[];
+  };
+};
+export type ActivityEvent = {
+  at: string;
+  username: string;
+  metric: string;
+  resource: string;
+  resource_id: string | null;
+  element_nr: string | null;
+  electrolyzer: string | null;
+  position: string | null;
+  bulk: boolean;
+};
+
+export const activityApi = {
+  meta: async (): Promise<ActivityMeta> => (await apiClient.get("/activity/meta")).data,
+  summary: async (params: ActivityFilters): Promise<ActivitySummary> => (await apiClient.get("/activity/summary", { params })).data,
+  cellShop: async (params: ActivityFilters): Promise<{ days: ActivityCellShopDay[] }> =>
+    (await apiClient.get("/activity/cell-shop", { params })).data,
+  lab: async (params: ActivityFilters): Promise<ActivityLab> => (await apiClient.get("/activity/lab-compliance", { params })).data,
+  inspections: async (params: ActivityFilters): Promise<ActivityInspections> =>
+    (await apiClient.get("/activity/inspections", { params })).data,
+  events: async (params: ActivityFilters & { metric?: string; group?: string; limit?: number }): Promise<{ total: number; items: ActivityEvent[] }> =>
+    (await apiClient.get("/activity/events", { params })).data,
+};
+
 export type StorageSummary = {
   counts: { anodes: number; cathodes: number; membranes: number; total: number };
   anodes_by_manufacturer: { manufacturer: string; generation: string; count: number }[];
