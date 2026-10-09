@@ -22,6 +22,13 @@ from .. import models
 from ..database import get_db
 from ..export_utils import export_xlsx
 from ..plant_import import gregorian_to_jalali, jalali_to_gregorian
+from ..plant_topology import is_valid_electrolyzer_name
+
+
+def clean_electrolyzer(value: Any) -> str | None:
+    """Placeholder tags (0 / NO / REJ ...) are not real electrolyzers."""
+    text = str(value).strip() if value is not None else ""
+    return text if text and is_valid_electrolyzer_name(text) else None
 
 router = APIRouter(prefix="/activity", tags=["activity"])
 
@@ -255,6 +262,7 @@ def load_events(db: Session, start: date, end: date, users: set[str] | None = No
     events: list[Event] = []
 
     def add(row: Any, element_nr=None, electrolyzer=None, position=None) -> None:
+        electrolyzer = clean_electrolyzer(electrolyzer)
         changes = getattr(row, "changes", None)
         for metric in _classify(row.resource or "", row.action, changes if isinstance(changes, dict) else None):
             if not row.username and metric == "other":
