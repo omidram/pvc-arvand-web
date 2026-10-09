@@ -91,6 +91,19 @@ def _build_headers(cfg: AriaLimsConfig) -> dict[str, str]:
     return headers
 
 
+def _opener_for(url: str) -> urllib.request.OpenerDirector:
+    """LAN hosts (IP address / short name / .local) never go through the server's HTTP(S)_PROXY.
+
+    A proxy variable inherited from the VM or container would otherwise be asked to resolve
+    an internal address and fail with "Name or service not known".
+    """
+    host = (urlparse(url).hostname or "").lower()
+    is_ip = host.replace(".", "").isdigit() or ":" in host
+    if is_ip or "." not in host or host.endswith((".local", ".lan", ".internal")):
+        return urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    return urllib.request.build_opener()
+
+
 def _get(cfg: AriaLimsConfig, path: str, query: dict[str, Any] | None = None) -> tuple[int, Any]:
     base = normalize_base_url(cfg.base_url)
     if not base:
@@ -100,7 +113,7 @@ def _get(cfg: AriaLimsConfig, path: str, query: dict[str, Any] | None = None) ->
         url += "?" + urllib.parse.urlencode({k: v for k, v in query.items() if v is not None})
     req = urllib.request.Request(url, headers=_build_headers(cfg), method="GET")
     try:
-        with urllib.request.urlopen(req, timeout=cfg.timeout_s) as resp:
+        with _opener_for(url).open(req, timeout=cfg.timeout_s) as resp:
             raw = resp.read()
             status = getattr(resp, "status", 200) or 200
     except urllib.error.HTTPError as exc:
@@ -108,7 +121,16 @@ def _get(cfg: AriaLimsConfig, path: str, query: dict[str, Any] | None = None) ->
         status = exc.code
         logger.warning("AriaLIMS HTTP GET %s -> %s", path, status)
     except urllib.error.URLError as exc:
-        raise RuntimeError(f"AriaLIMS unreachable: {exc.reason}") from exc
+        host = urlparse(url).hostname or url
+        reason = str(exc.reason)
+        hint = ""
+        if "name or service not known" in reason.lower() or "getaddrinfo" in reason.lower() or "-2" in reason or "-3" in reason:
+            hint = (
+                f" — the server could not resolve the host name '{host}'. "
+                "Use the AriaLIMS server IP address (e.g. http://192.168.x.x:8090) instead of a computer name, "
+                "and check there are no spaces or typos in the Base URL."
+            )
+        raise RuntimeError(f"AriaLIMS unreachable ({host}): {reason}{hint}") from exc
     if not raw:
         return status, None
     text = raw.decode("utf-8-sig", "replace")
