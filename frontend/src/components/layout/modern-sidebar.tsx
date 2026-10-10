@@ -61,6 +61,7 @@ const NAV_GROUPS: {
   {
     groupKey: "nav.groupElements",
     items: [
+      { href: "/element-dashboard", labelKey: "nav.elementDashboard", icon: Activity, formKey: "elements" },
       { href: "/elements", labelKey: "nav.elements", icon: Boxes, formKey: "elements" },
       { href: "/inspections", labelKey: "nav.inspections", icon: ClipboardCheck, formKey: "inspections" },
       { href: "/segregation", labelKey: "nav.segregation", icon: SplitSquareVertical, formKey: "elements" },

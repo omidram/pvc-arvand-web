@@ -1026,3 +1026,51 @@ class WhLifecycleEvent(Base):
     ref_id: Mapped[int | None] = mapped_column(Integer)
     details: Mapped[dict | None] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+# ==========================================================================
+# Element (cell) workshop pipeline + management dashboard settings
+# ==========================================================================
+
+
+class ElementShopState(Base):
+    """Where a cell element currently is in the cell-shop pipeline (set from the Element dashboard).
+
+    Only the part the plant data cannot tell is stored here: waiting for disassembly, waiting for
+    assembly, being assembled, waiting for QC, ready to install. In-service / decommissioned /
+    disassembled come from Assembly Data (table ``elements``). A saved state that is older than the
+    element's latest installation event is ignored automatically.
+    """
+
+    __tablename__ = "element_shop_states"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    element_nr: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    stage: Mapped[str] = mapped_column(String(30), index=True)
+    note: Mapped[str | None] = mapped_column(Text)
+    updated_by: Mapped[str | None] = mapped_column(String(100))
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class ElementShopEvent(Base):
+    """Append-only history of shop stage changes."""
+
+    __tablename__ = "element_shop_events"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    element_nr: Mapped[str] = mapped_column(String(50), index=True)
+    from_stage: Mapped[str | None] = mapped_column(String(30))
+    to_stage: Mapped[str] = mapped_column(String(30))
+    note: Mapped[str | None] = mapped_column(Text)
+    user: Mapped[str | None] = mapped_column(String(100))
+    created_at: Mapped[datetime | None] = mapped_column(DateTime, index=True)
+
+
+class ElementDashboardSettings(Base):
+    """Single-row table: lifetime limits (days on line) that drive the end-of-life warnings."""
+
+    __tablename__ = "element_dashboard_settings"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    anode_life_days: Mapped[int | None] = mapped_column(Integer)
+    cathode_life_days: Mapped[int | None] = mapped_column(Integer)
+    membrane_life_days: Mapped[int | None] = mapped_column(Integer)
+    warn_percent: Mapped[int | None] = mapped_column(Integer)  # warn from this % of the limit
+    coating_thickness_min: Mapped[float | None] = mapped_column(Float)  # residual coating % that triggers recoating

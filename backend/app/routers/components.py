@@ -1,6 +1,7 @@
 """Anodes, Cathodes, Membranes + their maintenance / recoating / coating-check sub-records."""
 from .. import models, schemas
 from ..crud import build_crud_router
+from ..relations_sync import serial_hook
 
 # Key data a new anode / cathode must carry (the same lists drive the red * marks in the web forms).
 ANODE_REQUIRED = ["anode_nr", "manufacturer", "coating", "received_date"]
@@ -15,6 +16,7 @@ anodes_router = build_crud_router(
     pk_field="anode_nr",
     search_fields=["anode_nr", "manufacturer", "batch"],
     required_fields=ANODE_REQUIRED,
+    unique_compact=True,
 )
 
 anode_maintenance_router = build_crud_router(
@@ -24,6 +26,7 @@ anode_maintenance_router = build_crud_router(
     prefix="/anode-maintenance",
     tags=["anodes"],
     search_fields=["anode_nr"],
+    after_save=serial_hook("anode", "anode_nr"),
 )
 
 anode_recoating_router = build_crud_router(
@@ -33,6 +36,7 @@ anode_recoating_router = build_crud_router(
     prefix="/anode-recoating",
     tags=["anodes"],
     search_fields=["anode_nr"],
+    after_save=serial_hook("anode", "anode_nr"),
 )
 
 anode_coating_checks_router = build_crud_router(
@@ -42,6 +46,7 @@ anode_coating_checks_router = build_crud_router(
     prefix="/anode-coating-checks",
     tags=["anodes"],
     search_fields=["anode_nr"],
+    after_save=serial_hook("anode", "anode_nr"),
 )
 
 cathodes_router = build_crud_router(
@@ -53,6 +58,7 @@ cathodes_router = build_crud_router(
     pk_field="cathode_nr",
     search_fields=["cathode_nr", "manufacturer", "batch"],
     required_fields=CATHODE_REQUIRED,
+    unique_compact=True,
 )
 
 cathode_maintenance_router = build_crud_router(
@@ -62,6 +68,7 @@ cathode_maintenance_router = build_crud_router(
     prefix="/cathode-maintenance",
     tags=["cathodes"],
     search_fields=["cathode_nr"],
+    after_save=serial_hook("cathode", "cathode_nr"),
 )
 
 cathode_recoating_router = build_crud_router(
@@ -71,6 +78,7 @@ cathode_recoating_router = build_crud_router(
     prefix="/cathode-recoating",
     tags=["cathodes"],
     search_fields=["cathode_nr"],
+    after_save=serial_hook("cathode", "cathode_nr"),
 )
 
 cathode_coating_checks_router = build_crud_router(
@@ -80,6 +88,7 @@ cathode_coating_checks_router = build_crud_router(
     prefix="/cathode-coating-checks",
     tags=["cathodes"],
     search_fields=["cathode_nr"],
+    after_save=serial_hook("cathode", "cathode_nr"),
 )
 
 membranes_router = build_crud_router(
@@ -90,6 +99,7 @@ membranes_router = build_crud_router(
     tags=["membranes"],
     pk_field="membrane_nr",
     search_fields=["membrane_nr", "membrane_type", "batch"],
+    unique_compact=True,
 )
 
 membrane_maintenance_router = build_crud_router(
@@ -99,4 +109,5 @@ membrane_maintenance_router = build_crud_router(
     prefix="/membrane-maintenance",
     tags=["membranes"],
     search_fields=["membrane_nr"],
+    after_save=serial_hook("membrane", "membrane_nr"),
 )

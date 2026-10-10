@@ -59,7 +59,15 @@ export default function CellComponentsPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cell-components"] }),
   });
 
-  const rows = listQuery.data || [];
+  // Part numbers as numbers (141, 142, 146 …), not as text (141, 146, 180, 142).
+  const rows = [...(listQuery.data || [])].sort((a, b) => {
+    const left = String(a.part_nr || "").trim();
+    const right = String(b.part_nr || "").trim();
+    const na = Number(left);
+    const nb = Number(right);
+    if (Number.isFinite(na) && Number.isFinite(nb) && left !== "" && right !== "") return na - nb;
+    return left.localeCompare(right, undefined, { numeric: true, sensitivity: "base" });
+  });
   const elementCount = num(elementNo);
   const spareCount = num(spareNo);
 

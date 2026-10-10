@@ -1722,3 +1722,38 @@ export const fieldOptionsApi = {
     (await apiClient.put(`/field-options/${id}`, { value, apply_to_records: applyToRecords })).data,
   remove: async (id: number): Promise<{ ok: boolean }> => (await apiClient.delete(`/field-options/${id}`)).data,
 };
+
+export const elementDashboardApi = {
+  overview: async (refresh = false): Promise<T.ElementDashOverview> =>
+    (await apiClient.get("/element-dashboard/overview", { params: refresh ? { refresh: true } : undefined })).data,
+  shop: async (params: { state?: string; q?: string; limit?: number; refresh?: boolean }): Promise<T.ShopList> =>
+    (await apiClient.get("/element-dashboard/shop", { params })).data,
+  move: async (payload: {
+    element_nrs: string[];
+    stage: T.ManualElementStage | "clear";
+    note?: string | null;
+  }): Promise<{ moved: string[]; errors: { element_nr: string; error: string }[] }> =>
+    (await apiClient.post("/element-dashboard/shop/move", payload)).data,
+  events: async (elementNr?: string): Promise<T.ShopEvent[]> =>
+    (await apiClient.get("/element-dashboard/shop/events", { params: elementNr ? { element_nr: elementNr } : undefined })).data,
+  parts: async (params: {
+    kind: "anode" | "cathode" | "membrane";
+    where?: string;
+    life?: string;
+    min_dol?: number;
+    max_dol?: number;
+    q?: string;
+    limit?: number;
+  }): Promise<T.PartsResponse> => (await apiClient.get("/element-dashboard/parts", { params })).data,
+  installed: async (): Promise<T.InstalledOverview> => (await apiClient.get("/element-dashboard/installed")).data,
+  coating: async (kind: "anode" | "cathode"): Promise<T.CoatingOverview> =>
+    (await apiClient.get("/element-dashboard/coating", { params: { kind } })).data,
+  settings: async (): Promise<T.ElementDashSettings> => (await apiClient.get("/element-dashboard/settings")).data,
+  saveSettings: async (payload: Partial<T.ElementDashSettings>): Promise<T.ElementDashSettings> =>
+    (await apiClient.put("/element-dashboard/settings", payload)).data,
+  integrity: async (): Promise<T.AuditSummary> => (await apiClient.get("/element-dashboard/integrity")).data,
+  relations: async (refresh = false): Promise<T.AuditReport> =>
+    (await apiClient.get("/element-dashboard/relations", { params: refresh ? { refresh: true } : undefined })).data,
+  repair: async (payload: { mode: "all" | "links" | "fill"; only?: string[] }): Promise<T.AuditRepairResult> =>
+    (await apiClient.post("/element-dashboard/relations/repair", payload)).data,
+};

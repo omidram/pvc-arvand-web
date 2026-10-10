@@ -17,6 +17,7 @@ from ..segregation_enrich import (
     build_latest_element_index,
     enrich_segregation_fields,
 )
+from ..relations_sync import MASTERS, find_master, link_serial
 from ..warehouse import compact_eq, compact_nr
 
 router = APIRouter(prefix="/electrode-segregations", tags=["segregation"])
@@ -244,6 +245,21 @@ def get_segregation(item_id: int, db: Session = Depends(get_db)):
     return obj
 
 
+def _link_master(db: Session, obj: models.ElectrodeSegregation) -> None:
+    """Store the serial with the anode / cathode master's spelling (adding the master when it is new)."""
+    kind = (obj.electrode_kind or "").lower()
+    if kind in ("anode", "cathode"):
+        obj.serial_nr = link_serial(db, kind, obj.serial_nr)
+        return
+    # Unknown kind: take the spelling of whichever master already has this number.
+    for guess in ("anode", "cathode"):
+        hit = find_master(db, guess, obj.serial_nr)
+        if hit is not None:
+            obj.serial_nr = getattr(hit, MASTERS[guess][1])
+            obj.electrode_kind = obj.electrode_kind or guess
+            return
+
+
 @router.post("", response_model=schemas.ElectrodeSegregationRead, status_code=201)
 def create_segregation(payload: schemas.ElectrodeSegregationBase, db: Session = Depends(get_db)):
     data = payload.model_dump()
@@ -261,6 +277,7 @@ def create_segregation(payload: schemas.ElectrodeSegregationBase, db: Session = 
     if not data.get("service_life") and fields.get("service_life"):
         pass  # keep calculated
     obj = models.ElectrodeSegregation(**_row_kwargs(fields))
+    _link_master(db, obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -274,6 +291,7 @@ def update_segregation(item_id: int, payload: schemas.ElectrodeSegregationBase, 
         raise HTTPException(status_code=404, detail="Not found")
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _link_master(db, obj)
     db.commit()
     db.refresh(obj)
     return obj

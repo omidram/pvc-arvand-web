@@ -18,6 +18,7 @@ from ..assembly_integrity import (
     summarize,
 )
 from ..calculations import installation_dol
+from ..relations_sync import find_master, link_group, link_serial
 from ..warehouse import compact_eq, compact_nr, ensure_indexed, import_contractor_repairs, load_compact_index
 from ..crud import build_crud_router
 from ..database import get_db
@@ -94,6 +95,38 @@ def _normalize_position(value: str | None) -> str | None:
     return f"{number:03d}"
 
 
+def _share_with_masters(db: Session, obj: models.Element) -> None:
+    """Blank fields are read from the related tables; blank master fields learn from this installation.
+
+    Order: the actual anode / cathode / membrane first, then the group's definition. Nothing typed is overwritten.
+    """
+    pairs = (
+        ("anode", obj.anode_nr, "coating", "anode_coating"),
+        ("cathode", obj.cathode_nr, "coating", "cathode_coating"),
+        ("membrane", obj.membrane_nr, "membrane_type", "membrane_type"),
+    )
+    for kind, serial, master_field, element_field in pairs:
+        master = find_master(db, kind, serial) if serial else None
+        if master is None:
+            continue
+        master_value = getattr(master, master_field, None)
+        mine = getattr(obj, element_field)
+        if not (mine or "").strip() and (master_value or "").strip():
+            setattr(obj, element_field, master_value)
+        elif (mine or "").strip() and not (master_value or "").strip():
+            setattr(master, master_field, mine)
+    group = (
+        db.query(models.GroupDefinition).filter(models.GroupDefinition.group_nr == obj.group_nr).first()
+        if obj.group_nr
+        else None
+    )
+    if group is not None:
+        for name in ("anode_coating", "cathode_coating", "membrane_type", "gap_mm"):
+            spec = (getattr(group, name) or "").strip()
+            if spec and spec.lower() != "all" and not (getattr(obj, name) or "").strip():
+                setattr(obj, name, spec)
+
+
 def _sync_saved_element(db: Session, obj: models.Element) -> None:
     """Keep DOL and the anode/cathode/membrane masters in step with this installation."""
     if obj.dol_days is None:
@@ -102,9 +135,12 @@ def _sync_saved_element(db: Session, obj: models.Element) -> None:
         )
         if computed is not None:
             obj.dol_days = computed
-    ensure_indexed(db, models.Anode, "anode_nr", obj.anode_nr, None)
-    ensure_indexed(db, models.Cathode, "cathode_nr", obj.cathode_nr, None)
-    ensure_indexed(db, models.Membrane, "membrane_nr", obj.membrane_nr, None, extra={"membrane_type": obj.membrane_type})
+    # Same part, same spelling everywhere: match the masters (ignoring case/spaces), add new ones.
+    obj.anode_nr = link_serial(db, "anode", obj.anode_nr)
+    obj.cathode_nr = link_serial(db, "cathode", obj.cathode_nr)
+    obj.membrane_nr = link_serial(db, "membrane", obj.membrane_nr, extra={"membrane_type": obj.membrane_type})
+    obj.group_nr = link_group(db, obj.group_nr)
+    _share_with_masters(db, obj)
     # A newer installation of the same cell / anode / cathode / membrane ends the earlier one.
     close_superseded_by(db, obj)
 
@@ -645,6 +681,7 @@ group_definitions_router = build_crud_router(
     tags=["elements"],
     pk_field="group_nr",
     required_fields=["group_nr"],
+    unique_compact=True,
     sort_key=lambda row: natural_key(row.group_nr),
 )
 
@@ -709,7 +746,9 @@ def _spares(obj: models.CellComponent) -> schemas.CellComponentRead:
 
 @cell_components_router.get("", response_model=list[schemas.CellComponentRead])
 def list_cell_components(db: Session = Depends(get_db)):
-    return [_spares(o) for o in db.query(models.CellComponent).all()]
+    rows = db.query(models.CellComponent).all()
+    rows.sort(key=lambda o: natural_key(o.part_nr))
+    return [_spares(o) for o in rows]
 
 
 def _apply_industrial_name(obj: models.CellComponent) -> None:

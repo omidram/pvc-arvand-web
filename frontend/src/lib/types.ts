@@ -1159,3 +1159,281 @@ export interface MonitoringSnapshot {
   component_issues: MonitoringComponentIssue[];
   recent_alerts: AlertEvent[];
 }
+
+// ---------------------------------------------------------------------------
+// Element management dashboard
+// ---------------------------------------------------------------------------
+
+export type ElementStage =
+  | "in_service"
+  | "installed"
+  | "decommissioned"
+  | "awaiting_disassembly"
+  | "disassembled"
+  | "awaiting_assembly"
+  | "assembling"
+  | "awaiting_qc"
+  | "ready";
+
+export type ManualElementStage = "awaiting_disassembly" | "awaiting_assembly" | "assembling" | "awaiting_qc" | "ready";
+export type LifeStatus = "ok" | "warning" | "expired" | "unknown";
+
+export interface ElementDashSettings {
+  anode_life_days: number | null;
+  cathode_life_days: number | null;
+  membrane_life_days: number | null;
+  warn_percent: number;
+  coating_thickness_min: number | null;
+}
+
+export interface PipelineItem {
+  element_nr: string;
+  key: string;
+  state: ElementStage;
+  base_state: string;
+  source: "derived" | "manual" | "inspection";
+  electrolyzer: string | null;
+  position: string | null;
+  group_nr: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  membrane_type: string | null;
+  assembly_date: string | null;
+  commissioning_date: string | null;
+  decommissioning_date: string | null;
+  disassembly_date: string | null;
+  decommission_reason: string | null;
+  since: string | null;
+  days_in_state: number | null;
+  dol: number | null;
+  note: string | null;
+  updated_by: string | null;
+}
+
+export interface ShopList {
+  counts: Record<ElementStage | "total", number>;
+  items: PipelineItem[];
+  truncated: boolean;
+}
+
+export interface ShopEvent {
+  id: number;
+  element_nr: string;
+  from_stage: string | null;
+  to_stage: string;
+  note: string | null;
+  user: string | null;
+  at: string | null;
+}
+
+export interface PartsLifeSummary {
+  total: number;
+  installed: number;
+  in_service: number;
+  warehouse: number;
+  warning: number;
+  expired: number;
+  installed_warning: number;
+  installed_expired: number;
+  buckets: Record<string, number>;
+}
+
+export interface LifeBin {
+  label: string;
+  installed: number;
+  warehouse: number;
+}
+
+export interface DashPart {
+  kind: "anode" | "cathode" | "membrane";
+  serial: string;
+  key: string;
+  bucket: string;
+  reason: string;
+  installed: boolean;
+  in_service: boolean;
+  element_nr: string | null;
+  last_element_nr: string | null;
+  electrolyzer: string | null;
+  position: string | null;
+  commissioning_date: string | null;
+  runs: number;
+  total_dol: number | null;
+  coating_dol: number | null;
+  life_limit: number | null;
+  life_pct: number | null;
+  life_status: LifeStatus;
+  life_left: number | null;
+  // electrodes
+  recoat_count?: number;
+  last_coating_return?: string | null;
+  residual_thickness?: number | null;
+  last_check_date?: string | null;
+  coating?: string | null;
+  manufacturer?: string | null;
+  at_coater?: boolean;
+  coater?: string | null;
+  send_no?: string | null;
+  dispatch_date?: string | null;
+  days_away?: number | null;
+  wh_status?: string | null;
+  // membranes
+  membrane_type?: string | null;
+  maintenance_count?: number;
+  reasons?: string[];
+}
+
+export interface PartsResponse {
+  kind: "anode" | "cathode" | "membrane";
+  limit_days: number | null;
+  warn_percent: number;
+  summary: PartsLifeSummary;
+  histogram: LifeBin[];
+  matched: number;
+  items: DashPart[];
+  truncated: boolean;
+}
+
+export interface ElementDashOverview {
+  generated_at: string;
+  capacity: number;
+  counts: Record<ElementStage | "total", number>;
+  in_plant: number;
+  occupancy_pct: number | null;
+  recently_disassembled: number;
+  oldest_waiting: { element_nr: string; state: ElementStage; days_in_state: number | null; since: string | null; note: string | null }[];
+  parts: Record<"anode" | "cathode" | "membrane", { summary: PartsLifeSummary; histogram: LifeBin[] }>;
+  coating: Record<"anode" | "cathode", CoatingSummary>;
+  alerts: { danger: number; warning: number; info: number };
+  by_electrolyzer: { electrolyzer: string; cells: number; capacity: number }[];
+  monthly_flow: { month: string; assembled: number; commissioned: number; decommissioned: number; disassembled: number }[];
+  events: ShopEvent[];
+  settings: ElementDashSettings;
+}
+
+export interface CoatingSummary {
+  pieces: number;
+  recoated_pieces: number;
+  recoat_jobs: number;
+  never_recoated: number;
+  at_coater: number;
+  pending_check: number;
+  candidates: number;
+  installed_due: number;
+  avg_turnaround_days: number | null;
+  max_days_away: number;
+  thin_threshold: number | null;
+}
+
+export interface CoatingOverview {
+  kind: "anode" | "cathode";
+  summary: CoatingSummary;
+  times: { label: string; pieces: number }[];
+  by_year: { year: number; sent: number; returned: number }[];
+  monthly: { month: string; sent: number; returned: number }[];
+  coaters: { coater: string; jobs: number; returned: number; open: number; avg_days: number | null }[];
+  at_coater: DashPart[];
+  pending_check: DashPart[];
+  candidates: DashPart[];
+  installed_due: DashPart[];
+  truncated: boolean;
+  limit: number | null;
+}
+
+export interface InstalledPart {
+  serial: string | null;
+  life_pct: number | null;
+  life_status: LifeStatus;
+  dol: number | null;
+}
+
+export interface InstalledElement {
+  element_nr: string;
+  state: ElementStage;
+  electrolyzer: string | null;
+  position: string | null;
+  group_nr: string | null;
+  commissioning_date: string | null;
+  dol: number | null;
+  days_in_state: number | null;
+  anode: InstalledPart;
+  cathode: InstalledPart;
+  membrane: InstalledPart;
+}
+
+export interface InstalledOverview {
+  summary: {
+    cells: number;
+    in_service: number;
+    anodes: number;
+    cathodes: number;
+    membranes: number;
+    missing: Record<"anode" | "cathode" | "membrane", number>;
+    duplicates: Record<"anode" | "cathode" | "membrane", number>;
+    capacity: number;
+  };
+  duplicates: Record<"anode" | "cathode" | "membrane", string[]>;
+  by_electrolyzer: {
+    electrolyzer: string;
+    cells: number;
+    in_service: number;
+    anodes: number;
+    cathodes: number;
+    membranes: number;
+    capacity: number;
+  }[];
+  elements: InstalledElement[];
+}
+
+export interface AuditRelation {
+  name: string;
+  group: string;
+  label: string;
+  child: string;
+  parent: string;
+  severity: "error" | "warning" | "info";
+  ok_rows: number;
+  spelling_values: number;
+  spelling_rows: number;
+  orphan_values: number;
+  orphan_rows: number;
+  spelling: { value: string; should_be: string; rows: number }[];
+  orphans: { value: string; rows: number }[];
+  fixable: boolean;
+  status: "ok" | "error" | "warning" | "info";
+}
+
+export interface AuditSummary {
+  relations: number;
+  relations_ok: number;
+  relations_with_problems: number;
+  spelling_rows: number;
+  orphan_rows: number;
+  fixable: number;
+  id_links_broken: number;
+  consistency_issues: number;
+}
+
+export interface AuditReport {
+  summary: AuditSummary;
+  relations: AuditRelation[];
+  id_links: {
+    label: string;
+    child: string;
+    parent: string;
+    broken_values: number;
+    broken_rows: number;
+    examples: string[];
+    status: string;
+  }[];
+  consistency: { name: string; label: string; count: number; examples: string[]; status: string; fixable?: boolean }[];
+}
+
+export interface AuditRepairResult {
+  changed: { name: string; label: string; renamed_rows: number; created_masters: number }[];
+  renamed_rows: number;
+  created_masters: number;
+  masters_filled: number;
+  after: AuditSummary;
+}

@@ -29,6 +29,7 @@ from .routers import (
     database as database_router_module,
     db_tables,
     directory as directory_router_module,
+    element_dashboard as element_dashboard_router_module,
     elements,
     imports as imports_router_module,
     inspections,
@@ -495,6 +496,11 @@ _api(voltage_sync_router_module.router, dependencies=_perm("settings"))
 _api(arialims_sync_router_module.router, dependencies=_perm("settings"))
 # Monitoring uses voltage access (or admin); form_key "monitoring" is for finer grants in Users.
 _api(monitoring_router_module.router, dependencies=_perm("voltage"))
+# Element management dashboard: anyone who may see elements, anodes, cathodes, membranes or the warehouse.
+_api(
+    element_dashboard_router_module.router,
+    dependencies=[Depends(require_any_form_access("elements", "anodes", "cathodes", "membranes", "storage"))],
+)
 
 # --- Admin database files / local vs online switch ---
 _api(database_router_module.router)

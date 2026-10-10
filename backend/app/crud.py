@@ -27,6 +27,8 @@ def build_crud_router(
     transform: Callable[[Any], None] | None = None,
     required_fields: list[str] | None = None,
     sort_key: Callable[[Any], Any] | None = None,
+    after_save: Callable[[Session, Any], None] | None = None,
+    unique_compact: bool = False,
 ) -> APIRouter:
     router = APIRouter(prefix=prefix, tags=tags)
     search_fields = search_fields or []
@@ -132,10 +134,24 @@ def build_crud_router(
     def create_item(payload: write_schema, db: Session = Depends(get_db)):
         data = payload.model_dump()
         _check_required(data)
+        if unique_compact:
+            # "UA 123" and "ua123" are the same part: never create it twice.
+            from sqlalchemy import func
+
+            key = "".join(str(data.get(pk_field) or "").split()).upper()
+            clash = (
+                db.query(model).filter(func.replace(func.upper(pk_column), " ", "") == key).first() if key else None
+            )
+            if clash is not None:
+                raise HTTPException(
+                    status_code=409, detail=f"'{getattr(clash, pk_field)}' already exists ({pk_field})."
+                )
         obj = model(**data)
         if prepare:
             prepare(obj)
         db.add(obj)
+        if after_save:
+            after_save(db, obj)  # keeps related tables in step before the commit
         db.commit()
         db.refresh(obj)
         return _read(obj)
@@ -152,6 +168,8 @@ def build_crud_router(
             setattr(obj, key, value)
         if prepare:
             prepare(obj)
+        if after_save:
+            after_save(db, obj)
         db.commit()
         db.refresh(obj)
         return _read(obj)

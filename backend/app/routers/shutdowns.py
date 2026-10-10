@@ -98,9 +98,34 @@ def get_shutdown(nr: int, db: Session = Depends(get_db)):
     return _enrich(obj)
 
 
+def _sync_lookups(db: Session, obj: models.Shutdown) -> None:
+    """A typed cause / category joins the lookup lists (spelling of an existing entry wins)."""
+    cat = (obj.category or "").strip()
+    if cat:
+        hit = next(
+            (c for c in db.query(models.ShutdownCategory).all() if (c.category or "").strip().casefold() == cat.casefold()),
+            None,
+        )
+        if hit is None:
+            db.add(models.ShutdownCategory(category=cat))
+        else:
+            obj.category = hit.category
+    cause = (obj.cause or "").strip()
+    if cause:
+        hit = next(
+            (c for c in db.query(models.ShutdownCause).all() if (c.cause or "").strip().casefold() == cause.casefold()),
+            None,
+        )
+        if hit is None:
+            db.add(models.ShutdownCause(cause=cause, category=obj.category, code=obj.code))
+        else:
+            obj.cause = hit.cause
+
+
 @router.post("", response_model=schemas.ShutdownRead, status_code=201)
 def create_shutdown(payload: schemas.ShutdownBase, db: Session = Depends(get_db)):
     obj = models.Shutdown(**payload.model_dump())
+    _sync_lookups(db, obj)
     db.add(obj)
     db.commit()
     db.refresh(obj)
@@ -114,6 +139,7 @@ def update_shutdown(nr: int, payload: schemas.ShutdownBase, db: Session = Depend
         raise HTTPException(status_code=404, detail="Not found")
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
+    _sync_lookups(db, obj)
     db.commit()
     db.refresh(obj)
     return _enrich(obj)

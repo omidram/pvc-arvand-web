@@ -162,6 +162,12 @@ export function MainMenu() {
               className="col-start-3 row-start-3"
             />
             <MenuButton
+              href="/element-dashboard"
+              label={t("mainMenu.elementDashboard")}
+              allowed={canView("elements") || canView("anodes") || canView("cathodes") || canView("membranes")}
+              className="col-start-3 row-start-4"
+            />
+            <MenuButton
               href="/voltage"
               label={t("mainMenu.standardizedVoltage")}
               allowed={canView("voltage")}

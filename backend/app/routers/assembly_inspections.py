@@ -9,6 +9,7 @@ from ..assembly_inspection_def import ACTIVITY_SECTIONS, empty_check_remarks, em
 from ..assembly_inspection_pdf import assembly_inspection_pdf_response
 from ..crud import build_crud_router
 from ..database import get_db
+from ..relations_sync import link_group, multi_hook
 
 
 def _normalize_checks(raw: dict | None) -> dict[str, bool]:
@@ -35,6 +36,15 @@ def prepare(obj: models.AssemblyInspectionReport) -> None:
     )
 
 
+_link_serials = multi_hook(("anode", "anode_nr"), ("cathode", "cathode_nr"), ("membrane", "membrane_nr"))
+
+
+def _link_related(db: Session, obj: models.AssemblyInspectionReport) -> None:
+    """The checklist names an anode, cathode, membrane and group: use the master spelling (new parts are added)."""
+    _link_serials(db, obj)
+    obj.group_nr = link_group(db, obj.group_nr)
+
+
 router = build_crud_router(
     model=models.AssemblyInspectionReport,
     read_schema=schemas.AssemblyInspectionReportRead,
@@ -44,6 +54,7 @@ router = build_crud_router(
     search_fields=["element_nr", "anode_nr", "cathode_nr", "membrane_nr", "electrolyzer", "group_nr"],
     default_order="assembly_date",
     prepare=prepare,
+    after_save=_link_related,
 )
 
 
