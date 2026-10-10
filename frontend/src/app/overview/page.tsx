@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
+import { ElementReportPanel } from "@/components/domain/element-report-panel";
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
 import {
@@ -63,6 +64,8 @@ export default function OverviewPage() {
         loading={false}
         error={null}
       />
+
+      <ElementReportPanel />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <StatCard label={t("dashboard.electrolyzers")} value={counts.electrolyzers} icon={Factory} accent="cyan" />

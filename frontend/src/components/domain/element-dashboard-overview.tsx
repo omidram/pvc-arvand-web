@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   Boxes,
   CircleCheck,
+  CalendarClock,
   Flame,
   Layers,
   Link2,
@@ -30,6 +31,7 @@ export interface OpenTarget {
   kind?: "anode" | "cathode" | "membrane";
   life?: string;
   where?: string;
+  due?: string;
 }
 
 function Loading({ label }: { label: string }) {
@@ -92,6 +94,7 @@ export function ElementOverviewTab({ onOpen }: { onOpen: (target: OpenTarget) =>
     ready: t("elDash.hint.ready"),
   };
   const endOfLife = (k: "anode" | "cathode" | "membrane") => parts[k].summary.installed_warning + parts[k].summary.installed_expired;
+  const due90 = parts.anode.summary.due_90 + parts.cathode.summary.due_90 + parts.membrane.summary.due_90;
   const atCoater = coating.anode.at_coater + coating.cathode.at_coater;
   const integrityIssues = integrity.data ? integrity.data.relations_with_problems + integrity.data.consistency_issues + integrity.data.id_links_broken : null;
   const shopTotal = counts.awaiting_disassembly + counts.awaiting_assembly + counts.assembling + counts.awaiting_qc + counts.ready;
@@ -148,6 +151,7 @@ export function ElementOverviewTab({ onOpen }: { onOpen: (target: OpenTarget) =>
         <DashKpi label={t("elDash.kpi.anodeEol")} value={formatNumber(endOfLife("anode"), 0)} hint={t("elDash.kpi.eolHint", { expired: parts.anode.summary.installed_expired })} tone={parts.anode.summary.installed_expired ? "danger" : endOfLife("anode") ? "warning" : "ok"} icon={Flame} onClick={() => onOpen({ tab: "parts", kind: "anode", life: "alert", where: "installed" })} />
         <DashKpi label={t("elDash.kpi.cathodeEol")} value={formatNumber(endOfLife("cathode"), 0)} hint={t("elDash.kpi.eolHint", { expired: parts.cathode.summary.installed_expired })} tone={parts.cathode.summary.installed_expired ? "danger" : endOfLife("cathode") ? "warning" : "ok"} icon={Flame} onClick={() => onOpen({ tab: "parts", kind: "cathode", life: "alert", where: "installed" })} />
         <DashKpi label={t("elDash.kpi.membraneEol")} value={formatNumber(endOfLife("membrane"), 0)} hint={t("elDash.kpi.eolHint", { expired: parts.membrane.summary.installed_expired })} tone={parts.membrane.summary.installed_expired ? "danger" : endOfLife("membrane") ? "warning" : "ok"} icon={Flame} onClick={() => onOpen({ tab: "parts", kind: "membrane", life: "alert", where: "installed" })} />
+        <DashKpi label={t("elDash.kpi.due90")} value={formatNumber(due90, 0)} hint={t("elDash.kpi.due90Hint")} tone={due90 ? "warning" : "ok"} icon={CalendarClock} onClick={() => onOpen({ tab: "parts", kind: "anode", life: "all", where: "installed", due: "90" })} />
         <DashKpi label={t("elDash.kpi.atCoater")} value={formatNumber(atCoater, 0)} hint={t("elDash.kpi.atCoaterHint", { anodes: coating.anode.at_coater, cathodes: coating.cathode.at_coater })} tone={atCoater ? "info" : "neutral"} icon={Boxes} onClick={() => onOpen({ tab: "coating" })} />
         <DashKpi label={t("elDash.kpi.toCoat")} value={formatNumber(coating.anode.candidates + coating.cathode.candidates, 0)} hint={t("elDash.kpi.toCoatHint")} tone="warning" icon={AlertTriangle} onClick={() => onOpen({ tab: "coating" })} />
         <DashKpi

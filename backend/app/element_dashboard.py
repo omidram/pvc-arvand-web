@@ -564,6 +564,11 @@ def life_histogram(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
+def _due_within(row: dict[str, Any], days: int) -> bool:
+    left = row.get("life_left")
+    return row["life_status"] in ("ok", "warning") and left is not None and 0 <= left <= days
+
+
 def life_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     installed = [r for r in rows if r["installed"]]
     return {
@@ -575,6 +580,12 @@ def life_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "expired": sum(1 for r in rows if r["life_status"] == "expired"),
         "installed_warning": sum(1 for r in installed if r["life_status"] == "warning"),
         "installed_expired": sum(1 for r in installed if r["life_status"] == "expired"),
+        "installed_ok": sum(1 for r in installed if r["life_status"] == "ok"),
+        "installed_known": sum(1 for r in installed if r["life_status"] != "unknown"),
+        # parts mounted now that will reach the life limit within the next N days (already expired ones are not counted)
+        "due_30": sum(1 for r in installed if _due_within(r, 30)),
+        "due_90": sum(1 for r in installed if _due_within(r, 90)),
+        "due_180": sum(1 for r in installed if _due_within(r, 180)),
         "buckets": {name: sum(1 for r in rows if r["bucket"] == name) for name in BUCKETS},
     }
 

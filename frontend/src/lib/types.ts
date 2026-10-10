@@ -1236,6 +1236,11 @@ export interface PartsLifeSummary {
   expired: number;
   installed_warning: number;
   installed_expired: number;
+  installed_ok: number;
+  installed_known: number;
+  due_30: number;
+  due_90: number;
+  due_180: number;
   buckets: Record<string, number>;
 }
 

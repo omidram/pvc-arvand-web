@@ -9,8 +9,8 @@ import type { DashPart } from "@/lib/types";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatNumber } from "@/lib/utils";
-import { Chips, DashKpi } from "./element-dashboard-ui";
-import { PartsTable } from "./element-dashboard-parts";
+import { Chips, DashKpi, ExportButton } from "./element-dashboard-ui";
+import { PartsTable, partsCsv } from "./element-dashboard-parts";
 
 type Kind = "anode" | "cathode";
 type ListKey = "at_coater" | "pending_check" | "candidates" | "installed_due";
@@ -175,6 +175,21 @@ export function ElementCoatingTab() {
       <section className="mon-panel">
         <h3 className="mon-panel-title">{t(`elDash.coat.list.${list}`)}</h3>
         <p className="mon-sub mb-2">{t(`elDash.coat.listHelp.${list}`)}</p>
+        {rows.length ? (
+          <div className="ed-actionbar">
+            <ExportButton
+              filename={`${kind}-coating-${list}`}
+              header={[...partsCsv(rows, kind, t).header, ...(list === "at_coater" ? [t("elDash.col.coater"), t("elDash.col.sendNo"), t("elDash.col.sentOn"), t("elDash.col.daysAway")] : [t("elDash.col.reasons")])]}
+              rows={() =>
+                partsCsv(rows, kind, t).body.map((line, i) =>
+                  list === "at_coater"
+                    ? [...line, rows[i].coater, rows[i].send_no, rows[i].dispatch_date, rows[i].days_away]
+                    : [...line, (rows[i].reasons ?? []).map((reason) => t(`elDash.reason.${reason}`)).join("; ")]
+                )
+              }
+            />
+          </div>
+        ) : null}
         {rows.length === 0 ? (
           <div className="mon-empty">{t("elDash.coat.emptyList")}</div>
         ) : list === "at_coater" ? (

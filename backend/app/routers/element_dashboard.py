@@ -106,6 +106,7 @@ def list_parts(
     life: str = Query("all", pattern="^(all|ok|warning|expired|alert)$"),
     min_dol: int | None = None,
     max_dol: int | None = None,
+    due_within: int | None = Query(None, ge=0, le=3650),
     q: str | None = None,
     limit: int = Query(1500, ge=1, le=20000),
     db: Session = Depends(get_db),
@@ -130,6 +131,9 @@ def list_parts(
         rows = [r for r in rows if basis(r) is not None and basis(r) >= min_dol]
     if max_dol is not None:
         rows = [r for r in rows if basis(r) is not None and basis(r) <= max_dol]
+    if due_within is not None:
+        # still running, but reaching the life limit inside the next N days
+        rows = [r for r in rows if r["installed"] and svc._due_within(r, due_within)]
     if q:
         needle, squeezed = q.strip().lower(), compact_nr(q)
         rows = [

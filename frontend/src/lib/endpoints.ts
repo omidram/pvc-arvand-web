@@ -1742,6 +1742,7 @@ export const elementDashboardApi = {
     life?: string;
     min_dol?: number;
     max_dol?: number;
+    due_within?: number;
     q?: string;
     limit?: number;
   }): Promise<T.PartsResponse> => (await apiClient.get("/element-dashboard/parts", { params })).data,

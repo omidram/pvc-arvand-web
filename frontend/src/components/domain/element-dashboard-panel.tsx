@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs } from "@/components/ui/tabs";
 import { useI18n } from "@/lib/i18n/context";
 import { ElementCoatingTab } from "./element-dashboard-coating";
@@ -10,12 +11,30 @@ import { ElementOverviewTab, type DashTab, type OpenTarget } from "./element-das
 import { ElementPartsTab } from "./element-dashboard-parts";
 import { ElementShopTab } from "./element-dashboard-shop";
 
+const TABS: DashTab[] = ["overview", "shop", "parts", "installed", "coating", "integrity", "settings"];
+const KINDS = ["anode", "cathode", "membrane"] as const;
+
 /** The element management dashboard: one place for the whole life cycle of cells, anodes, cathodes and membranes. */
 export function ElementDashboardPanel() {
   const { t } = useI18n();
-  const [tab, setTab] = useState<DashTab>("overview");
+  const params = useSearchParams();
+  // Links from the Main Menu report open a tab with its filter already set: ?tab=shop&stage=ready
+  const fromUrl = ((): OpenTarget => {
+    const tab = params.get("tab");
+    if (!tab || !TABS.includes(tab as DashTab)) return { tab: "overview" };
+    const kind = params.get("kind");
+    return {
+      tab: tab as DashTab,
+      stage: params.get("stage") ?? undefined,
+      kind: KINDS.find((k) => k === kind),
+      life: params.get("life") ?? undefined,
+      where: params.get("where") ?? undefined,
+      due: params.get("due") ?? undefined,
+    };
+  })();
+  const [tab, setTab] = useState<DashTab>(fromUrl.tab);
   // A card on the overview opens another tab with its filter already set; the key remounts that tab so it starts from it.
-  const [target, setTarget] = useState<OpenTarget>({ tab: "overview" });
+  const [target, setTarget] = useState<OpenTarget>(fromUrl);
   const [nonce, setNonce] = useState(0);
 
   function open(next: OpenTarget) {
@@ -38,7 +57,7 @@ export function ElementDashboardPanel() {
         {
           key: "parts",
           label: t("elDash.tab.parts"),
-          content: <ElementPartsTab key={`parts-${nonce}`} initial={target.tab === "parts" ? { kind: target.kind, life: target.life, where: target.where } : undefined} />,
+          content: <ElementPartsTab key={`parts-${nonce}`} initial={target.tab === "parts" ? { kind: target.kind, life: target.life, where: target.where, due: target.due } : undefined} />,
         },
         { key: "installed", label: t("elDash.tab.installed"), content: <ElementInstalledTab /> },
         { key: "coating", label: t("elDash.tab.coating"), content: <ElementCoatingTab /> },

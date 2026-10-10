@@ -2,37 +2,114 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Boxes, Flame, Layers, ShieldAlert, Timer } from "lucide-react";
+import { ArrowDown, ArrowUp, Boxes, CalendarClock, Flame, Layers, ShieldAlert, Timer } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { elementDashboardApi } from "@/lib/endpoints";
 import type { DashPart } from "@/lib/types";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatNumber } from "@/lib/utils";
-import { Chips, DashKpi, Days, LifeBadge, LifeBar } from "./element-dashboard-ui";
+import { Chips, DashKpi, Days, ExportButton, LifeBadge, LifeBar } from "./element-dashboard-ui";
 
 type Kind = "anode" | "cathode" | "membrane";
+
+type SortKey = "serial" | "where" | "commissioned" | "dol" | "total" | "life" | "left" | "recoats" | "coating";
+
+function sortValue(r: DashPart, key: SortKey, electrode: boolean): string | number | null {
+  switch (key) {
+    case "serial":
+      return r.serial;
+    case "where":
+      return r.installed ? `0-${r.element_nr ?? ""}` : r.at_coater ? "1" : `2-${r.bucket}`;
+    case "commissioned":
+      return r.commissioning_date;
+    case "dol":
+      return electrode ? r.coating_dol : r.total_dol;
+    case "total":
+      return r.total_dol;
+    case "life":
+      return r.life_pct;
+    case "left":
+      return r.life_left;
+    case "recoats":
+      return r.recoat_count ?? 0;
+    case "coating":
+      return r.last_coating_return ?? null;
+  }
+}
+
+export function partsCsv(rows: DashPart[], kind: Kind, t: (key: string, vars?: Record<string, string | number>) => string) {
+  const electrode = kind !== "membrane";
+  const header = [
+    t(`elDash.col.${kind}`),
+    t("elDash.col.element"),
+    t("elDash.col.electrolyzer"),
+    t("elDash.col.where"),
+    t("elDash.col.commissioned"),
+    t("elDash.col.dol"),
+    t("elDash.col.totalDol"),
+    t("elDash.col.life"),
+    t("elDash.col.status"),
+    t("elDash.col.daysLeft"),
+    electrode ? t("elDash.col.recoats") : t("elDash.col.type"),
+    ...(electrode ? [t("elDash.col.lastCoating"), t("elDash.col.residual")] : []),
+  ];
+  const body = rows.map((r) => [
+    r.serial,
+    r.element_nr ?? "",
+    r.electrolyzer ?? "",
+    r.installed ? t("elDash.installed") : r.at_coater ? t("elDash.atCoater") : t(`elDash.bucket.${r.bucket}`),
+    r.commissioning_date ?? "",
+    (electrode ? r.coating_dol : r.total_dol) ?? "",
+    r.total_dol ?? "",
+    r.life_pct ?? "",
+    t(`elDash.life.${r.life_status}`),
+    r.life_left ?? "",
+    electrode ? (r.recoat_count ?? 0) : (r.membrane_type ?? ""),
+    ...(electrode ? [r.last_coating_return ?? "", r.residual_thickness ?? ""] : []),
+  ]);
+  return { header, body };
+}
 
 export function PartsTable({ rows, kind, showReasons }: { rows: DashPart[]; kind: Kind; showReasons?: boolean }) {
   const { t } = useI18n();
   const electrode = kind !== "membrane";
+  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 } | null>(null);
+  const shown = sort
+    ? [...rows].sort((a, b) => {
+        const x = sortValue(a, sort.key, electrode);
+        const y = sortValue(b, sort.key, electrode);
+        if (x == null && y == null) return 0;
+        if (x == null) return 1; // empty values always last
+        if (y == null) return -1;
+        return (typeof x === "number" && typeof y === "number" ? x - y : String(x).localeCompare(String(y), undefined, { numeric: true })) * sort.dir;
+      })
+    : rows;
+  const th = (key: SortKey, label: string) => (
+    <th aria-sort={sort?.key === key ? (sort.dir === 1 ? "ascending" : "descending") : "none"}>
+      <button type="button" className="ed-sort" onClick={() => setSort(sort?.key === key ? (sort.dir === 1 ? { key, dir: -1 } : null) : { key, dir: 1 })}>
+        {label}
+        {sort?.key === key ? sort.dir === 1 ? <ArrowUp size={12} /> : <ArrowDown size={12} /> : null}
+      </button>
+    </th>
+  );
   return (
     <div className="ed-table-wrap">
       <table className="ed-table">
         <thead>
           <tr>
-            <th>{t(`elDash.col.${kind}`)}</th>
-            <th>{t("elDash.col.where")}</th>
-            <th>{t("elDash.col.commissioned")}</th>
-            <th>{t("elDash.col.dol")}</th>
-            {electrode ? <th>{t("elDash.col.totalDol")}</th> : null}
-            <th>{t("elDash.col.life")}</th>
+            {th("serial", t(`elDash.col.${kind}`))}
+            {th("where", t("elDash.col.where"))}
+            {th("commissioned", t("elDash.col.commissioned"))}
+            {th("dol", t("elDash.col.dol"))}
+            {electrode ? th("total", t("elDash.col.totalDol")) : null}
+            {th("life", t("elDash.col.life"))}
             <th>{t("elDash.col.status")}</th>
-            <th>{t("elDash.col.daysLeft")}</th>
+            {th("left", t("elDash.col.daysLeft"))}
             {electrode ? (
               <>
-                <th>{t("elDash.col.recoats")}</th>
-                <th>{t("elDash.col.lastCoating")}</th>
+                {th("recoats", t("elDash.col.recoats"))}
+                {th("coating", t("elDash.col.lastCoating"))}
                 <th>{t("elDash.col.residual")}</th>
               </>
             ) : (
@@ -42,7 +119,7 @@ export function PartsTable({ rows, kind, showReasons }: { rows: DashPart[]; kind
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
+          {shown.map((r) => (
             <tr key={`${r.kind}-${r.key}`}>
               <td>
                 <strong>{r.serial}</strong>
@@ -103,17 +180,18 @@ export function PartsTable({ rows, kind, showReasons }: { rows: DashPart[]; kind
   );
 }
 
-export function ElementPartsTab({ initial }: { initial?: { kind?: Kind; life?: string; where?: string } }) {
+export function ElementPartsTab({ initial }: { initial?: { kind?: Kind; life?: string; where?: string; due?: string } }) {
   const { t } = useI18n();
   const [kind, setKind] = useState<Kind>(initial?.kind ?? "anode");
   const [where, setWhere] = useState(initial?.where ?? "all");
   const [life, setLife] = useState(initial?.life ?? "alert");
   const [minDol, setMinDol] = useState("");
   const [maxDol, setMaxDol] = useState("");
+  const [due, setDue] = useState(initial?.due ?? "");
   const [search, setSearch] = useState("");
 
   const query = useQuery({
-    queryKey: ["element-dashboard", "parts", kind, where, life, minDol, maxDol, search],
+    queryKey: ["element-dashboard", "parts", kind, where, life, minDol, maxDol, due, search],
     queryFn: () =>
       elementDashboardApi.parts({
         kind,
@@ -121,6 +199,7 @@ export function ElementPartsTab({ initial }: { initial?: { kind?: Kind; life?: s
         life,
         min_dol: minDol === "" ? undefined : Number(minDol),
         max_dol: maxDol === "" ? undefined : Number(maxDol),
+        due_within: due === "" ? undefined : Number(due),
         q: search.trim() || undefined,
         limit: 1500,
       }),
@@ -148,6 +227,19 @@ export function ElementPartsTab({ initial }: { initial?: { kind?: Kind; life?: s
           <DashKpi label={t("elDash.parts.warning")} value={formatNumber(s.warning, 0)} hint={t("elDash.parts.ofWhichInstalled", { count: s.installed_warning })} icon={Timer} tone="warning" active={life === "warning"} onClick={() => setLife("warning")} />
           <DashKpi label={t("elDash.parts.expired")} value={formatNumber(s.expired, 0)} hint={t("elDash.parts.ofWhichInstalled", { count: s.installed_expired })} icon={Flame} tone="danger" active={life === "expired"} onClick={() => setLife("expired")} />
           <DashKpi label={t("elDash.parts.needAttention")} value={formatNumber(s.warning + s.expired, 0)} icon={ShieldAlert} tone="warning" active={life === "alert"} onClick={() => setLife("alert")} />
+          <DashKpi
+            label={t("elDash.parts.due90")}
+            value={formatNumber(s.due_90, 0)}
+            hint={t("elDash.parts.dueHint", { d30: s.due_30, d180: s.due_180 })}
+            icon={CalendarClock}
+            tone={s.due_90 ? "warning" : "ok"}
+            active={due === "90"}
+            onClick={() => {
+              setWhere("installed");
+              setLife("all");
+              setDue("90");
+            }}
+          />
         </div>
       ) : null}
 
@@ -197,6 +289,16 @@ export function ElementPartsTab({ initial }: { initial?: { kind?: Kind; life?: s
           </select>
         </label>
         <label>
+          {t("elDash.filter.due")}
+          <select value={due} onChange={(e) => setDue(e.target.value)}>
+            <option value="">{t("elDash.filter.all")}</option>
+            <option value="30">{t("elDash.filter.dueDays", { days: 30 })}</option>
+            <option value="90">{t("elDash.filter.dueDays", { days: 90 })}</option>
+            <option value="180">{t("elDash.filter.dueDays", { days: 180 })}</option>
+            <option value="365">{t("elDash.filter.dueDays", { days: 365 })}</option>
+          </select>
+        </label>
+        <label>
           {t("elDash.filter.minDol")}
           <input type="number" min={0} value={minDol} onChange={(e) => setMinDol(e.target.value)} style={{ width: "7rem" }} />
         </label>
@@ -218,7 +320,14 @@ export function ElementPartsTab({ initial }: { initial?: { kind?: Kind; life?: s
         <div className="mon-empty">{t("elDash.noParts")}</div>
       ) : (
         <>
-          <p className="mon-sub">{t("elDash.matched", { count: data.matched })}</p>
+          <div className="ed-actionbar">
+            <span className="mon-sub">{t("elDash.matched", { count: data.matched })}</span>
+            <ExportButton
+              filename={`${kind}-life`}
+              header={partsCsv(data.items, kind, t).header}
+              rows={() => partsCsv(data.items, kind, t).body}
+            />
+          </div>
           <PartsTable rows={data.items} kind={kind} />
           {data.truncated ? <p className="mon-sub">{t("elDash.truncated", { count: data.items.length })}</p> : null}
         </>

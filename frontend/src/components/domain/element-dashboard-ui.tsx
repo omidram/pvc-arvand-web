@@ -1,6 +1,9 @@
 "use client";
 
+import { Download } from "lucide-react";
 import type { ElementStage, LifeStatus } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { downloadCsv, type CsvCell } from "@/lib/csv";
 import { useI18n } from "@/lib/i18n/context";
 import { cn, formatNumber } from "@/lib/utils";
 
@@ -121,5 +124,21 @@ export function Chips<K extends string>({
         </button>
       ))}
     </div>
+  );
+}
+
+/** Downloads the rows currently shown as a CSV file that opens in Excel. */
+export function ExportButton({ filename, header, rows, disabled }: { filename: string; header: string[]; rows: () => CsvCell[][]; disabled?: boolean }) {
+  const { t } = useI18n();
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      disabled={disabled}
+      onClick={() => downloadCsv(`${filename}-${new Date().toISOString().slice(0, 10)}`, header, rows())}
+    >
+      <Download className="h-4 w-4" />
+      {t("elDash.exportCsv")}
+    </Button>
   );
 }

@@ -10,7 +10,7 @@ import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
-import { Chips, StageBadge } from "./element-dashboard-ui";
+import { Chips, ExportButton, StageBadge } from "./element-dashboard-ui";
 
 const MANUAL: ManualElementStage[] = ["awaiting_disassembly", "awaiting_assembly", "assembling", "awaiting_qc", "ready"];
 const FILTERS: (ElementStage | "shop" | "all")[] = [
@@ -130,6 +130,14 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
           {t("elDash.search")}
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("elDash.searchElementsHint")} />
         </label>
+        <ExportButton
+          filename={`elements-${stage}`}
+          disabled={!rows.length}
+          header={[t("elDash.col.element"), t("elDash.col.stage"), t("elDash.col.cell"), t("elDash.col.group"), t("elDash.col.anode"), t("elDash.col.cathode"), t("elDash.col.membrane"), t("elDash.col.since"), t("elDash.col.days"), t("elDash.col.note")]}
+          rows={() =>
+            rows.map((r) => [r.element_nr, t(`elDash.stage.${r.state}`), r.electrolyzer ? `${r.electrolyzer}-${r.position ?? ""}` : "", r.group_nr, r.anode_nr, r.cathode_nr, r.membrane_nr, r.since, r.days_in_state, r.note])
+          }
+        />
       </div>
 
       {editable ? (

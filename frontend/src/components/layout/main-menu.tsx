@@ -6,6 +6,7 @@ import { settingsApi, statisticsApi } from "@/lib/endpoints";
 import { useAuth } from "@/lib/auth/context";
 import { UhdeCellBars, UhdeLogoMark } from "@/components/layout/uhde-mark";
 import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
+import { ElementReportPanel } from "@/components/domain/element-report-panel";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
 import { useCalendar } from "@/lib/calendar/context";
@@ -125,6 +126,7 @@ export function MainMenu() {
                 error={dashboardQuery.isError ? (dashboardQuery.error as Error).message : null}
               />
             ) : null}
+            <ElementReportPanel compact />
           </div>
 
           <div className="access-main-grid">

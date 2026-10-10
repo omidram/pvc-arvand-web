@@ -8,7 +8,7 @@ import type { InstalledPart } from "@/lib/types";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatNumber } from "@/lib/utils";
-import { DashKpi, LifeBadge, StageBadge } from "./element-dashboard-ui";
+import { DashKpi, ExportButton, LifeBadge, StageBadge } from "./element-dashboard-ui";
 
 function PartCell({ part }: { part: InstalledPart }) {
   if (!part.serial) return <span className="ed-badge ed-tone-red">—</span>;
@@ -136,6 +136,12 @@ export function ElementInstalledTab() {
             {t("elDash.inst.onlyAlert")}
           </label>
           <span className="mon-sub">{t("elDash.matched", { count: rows.length })}</span>
+          <ExportButton
+            filename="installed-parts"
+            disabled={!rows.length}
+            header={[t("elDash.col.element"), t("elDash.col.stage"), t("elDash.col.electrolyzer"), t("elDash.col.cell"), t("elDash.col.group"), t("elDash.col.anode"), t("elDash.col.cathode"), t("elDash.col.membrane"), t("elDash.col.commissioned"), t("elDash.col.dol")]}
+            rows={() => rows.map((e) => [e.element_nr, t(`elDash.stage.${e.state}`), e.electrolyzer, e.position, e.group_nr, e.anode.serial, e.cathode.serial, e.membrane.serial, e.commissioning_date, e.dol])}
+          />
         </div>
         <div className="ed-table-wrap">
           <table className="ed-table">
