@@ -2,6 +2,10 @@
 from .. import models, schemas
 from ..crud import build_crud_router
 
+# Key data a new anode / cathode must carry (the same lists drive the red * marks in the web forms).
+ANODE_REQUIRED = ["anode_nr", "manufacturer", "coating", "received_date"]
+CATHODE_REQUIRED = ["cathode_nr", "manufacturer", "coating", "received_date"]
+
 anodes_router = build_crud_router(
     model=models.Anode,
     read_schema=schemas.AnodeBase,
@@ -10,6 +14,7 @@ anodes_router = build_crud_router(
     tags=["anodes"],
     pk_field="anode_nr",
     search_fields=["anode_nr", "manufacturer", "batch"],
+    required_fields=ANODE_REQUIRED,
 )
 
 anode_maintenance_router = build_crud_router(
@@ -47,6 +52,7 @@ cathodes_router = build_crud_router(
     tags=["cathodes"],
     pk_field="cathode_nr",
     search_fields=["cathode_nr", "manufacturer", "batch"],
+    required_fields=CATHODE_REQUIRED,
 )
 
 cathode_maintenance_router = build_crud_router(

@@ -20,6 +20,7 @@ from .routers import (
     arrangement_board as arrangement_board_router_module,
     assembly_inspections,
     field_options as field_options_router_module,
+    group_overview as group_overview_router_module,
     auth as auth_router_module,
     backup as backup_router_module,
     components,
@@ -390,6 +391,10 @@ _api(config_router.settings_router, dependencies=_perm("settings"))
 # --- Element administration ---
 _api(elements.router, dependencies=_perm("elements"))
 _api(elements.group_definitions_router, dependencies=_perm("settings"))
+_api(
+    group_overview_router_module.router,
+    dependencies=[Depends(require_any_form_access("elements", "settings"))],
+)
 _api(elements.inspection_reasons_router, dependencies=_perm("settings"))
 _api(elements.inspection_findings_router, dependencies=_perm("settings"))
 _api(elements.cell_components_router, dependencies=_perm("elements"))

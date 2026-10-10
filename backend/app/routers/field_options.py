@@ -47,6 +47,17 @@ CATALOG: dict[str, tuple[Any, list[str]]] = {
             "membrane_info",
         ],
     ),
+    # Group Definition: its combos offer what the cell elements / anodes / cathodes / membranes already carry
+    # (the plant's Excel lists were imported into those), plus anything added in Settings → Field lists.
+    "group_definitions": (models.GroupDefinition, ["anode_coating", "cathode_coating", "membrane_type", "gap_mm"]),
+}
+
+# (table, field) -> further (model, column) pairs whose values are offered too and renamed together.
+EXTRA_SOURCES: dict[tuple[str, str], list[tuple[Any, str]]] = {
+    ("group_definitions", "anode_coating"): [(models.Element, "anode_coating"), (models.Anode, "coating")],
+    ("group_definitions", "cathode_coating"): [(models.Element, "cathode_coating"), (models.Cathode, "coating")],
+    ("group_definitions", "membrane_type"): [(models.Element, "membrane_type"), (models.Membrane, "membrane_type")],
+    ("group_definitions", "gap_mm"): [(models.Element, "gap_mm")],
 }
 
 # Values every installation starts with (shown even before any record uses them).
@@ -57,6 +68,15 @@ BUILT_IN: dict[tuple[str, str], list[str]] = {
 
 def _natural(value: str):
     return [int(p) if p.isdigit() else p.lower() for p in re.split(r"(\d+)", value)]
+
+
+def _key(value: str) -> str:
+    """Identity of a list value: case-insensitive, and 2 / 2.0 count as the same number."""
+    text = value.strip().lower()
+    try:
+        return repr(float(text.replace(",", ".")))
+    except ValueError:
+        return text
 
 
 def _clean(value: str | None) -> str:
@@ -73,14 +93,15 @@ def _check(table: str, field: str | None = None):
 
 
 def _in_use(db: Session, table: str, field: str) -> dict[str, int]:
-    model = CATALOG[table][0]
-    col = getattr(model, field)
-    rows = db.query(col, func.count()).filter(col.isnot(None)).group_by(col).all()
     used: dict[str, int] = {}
-    for raw, count in rows:
-        text = _clean(str(raw))
-        if text:
-            used[text] = used.get(text, 0) + int(count)
+    sources = [(CATALOG[table][0], field)] + EXTRA_SOURCES.get((table, field), [])
+    for model, column in sources:
+        col = getattr(model, column)
+        rows = db.query(col, func.count()).filter(col.isnot(None)).group_by(col).all()
+        for raw, count in rows:
+            text = _clean(str(raw))
+            if text:
+                used[text] = used.get(text, 0) + int(count)
     return used
 
 
@@ -89,11 +110,21 @@ def _items(db: Session, table: str, field: str) -> list[dict[str, Any]]:
     used = _in_use(db, table, field)
     by_key: dict[str, dict[str, Any]] = {}
     for value in BUILT_IN.get((table, field), []):
-        by_key[value.lower()] = {"id": None, "value": value, "managed": False, "built_in": True, "count": used.get(value, 0)}
+        by_key[_key(value)] = {"id": None, "value": value, "managed": False, "built_in": True, "count": used.get(value, 0)}
     for opt in db.query(models.FieldOption).filter_by(table_name=table, field_name=field).all():
-        by_key[opt.value.lower()] = {"id": opt.id, "value": opt.value, "managed": True, "built_in": False, "count": used.get(opt.value, 0)}
+        by_key[_key(opt.value)] = {"id": opt.id, "value": opt.value, "managed": True, "built_in": False, "count": used.get(opt.value, 0)}
+    # Values pinned in Field lists of the linked tables (e.g. a new coating added for anodes / elements).
+    for model, column in EXTRA_SOURCES.get((table, field), []):
+        for other, (other_model, _fields) in CATALOG.items():
+            if other_model is not model:
+                continue
+            for opt in db.query(models.FieldOption).filter_by(table_name=other, field_name=column).all():
+                by_key.setdefault(
+                    _key(opt.value),
+                    {"id": None, "value": opt.value, "managed": False, "built_in": False, "count": used.get(opt.value, 0)},
+                )
     for value, count in used.items():
-        key = value.lower()
+        key = _key(value)
         if key in by_key:
             by_key[key]["count"] = max(by_key[key]["count"], count)
         else:
@@ -166,9 +197,10 @@ def rename_option(option_id: int, payload: OptionRename, db: Session = Depends(g
     old_value = row.value
     updated = 0
     if payload.apply_to_records and old_value != new_value:
-        model = CATALOG[row.table_name][0]
-        col = getattr(model, row.field_name)
-        updated = db.execute(update(model).where(col == old_value).values({row.field_name: new_value})).rowcount or 0
+        sources = [(CATALOG[row.table_name][0], row.field_name)] + EXTRA_SOURCES.get((row.table_name, row.field_name), [])
+        for model, column in sources:
+            col = getattr(model, column)
+            updated += db.execute(update(model).where(col == old_value).values({column: new_value})).rowcount or 0
     row.value = new_value
     db.commit()
     return {"id": row.id, "value": row.value, "records_updated": updated}

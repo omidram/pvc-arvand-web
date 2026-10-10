@@ -102,6 +102,60 @@ export interface GroupDefinition {
   remarks: string | null;
 }
 
+export interface GroupOverviewSummary {
+  group_nr: string;
+  defined: boolean;
+  anode_coating: string | null;
+  cathode_coating: string | null;
+  membrane_type: string | null;
+  gap_mm: string | null;
+  remarks: string | null;
+  active_count: number;
+  inactive_count: number;
+  total_count: number;
+  mismatch_count: number;
+  electrolyzers: string[];
+}
+
+export interface GroupOverviewRow {
+  group_nr: string;
+  group_anode_coating: string | null;
+  group_cathode_coating: string | null;
+  group_membrane_type: string | null;
+  group_gap_mm: string | null;
+  group_remarks: string | null;
+  element_nr: string | null;
+  electrolyzer: string | null;
+  position: string | null;
+  status: string;
+  generation: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  anode_coating: string | null;
+  cathode_coating: string | null;
+  membrane_type: string | null;
+  gap_mm: string | null;
+  assembly_date: string | null;
+  commissioning_date: string | null;
+  disassembly_date: string | null;
+  dol_days: number | null;
+  mismatch: string[];
+  remarks: string | null;
+  defined: boolean;
+}
+
+export interface GroupOverviewFilters {
+  group?: string;
+  anode_coating?: string;
+  cathode_coating?: string;
+  membrane_type?: string;
+  gap_mm?: string;
+  status?: "active" | "inactive" | "all";
+  mismatch_only?: boolean;
+  q?: string;
+}
+
 export interface InspectionReason {
   id: number;
   language_id: number | null;

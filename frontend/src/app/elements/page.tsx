@@ -47,7 +47,7 @@ export default function ElementAdministrationMenu() {
         <span />
         <span />
 
-        <span />
+        <AccessBtn href="/elements/group-overview">{t("groups.overview")}</AccessBtn>
         <span />
         <AccessBtn href="/anodes?tab=coating">{t("menus.checkAnodeCoating")}</AccessBtn>
         <AccessBtn href="/cathodes?tab=coating">{t("menus.checkCathodeCoating")}</AccessBtn>

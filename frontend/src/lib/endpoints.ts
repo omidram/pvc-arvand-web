@@ -130,6 +130,13 @@ export const performanceTestsApi = resource<T.PerformanceTest>("/performance-tes
 
 // ---------------------------------------------------------------- Elements
 export const groupDefinitionsApi = resource<T.GroupDefinition>("/group-definitions");
+/** Group Overview: every cell element with the specification of its defined group. "All" = leave the filter out. */
+export const groupOverviewApi = {
+  summary: async (params?: T.GroupOverviewFilters): Promise<T.GroupOverviewSummary[]> =>
+    (await apiClient.get("/group-overview/summary", { params })).data,
+  elements: async (params?: T.GroupOverviewFilters): Promise<{ total: number; rows: T.GroupOverviewRow[] }> =>
+    (await apiClient.get("/group-overview/elements", { params })).data,
+};
 export const inspectionReasonsApi = resource<T.InspectionReason>("/inspection-reasons");
 export const inspectionFindingsApi = resource<T.InspectionFinding>("/inspection-findings");
 

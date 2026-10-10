@@ -21,6 +21,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { assemblyPositionError, normalizeCellPosition } from "@/lib/assembly-rules";
 import { useFieldOptions, withCombos } from "@/lib/use-field-options";
+import { ELEMENT_REQUIRED, requiredError, withRequired } from "@/lib/required-fields";
 
 function withAssemblyPayload(values: Record<string, unknown>) {
   return { ...values, position: normalizeCellPosition(values.position) };
@@ -140,17 +141,20 @@ export function AssemblyDataForm() {
     { name: "cathode_remark", label: t("fields.cathodeRemark"), type: "textarea", span: 2 },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
-  const fields = withCombos(baseFields, opts, [
-    "gap_mm",
-    "ispb",
-    "anode_coating",
-    "anode_electrode",
-    "anode_shell",
-    "cathode_coating",
-    "cathode_electrode",
-    "cathode_shell",
-    "membrane_info",
-  ]);
+  const fields = withRequired(
+    withCombos(baseFields, opts, [
+      "gap_mm",
+      "ispb",
+      "anode_coating",
+      "anode_electrode",
+      "anode_shell",
+      "cathode_coating",
+      "cathode_electrode",
+      "cathode_shell",
+      "membrane_info",
+    ]),
+    ELEMENT_REQUIRED
+  );
 
   const columns: Column<Element>[] = [
     { key: "element_nr", header: t("fields.elementNr") },
@@ -191,7 +195,9 @@ export function AssemblyDataForm() {
         canEdit={editable}
         newDefaults={() => ({ element_nr: nextNrQuery.data?.element_nr ?? "" })}
         newDefaultsKey={nextNrQuery.data?.element_nr ?? ""}
-        validate={(values) => assemblyPositionError(values.position, t)}
+        validate={(values, { isNew }) =>
+          (isNew ? requiredError(values, fields, ELEMENT_REQUIRED, t) : null) ?? assemblyPositionError(values.position, t)
+        }
         onSave={async (id, values) => {
           await updateMutation.mutateAsync({ id, payload: withAssemblyPayload(values) });
         }}

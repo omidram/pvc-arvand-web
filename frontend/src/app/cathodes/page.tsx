@@ -20,6 +20,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { LoadingState } from "@/components/ui/spinner";
 import { useFieldOptions, withCombos } from "@/lib/use-field-options";
+import { CATHODE_REQUIRED, requiredError, withRequired } from "@/lib/required-fields";
 
 const CATHODE_COMBO_FIELDS = [
   "assembly_group",
@@ -70,7 +71,7 @@ function CathodesDetails() {
     { name: "generation", label: t("fields.generation") },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
-  const fields = withCombos(baseFields, opts, CATHODE_COMBO_FIELDS);
+  const fields = withRequired(withCombos(baseFields, opts, CATHODE_COMBO_FIELDS), CATHODE_REQUIRED);
 
   const columns: Column<Cathode>[] = [
     { key: "cathode_nr", header: t("fields.cathodeNr") },
@@ -91,6 +92,7 @@ function CathodesDetails() {
       error={listQuery.error as Error | null}
       fields={fields}
       columns={columns}
+      validate={(values, { isNew }) => (isNew ? requiredError(values, fields, CATHODE_REQUIRED, t) : null)}
       idField="cathode_nr"
       canEdit={canEdit("cathodes")}
       onSave={(id, values) => updateMutation.mutate({ id, payload: values })}

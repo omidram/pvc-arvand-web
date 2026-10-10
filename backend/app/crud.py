@@ -25,6 +25,8 @@ def build_crud_router(
     default_order: str | None = None,
     prepare: Callable[[Any], None] | None = None,
     transform: Callable[[Any], None] | None = None,
+    required_fields: list[str] | None = None,
+    sort_key: Callable[[Any], Any] | None = None,
 ) -> APIRouter:
     router = APIRouter(prefix=prefix, tags=tags)
     search_fields = search_fields or []
@@ -47,7 +49,26 @@ def build_crud_router(
             query = query.filter(or_(*conditions))
         if default_order and hasattr(model, default_order):
             query = query.order_by(getattr(model, default_order).desc())
+        if sort_key is not None:
+            return sorted(query.all(), key=sort_key)[skip : skip + limit]
         return query.offset(skip).limit(limit).all()
+
+    def _blank(value: Any) -> bool:
+        return value is None or (isinstance(value, str) and not value.strip())
+
+    def _check_required(data: dict[str, Any], existing: Any = None) -> None:
+        """New records need every required field; saved records may not lose a value they already have."""
+        if not required_fields:
+            return
+        missing = []
+        for name in required_fields:
+            if existing is None:
+                if _blank(data.get(name)):
+                    missing.append(name)
+            elif name in data and _blank(data[name]) and not _blank(getattr(existing, name, None)):
+                missing.append(name)
+        if missing:
+            raise HTTPException(status_code=422, detail="Required field(s) missing: " + ", ".join(missing))
 
     @router.get("", response_model=list[read_schema])
     def list_items(
@@ -110,6 +131,7 @@ def build_crud_router(
     @router.post("", response_model=read_schema, status_code=201)
     def create_item(payload: write_schema, db: Session = Depends(get_db)):
         data = payload.model_dump()
+        _check_required(data)
         obj = model(**data)
         if prepare:
             prepare(obj)
@@ -123,6 +145,7 @@ def build_crud_router(
         obj = db.query(model).filter(pk_column == item_id).first()
         if not obj:
             raise HTTPException(status_code=404, detail="Not found")
+        _check_required(payload.model_dump(exclude_unset=True), obj)
         for key, value in payload.model_dump(exclude_unset=True).items():
             if key == pk_field:
                 continue

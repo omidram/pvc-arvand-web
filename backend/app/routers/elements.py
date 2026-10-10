@@ -507,8 +507,38 @@ def _ensure_group(db: Session, group_nr: str | None) -> None:
         raise HTTPException(status_code=400, detail=f"Group '{group_nr}' is not in Group Definition")
 
 
+# Key data every installation must carry (mirrored by the red * marks in the Assembly Data form).
+ELEMENT_REQUIRED = [
+    "electrolyzer",
+    "position",
+    "group_nr",
+    "anode_nr",
+    "cathode_nr",
+    "membrane_nr",
+    "assembly_date",
+]
+
+
+def _blank(value) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
+def _check_required(data: dict, existing: models.Element | None = None) -> None:
+    """New installations need all key fields; a saved one may not lose a value it already has."""
+    missing = []
+    for name in ELEMENT_REQUIRED:
+        if existing is None:
+            if _blank(data.get(name)):
+                missing.append(name)
+        elif name in data and _blank(data[name]) and not _blank(getattr(existing, name, None)):
+            missing.append(name)
+    if missing:
+        raise HTTPException(status_code=422, detail="Required field(s) missing: " + ", ".join(missing))
+
+
 @router.post("", response_model=schemas.ElementRead, status_code=201)
 def create_element(payload: schemas.ElementBase, db: Session = Depends(get_db)):
+    _check_required(payload.model_dump())
     _ensure_group(db, payload.group_nr)
     data = payload.model_dump()
     data["position"] = _normalize_position(data.get("position"))
@@ -529,6 +559,7 @@ def update_element(item_id: int, payload: schemas.ElementBase, db: Session = Dep
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
     data = payload.model_dump(exclude_unset=True)
+    _check_required(data, obj)
     if "group_nr" in data:
         _ensure_group(db, data.get("group_nr"))
     if "position" in data:
@@ -600,6 +631,12 @@ def find_duplicates(component_type: str, db: Session = Depends(get_db)):
     return duplicates
 
 
+def natural_key(value) -> list:
+    """Sort key that orders numbers as numbers: 1, 2, 10 (not 1, 10, 2); text after numbers."""
+    text = str(value or "").strip()
+    return [(0, int(p), "") if p.isdigit() else (1, 0, p.lower()) for p in re.split(r"(\d+)", text) if p != ""]
+
+
 group_definitions_router = build_crud_router(
     model=models.GroupDefinition,
     read_schema=schemas.GroupDefinitionBase,
@@ -607,6 +644,8 @@ group_definitions_router = build_crud_router(
     prefix="/group-definitions",
     tags=["elements"],
     pk_field="group_nr",
+    required_fields=["group_nr"],
+    sort_key=lambda row: natural_key(row.group_nr),
 )
 
 

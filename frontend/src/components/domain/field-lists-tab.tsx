@@ -16,6 +16,7 @@ const TABLE_LABEL: Record<string, string> = {
   cathodes: "menus.cathodeDetails",
   membranes: "menus.membraneDetails",
   elements: "menus.assemblyData",
+  group_definitions: "menus.groupDefinition",
 };
 
 /** Same naming as the form labels: assembly_group -> fields.assemblyGroup */

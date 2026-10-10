@@ -4,6 +4,8 @@ The MDB has no DAO/MSysRelationships (enforced referential integrity is empty).
 The working relationships are the form LinkMasterFields/LinkChildFields pairs and
 the lookup queries (qryVerwendete*, designation tables, inspection/shutdown lists).
 """
+import re
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -51,7 +53,12 @@ def _values(*columns) -> list[str]:
             text = str(value).strip()
             if text:
                 found.add(text)
-    return sorted(found, key=lambda s: (s.upper(), s))
+    return sorted(found, key=lambda s: (_natural_parts(s), s))
+
+
+def _natural_parts(text: str) -> list:
+    """Numbers sort as numbers (1, 2, 10), text case-insensitively after them."""
+    return [(0, int(p), "") if p.isdigit() else (1, 0, p.upper()) for p in re.split(r"(\d+)", text) if p != ""]
 
 
 def _compact_upper(value: str) -> str:

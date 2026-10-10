@@ -15,7 +15,6 @@ import {
   correctionFactorsApi,
   electrodeAreasApi,
   voltageDistributionClassesApi,
-  groupDefinitionsApi,
   inspectionReasonsApi,
   inspectionFindingsApi,
 } from "@/lib/endpoints";
@@ -31,7 +30,6 @@ import type {
   CorrectionFactor,
   ElectrodeArea,
   VoltageDistributionClass,
-  GroupDefinition,
   InspectionReason,
   InspectionFinding,
 } from "@/lib/types";
@@ -47,6 +45,7 @@ import { BackupTab } from "@/components/domain/backup-tab";
 import { VoltageSyncTab } from "@/components/domain/voltage-sync-tab";
 import { AriaLimsSyncTab } from "@/components/domain/arialims-sync-tab";
 import { FieldListsTab } from "@/components/domain/field-lists-tab";
+import { GroupDefinitionTab } from "@/components/domain/group-definition-tab";
 import { DatabaseTab } from "@/components/domain/database-tab";
 import { DirectoryTab } from "@/components/domain/directory-tab";
 import { useI18n } from "@/lib/i18n/context";
@@ -563,29 +562,7 @@ function SettingsPageInner() {
           {
             key: "groups",
             label: t("settings.tabGroups"),
-            content: (
-              <LookupTable<GroupDefinition>
-                queryKey="group-definitions"
-                api={groupDefinitionsApi}
-                title={t("settings.group")}
-                keyField="group_nr"
-                fields={[
-                  { name: "group_nr", label: t("fields.groupNr"), required: true },
-                  { name: "anode_coating", label: t("fields.anodeCoating") },
-                  { name: "cathode_coating", label: t("fields.cathodeCoating") },
-                  { name: "membrane_type", label: t("fields.membraneType") },
-                  { name: "gap_mm", label: t("fields.gapMm") },
-                  { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
-                ]}
-                columns={[
-                  { key: "group_nr", header: t("fields.groupNr") },
-                  { key: "anode_coating", header: t("fields.anodeCoating") },
-                  { key: "cathode_coating", header: t("fields.cathodeCoating") },
-                  { key: "membrane_type", header: t("fields.membraneType") },
-                  { key: "gap_mm", header: t("fields.gapMm") },
-                ]}
-              />
-            ),
+            content: <GroupDefinitionTab />,
           },
           {
             key: "inspection-reasons",

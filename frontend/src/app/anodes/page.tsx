@@ -20,6 +20,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { LoadingState } from "@/components/ui/spinner";
 import { useFieldOptions, withCombos } from "@/lib/use-field-options";
+import { ANODE_REQUIRED, requiredError, withRequired } from "@/lib/required-fields";
 
 const ANODE_COMBO_FIELDS = [
   "assembly_group",
@@ -75,7 +76,7 @@ function AnodesDetails() {
     { name: "generation", label: t("fields.generation") },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
-  const fields = withCombos(baseFields, opts, ANODE_COMBO_FIELDS);
+  const fields = withRequired(withCombos(baseFields, opts, ANODE_COMBO_FIELDS), ANODE_REQUIRED);
 
   const columns: Column<Anode>[] = [
     { key: "anode_nr", header: t("fields.anodeNr") },
@@ -98,6 +99,7 @@ function AnodesDetails() {
       error={listQuery.error as Error | null}
       fields={fields}
       columns={columns}
+      validate={(values, { isNew }) => (isNew ? requiredError(values, fields, ANODE_REQUIRED, t) : null)}
       idField="anode_nr"
       canEdit={canEdit("anodes")}
       onSave={(id, values) => updateMutation.mutate({ id, payload: values })}
