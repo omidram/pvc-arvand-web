@@ -157,6 +157,21 @@ class AriaLimsSyncSettings(Base):
     sync_cursor: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
+class FieldOption(Base):
+    """A value offered in the dropdown (combo) of a data-entry field, e.g. anodes.manufacturer.
+
+    Values already used by records are offered automatically; this table holds the values the
+    plant added on purpose (the "Field lists" settings tab) so they can be picked before any record uses them.
+    """
+    __tablename__ = "field_options"
+    __table_args__ = (UniqueConstraint("table_name", "field_name", "value", name="uq_field_option"),)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    table_name: Mapped[str] = mapped_column(String(50), index=True)
+    field_name: Mapped[str] = mapped_column(String(60), index=True)
+    value: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class AriaLimsSamplingPoint(Base):
     """One AriaLIMS sampling point (SCID) and where its results land in the Analysis module.
 

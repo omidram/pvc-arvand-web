@@ -19,6 +19,22 @@ import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { LoadingState } from "@/components/ui/spinner";
+import { useFieldOptions, withCombos } from "@/lib/use-field-options";
+
+const CATHODE_COMBO_FIELDS = [
+  "assembly_group",
+  "manufacturer",
+  "tank",
+  "contact_strip",
+  "electrode_support",
+  "electrode_shape",
+  "coating",
+  "inlet_system",
+  "standpipe_diameter",
+  "flange_width",
+  "batch",
+  "generation",
+];
 
 function CathodesDetails() {
   const { t } = useI18n();
@@ -30,7 +46,8 @@ function CathodesDetails() {
     { limit: 10000 }
   );
 
-  const fields: FieldDef[] = [
+  const { opts } = useFieldOptions("cathodes");
+  const baseFields: FieldDef[] = [
     { name: "cathode_nr", label: t("fields.cathodeNr"), required: true },
     { name: "assembly_group", label: t("fields.assemblyGroup") },
     { name: "component_nr", label: t("fields.componentNr") },
@@ -53,6 +70,7 @@ function CathodesDetails() {
     { name: "generation", label: t("fields.generation") },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
+  const fields = withCombos(baseFields, opts, CATHODE_COMBO_FIELDS);
 
   const columns: Column<Cathode>[] = [
     { key: "cathode_nr", header: t("fields.cathodeNr") },

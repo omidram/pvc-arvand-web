@@ -20,6 +20,7 @@ import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { assemblyPositionError, normalizeCellPosition } from "@/lib/assembly-rules";
+import { useFieldOptions, withCombos } from "@/lib/use-field-options";
 
 function withAssemblyPayload(values: Record<string, unknown>) {
   return { ...values, position: normalizeCellPosition(values.position) };
@@ -61,19 +62,15 @@ export function AssemblyDataForm() {
     if (imp === "demontage" || imp === "disassembly") setShowImport("disassembly");
   }, [searchParams]);
 
-  const generationOptions = useMemo(() => {
-    const fixed = ["3", "4", "5", "5+", "6", "6+", "Blue Star"];
-    const fixedKey = new Set(fixed.map((v) => v.toLowerCase()));
-    const extras = (generations.data || []).filter((v) => !fixedKey.has(String(v).trim().toLowerCase()));
-    return [...fixed, ...extras].map((value) => ({ label: value, value }));
-  }, [generations.data]);
-
+  // Dropdown values: those defined in Settings → Field lists, plus everything already used.
+  const { opts } = useFieldOptions("elements");
+  const generationOptions = useMemo(() => opts("generation", generations.data), [opts, generations.data]);
   const reasonOptions = useMemo(
-    () => (decommissionReasons.data || []).map((value) => ({ label: value, value })),
-    [decommissionReasons.data]
+    () => opts("decommission_reason", decommissionReasons.data),
+    [opts, decommissionReasons.data]
   );
 
-  const fields: FieldDef[] = [
+  const baseFields: FieldDef[] = [
     { name: "element_nr", label: t("fields.elementNr"), required: true },
     {
       name: "electrolyzer",
@@ -115,8 +112,8 @@ export function AssemblyDataForm() {
     {
       name: "membrane_type",
       label: t("fields.membraneType"),
-      type: "select",
-      options: (membraneTypes.data || []).map((value) => ({ label: value, value })),
+      type: "combo",
+      options: opts("membrane_type", membraneTypes.data),
     },
     { name: "gap_mm", label: t("fields.gapMm") },
     { name: "assembly_date", label: t("fields.assemblyDate"), type: "date" },
@@ -143,6 +140,17 @@ export function AssemblyDataForm() {
     { name: "cathode_remark", label: t("fields.cathodeRemark"), type: "textarea", span: 2 },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
+  const fields = withCombos(baseFields, opts, [
+    "gap_mm",
+    "ispb",
+    "anode_coating",
+    "anode_electrode",
+    "anode_shell",
+    "cathode_coating",
+    "cathode_electrode",
+    "cathode_shell",
+    "membrane_info",
+  ]);
 
   const columns: Column<Element>[] = [
     { key: "element_nr", header: t("fields.elementNr") },

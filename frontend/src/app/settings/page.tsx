@@ -46,6 +46,7 @@ import { ImportExportTab } from "@/components/domain/import-export-tab";
 import { BackupTab } from "@/components/domain/backup-tab";
 import { VoltageSyncTab } from "@/components/domain/voltage-sync-tab";
 import { AriaLimsSyncTab } from "@/components/domain/arialims-sync-tab";
+import { FieldListsTab } from "@/components/domain/field-lists-tab";
 import { DatabaseTab } from "@/components/domain/database-tab";
 import { DirectoryTab } from "@/components/domain/directory-tab";
 import { useI18n } from "@/lib/i18n/context";
@@ -628,6 +629,7 @@ function SettingsPageInner() {
               />
             ),
           },
+          { key: "field-lists", label: t("fieldLists.title"), content: <FieldListsTab /> },
           { key: "appearance", label: t("appearance.title"), content: <AppearanceTab /> },
           ...(canEdit("import_export")
             ? [{ key: "import-export", label: t("importExport.title"), content: <ImportExportTab /> }]

@@ -19,6 +19,7 @@ from .routers import (
     analyses,
     arrangement_board as arrangement_board_router_module,
     assembly_inspections,
+    field_options as field_options_router_module,
     auth as auth_router_module,
     backup as backup_router_module,
     components,
@@ -424,6 +425,12 @@ _api(components.membrane_maintenance_router, dependencies=_perm("membranes"))
 _api(
     maintenance_reports_router_module.router,
     dependencies=[Depends(require_any_form_access("anodes", "cathodes", "membranes"))],
+)
+
+# --- Dropdown values for data-entry fields (anode/cathode/membrane details, Assembly Data) ---
+_api(
+    field_options_router_module.router,
+    dependencies=[Depends(require_any_form_access("elements", "anodes", "cathodes", "membranes", "settings"))],
 )
 
 # --- TAFKIK electrode segregation (Element Administration workshop form) ---

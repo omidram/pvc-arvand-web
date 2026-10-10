@@ -14,6 +14,7 @@ import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { LoadingState } from "@/components/ui/spinner";
+import { useFieldOptions, withCombos } from "@/lib/use-field-options";
 
 function MembranesDetails() {
   const { t } = useI18n();
@@ -25,7 +26,8 @@ function MembranesDetails() {
     { limit: 10000 }
   );
 
-  const fields: FieldDef[] = [
+  const { opts } = useFieldOptions("membranes");
+  const baseFields: FieldDef[] = [
     { name: "membrane_nr", label: t("fields.membraneNr"), required: true },
     { name: "membrane_type", label: t("fields.membraneType") },
     { name: "received_date", label: t("fields.receivedDate"), type: "date" },
@@ -33,6 +35,7 @@ function MembranesDetails() {
     { name: "batch", label: t("fields.batch") },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
+  const fields = withCombos(baseFields, opts, ["membrane_type", "batch"]);
 
   const columns: Column<Membrane>[] = [
     { key: "membrane_nr", header: t("fields.membraneNr") },

@@ -1688,3 +1688,30 @@ export const monitoringApi = {
     names: string[];
   }> => (await apiClient.get("/monitoring/import-progress")).data,
 };
+
+// ---- Dropdown (combo) values of data-entry fields ----
+export interface FieldOptionItem {
+  id: number | null;
+  value: string;
+  managed: boolean;
+  built_in: boolean;
+  count: number;
+}
+
+export const fieldOptionsApi = {
+  catalog: async (): Promise<{ table: string; fields: string[] }[]> =>
+    (await apiClient.get("/field-options/catalog")).data,
+  values: async (table: string): Promise<Record<string, string[]>> =>
+    (await apiClient.get("/field-options/values", { params: { table } })).data,
+  items: async (table: string, field: string): Promise<FieldOptionItem[]> =>
+    (await apiClient.get("/field-options/items", { params: { table, field } })).data,
+  add: async (table: string, field: string, value: string): Promise<{ id: number; value: string }> =>
+    (await apiClient.post("/field-options", { table, field, value })).data,
+  rename: async (
+    id: number,
+    value: string,
+    applyToRecords: boolean
+  ): Promise<{ id: number; value: string; records_updated: number }> =>
+    (await apiClient.put(`/field-options/${id}`, { value, apply_to_records: applyToRecords })).data,
+  remove: async (id: number): Promise<{ ok: boolean }> => (await apiClient.delete(`/field-options/${id}`)).data,
+};

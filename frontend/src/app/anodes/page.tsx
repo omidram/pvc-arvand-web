@@ -19,6 +19,24 @@ import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { LoadingState } from "@/components/ui/spinner";
+import { useFieldOptions, withCombos } from "@/lib/use-field-options";
+
+const ANODE_COMBO_FIELDS = [
+  "assembly_group",
+  "manufacturer",
+  "tank",
+  "contact_strip",
+  "electrode_support",
+  "electrode_shape",
+  "coating",
+  "baffle_plate",
+  "downcomer",
+  "inlet_system",
+  "standpipe_diameter",
+  "flange_width",
+  "batch",
+  "generation",
+];
 
 function AnodesDetails() {
   const { t } = useI18n();
@@ -31,7 +49,8 @@ function AnodesDetails() {
     { limit: 10000 }
   );
 
-  const fields: FieldDef[] = [
+  const { opts } = useFieldOptions("anodes");
+  const baseFields: FieldDef[] = [
     { name: "anode_nr", label: t("fields.anodeNr"), required: true },
     { name: "assembly_group", label: t("fields.assemblyGroup") },
     { name: "component_nr", label: t("fields.componentNr") },
@@ -56,6 +75,7 @@ function AnodesDetails() {
     { name: "generation", label: t("fields.generation") },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
+  const fields = withCombos(baseFields, opts, ANODE_COMBO_FIELDS);
 
   const columns: Column<Anode>[] = [
     { key: "anode_nr", header: t("fields.anodeNr") },
