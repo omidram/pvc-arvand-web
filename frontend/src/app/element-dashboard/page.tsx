@@ -12,7 +12,7 @@ export default function ElementDashboardPage() {
   const { canView } = useAuth();
   if (!(canView("elements") || canView("anodes") || canView("cathodes") || canView("membranes") || canView("storage"))) return null;
   return (
-    <AccessFormWindow caption={t("elDash.title")} helpKey="elements">
+    <AccessFormWindow caption={t("elDash.title")} helpKey="elementReport">
       <Suspense fallback={<LoadingState />}>
         <ElementDashboardPanel />
       </Suspense>

@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
+import { ElementReportGuideButton } from "./element-report-guide";
 import { DashKpi, STAGE_FLOW, STAGE_TONE, StageBadge } from "./element-dashboard-ui";
 
 export type DashTab = "overview" | "shop" | "parts" | "installed" | "coating" | "integrity" | "settings";
@@ -106,18 +107,21 @@ export function ElementOverviewTab({ onOpen }: { onOpen: (target: OpenTarget) =>
           <h2 className="mon-heading">{t("elDash.heading")}</h2>
           <p className="mon-sub">{t("elDash.updatedAt", { time: formatDateTime(data.generated_at) })}</p>
         </div>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={async () => {
-            const fresh = await elementDashboardApi.overview(true);
-            qc.setQueryData(["element-dashboard", "overview"], fresh);
-            qc.invalidateQueries({ queryKey: ["element-dashboard"], predicate: (q) => q.queryKey[1] !== "overview" });
-          }}
-        >
-          <RefreshCw className="h-4 w-4" />
-          {t("elDash.refresh")}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <ElementReportGuideButton />
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={async () => {
+              const fresh = await elementDashboardApi.overview(true);
+              qc.setQueryData(["element-dashboard", "overview"], fresh);
+              qc.invalidateQueries({ queryKey: ["element-dashboard"], predicate: (q) => q.queryKey[1] !== "overview" });
+            }}
+          >
+            <RefreshCw className="h-4 w-4" />
+            {t("elDash.refresh")}
+          </Button>
+        </div>
       </div>
 
       <section>

@@ -2417,6 +2417,10 @@ const en = {
       title: "Element Administration",
       body: "Each row is one electrolyzer element (Assembly Data): its anode, cathode, membrane, positions, and lifecycle dates (assembly, commissioning, decommissioning, disassembly).\nClick \"New Element\" to register a new installation, or the pencil icon to edit an existing one.\nUse the search box / filters above the table to narrow results by electrolyzer, group, or status.\nUse \"Export Excel\" / \"Export PDF\" to download the current list for reporting.\nOnly users with edit access to this form can add, change, or delete records; view-only users can still browse and export.",
     },
+    elementReport: {
+      title: "Element Report & Dashboard",
+      body: "Opens the full visual guide for Element Report and the Element Dashboard (life cycle, fields, table relations and day-to-day workflows).",
+    },
     inspections: {
       title: "Inspections",
       body: "Records detailed teardown/inspection reports for elements: blister checks, tube and spacer condition, gasket condition, and general remarks.\nEach report is linked to an Element No. Open a report to view or edit its checklist.\nThe \"Grids\" feature stores the anode/cathode/membrane half-shell defect maps as a 13x18 grid.\nUse Export Excel/PDF to produce a printable inspection record.",
@@ -5208,6 +5212,10 @@ const fa: DeepPartialStrings<typeof en> = {
     elements: {
       title: "مدیریت المان‌ها",
       body: "هر ردیف یک المان الکترولایزر (داده‌های مونتاژ) است: آند، کاتد، غشا، موقعیت‌ها و تاریخ‌های چرخه عمر (مونتاژ، راه‌اندازی، خاموش‌سازی، دمونتاژ).\nبرای ثبت یک نصب جدید روی «المان جدید» و برای ویرایش روی نماد مداد کلیک کنید.\nاز کادر جستجو/فیلترها بالای جدول برای محدود کردن نتایج بر اساس الکترولایزر، گروه یا وضعیت استفاده کنید.\nبرای گزارش‌گیری از «خروجی اکسل»/«خروجی PDF» استفاده کنید.\nفقط کاربران دارای دسترسی ویرایش این فرم می‌توانند رکورد اضافه، ویرایش یا حذف کنند؛ کاربران فقط‌مشاهده همچنان می‌توانند مرور و خروجی بگیرند.",
+    },
+    elementReport: {
+      title: "گزارش و داشبورد المنت‌ها",
+      body: "راهنمای تصویری کامل گزارش المنت و داشبورد (چرخه عمر، فیلدها، ارتباط جدول‌ها و روش کار روزمره) را باز می‌کند.",
     },
     inspections: {
       title: "بازرسی‌ها",

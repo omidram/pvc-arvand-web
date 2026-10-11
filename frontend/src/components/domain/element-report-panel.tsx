@@ -9,6 +9,7 @@ import { VoltageGauge } from "@/components/domain/voltage-gauge";
 import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDateTime, formatNumber } from "@/lib/utils";
+import { ElementReportGuideButton } from "./element-report-guide";
 import { STAGE_FLOW, STAGE_TONE } from "./element-dashboard-ui";
 
 type Tone = "ok" | "warning" | "danger" | "info";
@@ -44,10 +45,13 @@ export function ElementReportPanel({ compact = false }: { compact?: boolean }) {
         <h2 className="dash-voltage-title">{t("elDash.report.title")}</h2>
         <p className="dash-voltage-sub">{t("elDash.report.sub")}</p>
       </div>
-      <Link href="/element-dashboard" className="dash-voltage-link">
-        {t("elDash.report.open")}
-        <ArrowRight size={14} />
-      </Link>
+      <div className="flex flex-wrap items-center gap-2">
+        <ElementReportGuideButton compact={compact} />
+        <Link href="/element-dashboard" className="dash-voltage-link">
+          {t("elDash.report.open")}
+          <ArrowRight size={14} />
+        </Link>
+      </div>
     </div>
   );
 
