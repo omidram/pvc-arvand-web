@@ -49,9 +49,35 @@ function CeBoard() {
         if (from && d && d < from) return false;
         if (till && d && d > till) return false;
         if (shown.scope === "plant") return r.scope === "plant";
-        if (shown.scope === "train") return r.scope === "sub_plant";
-        if (shown.scope === "electrolyzer") return r.scope === "electrolyzer";
-        if (shown.scope === "group") return r.scope === "group";
+        if (shown.scope === "train") {
+          if (r.scope !== "sub_plant") return false;
+          if (train.values.calc === "individual") return String(r.scope_ref || "") === String(trainNr);
+          return true;
+        }
+        if (shown.scope === "electrolyzer") {
+          if (r.scope !== "electrolyzer") return false;
+          const rowEl = formatElectrolyzer(r.scope_ref) || r.scope_ref || "";
+          if (el.values.calc === "individual") {
+            const want = formatElectrolyzer(elNr) || elNr;
+            return rowEl === want;
+          }
+          if (el.values.calc === "various" || el.values.calc === "several") {
+            const wanted = severalEl.map((w) => formatElectrolyzer(w) || w).filter(Boolean);
+            if (!wanted.length) return true;
+            return wanted.includes(rowEl);
+          }
+          return true;
+        }
+        if (shown.scope === "group") {
+          if (r.scope !== "group") return false;
+          if (group.values.calc === "individual") return String(r.scope_ref || "") === String(groupNr);
+          if (group.values.calc === "several") {
+            const wanted = severalGroups.filter(Boolean);
+            if (!wanted.length) return true;
+            return wanted.includes(String(r.scope_ref || ""));
+          }
+          return true;
+        }
         if (r.scope !== "element") return false;
         const rowEl = formatElectrolyzer(r.scope_ref) || r.scope_ref || "";
         if (element.values.calc === "individual") {
@@ -78,7 +104,24 @@ function CeBoard() {
         value: r.value_pct,
         date: formatDate(r.date),
       }));
-  }, [ceQuery.data, shown, from, till, element.values.calc, cellEl, cellPos, severalElements]);
+  }, [
+    ceQuery.data,
+    shown,
+    from,
+    till,
+    train.values.calc,
+    trainNr,
+    el.values.calc,
+    elNr,
+    severalEl,
+    group.values.calc,
+    groupNr,
+    severalGroups,
+    element.values.calc,
+    cellEl,
+    cellPos,
+    severalElements,
+  ]);
 
   function display(title: string, col: { values: Record<string, string> }, scope: string) {
     setShown({ title, mode: col.values.result === "table" ? "table" : "chart", scope });

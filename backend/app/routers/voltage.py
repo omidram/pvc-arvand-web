@@ -627,8 +627,15 @@ def calculate_current_efficiency(
     c_hcl_an: float | None = None,
     c_naoh_pb: float | None = None,
     c_na2co3_pb: float | None = None,
+    c_na2so4_pb: float | None = None,
+    c_na2so4_an: float | None = None,
+    y_o2: float | None = None,
+    y_cl2: float | None = None,
+    akf: float = 0.0,
     acidified: bool = False,
+    clo_as_naclO: bool = False,
 ):
+    """Anodic-balance CE — same formulas as Access ``ModBerechnungen.Eta*Ber``."""
     from ..calculations import current_efficiency
 
     result = current_efficiency(
@@ -643,6 +650,12 @@ def calculate_current_efficiency(
         c_hcl_an=c_hcl_an,
         c_naoh_pb=c_naoh_pb,
         c_na2co3_pb=c_na2co3_pb,
+        c_na2so4_pb=c_na2so4_pb,
+        c_na2so4_an=c_na2so4_an,
+        y_o2=y_o2,
+        y_cl2=y_cl2,
+        akf=akf,
         acidified=acidified,
+        clo_as_naclO=clo_as_naclO,
     )
     return result

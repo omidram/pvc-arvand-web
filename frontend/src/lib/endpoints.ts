@@ -402,7 +402,13 @@ export const currentEfficiencyCalcApi = {
     c_hcl_an?: number;
     c_naoh_pb?: number;
     c_na2co3_pb?: number;
+    c_na2so4_pb?: number;
+    c_na2so4_an?: number;
+    y_o2?: number;
+    y_cl2?: number;
+    akf?: number;
     acidified?: boolean;
+    clo_as_naclO?: boolean;
   }): Promise<Record<string, unknown>> => (await apiClient.post("/current-efficiency/calculate", null, { params })).data,
 };
 

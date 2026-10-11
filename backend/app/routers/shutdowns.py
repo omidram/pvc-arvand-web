@@ -20,7 +20,11 @@ SHUTDOWN_EXPORT_FIELDS = list(schemas.ShutdownRead.model_fields.keys())
 def _enrich(obj: models.Shutdown) -> schemas.ShutdownRead:
     read = schemas.ShutdownRead.model_validate(obj)
     if obj.shutdown_time and obj.startup_time:
-        read.duration_hours = round((obj.startup_time - obj.shutdown_time).total_seconds() / 3600, 2)
+        # Keep minute precision (hours rounded to 2 decimals loses odd minutes).
+        seconds = (obj.startup_time - obj.shutdown_time).total_seconds()
+        read.duration_hours = round(max(seconds, 0) / 3600, 4) if seconds >= 0 else 0.0
+    else:
+        read.duration_hours = None
     return read
 
 
@@ -43,7 +47,8 @@ def list_shutdowns(
         query = query.filter(models.Shutdown.shutdown_time >= date_from)
     if date_to is not None:
         query = query.filter(models.Shutdown.shutdown_time <= date_to)
-    items = query.order_by(models.Shutdown.shutdown_time.desc()).offset(skip).limit(limit).all()
+    # Access continuous form order: by No. ascending (1, 2, 3 …), newest at the bottom.
+    items = query.order_by(models.Shutdown.nr.asc()).offset(skip).limit(limit).all()
     return [_enrich(i) for i in items]
 
 

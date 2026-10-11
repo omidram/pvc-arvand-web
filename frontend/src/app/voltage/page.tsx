@@ -759,14 +759,59 @@ function CurrentEfficiencyTab() {
     { limit: 500 }
   );
 
-  const [calcForm, setCalcForm] = useState({ n_cells: "", current_ka: "" });
+  const [calcForm, setCalcForm] = useState({
+    n_cells: "168",
+    current_ka: "14.5",
+    v_pure_brine: "45",
+    v_anolyte: "",
+    c_na2so4_pb: "8",
+    c_na2so4_an: "9.2",
+    c_naclo3_pb: "0.5",
+    c_naclo3_an: "3.2",
+    c_hocl_an: "0.4",
+    c_hcl_pb: "0",
+    c_hcl_an: "0",
+    c_naoh_pb: "0.05",
+    c_na2co3_pb: "0.1",
+    y_o2: "1.8",
+    y_cl2: "97.5",
+    akf: "0",
+    acidified: false,
+    clo_as_naclO: false,
+  });
+  const num = (key: keyof typeof calcForm) => {
+    const raw = String(calcForm[key] ?? "").trim();
+    if (raw === "") return undefined;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : undefined;
+  };
   const calcMutation = useMutation({
     mutationFn: () =>
       currentEfficiencyCalcApi.calculate({
         n_cells: Number(calcForm.n_cells),
         current_ka: Number(calcForm.current_ka),
+        v_pure_brine: num("v_pure_brine"),
+        v_anolyte: num("v_anolyte"),
+        c_na2so4_pb: num("c_na2so4_pb"),
+        c_na2so4_an: num("c_na2so4_an"),
+        c_naclo3_pb: num("c_naclo3_pb"),
+        c_naclo3_an: num("c_naclo3_an"),
+        c_hocl_an: num("c_hocl_an"),
+        c_hcl_pb: num("c_hcl_pb"),
+        c_hcl_an: num("c_hcl_an"),
+        c_naoh_pb: num("c_naoh_pb"),
+        c_na2co3_pb: num("c_na2co3_pb"),
+        y_o2: num("y_o2"),
+        y_cl2: num("y_cl2"),
+        akf: num("akf") ?? 0,
+        acidified: calcForm.acidified,
+        clo_as_naclO: calcForm.clo_as_naclO,
       }),
   });
+  const setCalc = (key: keyof typeof calcForm) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    setCalcForm((f) => ({ ...f, [key]: value as never }));
+  };
 
   const columns: Column<CurrentEfficiencyEntry>[] = [
     { key: "scope", header: t("fields.scopeValue"), render: (r) => t(`enums.scope.${r.scope}`) },
@@ -784,24 +829,42 @@ function CurrentEfficiencyTab() {
         </CardHeader>
         <CardContent>
           <p className="mb-3 text-xs text-[var(--win-muted)]">{t("voltage.ceCalculatorHelp")}</p>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <div>
-              <Label>{t("voltage.numberOfCells")}</Label>
-              <Input
-                type="number"
-                value={calcForm.n_cells}
-                onChange={(e) => setCalcForm((f) => ({ ...f, n_cells: e.target.value }))}
-              />
-            </div>
-            <div>
-              <Label>{t("voltage.currentKa")}</Label>
-              <Input
-                type="number"
-                step="0.01"
-                value={calcForm.current_ka}
-                onChange={(e) => setCalcForm((f) => ({ ...f, current_ka: e.target.value }))}
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+            {(
+              [
+                ["n_cells", t("voltage.numberOfCells")],
+                ["current_ka", t("voltage.currentKa")],
+                ["v_pure_brine", t("voltage.vPureBrine")],
+                ["v_anolyte", t("voltage.vAnolyte")],
+                ["c_na2so4_pb", t("voltage.cNa2so4Pb")],
+                ["c_na2so4_an", t("voltage.cNa2so4An")],
+                ["c_naclo3_pb", t("voltage.cNaclo3Pb")],
+                ["c_naclo3_an", t("voltage.cNaclo3An")],
+                ["c_hocl_an", t("voltage.cHoclAn")],
+                ["c_hcl_pb", t("voltage.cHclPb")],
+                ["c_hcl_an", t("voltage.cHclAn")],
+                ["c_naoh_pb", t("voltage.cNaohPb")],
+                ["c_na2co3_pb", t("voltage.cNa2co3Pb")],
+                ["y_o2", t("voltage.yO2")],
+                ["y_cl2", t("voltage.yCl2")],
+                ["akf", t("voltage.akf")],
+              ] as const
+            ).map(([key, label]) => (
+              <div key={key}>
+                <Label>{label}</Label>
+                <Input type="number" step="any" value={String(calcForm[key])} onChange={setCalc(key)} />
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-4 text-xs">
+            <label className="inline-flex items-center gap-1">
+              <input type="checkbox" checked={calcForm.acidified} onChange={setCalc("acidified")} />
+              {t("voltage.acidified")}
+            </label>
+            <label className="inline-flex items-center gap-1">
+              <input type="checkbox" checked={calcForm.clo_as_naclO} onChange={setCalc("clo_as_naclO")} />
+              {t("voltage.cloAsNaclo")}
+            </label>
           </div>
           <div className="mt-3 flex items-center gap-3">
             <Button

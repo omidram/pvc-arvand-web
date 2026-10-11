@@ -23,28 +23,57 @@ import { formatElectrolyzer } from "@/lib/plant-topology";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { appAlert, appConfirm } from "@/lib/dialog";
 
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
 function toLocalInput(value: string | null | undefined): string {
   if (!value) return "";
   // Access-style wall times: prefer the stored local string; fall back for ISO-Z values.
   if (!value.endsWith("Z") && value.includes("T")) return value.slice(0, 16);
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return value.slice(0, 16);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-function durationMinutes(row: Shutdown): number | null {
+/** Local wall-clock now as `YYYY-MM-DDTHH:mm:00` (same storage style as Access imports). */
+function nowLocalApi(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:00`;
+}
+
+/** Parse Access-style wall-clock datetimes without shifting them into UTC. */
+function wallTimeMs(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const m = value.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
+  if (m) {
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] || 0)).getTime();
+  }
+  const t = new Date(value).getTime();
+  return Number.isNaN(t) ? null : t;
+}
+
+type DurationFields = {
+  shutdown_time?: string | null;
+  startup_time?: string | null;
+  duration_hours?: number | null;
+};
+
+function durationMinutes(row: DurationFields): number | null {
+  // Always prefer the two times when both exist (draft rows have no duration_hours yet).
+  const a = wallTimeMs(row.shutdown_time);
+  const b = wallTimeMs(row.startup_time);
+  if (a != null && b != null) {
+    if (b < a) return 0;
+    return Math.round((b - a) / 60000);
+  }
   if (row.duration_hours != null && !Number.isNaN(row.duration_hours)) {
     return Math.max(0, Math.round(row.duration_hours * 60));
   }
-  if (!row.shutdown_time || !row.startup_time) return null;
-  const a = new Date(row.shutdown_time).getTime();
-  const b = new Date(row.startup_time).getTime();
-  if (Number.isNaN(a) || Number.isNaN(b)) return null;
-  return Math.max(0, Math.round((b - a) / 60000));
+  return null;
 }
 
-function durationHm(row: Shutdown): string {
+function durationHm(row: DurationFields): string {
   const mins = durationMinutes(row);
   if (mins == null) return "";
   const h = Math.floor(mins / 60);
@@ -171,7 +200,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     queryFn: () => shutdownCategoriesApi.list({ limit: 200 }),
   });
 
-  const rows = listQuery.data || [];
+  // Keep No. in order even if the API order changes; newest stays at the bottom next to the new-row line.
+  const rows = useMemo(() => [...(listQuery.data || [])].sort((a, b) => a.nr - b.nr), [listQuery.data]);
   const causes = causesQuery.data || [];
   const categoryOptions = useMemo(() => {
     const fromTable = (categoriesQuery.data || []).map((c) => c.category || "").filter(Boolean);
@@ -275,7 +305,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
             <AccessBtn
               onClick={() => {
                 setActive("new");
-                setDraft({ shutdown_time: new Date().toISOString().slice(0, 16) });
+                setDraft({ shutdown_time: nowLocalApi() });
               }}
             >
               + {t("menus.shutdownList")}
@@ -459,7 +489,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   </td>
                 ) : null}
                 <td>
-                  <input className="w-20 text-center" value="" readOnly tabIndex={-1} />
+                  <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(draft)} readOnly tabIndex={-1} />
                 </td>
                 {fieldVisible("code") ? (
                   <td>
