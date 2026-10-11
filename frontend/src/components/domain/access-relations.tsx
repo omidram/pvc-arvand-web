@@ -140,7 +140,7 @@ export function ElementRelations({ row }: { row: Element }) {
     queryFn: () => elementsApi.history(row.element_nr!),
     enabled: !!row.element_nr,
   });
-  // Inspections are stored per Element Nr, and the search box is a substring match
+  // Inspections are stored per Element No, and the search box is a substring match
   // ("10" also finds "1000000"): keep exact element numbers only.
   const inspectionsQuery = useQuery({
     queryKey: ["inspections", { q: row.element_nr, limit: 2000 }],

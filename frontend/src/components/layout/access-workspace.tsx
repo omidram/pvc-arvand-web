@@ -141,7 +141,7 @@ export function AccessWorkspace<T extends object>({
       return;
     }
     const query = new URLSearchParams(window.location.search);
-    // A record number can be reused (Element Nr, serials), so an explicit row id wins.
+    // A record number can be reused (Element No, serials), so an explicit row id wins.
     const idParam = paramName !== String(idField) ? query.get(String(idField)) : null;
     if (idParam && rows.length > 0) {
       const byId = rows.findIndex((row) => String(readId(row)) === String(idParam));

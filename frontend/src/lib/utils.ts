@@ -45,7 +45,9 @@ export function snakeToCamel(key: string): string {
 }
 
 export function humanizeKey(key: string): string {
+  // Field keys end in `_nr` (German "Nummer"); show English "No" everywhere in the UI.
   return key
     .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .replace(/\bNr\b/g, "No");
 }

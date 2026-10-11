@@ -163,7 +163,7 @@ const en: GuideContent = {
   fields: {
     lead: "The same field names appear in tables, exports and filters.",
     items: [
-      { name: "Element / Element Nr", meaning: "Cell serial from Assembly Data. The hub that links anode, cathode, membrane, group and electrolyzer." },
+      { name: "Element / Element No", meaning: "Cell serial from Assembly Data. The hub that links anode, cathode, membrane, group and electrolyzer." },
       { name: "Group", meaning: "Group number assigned to the element (Group Definition)." },
       { name: "Electrolyzer + Position", meaning: "Where the cell sits in the plant (e.g. A1-12)." },
       { name: "Stage", meaning: "Derived life-cycle state (in service … ready). Manual shop stages only stick if they are newer than the last Assembly Data event." },
@@ -183,7 +183,7 @@ const en: GuideContent = {
   relations: {
     lead: "Tables do not use foreign keys. They join by the same serial or number written the same way (compact form: upper-case, no spaces).",
     nodes: [
-      { id: "assembly", title: "Assembly Data", body: "Element Nr, Anode Nr, Cathode Nr, Membrane Nr, Group, Electrolyzer, dates (assembly, commission, decommission, disassembly)." },
+      { id: "assembly", title: "Assembly Data", body: "Element No, Anode No, Cathode No, Membrane No, Group, Electrolyzer, dates (assembly, commission, decommission, disassembly)." },
       { id: "anode", title: "Anode Details", body: "Master list of anode serials, coating type, manufacturer." },
       { id: "cathode", title: "Cathode Details", body: "Master list of cathode serials and coating." },
       { id: "membrane", title: "Membrane Details", body: "Master list of membrane serials and type." },
@@ -192,10 +192,10 @@ const en: GuideContent = {
       { id: "voltage", title: "Voltage alerts", body: "Open cell-voltage alerts shown on the overview KPI row." },
     ],
     links: [
-      { from: "assembly", to: "anode", label: "Anode Nr" },
-      { from: "assembly", to: "cathode", label: "Cathode Nr" },
-      { from: "assembly", to: "membrane", label: "Membrane Nr" },
-      { from: "assembly", to: "shop", label: "Element Nr" },
+      { from: "assembly", to: "anode", label: "Anode No" },
+      { from: "assembly", to: "cathode", label: "Cathode No" },
+      { from: "assembly", to: "membrane", label: "Membrane No" },
+      { from: "assembly", to: "shop", label: "Element No" },
       { from: "anode", to: "coat", label: "serial" },
       { from: "cathode", to: "coat", label: "serial" },
       { from: "assembly", to: "voltage", label: "cell" },
@@ -385,10 +385,10 @@ const fa: GuideContent = {
       { id: "voltage", title: "هشدار ولتاژ", body: "هشدارهای باز ولتاژ سل که در ردیف KPI نمای کلی دیده می‌شوند." },
     ],
     links: [
-      { from: "assembly", to: "anode", label: "Anode Nr" },
-      { from: "assembly", to: "cathode", label: "Cathode Nr" },
-      { from: "assembly", to: "membrane", label: "Membrane Nr" },
-      { from: "assembly", to: "shop", label: "Element Nr" },
+      { from: "assembly", to: "anode", label: "Anode No" },
+      { from: "assembly", to: "cathode", label: "Cathode No" },
+      { from: "assembly", to: "membrane", label: "Membrane No" },
+      { from: "assembly", to: "shop", label: "Element No" },
       { from: "anode", to: "coat", label: "سریال" },
       { from: "cathode", to: "coat", label: "سریال" },
       { from: "assembly", to: "voltage", label: "سل" },

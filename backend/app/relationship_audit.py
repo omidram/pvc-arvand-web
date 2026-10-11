@@ -152,9 +152,9 @@ def _build_relations() -> list[Rel]:
         rels.append(Rel(**kw))
 
     # --- Assembly Data -> catalogues
-    add(name="el-anode", label="Assembly Data - Anode Nr", child=models.Element, field="anode_nr", parent_label="Anode Details", parent=ANODES, create=_creator("anode"), group="assembly")
-    add(name="el-cathode", label="Assembly Data - Cathode Nr", child=models.Element, field="cathode_nr", parent_label="Cathode Details", parent=CATHODES, create=_creator("cathode"), group="assembly")
-    add(name="el-membrane", label="Assembly Data - Membrane Nr", child=models.Element, field="membrane_nr", parent_label="Membrane Details", parent=MEMBRANES, create=_creator("membrane"), group="assembly")
+    add(name="el-anode", label="Assembly Data - Anode No", child=models.Element, field="anode_nr", parent_label="Anode Details", parent=ANODES, create=_creator("anode"), group="assembly")
+    add(name="el-cathode", label="Assembly Data - Cathode No", child=models.Element, field="cathode_nr", parent_label="Cathode Details", parent=CATHODES, create=_creator("cathode"), group="assembly")
+    add(name="el-membrane", label="Assembly Data - Membrane No", child=models.Element, field="membrane_nr", parent_label="Membrane Details", parent=MEMBRANES, create=_creator("membrane"), group="assembly")
     add(name="el-group", label="Assembly Data - Group", child=models.Element, field="group_nr", parent_label="Group Definition", parent=GROUPS, create=_create_group, group="assembly")
     add(name="el-electrolyzer", label="Assembly Data - Electrolyzer", child=models.Element, field="electrolyzer", parent_label="Electrolyzers", parent=_parent_electrolyzers, norm=_electrolyzer_key, group="assembly")
 
@@ -172,14 +172,14 @@ def _build_relations() -> list[Rel]:
 
     # --- inspections
     for model, nice, tag in ((models.InspectionReport, "Element Inspection", "insp"), (models.AssemblyInspectionReport, "Assembly Inspection", "ainsp")):
-        add(name=f"{tag}-anode", label=f"{nice} - Anode Nr", child=model, field="anode_nr", parent_label="Anode Details", parent=ANODES, create=_creator("anode"), group="inspections")
-        add(name=f"{tag}-cathode", label=f"{nice} - Cathode Nr", child=model, field="cathode_nr", parent_label="Cathode Details", parent=CATHODES, create=_creator("cathode"), group="inspections")
-        add(name=f"{tag}-membrane", label=f"{nice} - Membrane Nr", child=model, field="membrane_nr", parent_label="Membrane Details", parent=MEMBRANES, create=_creator("membrane"), group="inspections")
+        add(name=f"{tag}-anode", label=f"{nice} - Anode No", child=model, field="anode_nr", parent_label="Anode Details", parent=ANODES, create=_creator("anode"), group="inspections")
+        add(name=f"{tag}-cathode", label=f"{nice} - Cathode No", child=model, field="cathode_nr", parent_label="Cathode Details", parent=CATHODES, create=_creator("cathode"), group="inspections")
+        add(name=f"{tag}-membrane", label=f"{nice} - Membrane No", child=model, field="membrane_nr", parent_label="Membrane Details", parent=MEMBRANES, create=_creator("membrane"), group="inspections")
         add(name=f"{tag}-electrolyzer", label=f"{nice} - Electrolyzer", child=model, field="electrolyzer", parent_label="Electrolyzers", parent=_parent_electrolyzers, norm=_electrolyzer_key, group="inspections")
-    add(name="insp-element", label="Element Inspection - Element Nr", child=models.InspectionReport, field="element_nr", parent_label="Assembly Data (element)", parent=ELEMENTS, severity="warning", group="inspections")
-    add(name="ainsp-element", label="Assembly Inspection - Element Nr", child=models.AssemblyInspectionReport, field="element_nr", parent_label="Assembly Data (element)", parent=ELEMENTS, severity="info", group="inspections")
+    add(name="insp-element", label="Element Inspection - Element No", child=models.InspectionReport, field="element_nr", parent_label="Assembly Data (element)", parent=ELEMENTS, severity="warning", group="inspections")
+    add(name="ainsp-element", label="Assembly Inspection - Element No", child=models.AssemblyInspectionReport, field="element_nr", parent_label="Assembly Data (element)", parent=ELEMENTS, severity="info", group="inspections")
     add(name="ainsp-group", label="Assembly Inspection - Group", child=models.AssemblyInspectionReport, field="group_nr", parent_label="Group Definition", parent=GROUPS, create=_create_group, group="inspections")
-    add(name="grid-element", label="Inspection defect maps - Element Nr", child=models.InspectionHalfshellGrid, field="element_nr", parent_label="Assembly Data (element)", parent=ELEMENTS, severity="warning", group="inspections")
+    add(name="grid-element", label="Inspection defect maps - Element No", child=models.InspectionHalfshellGrid, field="element_nr", parent_label="Assembly Data (element)", parent=ELEMENTS, severity="warning", group="inspections")
 
     # --- segregation / TAFKIK
     seg = models.ElectrodeSegregation
