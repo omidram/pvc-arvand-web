@@ -57,7 +57,7 @@ export function ElementReportGuideButton({ className, compact }: { className?: s
         title={content.openGuide}
         aria-label={content.openGuide}
       >
-        <HelpCircle size={compact ? 14 : 16} />
+        <HelpCircle size={compact ? 15 : 18} />
         {!compact ? <span>{content.openGuide}</span> : null}
       </button>
       <ElementReportGuideModal open={open} onClose={() => setOpen(false)} />
@@ -74,7 +74,7 @@ export function ElementReportGuideModal({ open, onClose }: { open: boolean; onCl
   }, [open]);
 
   return (
-    <Modal open={open} onClose={onClose} title={content.title} wide>
+    <Modal open={open} onClose={onClose} title={content.title} guide>
       <div className="erg">
         <p className="erg-sub">{content.subtitle}</p>
         <div className="erg-layout">
@@ -91,7 +91,7 @@ export function ElementReportGuideModal({ open, onClose }: { open: boolean; onCl
                     document.getElementById(`erg-${s.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                 >
-                  <Icon size={15} />
+                  <Icon size={20} />
                   <span>{s.label}</span>
                 </button>
               );
@@ -136,7 +136,7 @@ export function ElementReportGuideModal({ open, onClose }: { open: boolean; onCl
                       <p className="erg-flow-body">{meta?.body}</p>
                       {i < STAGE_FLOW.length - 1 ? (
                         <span className="erg-flow-arrow" aria-hidden>
-                          <ArrowRight size={14} />
+                          <ArrowRight size={16} />
                         </span>
                       ) : null}
                     </div>
@@ -216,7 +216,7 @@ export function ElementReportGuideModal({ open, onClose }: { open: boolean; onCl
                 {content.fields.items.map((f) => (
                   <article key={f.name} className="erg-field">
                     <h4>
-                      <Flame size={12} className="erg-field-icon" />
+                      <Flame size={16} className="erg-field-icon" />
                       {f.name}
                     </h4>
                     <p>{f.meaning}</p>
@@ -239,9 +239,9 @@ export function ElementReportGuideModal({ open, onClose }: { open: boolean; onCl
               <div className="erg-rel-links">
                 {content.relations.links.map((l) => (
                   <div key={`${l.from}-${l.to}-${l.label}`} className="erg-rel-link">
-                    <Link2 size={14} />
+                    <Link2 size={16} />
                     <strong>{content.relations.nodes.find((n) => n.id === l.from)?.title}</strong>
-                    <ArrowRight size={12} />
+                    <ArrowRight size={14} />
                     <strong>{content.relations.nodes.find((n) => n.id === l.to)?.title}</strong>
                     <span className="erg-rel-key">{l.label}</span>
                   </div>
