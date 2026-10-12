@@ -311,6 +311,24 @@ class PlantSettings(Base):
     session_idle_minutes: Mapped[int] = mapped_column(Integer, default=30)
 
 
+class UnCeSettings(Base):
+    """Single-row Un / CE calculation settings (the Un/CE-relevant part of Access tblGewDaten).
+
+    Access keeps these in tblGewDaten (IDiRef, Flaeche, Umin, AnodischerKorrekturfaktor,
+    IDClOAnalyse, IDAnsaeurung, IDTemperaturkorrekturElement) and the VBA module reads them
+    through KorrekturfaktorenAktualisieren(). Acidification stays on PlantSettings.acidified.
+    """
+
+    __tablename__ = "un_ce_settings"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    iref: Mapped[float] = mapped_column(Float, default=6.0)  # iRef [kA/m²] - row of tblUnKorrekturfaktoren
+    area_m2: Mapped[float] = mapped_column(Float, default=2.72)  # Flaeche (element area)
+    umin: Mapped[float] = mapped_column(Float, default=0.2)  # Umin: readings below are ignored
+    anodic_correction: Mapped[float] = mapped_column(Float, default=0.0)  # AnodischerKorrekturfaktor (AKF)
+    clo_analysis: Mapped[int] = mapped_column(Integer, default=2)  # IDClOAnalyse: 1 = NaOCl, 2 = HOCl
+    temp_correction_element: Mapped[int] = mapped_column(Integer, default=2)  # 1 = on, 2 = off
+
+
 class CorrectionFactor(Base):
     __tablename__ = "correction_factors"  # was: tblUnKorrekturfaktoren
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

@@ -13,6 +13,23 @@ export function deepMerge<T extends Tree>(base: T, extra: Tree): T {
 
 export const extraEn: Tree = {
   nav: { tickets: "Tickets" },
+  unce: {
+    settings: "Calculation settings",
+    area: "Element area",
+    akf: "Anodic correction (AKF)",
+    cloAnalysis: "ClO analysis",
+    acidification: "Acidification",
+    tempCorrElement: "Element temp. correction",
+    yes: "Yes",
+    no: "No",
+    on: "On",
+    off: "Off",
+    save: "Save",
+    saved: "Saved",
+    truncated: "Showing {shown} of {total} rows",
+    seriesClipped: "Only the first {max} series are drawn; use the table for all rows.",
+    selectFirst: "Select the item to calculate for.",
+  },
   elDash: {
     tab: { cells: "Cells" },
     cellCheck: {
@@ -147,6 +164,23 @@ export const extraEn: Tree = {
 
 export const extraFa: Tree = {
   nav: { tickets: "تیکت‌ها" },
+  unce: {
+    settings: "تنظیمات محاسبه",
+    area: "مساحت المنت",
+    akf: "ضریب تصحیح آندی (AKF)",
+    cloAnalysis: "آنالیز ClO",
+    acidification: "اسیدی‌سازی",
+    tempCorrElement: "تصحیح دمای المنت",
+    yes: "بله",
+    no: "خیر",
+    on: "روشن",
+    off: "خاموش",
+    save: "ذخیره",
+    saved: "ذخیره شد",
+    truncated: "نمایش {shown} از {total} ردیف",
+    seriesClipped: "فقط {max} سری اول رسم می‌شود؛ برای همه ردیف‌ها از جدول استفاده کنید.",
+    selectFirst: "مورد محاسبه را انتخاب کنید.",
+  },
   elDash: {
     tab: { cells: "سل‌ها" },
     cellCheck: {

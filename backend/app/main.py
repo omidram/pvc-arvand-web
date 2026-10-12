@@ -46,6 +46,7 @@ from .routers import (
     statistics,
     storage as storage_router_module,
     tickets as tickets_router_module,
+    un_ce as un_ce_router_module,
     warehouse_lifecycle as warehouse_lifecycle_router_module,
     users as users_router_module,
     voltage,
@@ -489,6 +490,7 @@ _api(voltage.un_group_inputs_router, dependencies=_perm("voltage"))
 _api(voltage.calc_router, dependencies=_perm("voltage"))
 _api(voltage.current_efficiency_router, dependencies=_perm("voltage"))
 _api(voltage.ce_calc_router, dependencies=_perm("voltage"))
+_api(un_ce_router_module.router, dependencies=_perm("voltage"))
 
 # --- Lagerbestand (Access: frmLagerbestandAnoden/Kathoden/Membranen) ---
 _api(storage_router_module.router)

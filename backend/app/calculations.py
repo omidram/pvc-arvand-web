@@ -3,7 +3,7 @@ Engineering calculations from the Uhde Administrator operating manual
 and from Access VBA ``ModBerechnungen`` (the plant's working formulas).
 
 Current-efficiency formulas below match Access ``Eta*Ber`` / ``VAnolytBer``
-exactly. Standardized-voltage still follows the manual's text description.
+exactly. Standardized voltage follows Access ``UnBer``.
 """
 from __future__ import annotations
 
@@ -16,39 +16,43 @@ class StandardizedVoltageResult:
     inputs: dict
 
 
+# Constants hard-coded in Access UnBer(): U0 = 2.42 V, standard 90 degC and 32 % NaOH.
+UN_U0 = 2.42
+UN_T_REF = 90.0
+UN_C_REF = 32.0
+
+
 def standardized_voltage(
     u_meas: float,
     current_density: float,
     reference_current_density: float,
-    zero_voltage: float,
     temp_meas: float,
-    temp_ref: float,
     conc_meas: float,
-    conc_ref: float,
     temp_correction: float,
     conc_correction: float,
+    zero_voltage: float | None = None,  # ignored - Access always uses 2.42 V
+    temp_ref: float | None = None,  # ignored - Access always uses 90 degC
+    conc_ref: float | None = None,  # ignored - Access always uses 32 %
 ) -> StandardizedVoltageResult:
-    """
-    Un = U - (i_ref/i - 1) * (U - U0) - c_T * (T - T_ref) - c_C * (C - C_ref)
+    """Access ``UnBer``:
 
-    - u_meas: measured voltage [V] (single element, or electrolyzer total / element count)
-    - current_density: measured average current density [kA/m^2]
-    - reference_current_density: standard current density (6 for NaOH, 5 for KOH) [kA/m^2]
-    - zero_voltage: U0 [V] (2.40 NaOH / 2.42 KOH)
-    - temp_meas / temp_ref: outlet temperature, measured vs standard (90 degC) [degC]
-    - conc_meas / conc_ref: outlet concentration, measured vs standard (32% NaOH, 28.5/30.5% KOH) [%w/w]
-    - temp_correction: V per degree at reference current density (0.020 NaOH / 0.016 KOH)
-    - conc_correction: V per %w/w at reference current density (0.040 NaOH / 0.033 KOH)
+        Un = 2.42 + (iRef / i) * (U - 2.42) - (90 - t) * tKorr + (32 - c) * cKorr
+
+    - u_meas: measured cell voltage [V] (single element Ui, or electrolyzer U total / n)
+    - current_density: i = I total / element area [kA/m2]
+    - reference_current_density: iRef [kA/m2] of the chosen tblUnKorrekturfaktoren row
+    - temp_meas: tm = (t anolyte + t catholyte) / 2 [degC]
+    - conc_meas: Cc, catholyte NaOH concentration [% w/w]
+    - temp_correction / conc_correction: tKorr [V/degC] / cKorr [V/%] of that row
     """
     if not current_density:
         raise ValueError("current_density must be non-zero")
 
-    scale = reference_current_density / current_density
     un = (
-        u_meas
-        - (scale - 1) * (u_meas - zero_voltage)
-        - temp_correction * scale * (temp_meas - temp_ref)
-        - conc_correction * scale * (conc_meas - conc_ref)
+        UN_U0
+        + (reference_current_density / current_density) * (u_meas - UN_U0)
+        - (UN_T_REF - temp_meas) * temp_correction
+        + (UN_C_REF - conc_meas) * conc_correction
     )
     return StandardizedVoltageResult(
         standardized_voltage=round(un, 4),
@@ -56,11 +60,13 @@ def standardized_voltage(
             "u_meas": u_meas,
             "current_density": current_density,
             "reference_current_density": reference_current_density,
-            "zero_voltage": zero_voltage,
+            "zero_voltage": UN_U0,
             "temp_meas": temp_meas,
-            "temp_ref": temp_ref,
+            "temp_ref": UN_T_REF,
             "conc_meas": conc_meas,
-            "conc_ref": conc_ref,
+            "conc_ref": UN_C_REF,
+            "temp_correction": temp_correction,
+            "conc_correction": conc_correction,
         },
     )
 

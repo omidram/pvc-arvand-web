@@ -227,29 +227,35 @@ def calculate_standardized(
     temp_ref: float = 90.0,
     conc_ref: float | None = None,
 ):
-    settings_row = db.query(models.PlantSettings).first()
-    plant_type = settings_row.plant_type if settings_row else "NaOH"
-    ref_cd = reference_current_density or (settings_row.reference_current_density if settings_row else (6.0 if plant_type == "NaOH" else 5.0))
-    u0 = zero_voltage or (settings_row.zero_voltage if settings_row else (2.40 if plant_type == "NaOH" else 2.42))
-    c_ref = conc_ref if conc_ref is not None else (32.0 if plant_type == "NaOH" else 28.5)
+    """Access ``UnBer`` (see ``calculations.standardized_voltage``). ``zero_voltage``,
+    ``temp_ref`` and ``conc_ref`` are accepted for backwards compatibility but ignored:
+    Access fixes them at 2.42 V / 90 degC / 32 %. iRef, tKorr and cKorr come from the
+    Un/CE settings (or the ``reference_current_density`` override)."""
+    from .. import un_ce_engine
 
-    factor = (
-        db.query(models.CorrectionFactor)
-        .filter(models.CorrectionFactor.reference_current_density == ref_cd)
-        .first()
-    )
-    t_corr = factor.temp_correction if factor else (0.020 if plant_type == "NaOH" else 0.016)
-    c_corr = factor.conc_correction if factor else (0.040 if plant_type == "NaOH" else 0.033)
+    cfg = un_ce_engine.load_cfg(db)
+    ref_cd = reference_current_density or cfg.iref
+    t_corr, c_corr = cfg.tkorr, cfg.ckorr
+    if reference_current_density:
+        factor = (
+            db.query(models.CorrectionFactor)
+            .filter(models.CorrectionFactor.reference_current_density == reference_current_density)
+            .first()
+        )
+        if factor is None:
+            raise HTTPException(
+                status_code=422,
+                detail=f"No correction factors (tKorr / cKorr) are defined for iRef = {reference_current_density}",
+            )
+        t_corr = float(factor.temp_correction or 0.0)
+        c_corr = float(factor.conc_correction or 0.0)
 
     result = standardized_voltage(
         u_meas=u_meas,
         current_density=current_density,
         reference_current_density=ref_cd,
-        zero_voltage=u0,
         temp_meas=temp_meas,
-        temp_ref=temp_ref,
         conc_meas=conc_meas,
-        conc_ref=c_ref,
         temp_correction=t_corr,
         conc_correction=c_corr,
     )

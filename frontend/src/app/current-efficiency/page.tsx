@@ -4,29 +4,34 @@ import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
-import { ReportColumn, ResultsPane, useColumnState } from "@/components/layout/access-report";
+import { ReportColumn, useColumnState } from "@/components/layout/access-report";
 import { CurrentEfficiencyDataInput, type CeInputMode } from "@/components/domain/current-efficiency-data-input";
-import { currentEfficiencyEntriesApi } from "@/lib/endpoints";
+import { UnCeResultsPane, UnCeSettingsPanel } from "@/components/domain/un-ce-board";
+import { pairsToElements, unCeApi, type UnCeCalc, type UnCeQuery, type UnCeScope } from "@/lib/un-ce";
 import { ElectrolyzerCombo, useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
 import { AccessSeveralBox } from "@/components/ui/access-several-box";
-import { CellPicker, samePosition } from "@/components/ui/cell-picker";
-import { formatElectrolyzer } from "@/lib/plant-topology";
+import { CellPicker } from "@/components/ui/cell-picker";
 import { LoadingState } from "@/components/ui/spinner";
-import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 
 function CeBoard() {
   const { t } = useI18n();
   const [from, setFrom] = useState("2006-06-01");
   const [till, setTill] = useState("2016-10-04");
-  const [shown, setShown] = useState<{ title: string; mode: "chart" | "table"; scope: string } | null>(null);
-  const plant = useColumnState({ basis: "naoh", result: "chart" });
-  const train = useColumnState({ basis: "naoh", calc: "individual", result: "chart" });
-  const el = useColumnState({ basis: "naoh", calc: "individual", result: "chart" });
-  const group = useColumnState({ basis: "naoh", calc: "individual", result: "chart" });
-  const element = useColumnState({ basis: "naoh", calc: "individual", result: "chart" });
+  const [shown, setShown] = useState<{
+    title: string;
+    mode: "chart" | "table";
+    scope: string;
+    basis: "anodic" | "naoh";
+    stamp: number;
+  } | null>(null);
+  const plant = useColumnState({ basis: "anod", result: "chart" });
+  const train = useColumnState({ basis: "anod", calc: "individual", result: "chart" });
+  const el = useColumnState({ basis: "anod", calc: "individual", result: "chart" });
+  const group = useColumnState({ basis: "anod", calc: "individual", result: "chart" });
+  const element = useColumnState({ basis: "anod", calc: "individual", result: "chart" });
   const [trainNr, setTrainNr] = useState("2");
-  const [elNr, setElNr] = useState("2C");
+  const [elNr, setElNr] = useState("");
   const [groupNr, setGroupNr] = useState("1");
   const [severalEl, setSeveralEl] = useState<string[]>([]);
   const [severalGroups, setSeveralGroups] = useState<string[]>([]);
@@ -35,96 +40,43 @@ function CeBoard() {
   const [cellPos, setCellPos] = useState("");
   const elNames = useElectrolyzerNames();
   const cellEl = pickedCellEl || elNames[0] || "";
+  const elSel = elNr || elNames[0] || "";
+
+  const spec = useMemo(() => {
+    if (!shown) return null;
+    const col = { plant, train, electrolyzer: el, group, element }[shown.scope as "plant"];
+    const rawCalc = col.values.calc === "various" ? "several" : col.values.calc;
+    const calc = (shown.scope === "plant" ? "all" : rawCalc || "all") as UnCeCalc;
+    const q: UnCeQuery = { scope: shown.scope as UnCeScope, calc, dateFrom: from, dateTill: till };
+    if (calc === "individual") {
+      if (shown.scope === "train") q.trains = [trainNr];
+      if (shown.scope === "electrolyzer") q.electrolyzers = [elSel];
+      if (shown.scope === "group") q.groups = [groupNr];
+      if (shown.scope === "element") q.elements = cellEl && cellPos ? [`${cellEl}:${cellPos}`] : [];
+    } else if (calc === "several") {
+      if (shown.scope === "electrolyzer") q.electrolyzers = severalEl.filter(Boolean);
+      if (shown.scope === "group") q.groups = severalGroups.filter(Boolean);
+      if (shown.scope === "element") q.elements = pairsToElements(severalElements);
+    }
+    return { query: q, basis: shown.basis };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shown, from, till]);
 
   const ceQuery = useQuery({
-    queryKey: ["current-efficiency-entries"],
-    queryFn: () => currentEfficiencyEntriesApi.list({ limit: 2000 }),
+    queryKey: ["un-ce", "ce", spec],
+    queryFn: () => unCeApi.ce(spec!.query, spec!.basis),
+    enabled: Boolean(spec),
+    placeholderData: (prev) => prev,
   });
-  const rows = useMemo(() => {
-    const items = ceQuery.data || [];
-    return items
-      .filter((r) => {
-        if (!shown) return false;
-        const d = r.date ? r.date.slice(0, 10) : "";
-        if (from && d && d < from) return false;
-        if (till && d && d > till) return false;
-        if (shown.scope === "plant") return r.scope === "plant";
-        if (shown.scope === "train") {
-          if (r.scope !== "sub_plant") return false;
-          if (train.values.calc === "individual") return String(r.scope_ref || "") === String(trainNr);
-          return true;
-        }
-        if (shown.scope === "electrolyzer") {
-          if (r.scope !== "electrolyzer") return false;
-          const rowEl = formatElectrolyzer(r.scope_ref) || r.scope_ref || "";
-          if (el.values.calc === "individual") {
-            const want = formatElectrolyzer(elNr) || elNr;
-            return rowEl === want;
-          }
-          if (el.values.calc === "various" || el.values.calc === "several") {
-            const wanted = severalEl.map((w) => formatElectrolyzer(w) || w).filter(Boolean);
-            if (!wanted.length) return true;
-            return wanted.includes(rowEl);
-          }
-          return true;
-        }
-        if (shown.scope === "group") {
-          if (r.scope !== "group") return false;
-          if (group.values.calc === "individual") return String(r.scope_ref || "") === String(groupNr);
-          if (group.values.calc === "several") {
-            const wanted = severalGroups.filter(Boolean);
-            if (!wanted.length) return true;
-            return wanted.includes(String(r.scope_ref || ""));
-          }
-          return true;
-        }
-        if (r.scope !== "element") return false;
-        const rowEl = formatElectrolyzer(r.scope_ref) || r.scope_ref || "";
-        if (element.values.calc === "individual") {
-          const wantEl = formatElectrolyzer(cellEl) || cellEl;
-          return Boolean(cellPos) && rowEl === wantEl && samePosition(r.position, cellPos);
-        }
-        if (element.values.calc === "several") {
-          const wanted = severalElements.filter((w) => w && w !== "|");
-          if (!wanted.length) return true;
-          return wanted.some((w) => {
-            const [we, wp = ""] = w.split("|");
-            return (formatElectrolyzer(we) || we) === rowEl && (!wp || samePosition(r.position, wp));
-          });
-        }
-        return true;
-      })
-      .map((r) => ({
-        label:
-          r.scope === "element"
-            ? element.values.calc === "individual"
-              ? formatDate(r.date) || String(r.id)
-              : `${formatElectrolyzer(r.scope_ref) || r.scope_ref || ""} ${r.position || ""}`.trim()
-            : r.scope_ref || r.position || formatDate(r.date) || String(r.id),
-        value: r.value_pct,
-        date: formatDate(r.date),
-      }));
-  }, [
-    ceQuery.data,
-    shown,
-    from,
-    till,
-    train.values.calc,
-    trainNr,
-    el.values.calc,
-    elNr,
-    severalEl,
-    group.values.calc,
-    groupNr,
-    severalGroups,
-    element.values.calc,
-    cellEl,
-    cellPos,
-    severalElements,
-  ]);
 
   function display(title: string, col: { values: Record<string, string> }, scope: string) {
-    setShown({ title, mode: col.values.result === "table" ? "table" : "chart", scope });
+    setShown({
+      title,
+      mode: col.values.result === "table" ? "table" : "chart",
+      scope,
+      basis: col.values.basis === "naoh" ? "naoh" : "anodic",
+      stamp: Date.now(),
+    });
   }
 
   const trainCombo = (value: string, onChange: (v: string) => void) => (
@@ -164,6 +116,8 @@ function CeBoard() {
         </div>
         <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
       </div>
+
+      <UnCeSettingsPanel />
 
       <div className="grid grid-cols-1 gap-2 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
         <ReportColumn
@@ -247,7 +201,7 @@ function CeBoard() {
               ],
               extra: (v) =>
                 v === "individual" ? (
-                  <ElectrolyzerCombo variant="access" className="mt-1 w-full" value={elNr} onChange={setElNr} />
+                  <ElectrolyzerCombo variant="access" className="mt-1 w-full" value={elSel} onChange={setElNr} />
                 ) : v === "various" || v === "several" ? (
                   <AccessSeveralBox
                     mode="electrolyzer"
@@ -368,16 +322,7 @@ function CeBoard() {
         />
       </div>
 
-      {shown ? (
-        <ResultsPane
-          mode={shown.mode}
-          title={shown.title}
-          rows={rows}
-          xKey="label"
-          yKey="value"
-          yLabel="CE [%]"
-        />
-      ) : null}
+      {shown ? <UnCeResultsPane title={shown.title} mode={shown.mode} query={ceQuery} /> : null}
     </AccessHub>
   );
 }
