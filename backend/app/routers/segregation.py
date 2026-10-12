@@ -44,6 +44,40 @@ def _parse_iso_date(value: str | date | None) -> date | None:
             return None
 
 
+_SEG_FLOAT_FIELDS = ("decommission_voltage", "decommission_ka", "decommission_temp")
+_SEG_DATE_FIELDS = ("install_date", "decommission_date", "disassemble_date", "inspection_date")
+
+
+def _safe_float(value) -> float | None:
+    if value is None or value == "":
+        return None
+    try:
+        return float(str(value).strip().replace(",", ".").replace("\u066b", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def _safe_read(obj: models.ElectrodeSegregation) -> schemas.ElectrodeSegregationRead:
+    """Serialize one row even if imported data holds junk (text in number cells, odd dates).
+
+    A single bad row used to fail response validation for the whole list, which the browser
+    only reports as "Network Error" (a 500 carries no CORS headers).
+    """
+    data: dict = {"id": obj.id}
+    for key in _SEG_FIELD_NAMES:
+        value = getattr(obj, key, None)
+        if key in _SEG_FLOAT_FIELDS:
+            value = _safe_float(value)
+        elif key in _SEG_DATE_FIELDS:
+            value = _parse_iso_date(value)
+        elif value is not None and not isinstance(value, str):
+            value = str(value)
+        data[key] = value
+    if not data.get("serial_nr"):
+        data["serial_nr"] = ""
+    return schemas.ElectrodeSegregationRead.model_validate(data)
+
+
 def _row_kwargs(fields: dict) -> dict:
     out = {}
     for key in _SEG_FIELD_NAMES:
@@ -57,13 +91,12 @@ def _row_kwargs(fields: dict) -> dict:
     return out
 
 
-@router.get("", response_model=list[schemas.ElectrodeSegregationRead])
-def list_segregations(
-    q: str | None = Query(default=None),
+def _list_rows(
+    db: Session,
+    q: str | None = None,
     electrode_kind: str | None = None,
     skip: int = 0,
-    limit: int = Query(default=500, le=20000),
-    db: Session = Depends(get_db),
+    limit: int = 500,
 ):
     query = db.query(models.ElectrodeSegregation)
     if q:
@@ -91,6 +124,17 @@ def list_segregations(
     )
 
 
+@router.get("", response_model=list[schemas.ElectrodeSegregationRead])
+def list_segregations(
+    q: str | None = Query(default=None),
+    electrode_kind: str | None = None,
+    skip: int = 0,
+    limit: int = Query(default=500, le=20000),
+    db: Session = Depends(get_db),
+):
+    return [_safe_read(r) for r in _list_rows(db, q, electrode_kind, skip, limit)]
+
+
 @router.get("/export.meta", include_in_schema=False)
 def export_meta_route():
     return build_export_meta(EXPORT_FIELDS)
@@ -103,7 +147,7 @@ def export_xlsx_route(
     filters: ExportFilters = Depends(),
     db: Session = Depends(get_db),
 ):
-    items = list_segregations(q=q, electrode_kind=electrode_kind, limit=20000, db=db)
+    items = _list_rows(db, q=q, electrode_kind=electrode_kind, limit=20000)
     rows = rows_to_dicts(items, EXPORT_FIELDS)
     rows, fields = filters.apply(rows, EXPORT_FIELDS)
     return export_xlsx(rows, fields, "electrode-segregations")
@@ -116,7 +160,7 @@ def export_pdf_route(
     filters: ExportFilters = Depends(),
     db: Session = Depends(get_db),
 ):
-    items = list_segregations(q=q, electrode_kind=electrode_kind, limit=2000, db=db)
+    items = _list_rows(db, q=q, electrode_kind=electrode_kind, limit=2000)
     rows = rows_to_dicts(items, EXPORT_FIELDS)
     rows, fields = filters.apply(rows, EXPORT_FIELDS)
     return export_pdf(rows, fields, "electrode-segregations")
@@ -242,7 +286,7 @@ def get_segregation(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(models.ElectrodeSegregation).filter(models.ElectrodeSegregation.id == item_id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
-    return obj
+    return _safe_read(obj)
 
 
 def _link_master(db: Session, obj: models.ElectrodeSegregation) -> None:

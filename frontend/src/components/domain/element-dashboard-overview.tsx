@@ -24,7 +24,7 @@ import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { ElementReportGuideButton } from "./element-report-guide";
 import { DashKpi, STAGE_FLOW, STAGE_TONE, StageBadge } from "./element-dashboard-ui";
 
-export type DashTab = "overview" | "shop" | "parts" | "installed" | "coating" | "integrity" | "settings";
+export type DashTab = "overview" | "shop" | "parts" | "installed" | "cells" | "coating" | "integrity" | "settings";
 
 export interface OpenTarget {
   tab: DashTab;

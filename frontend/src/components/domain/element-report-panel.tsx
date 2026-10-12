@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import { elementDashboardApi } from "@/lib/endpoints";
-import type { ElementDashOverview, ElementStage } from "@/lib/types";
+import type { CellCheck, ElementDashOverview, ElementStage } from "@/lib/types";
 import { VoltageGauge } from "@/components/domain/voltage-gauge";
 import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
@@ -74,6 +74,83 @@ export function ElementReportPanel({ compact = false }: { compact?: boolean }) {
     );
   }
   return <Report data={query.data} compact={compact} cls={cls} head={head} />;
+}
+
+/** Is any cell holding two elements, is any element in two cells, and how full is every electrolyzer of both trains. */
+function CellCheck({ check, compact }: { check: CellCheck; compact: boolean }) {
+  const { t } = useI18n();
+  const s = check.summary;
+  const bad = s.problems;
+  const limit = compact ? 4 : 10;
+  return (
+    <div className="er-cells">
+      <div className="er-cells-head">
+        <div className="er-cells-title">{t("elDash.cellCheck.title")}</div>
+        <div className="er-cells-pills">
+          <Link href={href("cells")} className={`mon-pill ${bad ? "is-danger" : "is-ok"}`}>
+            {bad ? t("elDash.cellCheck.problems", { count: bad }) : t("elDash.cellCheck.clear")}
+          </Link>
+          <Link href={href("cells")} className="mon-pill is-info">
+            {formatNumber(s.occupied_cells, 0)} / {formatNumber(s.capacity, 0)} {t("elDash.cellCheck.cellsFilled")}
+          </Link>
+          <Link href={href("cells")} className={`mon-pill ${s.conflict_cells ? "is-danger" : "is-ok"}`}>
+            {s.conflict_cells} {t("elDash.cellCheck.twoInCell")}
+          </Link>
+          {s.stale_cells ? (
+            <Link href={href("cells")} className="mon-pill is-warning">
+              {s.stale_cells} {t("elDash.cellCheck.stale")}
+            </Link>
+          ) : null}
+          <Link href={href("cells")} className={`mon-pill ${s.multi_cell_elements ? "is-danger" : "is-ok"}`}>
+            {s.multi_cell_elements} {t("elDash.cellCheck.inTwoCells")}
+          </Link>
+        </div>
+      </div>
+
+      {bad ? (
+        <ul className="er-cells-list">
+          {check.problems.slice(0, limit).map((p) => (
+            <li key={p.cell}>
+              <Link href={href("cells", { train: p.cell.split("-")[0].slice(-1) })} className="er-cells-cell">
+                {p.cell}
+              </Link>
+              <span className={`ed-badge ${p.status === "conflict" ? "ed-tone-red" : "ed-tone-amber"}`}>{t(`elDash.cells.status.${p.status}`)}</span>
+              <span>{p.elements.join(" · ")}</span>
+            </li>
+          ))}
+          {check.multi_cell.slice(0, Math.max(0, limit - check.problems.length)).map((m) => (
+            <li key={m.element_nr}>
+              <strong>{t("elDash.cells.elementIn", { nr: m.element_nr })}</strong>
+              <span>{m.cells.join(" · ")}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <div className="er-cells-trains">
+        {check.trains.map((tr) => (
+          <div key={tr.train} className="er-cells-train">
+            <Link href={href("cells", { train: tr.train })} className="er-cells-train-name">
+              {t("elDash.cells.train", { n: tr.train })}
+            </Link>
+            <div className="er-cells-chips">
+              {tr.electrolyzers.map((e) => (
+                <Link
+                  key={e.electrolyzer}
+                  href={href("cells", { train: tr.train })}
+                  className={`er-cells-chip ${e.conflict ? "is-danger" : e.stale ? "is-warning" : ""}`}
+                  title={t("elDash.cellCheck.chipTitle", { name: e.electrolyzer, occ: e.occupied, cap: e.capacity, conflict: e.conflict })}
+                >
+                  <span className="er-cells-chip-name">{e.electrolyzer}</span>
+                  <span className="er-cells-chip-n">{e.occupied}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function Report({ data, compact, cls, head }: { data: ElementDashOverview; compact: boolean; cls: string; head: React.ReactNode }) {
@@ -152,6 +229,8 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
         <VoltageGauge value={readyPct} max={100} label={t("elDash.report.shopReadiness")} unit="%" tone={readyPct == null ? "info" : readyPct >= 30 ? "ok" : "warning"} digits={0} />
         <VoltageGauge value={due90} max={Math.max(due90, 20)} label={t("elDash.report.due90")} unit={t("elDash.report.parts")} tone={due90 ? "warning" : "ok"} digits={0} />
       </div>
+
+      {data.cell_check ? <CellCheck check={data.cell_check} compact={compact} /> : null}
 
       {!compact ? (
         <div className="er-parts">

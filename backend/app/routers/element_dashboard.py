@@ -162,6 +162,12 @@ def installed(db: Session = Depends(get_db)):
     return svc.installed_overview(db)
 
 
+@router.get("/cells")
+def cells(db: Session = Depends(get_db)):
+    """What is installed in every cell of every train, plus cells / elements that are entered twice."""
+    return svc.cells_overview(db)
+
+
 @router.get("/coating")
 def coating(kind: str = Query("anode", pattern="^(anode|cathode)$"), db: Session = Depends(get_db)):
     return svc.coating_overview(db, kind)

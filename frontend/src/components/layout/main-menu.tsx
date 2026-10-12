@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { settingsApi, statisticsApi } from "@/lib/endpoints";
+import { ticketsApi } from "@/lib/tickets";
 import { useAuth } from "@/lib/auth/context";
 import { UhdeCellBars, UhdeLogoMark } from "@/components/layout/uhde-mark";
 import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
@@ -60,6 +61,8 @@ export function MainMenu() {
   });
   const settings = settingsQuery.data;
   const voltage = dashboardQuery.data?.voltage;
+  const ticketUnread = useQuery({ queryKey: ["tickets", "unread"], queryFn: ticketsApi.unread, refetchInterval: 10_000 });
+  const unreadTickets = ticketUnread.data?.notifications ?? 0;
 
   return (
     <div className="access-eap flex h-full min-h-0 flex-1 flex-col" dir="ltr">
@@ -210,6 +213,12 @@ export function MainMenu() {
             <MenuButton href="/users" label={t("nav.users")} allowed={isAdmin} className="col-start-7 row-start-4" />
             <MenuButton href="/logs" label={t("nav.logs")} allowed={isAdmin} className="col-start-7 row-start-5" />
             <MenuButton href="/activity" label={t("nav.activity")} allowed={canView("activity")} className="col-start-5 row-start-2" />
+            <MenuButton
+              href="/tickets"
+              label={unreadTickets > 0 ? `${t("nav.tickets")} (${unreadTickets})` : t("nav.tickets")}
+              allowed
+              className={`col-start-5 row-start-3 ${unreadTickets > 0 ? "has-unread-tickets" : ""}`}
+            />
             <MenuButton onClick={logout} label={t("mainMenu.exit")} allowed className="col-start-7 row-start-6" />
           </div>
         </section>

@@ -1753,6 +1753,8 @@ export const elementDashboardApi = {
     limit?: number;
   }): Promise<T.PartsResponse> => (await apiClient.get("/element-dashboard/parts", { params })).data,
   installed: async (): Promise<T.InstalledOverview> => (await apiClient.get("/element-dashboard/installed")).data,
+  cells: async (refresh = false): Promise<T.CellsOverview> =>
+    (await apiClient.get("/element-dashboard/cells", { params: refresh ? { refresh: true } : undefined })).data,
   coating: async (kind: "anode" | "cathode"): Promise<T.CoatingOverview> =>
     (await apiClient.get("/element-dashboard/coating", { params: { kind } })).data,
   settings: async (): Promise<T.ElementDashSettings> => (await apiClient.get("/element-dashboard/settings")).data,

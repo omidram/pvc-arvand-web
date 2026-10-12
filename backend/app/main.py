@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import inspect, text
 
-from . import alerts_engine, arialims_sync_scheduler, audit, backup_scheduler, models, voltage_sync_scheduler
+from . import alerts_engine, arialims_sync_scheduler, audit, backup_scheduler, models, ticket_models, voltage_sync_scheduler  # noqa: F401
 from .audit_middleware import AuditMiddleware
 from .auth import INSPECTION_COLLAB_KEYS, require_any_form_access, require_form_access, seed_default_admin
 from .cell_component_names import persist_industrial_names
@@ -45,6 +45,7 @@ from .routers import (
     shutdowns,
     statistics,
     storage as storage_router_module,
+    tickets as tickets_router_module,
     warehouse_lifecycle as warehouse_lifecycle_router_module,
     users as users_router_module,
     voltage,
@@ -355,6 +356,27 @@ app.add_middleware(
 app.add_middleware(AuditMiddleware)
 
 
+@app.exception_handler(Exception)
+async def _unhandled_error(request: Request, exc: Exception):
+    """Return unexpected errors as JSON *with* CORS headers.
+
+    Without this the browser hides a 500 behind a generic "Network Error"
+    (error responses produced outside CORSMiddleware carry no CORS headers).
+    """
+    import logging
+
+    logging.getLogger("uvicorn.error").exception("Unhandled error on %s", request.url.path, exc_info=exc)
+    headers = {}
+    origin = request.headers.get("origin")
+    if origin:
+        headers = {"Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true", "Vary": "Origin"}
+    return JSONResponse(
+        {"detail": f"Server error: {type(exc).__name__}: {str(exc)[:300]}"},
+        status_code=500,
+        headers=headers,
+    )
+
+
 def _perm(form_key: str) -> list[Depends]:
     return [Depends(require_form_access(form_key))]
 
@@ -501,6 +523,9 @@ _api(
     element_dashboard_router_module.router,
     dependencies=[Depends(require_any_form_access("elements", "anodes", "cathodes", "membranes", "storage"))],
 )
+
+# --- Tickets: every signed-in user (any role) can message users / roles, attach files, send forms ---
+_api(tickets_router_module.router)
 
 # --- Admin database files / local vs online switch ---
 _api(database_router_module.router)

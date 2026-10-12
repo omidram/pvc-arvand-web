@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from . import models
 from .calculations import installation_dol
-from .plant_topology import all_electrolyzers, format_electrolyzer_name, is_valid_electrolyzer_name
+from .plant_topology import all_electrolyzers, format_electrolyzer_name, is_valid_electrolyzer_name, norm_pos
 from .relations_sync import is_junk_serial
 from .warehouse import BUCKETS, _as_date, _grouped, _iso, _life_key, build_board, compact_nr
 
@@ -769,6 +769,147 @@ def installed_overview(db: Session, settings: dict[str, Any] | None = None) -> d
     }
 
 
+# ---------------------------------------------------------------- cell occupancy (what sits in every cell)
+
+PLACED_STATES = ("in_service", "installed", "decommissioned")
+
+
+@_memo
+def cells_overview(db: Session) -> dict[str, Any]:
+    """Which element sits in every cell of every electrolyzer, and where an element is entered twice.
+
+    Uses Assembly Data directly: an element is *in a cell* while its newest installation has no
+    disassembly date. A cell with two such elements is a conflict (``conflict`` when two of them are
+    on line / installed, ``stale`` when the extra one is only switched off but never dismantled).
+    The same element number open in two different cells is listed under ``multi_cell``.
+    """
+    rows = db.query(models.Element).all()
+    latest: dict[str, models.Element] = {}
+    for el in rows:
+        key = compact_nr(el.element_nr)
+        if not key:
+            continue
+        if key not in latest or _life_key(el) >= _life_key(latest[key]):
+            latest[key] = el
+
+    def cell_of(el: models.Element) -> tuple[str, int] | None:
+        if not _valid_electrolyzer(el.electrolyzer):
+            return None
+        name = format_electrolyzer_name(el.electrolyzer)
+        text = norm_pos(el.position)
+        if not name or not text.isdigit():
+            return None
+        return name, int(text)
+
+    known = set(all_electrolyzers())
+    occupants: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
+    unplaced = 0  # in the plant but no usable electrolyzer / position
+    out_of_range = 0
+    for key, el in latest.items():
+        if el.disassembly_date:
+            continue
+        state = _base_state(el)
+        if state not in PLACED_STATES:
+            continue
+        cell = cell_of(el)
+        if cell is None:
+            if _valid_electrolyzer(el.electrolyzer):
+                unplaced += 1
+            continue
+        if cell[0] not in known or not 1 <= cell[1] <= CELLS_PER_ELECTROLYZER:
+            out_of_range += 1
+            continue
+        occupants[cell].append(
+            {
+                "element_nr": str(el.element_nr).strip(),
+                "state": state,
+                "group_nr": el.group_nr,
+                "anode_nr": el.anode_nr,
+                "cathode_nr": el.cathode_nr,
+                "membrane_nr": el.membrane_nr,
+                "commissioning_date": _iso(el.commissioning_date),
+                "dol": installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date),
+            }
+        )
+
+    # the same element number still open in more than one cell (an older row that was never closed)
+    open_cells: dict[str, dict[tuple[str, int], str]] = defaultdict(dict)
+    for el in rows:
+        key = compact_nr(el.element_nr)
+        if not key or el.disassembly_date:
+            continue
+        if _base_state(el) not in PLACED_STATES:
+            continue
+        cell = cell_of(el)
+        if cell is not None and cell[0] in known:
+            open_cells[key].setdefault(cell, str(el.element_nr).strip())
+    multi_cell = []
+    flagged_cells: set[tuple[str, int]] = set()
+    for key, cells in open_cells.items():
+        if len(cells) > 1:
+            names = sorted(cells, key=lambda c: (c[0][-1], c[0][0], c[1]))
+            flagged_cells.update(names)
+            multi_cell.append({"element_nr": next(iter(cells.values())), "cells": [f"{n}-{p}" for n, p in names]})
+    multi_cell.sort(key=lambda m: m["element_nr"])
+
+    cells_out: list[dict[str, Any]] = []
+    per_el: dict[str, dict[str, int]] = {
+        name: {"occupied": 0, "conflict": 0, "stale": 0, "in_service": 0} for name in all_electrolyzers()
+    }
+    for (name, pos), items in occupants.items():
+        active = sum(1 for i in items if i["state"] in ("in_service", "installed"))
+        if len(items) == 1:
+            status = "ok"
+        elif active >= 2:
+            status = "conflict"
+        else:
+            status = "stale"
+        items.sort(key=lambda i: (0 if i["state"] != "decommissioned" else 1, i["element_nr"]))
+        agg = per_el[name]
+        agg["occupied"] += 1
+        agg["in_service"] += 1 if any(i["state"] == "in_service" for i in items) else 0
+        if status == "conflict":
+            agg["conflict"] += 1
+        elif status == "stale":
+            agg["stale"] += 1
+        cells_out.append({"electrolyzer": name, "position": pos, "status": status, "elements": items})
+    cells_out.sort(key=lambda c: (c["electrolyzer"][-1], c["electrolyzer"][0], c["position"]))
+
+    trains = []
+    for train in ("1", "2"):
+        names = [n for n in all_electrolyzers() if n.endswith(train)]
+        trains.append(
+            {
+                "train": train,
+                "electrolyzers": [
+                    {"electrolyzer": n, "capacity": CELLS_PER_ELECTROLYZER, "empty": CELLS_PER_ELECTROLYZER - per_el[n]["occupied"], **per_el[n]}
+                    for n in names
+                ],
+            }
+        )
+    occupied = len(occupants)
+    conflict = sum(1 for c in cells_out if c["status"] == "conflict")
+    stale = sum(1 for c in cells_out if c["status"] == "stale")
+    return {
+        "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "summary": {
+            "capacity": PLANT_CAPACITY,
+            "occupied_cells": occupied,
+            "empty_cells": PLANT_CAPACITY - occupied,
+            "elements_placed": sum(len(c["elements"]) for c in cells_out),
+            "conflict_cells": conflict,
+            "stale_cells": stale,
+            "multi_cell_elements": len(multi_cell),
+            "unplaced": unplaced,
+            "out_of_range": out_of_range,
+            "problems": conflict + stale + len(multi_cell),
+        },
+        "trains": trains,
+        "cells": cells_out,
+        "multi_cell": multi_cell,
+    }
+
+
 # ---------------------------------------------------------------- the headline overview
 
 
@@ -842,8 +983,19 @@ def overview(db: Session) -> dict[str, Any]:
     events = (
         db.query(models.ElementShopEvent).order_by(models.ElementShopEvent.created_at.desc(), models.ElementShopEvent.id.desc()).limit(12).all()
     )
+    cell_data = cells_overview(db)
     return {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
+        "cell_check": {
+            "summary": cell_data["summary"],
+            "trains": cell_data["trains"],
+            "problems": [
+                {"cell": f"{c['electrolyzer']}-{c['position']}", "status": c["status"], "elements": [e["element_nr"] for e in c["elements"]]}
+                for c in cell_data["cells"]
+                if c["status"] != "ok"
+            ][:30],
+            "multi_cell": cell_data["multi_cell"][:30],
+        },
         "capacity": PLANT_CAPACITY,
         "counts": counts,
         "in_plant": in_plant,

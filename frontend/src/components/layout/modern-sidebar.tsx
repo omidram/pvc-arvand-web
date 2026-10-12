@@ -33,6 +33,7 @@ import {
   Warehouse,
   ScrollText,
   ListChecks,
+  Inbox,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,8 @@ import { useAuth } from "@/lib/auth/context";
 import { canSeeInspections, canSeeSegregation } from "@/lib/inspection-access";
 import { useTheme } from "@/lib/theme/context";
 import { monitoringApi } from "@/lib/endpoints";
+import { TopbarClock } from "@/components/layout/topbar-clock";
+import { TicketBell } from "@/components/tickets/ticket-bell";
 
 const NAV_GROUPS: {
   groupKey: string;
@@ -93,6 +96,7 @@ const NAV_GROUPS: {
   {
     groupKey: "nav.groupSystem",
     items: [
+      { href: "/tickets", labelKey: "nav.tickets", icon: Inbox, formKey: "" },
       { href: "/settings", labelKey: "nav.settings", icon: Settings, formKey: "settings" },
       { href: "/users", labelKey: "nav.users", icon: Users, formKey: "users", adminOnly: true },
       { href: "/activity", labelKey: "nav.activity", icon: ListChecks, formKey: "activity" },
@@ -166,6 +170,8 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
       </div>
 
       <div className="ms-toolbar">
+        <TopbarClock className="ms-clock" />
+        <TicketBell />
         {(["en", "fa"] as Locale[]).map((loc) => (
           <button
             key={loc}
@@ -196,6 +202,7 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
         {NAV_GROUPS.map((group) => {
           const visibleItems = group.items.filter((item) => {
             if (item.adminOnly && !isAdmin) return false;
+            if (!item.formKey) return true;
             if (item.formKey === "monitoring") return canMonitor;
             if (item.href === "/inspections") return canSeeInspections(canView);
             if (item.href === "/segregation") return canSeeSegregation(canView);

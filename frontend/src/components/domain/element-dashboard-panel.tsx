@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Tabs } from "@/components/ui/tabs";
 import { useI18n } from "@/lib/i18n/context";
+import { ElementCellsTab } from "./element-dashboard-cells";
 import { ElementCoatingTab } from "./element-dashboard-coating";
 import { ElementInstalledTab } from "./element-dashboard-installed";
 import { ElementIntegrityTab, ElementSettingsTab } from "./element-dashboard-integrity";
@@ -11,7 +12,7 @@ import { ElementOverviewTab, type DashTab, type OpenTarget } from "./element-das
 import { ElementPartsTab } from "./element-dashboard-parts";
 import { ElementShopTab } from "./element-dashboard-shop";
 
-const TABS: DashTab[] = ["overview", "shop", "parts", "installed", "coating", "integrity", "settings"];
+const TABS: DashTab[] = ["overview", "shop", "parts", "installed", "cells", "coating", "integrity", "settings"];
 const KINDS = ["anode", "cathode", "membrane"] as const;
 
 /** The element management dashboard: one place for the whole life cycle of cells, anodes, cathodes and membranes. */
@@ -60,6 +61,7 @@ export function ElementDashboardPanel() {
           content: <ElementPartsTab key={`parts-${nonce}`} initial={target.tab === "parts" ? { kind: target.kind, life: target.life, where: target.where, due: target.due } : undefined} />,
         },
         { key: "installed", label: t("elDash.tab.installed"), content: <ElementInstalledTab /> },
+        { key: "cells", label: t("elDash.tab.cells"), content: <ElementCellsTab key={`cells-${nonce}`} initialTrain={params.get("train") ?? undefined} /> },
         { key: "coating", label: t("elDash.tab.coating"), content: <ElementCoatingTab /> },
         { key: "integrity", label: t("elDash.tab.integrity"), content: <ElementIntegrityTab /> },
         { key: "settings", label: t("elDash.tab.settings"), content: <ElementSettingsTab /> },

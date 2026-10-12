@@ -8,6 +8,8 @@ import { useI18n } from "@/lib/i18n/context";
 import type { Locale } from "@/lib/i18n/translations";
 import { useTheme } from "@/lib/theme/context";
 import { ChangeOwnPasswordDialog } from "@/components/auth/change-password-dialog";
+import { TopbarClock } from "@/components/layout/topbar-clock";
+import { TicketBell } from "@/components/tickets/ticket-bell";
 
 export function SessionControls({ classic }: { classic?: boolean }) {
   const { t, locale, setLocale } = useI18n();
@@ -22,6 +24,8 @@ export function SessionControls({ classic }: { classic?: boolean }) {
 
   return (
     <div className="flex items-center gap-1">
+      <TicketBell classic={classic} />
+      <TopbarClock classic={classic} />
       {(["en", "fa"] as Locale[]).map((loc) => (
         <button
           key={loc}

@@ -1300,8 +1300,72 @@ export interface PartsResponse {
   truncated: boolean;
 }
 
+export type CellStatus = "ok" | "conflict" | "stale";
+
+export interface CellElement {
+  element_nr: string;
+  state: ElementStage;
+  group_nr: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  commissioning_date: string | null;
+  dol: number | null;
+}
+
+export interface CellSlot {
+  electrolyzer: string;
+  position: number;
+  status: CellStatus;
+  elements: CellElement[];
+}
+
+export interface CellElectrolyzerRow {
+  electrolyzer: string;
+  capacity: number;
+  empty: number;
+  occupied: number;
+  conflict: number;
+  stale: number;
+  in_service: number;
+}
+
+export interface CellSummary {
+  capacity: number;
+  occupied_cells: number;
+  empty_cells: number;
+  elements_placed: number;
+  conflict_cells: number;
+  stale_cells: number;
+  multi_cell_elements: number;
+  unplaced: number;
+  out_of_range: number;
+  problems: number;
+}
+
+export interface CellTrain {
+  train: string;
+  electrolyzers: CellElectrolyzerRow[];
+}
+
+export interface CellCheck {
+  summary: CellSummary;
+  trains: CellTrain[];
+  problems: { cell: string; status: CellStatus; elements: string[] }[];
+  multi_cell: { element_nr: string; cells: string[] }[];
+}
+
+export interface CellsOverview {
+  generated_at: string;
+  summary: CellSummary;
+  trains: CellTrain[];
+  cells: CellSlot[];
+  multi_cell: { element_nr: string; cells: string[] }[];
+}
+
 export interface ElementDashOverview {
   generated_at: string;
+  cell_check?: CellCheck;
   capacity: number;
   counts: Record<ElementStage | "total", number>;
   in_plant: number;
