@@ -41,6 +41,10 @@ FORM_KEYS: list[str] = [
     "settings",
     "import_export",
     "activity",
+    # Warehouse workflow groups ("edit" = member of the group, gets its cartable + notifications)
+    "wf_c90",
+    "wf_procurement",
+    "wf_warehouse",
 ]
 
 # Per-form table fields that can be granted view/edit independently of the
@@ -383,6 +387,24 @@ DEFAULT_ROLES: list[dict] = [
             "settings": "none",
             "import_export": "none",
         },
+    },
+    {
+        "name": "C-90",
+        "description": "C-90 — درخواست پوشش‌دهی مجدد، تأیید نهایی و ثبت المنت‌های خرید جدید",
+        "is_system": True,
+        "permissions": {"anodes": "view", "cathodes": "view", "storage": "view", "wf_c90": "edit"},
+    },
+    {
+        "name": "Procurement",
+        "description": "تدارکات — انتخاب شرکت، ارسال/دریافت از شرکت پوشش‌دهنده و خرید جدید",
+        "is_system": True,
+        "permissions": {"storage": "view", "wf_procurement": "edit"},
+    },
+    {
+        "name": "Warehouse",
+        "description": "انبار — ثبت شماره ایندنت و تاریخ ورود به انبار",
+        "is_system": True,
+        "permissions": {"storage": "view", "wf_warehouse": "edit"},
     },
 ]
 

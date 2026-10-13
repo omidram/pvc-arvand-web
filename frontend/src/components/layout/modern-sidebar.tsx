@@ -45,6 +45,8 @@ import { useTheme } from "@/lib/theme/context";
 import { monitoringApi } from "@/lib/endpoints";
 import { TopbarClock } from "@/components/layout/topbar-clock";
 import { TicketBell } from "@/components/tickets/ticket-bell";
+import { WorkflowBell } from "@/components/workflow/workflow-bell";
+import { WAREHOUSE_VIEW_KEYS, workflowApi } from "@/lib/workflow";
 
 const NAV_GROUPS: {
   groupKey: string;
@@ -147,6 +149,8 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
     refetchInterval: 20_000,
   });
   const openAlerts = alertSummary.data?.open_total ?? 0;
+  const wfSummary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: 15_000 });
+  const wfWaiting = wfSummary.data?.cartable ?? 0;
 
   return (
     <aside className={cn("modern-sidebar", open && "is-open")}>
@@ -172,6 +176,7 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
       <div className="ms-toolbar">
         <TopbarClock className="ms-clock" />
         <TicketBell />
+        <WorkflowBell />
         {(["en", "fa"] as Locale[]).map((loc) => (
           <button
             key={loc}
@@ -206,6 +211,7 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
             if (item.formKey === "monitoring") return canMonitor;
             if (item.href === "/inspections") return canSeeInspections(canView);
             if (item.href === "/segregation") return canSeeSegregation(canView);
+            if (item.href === "/storage") return WAREHOUSE_VIEW_KEYS.some((k) => canView(k));
             return canView(item.formKey);
           });
           if (visibleItems.length === 0) return null;
@@ -219,7 +225,7 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
                   active={navActive(pathname, item.href)}
                   icon={item.icon}
                   label={t(item.labelKey)}
-                  badge={item.href === "/monitoring" ? openAlerts : undefined}
+                  badge={item.href === "/monitoring" ? openAlerts : item.href === "/storage" ? wfWaiting : undefined}
                   onNavigate={onNavigate}
                 />
               ))}

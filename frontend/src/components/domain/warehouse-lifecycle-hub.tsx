@@ -1,11 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { ExternalLink, History, Search, Send } from "lucide-react";
+import { useState } from "react";
+import { ExternalLink, History, Search } from "lucide-react";
 import { WarehouseInventoryPanel } from "@/components/domain/warehouse-inventory-panel";
-import { Badge } from "@/components/ui/badge";
+import {
+  CoatingWorkflowPanel,
+  PurchaseWorkflowPanel,
+  WorkflowCartablePanel,
+  WorkflowDetailModal,
+  WorkflowHistoryPanel,
+  useWorkflowMeta,
+} from "@/components/domain/warehouse-workflow";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { DateInput } from "@/components/ui/date-input";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
@@ -13,27 +21,27 @@ import { useAuth } from "@/lib/auth/context";
 import {
   warehouseLifecycleApi,
   type WhCompany,
-  type WhDispatch,
   type WhElementTimeline,
   type WhLifecycleDashboard,
-  type WhPurchase,
-  type WhReceiving,
 } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
+import { workflowApi, type WfFlow } from "@/lib/workflow";
 
 export type WhSection =
   | "dashboard"
+  | "cartable"
   | "inventory"
   | "elements"
   | "companies"
-  | "dispatch"
-  | "receiving"
+  | "coating"
   | "purchase"
+  | "history"
   | "decommission"
-  | "punch"
   | "timeline"
   | "search";
+
+const SECTIONS: WhSection[] = ["dashboard", "cartable", "inventory", "elements", "companies", "coating", "purchase", "history", "decommission", "timeline", "search"];
 
 const DECOMM_REASONS = ["failure", "end_of_life", "mechanical", "no_recoat", "out_of_spec", "other"] as const;
 
@@ -48,47 +56,68 @@ function statusLabel(t: (k: string) => string, code: string | null | undefined) 
   return v === key ? code : v;
 }
 
-function SectionNav({ section, setSection, t }: { section: WhSection; setSection: (s: WhSection) => void; t: (k: string) => string }) {
-  const items: { id: WhSection; label: string }[] = [
-    { id: "dashboard", label: t("wh.nav.dashboard") },
-    { id: "inventory", label: t("wh.nav.inventory") },
-    { id: "elements", label: t("wh.nav.elements") },
-    { id: "companies", label: t("wh.nav.companies") },
-    { id: "dispatch", label: t("wh.nav.dispatch") },
-    { id: "receiving", label: t("wh.nav.receiving") },
-    { id: "purchase", label: t("wh.nav.purchase") },
-    { id: "decommission", label: t("wh.nav.decommission") },
-    { id: "punch", label: t("wh.nav.punch") },
-    { id: "timeline", label: t("wh.nav.timeline") },
-    { id: "search", label: t("wh.nav.search") },
-  ];
+function SectionNav({
+  section,
+  setSection,
+  waiting,
+  t,
+}: {
+  section: WhSection;
+  setSection: (s: WhSection) => void;
+  waiting: number;
+  t: (k: string) => string;
+}) {
   return (
     <nav className="wh-section-nav" aria-label={t("wh.nav.label")}>
-      {items.map((item) => (
-        <button key={item.id} type="button" className={`wh-section-btn${section === item.id ? " is-active" : ""}`} onClick={() => setSection(item.id)}>
-          {item.label}
+      {SECTIONS.map((id) => (
+        <button key={id} type="button" className={`wh-section-btn${section === id ? " is-active" : ""}`} onClick={() => setSection(id)}>
+          {t(`wh.nav.${id}`)}
+          {id === "cartable" && waiting > 0 ? <span className="wf-nav-count">{waiting}</span> : null}
         </button>
       ))}
     </nav>
   );
 }
 
+function parseTarget(raw: string | null): { flow: WfFlow; id: number } | null {
+  const m = raw?.match(/^(coating|purchase):(\d+)$/);
+  return m ? { flow: m[1] as WfFlow, id: Number(m[2]) } : null;
+}
+
 export function WarehouseLifecycleHub() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
   const qc = useQueryClient();
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
   const editable = canEdit("storage") || canEdit("anodes") || canEdit("cathodes");
-  const [section, setSection] = useState<WhSection>("dashboard");
+  const meta = useWorkflowMeta();
+  const urlSection = params.get("section") as WhSection | null;
+  const urlTarget = parseTarget(params.get("wf"));
+  const [picked, setPicked] = useState<WhSection | null>(null);
+  const [opened, setOpened] = useState<{ flow: WfFlow; id: number } | null>(null);
+  const [closedUrlTarget, setClosedUrlTarget] = useState<string | null>(null);
+  const defaultSection: WhSection = (meta.data?.groups.length ?? 0) > 0 ? "cartable" : "dashboard";
+  const section: WhSection =
+    picked ?? (urlSection && SECTIONS.includes(urlSection) ? urlSection : urlTarget ? (urlTarget.flow === "coating" ? "coating" : "purchase") : defaultSection);
+  const target = opened ?? (urlTarget && params.get("wf") !== closedUrlTarget ? urlTarget : null);
   const dash = useQuery({ queryKey: ["wh", "dashboard"], queryFn: () => warehouseLifecycleApi.dashboard() });
   const companies = useQuery({ queryKey: ["wh", "companies"], queryFn: () => warehouseLifecycleApi.companies() });
-  const dispatches = useQuery({ queryKey: ["wh", "dispatches"], queryFn: () => warehouseLifecycleApi.dispatches() });
-  const receivings = useQuery({ queryKey: ["wh", "receivings"], queryFn: () => warehouseLifecycleApi.receivings() });
-  const purchases = useQuery({ queryKey: ["wh", "purchases"], queryFn: () => warehouseLifecycleApi.purchases() });
-  const punches = useQuery({ queryKey: ["wh", "punches"], queryFn: () => warehouseLifecycleApi.punches() });
   const decommissions = useQuery({ queryKey: ["wh", "decommissions"], queryFn: () => warehouseLifecycleApi.decommissions() });
   const states = useQuery({ queryKey: ["wh", "states"], queryFn: () => warehouseLifecycleApi.elementStates() });
+  const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: 15_000 });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["wh"] });
+  const openRecord = (flow: WfFlow, id: number) => setOpened({ flow, id });
+  const closeRecord = () => {
+    setOpened(null);
+    if (urlTarget) {
+      setClosedUrlTarget(params.get("wf"));
+      router.replace(pathname);
+    }
+  };
+  const companyList = companies.data ?? [];
 
   return (
     <div className="wh">
@@ -99,26 +128,21 @@ export function WarehouseLifecycleHub() {
           <p>{t("wh.subtitle")}</p>
         </div>
       </header>
-      <SectionNav section={section} setSection={setSection} t={t} />
+      <SectionNav section={section} setSection={setPicked} waiting={summary.data?.cartable ?? 0} t={t} />
       {section === "dashboard" ? <DashboardPanel dash={dash} t={t} /> : null}
+      {section === "cartable" ? <WorkflowCartablePanel onOpen={openRecord} /> : null}
       {section === "inventory" ? <WarehouseInventoryPanel /> : null}
-      {section === "elements" ? <ElementsPanel states={states} t={t} setSection={setSection} /> : null}
+      {section === "elements" ? <ElementsPanel states={states} t={t} setSection={setPicked} /> : null}
       {section === "companies" ? <CompaniesPanel companies={companies} editable={editable} t={t} onSaved={invalidate} /> : null}
-      {section === "dispatch" ? (
-        <DispatchPanel dispatches={dispatches} companies={companies.data ?? []} editable={editable} t={t} onSaved={invalidate} />
-      ) : null}
-      {section === "receiving" ? (
-        <ReceivingPanel receivings={receivings} dispatches={dispatches.data ?? []} editable={editable} t={t} onSaved={invalidate} />
-      ) : null}
-      {section === "purchase" ? (
-        <PurchasePanel purchases={purchases} companies={companies.data ?? []} editable={editable} t={t} onSaved={invalidate} />
-      ) : null}
+      {section === "coating" ? <CoatingWorkflowPanel onOpen={openRecord} /> : null}
+      {section === "purchase" ? <PurchaseWorkflowPanel companies={companyList} onOpen={openRecord} /> : null}
+      {section === "history" ? <WorkflowHistoryPanel companies={companyList} onOpen={openRecord} /> : null}
       {section === "decommission" ? (
         <DecommissionPanel rows={decommissions} editable={editable} t={t} onSaved={invalidate} />
       ) : null}
-      {section === "punch" ? <PunchPanel rows={punches} companies={companies.data ?? []} dispatches={dispatches.data ?? []} editable={editable} t={t} onSaved={invalidate} /> : null}
       {section === "timeline" ? <TimelinePanel t={t} /> : null}
-      {section === "search" ? <SearchPanel t={t} companies={companies.data ?? []} /> : null}
+      {section === "search" ? <SearchPanel t={t} companies={companyList} /> : null}
+      <WorkflowDetailModal target={target} companies={companyList} onClose={closeRecord} />
     </div>
   );
 }
@@ -225,8 +249,8 @@ function CompaniesPanel({
   const [editId, setEditId] = useState<number | null>(null);
   const [historyId, setHistoryId] = useState<number | null>(null);
   const history = useQuery({
-    queryKey: ["wh", "company-history", historyId],
-    queryFn: () => warehouseLifecycleApi.companyHistory(historyId!),
+    queryKey: ["wf", "company-stats", historyId],
+    queryFn: async () => (await workflowApi.companyReport()).find((r) => r.company_id === historyId) ?? null,
     enabled: historyId != null,
   });
   const save = useMutation({
@@ -268,22 +292,23 @@ function CompaniesPanel({
           <div className="wh-history-box">
             <h4>{t("wh.companyHistory")}</h4>
             <div className="wh-facts wh-facts-grid">
-              <div>
-                <span>{t("wh.stats.sent")}</span>
-                <b>{history.data.stats.pieces_sent}</b>
-              </div>
-              <div>
-                <span>{t("wh.stats.returned")}</span>
-                <b>{history.data.stats.pieces_returned}</b>
-              </div>
-              <div>
-                <span>{t("wh.stats.atCompany")}</span>
-                <b>{history.data.stats.at_company}</b>
-              </div>
-              <div>
-                <span>{t("wh.stats.punches")}</span>
-                <b>{history.data.stats.punches}</b>
-              </div>
+              {(
+                [
+                  ["wf.rep.coatingPieces", `${history.data.coating_pieces} (${history.data.coating_requests})`],
+                  ["wf.rep.atCompany", history.data.at_company],
+                  ["wf.reworks", history.data.reworks],
+                  ["wf.rep.purchased", `${history.data.purchased_anodes} / ${history.data.purchased_cathodes}`],
+                  ["wf.rep.onTime", `${history.data.on_time} / ${history.data.deliveries}`],
+                  ["wf.rep.late", history.data.late],
+                  ["wf.rep.lateCompany", history.data.late_company],
+                  ["wf.rep.avgDelay", history.data.avg_delay ?? "—"],
+                ] as const
+              ).map(([label, value]) => (
+                <div key={label}>
+                  <span>{t(label)}</span>
+                  <b>{value}</b>
+                </div>
+              ))}
             </div>
           </div>
         ) : null}
@@ -326,286 +351,6 @@ function CompaniesPanel({
           </button>
         </form>
       ) : null}
-    </div>
-  );
-}
-
-function DispatchPanel({
-  dispatches,
-  companies,
-  editable,
-  t,
-  onSaved,
-}: {
-  dispatches: ReturnType<typeof useQuery<WhDispatch[]>>;
-  companies: WhCompany[];
-  editable: boolean;
-  t: (k: string) => string;
-  onSaved: () => void;
-}) {
-  const coatingCos = companies.filter((c) => c.is_coating);
-  const [companyId, setCompanyId] = useState<number | "">("");
-  const [dispatchDate, setDispatchDate] = useState(() => todayIso());
-  const [sendNo, setSendNo] = useState("");
-  const [lines, setLines] = useState("anode:A-001\ncathode:K-001");
-  const create = useMutation({
-    mutationFn: () => {
-      const items = lines
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean)
-        .map((line) => {
-          const [kind, serial] = line.split(/[:,\s]+/);
-          return { element_kind: kind as "anode" | "cathode", serial: serial ?? "" };
-        })
-        .filter((i) => (i.element_kind === "anode" || i.element_kind === "cathode") && i.serial);
-      if (!companyId || !items.length) throw new Error(t("wh.validation.required"));
-      return warehouseLifecycleApi.createDispatch({
-        company_id: Number(companyId),
-        dispatch_date: dispatchDate,
-        send_no: sendNo || undefined,
-        items,
-      });
-    },
-    onSuccess: () => {
-      setLines("");
-      onSaved();
-      dispatches.refetch();
-    },
-  });
-  const cols: Column<WhDispatch>[] = [
-    { key: "send_no", header: t("wh.col.sendNo") },
-    { key: "company_name", header: t("wh.col.company") },
-    { key: "dispatch_date", header: t("wh.col.date"), render: (r) => formatDate(r.dispatch_date) },
-    { key: "status", header: t("storage.status"), render: (r) => <Badge color="cyan">{r.status}</Badge> },
-    { key: "items", header: t("wh.col.count"), render: (r) => r.items.length },
-  ];
-  return (
-    <div className="wh-panel-block">
-      {editable ? (
-        <form
-          className="wh-form wh-form-inline"
-          onSubmit={(e) => {
-            e.preventDefault();
-            create.mutate();
-          }}
-        >
-          <label>
-            {t("wh.col.company")}
-            <select value={companyId} onChange={(e) => setCompanyId(e.target.value ? Number(e.target.value) : "")} required>
-              <option value="">—</option>
-              {coatingCos.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t("wh.col.date")}
-            <DateInput type="date" value={dispatchDate} onChange={(e) => setDispatchDate(e.target.value)} />
-          </label>
-          <label>
-            {t("wh.col.sendNo")}
-            <input value={sendNo} onChange={(e) => setSendNo(e.target.value)} placeholder="CO-…" />
-          </label>
-          <label className="wh-grow">
-            {t("wh.col.lines")}
-            <textarea value={lines} onChange={(e) => setLines(e.target.value)} rows={3} placeholder="anode:A-001" />
-          </label>
-          <button type="submit" disabled={create.isPending}>
-            <Send size={14} /> {t("wh.newDispatch")}
-          </button>
-        </form>
-      ) : null}
-      <DataTable columns={cols} data={dispatches.data} keyField="id" isLoading={dispatches.isLoading} emptyTitle={t("wh.empty")} maxHeight="min(48vh, 540px)" />
-    </div>
-  );
-}
-
-function ReceivingPanel({
-  receivings,
-  dispatches,
-  editable,
-  t,
-  onSaved,
-}: {
-  receivings: ReturnType<typeof useQuery<WhReceiving[]>>;
-  dispatches: WhDispatch[];
-  editable: boolean;
-  t: (k: string) => string;
-  onSaved: () => void;
-}) {
-  const open = dispatches.filter((d) => d.status === "sent" || d.status === "partial");
-  const [dispatchId, setDispatchId] = useState<number | "">("");
-  const [receiveDate, setReceiveDate] = useState(() => todayIso());
-  const [serial, setSerial] = useState("");
-  const [kind, setKind] = useState<"anode" | "cathode">("anode");
-  const [qc, setQc] = useState("");
-  const create = useMutation({
-    mutationFn: () => {
-      const d = open.find((x) => x.id === dispatchId);
-      const item = d?.items.find((i) => i.element_kind === kind && i.serial.toUpperCase() === serial.trim().toUpperCase() && !i.received);
-      return warehouseLifecycleApi.createReceiving({
-        dispatch_id: dispatchId ? Number(dispatchId) : undefined,
-        receive_date: receiveDate,
-        items: [
-          {
-            dispatch_item_id: item?.id,
-            element_kind: kind,
-            serial: serial.trim(),
-            qc_result: qc || undefined,
-          },
-        ],
-      });
-    },
-    onSuccess: () => {
-      setSerial("");
-      onSaved();
-      receivings.refetch();
-    },
-  });
-  const cols: Column<WhReceiving>[] = [
-    { key: "receive_no", header: t("wh.col.receiveNo") },
-    { key: "send_no", header: t("wh.col.sendNo"), render: (r) => r.send_no || "—" },
-    { key: "receive_date", header: t("wh.col.date"), render: (r) => formatDate(r.receive_date) },
-    { key: "items", header: t("wh.col.count"), render: (r) => r.items.length },
-  ];
-  return (
-    <div className="wh-panel-block">
-      <p className="wh-subdesc">{t("wh.receiving.hint")}</p>
-      {editable ? (
-        <form
-          className="wh-form wh-form-inline"
-          onSubmit={(e) => {
-            e.preventDefault();
-            create.mutate();
-          }}
-        >
-          <label>
-            {t("wh.col.sendNo")}
-            <select value={dispatchId} onChange={(e) => setDispatchId(e.target.value ? Number(e.target.value) : "")}>
-              <option value="">—</option>
-              {open.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.send_no} ({d.status})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t("wh.col.kind")}
-            <select value={kind} onChange={(e) => setKind(e.target.value as "anode" | "cathode")}>
-              <option value="anode">{t("storage.tabAnodes")}</option>
-              <option value="cathode">{t("storage.tabCathodes")}</option>
-            </select>
-          </label>
-          <label>
-            {t("wh.col.serial")}
-            <input value={serial} onChange={(e) => setSerial(e.target.value)} required />
-          </label>
-          <label>
-            {t("wh.col.qc")}
-            <input value={qc} onChange={(e) => setQc(e.target.value)} />
-          </label>
-          <label>
-            {t("wh.col.date")}
-            <DateInput type="date" value={receiveDate} onChange={(e) => setReceiveDate(e.target.value)} />
-          </label>
-          <button type="submit" disabled={create.isPending}>
-            {t("wh.newReceiving")}
-          </button>
-        </form>
-      ) : null}
-      <DataTable columns={cols} data={receivings.data} keyField="id" isLoading={receivings.isLoading} emptyTitle={t("wh.empty")} maxHeight="min(48vh, 540px)" />
-    </div>
-  );
-}
-
-function PurchasePanel({
-  purchases,
-  companies,
-  editable,
-  t,
-  onSaved,
-}: {
-  purchases: ReturnType<typeof useQuery<WhPurchase[]>>;
-  companies: WhCompany[];
-  editable: boolean;
-  t: (k: string) => string;
-  onSaved: () => void;
-}) {
-  const suppliers = companies.filter((c) => c.is_supplier);
-  const [supplierId, setSupplierId] = useState<number | "">("");
-  const [purchaseDate, setPurchaseDate] = useState(() => todayIso());
-  const [kind, setKind] = useState<"anode" | "cathode">("anode");
-  const [serials, setSerials] = useState("");
-  const create = useMutation({
-    mutationFn: () => {
-      const list = serials.split(/[\n,;]+/).map((s) => s.trim()).filter(Boolean);
-      if (!supplierId || !list.length) throw new Error(t("wh.validation.required"));
-      return warehouseLifecycleApi.createPurchase({
-        supplier_id: Number(supplierId),
-        purchase_date: purchaseDate,
-        element_kind: kind,
-        serials: list,
-      });
-    },
-    onSuccess: () => {
-      setSerials("");
-      onSaved();
-      purchases.refetch();
-    },
-  });
-  const cols: Column<WhPurchase>[] = [
-    { key: "purchase_no", header: t("wh.col.purchaseNo") },
-    { key: "supplier_name", header: t("wh.col.company") },
-    { key: "purchase_date", header: t("wh.col.date"), render: (r) => formatDate(r.purchase_date) },
-    { key: "element_kind", header: t("wh.col.kind") },
-    { key: "serials", header: t("wh.col.count"), render: (r) => r.serials.length },
-  ];
-  return (
-    <div className="wh-panel-block">
-      {editable ? (
-        <form
-          className="wh-form wh-form-inline"
-          onSubmit={(e) => {
-            e.preventDefault();
-            create.mutate();
-          }}
-        >
-          <label>
-            {t("wh.role.supplier")}
-            <select value={supplierId} onChange={(e) => setSupplierId(e.target.value ? Number(e.target.value) : "")} required>
-              <option value="">—</option>
-              {suppliers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t("wh.col.kind")}
-            <select value={kind} onChange={(e) => setKind(e.target.value as "anode" | "cathode")}>
-              <option value="anode">{t("storage.tabAnodes")}</option>
-              <option value="cathode">{t("storage.tabCathodes")}</option>
-            </select>
-          </label>
-          <label>
-            {t("wh.col.date")}
-            <DateInput type="date" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} />
-          </label>
-          <label className="wh-grow">
-            {t("wh.col.serials")}
-            <textarea value={serials} onChange={(e) => setSerials(e.target.value)} rows={2} />
-          </label>
-          <button type="submit" disabled={create.isPending}>
-            {t("wh.newPurchase")}
-          </button>
-        </form>
-      ) : null}
-      <DataTable columns={cols} data={purchases.data} keyField="id" isLoading={purchases.isLoading} emptyTitle={t("wh.empty")} maxHeight="min(48vh, 540px)" />
     </div>
   );
 }
@@ -683,101 +428,6 @@ function DecommissionPanel({
           </label>
           <button type="submit" disabled={create.isPending}>
             {t("wh.newDecommission")}
-          </button>
-        </form>
-      ) : null}
-      <DataTable columns={cols} data={(rows.data as Row[]) ?? []} keyField="id" isLoading={rows.isLoading} emptyTitle={t("wh.empty")} maxHeight="min(48vh, 540px)" />
-    </div>
-  );
-}
-
-function PunchPanel({
-  rows,
-  companies,
-  dispatches,
-  editable,
-  t,
-  onSaved,
-}: {
-  rows: ReturnType<typeof useQuery>;
-  companies: WhCompany[];
-  dispatches: WhDispatch[];
-  editable: boolean;
-  t: (k: string) => string;
-  onSaved: () => void;
-}) {
-  const [companyId, setCompanyId] = useState<number | "">("");
-  const [dispatchId, setDispatchId] = useState<number | "">("");
-  const [kind, setKind] = useState<"anode" | "cathode">("anode");
-  const [serial, setSerial] = useState("");
-  const [punchNo, setPunchNo] = useState("");
-  const create = useMutation({
-    mutationFn: () =>
-      warehouseLifecycleApi.createPunch({
-        company_id: companyId ? Number(companyId) : undefined,
-        dispatch_id: dispatchId ? Number(dispatchId) : undefined,
-        element_kind: kind,
-        serial,
-        punch_no: punchNo || undefined,
-      }),
-    onSuccess: () => {
-      setPunchNo("");
-      onSaved();
-      rows.refetch();
-    },
-  });
-  type Row = { id: number; serial: string; element_kind: string; send_no: string | null; punch_no: string | null; punch_date: string | null };
-  const cols: Column<Row>[] = useMemo(
-    () => [
-      { key: "serial", header: t("wh.col.serial") },
-      { key: "punch_no", header: t("wh.col.punchNo"), render: (r) => r.punch_no || "—" },
-      { key: "send_no", header: t("wh.col.sendNo"), render: (r) => r.send_no || "—" },
-      { key: "punch_date", header: t("wh.col.date"), render: (r) => formatDate(r.punch_date) },
-    ],
-    [t]
-  );
-  return (
-    <div className="wh-panel-block">
-      {editable ? (
-        <form
-          className="wh-form wh-form-inline"
-          onSubmit={(e) => {
-            e.preventDefault();
-            create.mutate();
-          }}
-        >
-          <label>
-            {t("wh.col.company")}
-            <select value={companyId} onChange={(e) => setCompanyId(e.target.value ? Number(e.target.value) : "")}>
-              <option value="">—</option>
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t("wh.col.sendNo")}
-            <select value={dispatchId} onChange={(e) => setDispatchId(e.target.value ? Number(e.target.value) : "")}>
-              <option value="">—</option>
-              {dispatches.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.send_no}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t("wh.col.serial")}
-            <input value={serial} onChange={(e) => setSerial(e.target.value)} required />
-          </label>
-          <label>
-            {t("wh.col.punchNo")}
-            <input value={punchNo} onChange={(e) => setPunchNo(e.target.value)} />
-          </label>
-          <button type="submit" disabled={create.isPending}>
-            {t("wh.newPunch")}
           </button>
         </form>
       ) : null}

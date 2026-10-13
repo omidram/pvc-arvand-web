@@ -24,7 +24,7 @@ from ..warehouse_lifecycle import (
 
 router = APIRouter(prefix="/warehouse-lifecycle", tags=["warehouse-lifecycle"])
 
-_access = Depends(require_any_form_access("storage", "anodes", "cathodes"))
+_access = Depends(require_any_form_access("storage", "anodes", "cathodes", "wf_c90", "wf_procurement", "wf_warehouse"))
 
 
 class CompanyIn(BaseModel):

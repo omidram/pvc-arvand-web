@@ -1,17 +1,19 @@
 "use client";
 
+import { Suspense } from "react";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { WarehouseLifecycleHub } from "@/components/domain/warehouse-lifecycle-hub";
-import { ErrorState } from "@/components/ui/spinner";
+import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { useI18n } from "@/lib/i18n/context";
+import { WAREHOUSE_VIEW_KEYS } from "@/lib/workflow";
 
 export default function StoragePage() {
   const { t } = useI18n();
   const { canView } = useAuth();
   useCalendar();
-  const allowed = canView("storage") || canView("anodes") || canView("cathodes") || canView("membranes");
+  const allowed = WAREHOUSE_VIEW_KEYS.some((k) => canView(k));
 
   if (!allowed) {
     return (
@@ -23,7 +25,9 @@ export default function StoragePage() {
 
   return (
     <AccessFormWindow caption={t("storage.title")} helpKey="storage">
-      <WarehouseLifecycleHub />
+      <Suspense fallback={<LoadingState />}>
+        <WarehouseLifecycleHub />
+      </Suspense>
     </AccessFormWindow>
   );
 }

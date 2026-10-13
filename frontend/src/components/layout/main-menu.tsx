@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { settingsApi, statisticsApi } from "@/lib/endpoints";
 import { ticketsApi } from "@/lib/tickets";
+import { WAREHOUSE_VIEW_KEYS } from "@/lib/workflow";
 import { useAuth } from "@/lib/auth/context";
 import { UhdeCellBars, UhdeLogoMark } from "@/components/layout/uhde-mark";
 import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
@@ -150,7 +151,7 @@ export function MainMenu() {
             <MenuButton
               href="/storage"
               label={t("nav.storage")}
-              allowed={canView("storage") || canView("anodes") || canView("cathodes") || canView("membranes")}
+              allowed={WAREHOUSE_VIEW_KEYS.some((k) => canView(k))}
               className="col-start-1 row-start-4"
             />
 

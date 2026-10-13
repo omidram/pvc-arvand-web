@@ -10,6 +10,7 @@ import { useTheme } from "@/lib/theme/context";
 import { ChangeOwnPasswordDialog } from "@/components/auth/change-password-dialog";
 import { TopbarClock } from "@/components/layout/topbar-clock";
 import { TicketBell } from "@/components/tickets/ticket-bell";
+import { WorkflowBell } from "@/components/workflow/workflow-bell";
 
 export function SessionControls({ classic }: { classic?: boolean }) {
   const { t, locale, setLocale } = useI18n();
@@ -25,6 +26,7 @@ export function SessionControls({ classic }: { classic?: boolean }) {
   return (
     <div className="flex items-center gap-1">
       <TicketBell classic={classic} />
+      <WorkflowBell classic={classic} />
       <TopbarClock classic={classic} />
       {(["en", "fa"] as Locale[]).map((loc) => (
         <button

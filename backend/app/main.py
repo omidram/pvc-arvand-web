@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from sqlalchemy import inspect, text
 
-from . import alerts_engine, arialims_sync_scheduler, audit, backup_scheduler, models, ticket_models, voltage_sync_scheduler  # noqa: F401
+from . import alerts_engine, arialims_sync_scheduler, audit, backup_scheduler, models, ticket_models, voltage_sync_scheduler, workflow_models  # noqa: F401
 from .audit_middleware import AuditMiddleware
 from .auth import INSPECTION_COLLAB_KEYS, require_any_form_access, require_form_access, seed_default_admin
 from .cell_component_names import persist_industrial_names
@@ -48,6 +48,7 @@ from .routers import (
     tickets as tickets_router_module,
     un_ce as un_ce_router_module,
     warehouse_lifecycle as warehouse_lifecycle_router_module,
+    workflow as workflow_router_module,
     users as users_router_module,
     voltage,
     voltage_sync as voltage_sync_router_module,
@@ -495,6 +496,8 @@ _api(un_ce_router_module.router, dependencies=_perm("voltage"))
 # --- Lagerbestand (Access: frmLagerbestandAnoden/Kathoden/Membranen) ---
 _api(storage_router_module.router)
 _api(warehouse_lifecycle_router_module.router)
+# Recoating / new-purchase workflows: access is checked per step against the wf_* group keys.
+_api(workflow_router_module.router)
 
 # --- Analyses ---
 _api(analyses.router, dependencies=_perm("analyses"))
