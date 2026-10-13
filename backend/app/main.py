@@ -175,6 +175,20 @@ def _ensure_plant_settings_session_idle() -> None:
 _ensure_plant_settings_session_idle()
 
 
+def _ensure_element_dashboard_queue_days() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("element_dashboard_settings")}
+    except Exception:
+        return
+    if not present or "shop_queue_days" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE element_dashboard_settings ADD COLUMN shop_queue_days INTEGER"))
+
+
+_ensure_element_dashboard_queue_days()
+
+
 def _ensure_segregation_disassemble_date() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("electrode_segregations")}

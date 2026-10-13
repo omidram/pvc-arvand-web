@@ -84,6 +84,18 @@ DEFAULT_SETTINGS = {
     "membrane_life_days": 1825,
     "warn_percent": 85,
     "coating_thickness_min": None,
+    "shop_queue_days": 90,
+}
+
+# One confirmation moves an element to the next step of the cell-shop cycle.
+NEXT_STAGE = {
+    "decommissioned": "disassembled",
+    "awaiting_disassembly": "disassembled",
+    "disassembled": "awaiting_assembly",
+    "new": "awaiting_assembly",
+    "awaiting_assembly": "assembling",
+    "assembling": "awaiting_qc",
+    "awaiting_qc": "ready",
 }
 
 
@@ -107,6 +119,7 @@ def settings_dict(row: models.ElementDashboardSettings) -> dict[str, Any]:
         "membrane_life_days": row.membrane_life_days,
         "warn_percent": row.warn_percent if row.warn_percent is not None else 85,
         "coating_thickness_min": row.coating_thickness_min,
+        "shop_queue_days": row.shop_queue_days if row.shop_queue_days is not None else DEFAULT_SETTINGS["shop_queue_days"],
     }
 
 
@@ -214,6 +227,7 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
     # shop-only elements (never installed yet)
     keys = set(latest) | set(manual)
     today = date.today()
+    queue_days = settings_dict(get_settings(db))["shop_queue_days"]
     out: list[dict[str, Any]] = []
     for key in keys:
         el = latest.get(key)
@@ -244,6 +258,10 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
             since = stamp.date()
             if source == "manual" and st is not None:
                 note, updated_by = st.note, st.updated_by
+        elif base == "decommissioned":
+            stage, source = "awaiting_disassembly", "auto"
+        elif base == "disassembled" and queue_days and event is not None and (today - event).days <= queue_days:
+            stage, source = "awaiting_assembly", "auto"
 
         dol = None
         if el is not None and base in ("in_service", "installed", "decommissioned"):
@@ -327,6 +345,39 @@ def set_shop_stage(
     row.updated_at = datetime.now()  # local time, comparable with the plant dates
     db.add(models.ElementShopEvent(element_nr=shown[:50], from_stage=previous, to_stage=stage, note=note, user=user, created_at=datetime.now()))
     return {"element_nr": shown, "stage": stage}
+
+
+def advance_stage(db: Session, element_nr: str, note: str | None, user: str | None, day: date | None = None) -> dict[str, Any]:
+    """Move one element to the next step of the cycle. Dismantling is written to Assembly Data. Raises ValueError."""
+    key = compact_nr(element_nr)
+    if not key:
+        raise ValueError("Element number is required")
+    item = next((i for i in build_pipeline(db) if i["key"] == key), None)
+    if item is None:
+        raise ValueError(f"Element {element_nr} was not found")
+    target = NEXT_STAGE.get(item["state"])
+    if target is None:
+        raise ValueError(f"Element {item['element_nr']} is '{item['state']}'; there is no next cell-shop step (installing is entered in Assembly Data)")
+    if target != "disassembled":
+        result = set_shop_stage(db, item["element_nr"], target, note, user, {key: item})
+        return {**result, "from": item["state"]}
+
+    day = day or date.today()
+    rows = [el for el in db.query(models.Element).all() if compact_nr(el.element_nr) == key]
+    if not rows:
+        raise ValueError(f"Element {item['element_nr']} has no Assembly Data row")
+    el = max(rows, key=_life_key)
+    started = _as_date(el.decommissioning_date) or _as_date(el.commissioning_date) or _as_date(el.assembly_date)
+    if started and day < started:
+        raise ValueError(f"Dismantling date {day.isoformat()} is before the element was switched off ({started.isoformat()})")
+    if el.decommissioning_date is None:
+        el.decommissioning_date = day
+    el.disassembly_date = day
+    for row in db.query(models.ElementShopState).all():
+        if compact_nr(row.element_nr) == key:
+            db.delete(row)
+    db.add(models.ElementShopEvent(element_nr=item["element_nr"][:50], from_stage=item["state"], to_stage="disassembled", note=note, user=user, created_at=datetime.now()))
+    return {"element_nr": item["element_nr"], "stage": "disassembled", "from": item["state"]}
 
 
 # ---------------------------------------------------------------- coating jobs
@@ -708,7 +759,7 @@ def _real(raw: Any) -> bool:
 
 def installed_overview(db: Session, settings: dict[str, Any] | None = None) -> dict[str, Any]:
     cfg = settings or settings_dict(get_settings(db))
-    pipeline = [p for p in build_pipeline(db) if p["state"] in ("in_service", "installed", "decommissioned")]
+    pipeline = [p for p in build_pipeline(db) if p["base_state"] in PLACED_STATES]
     life = {}
     for kind in ("anode", "cathode", "membrane"):
         life[kind] = {r["key"]: r for r in part_rows(db, kind, cfg) if r["installed"]}
@@ -951,7 +1002,7 @@ def overview(db: Session) -> dict[str, Any]:
     recently_disassembled = sum(
         1
         for p in pipeline
-        if p["state"] == "disassembled" and p["disassembly_date"] and date.fromisoformat(p["disassembly_date"]) >= recent_cut
+        if p["base_state"] == "disassembled" and p["disassembly_date"] and date.fromisoformat(p["disassembly_date"]) >= recent_cut
     )
     shop_states = ("awaiting_disassembly", "awaiting_assembly", "assembling", "awaiting_qc", "ready")
     oldest = sorted((p for p in pipeline if p["state"] in shop_states and p["days_in_state"] is not None), key=lambda p: -p["days_in_state"])[:5]
@@ -974,10 +1025,10 @@ def overview(db: Session) -> dict[str, Any]:
             worst[cell] = ev.severity
     alerts = Counter(worst.values())
 
-    in_plant = counts["in_service"] + counts["installed"] + counts["decommissioned"]
+    in_plant = sum(1 for p in pipeline if p["base_state"] in PLACED_STATES)
     by_electrolyzer: Counter = Counter()
     for p in pipeline:
-        if p["state"] in ("in_service", "installed", "decommissioned") and p["electrolyzer"]:
+        if p["base_state"] in PLACED_STATES and p["electrolyzer"]:
             by_electrolyzer[p["electrolyzer"]] += 1
 
     events = (

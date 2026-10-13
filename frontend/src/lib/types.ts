@@ -1184,6 +1184,7 @@ export interface ElementDashSettings {
   membrane_life_days: number | null;
   warn_percent: number;
   coating_thickness_min: number | null;
+  shop_queue_days: number;
 }
 
 export interface PipelineItem {
@@ -1191,7 +1192,7 @@ export interface PipelineItem {
   key: string;
   state: ElementStage;
   base_state: string;
-  source: "derived" | "manual" | "inspection";
+  source: "derived" | "manual" | "inspection" | "auto";
   electrolyzer: string | null;
   position: string | null;
   group_nr: string | null;

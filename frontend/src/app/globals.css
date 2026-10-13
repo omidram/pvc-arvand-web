@@ -2528,6 +2528,23 @@ button.mon-history-link {
   overflow: auto;
 }
 
+.ch-breakdown {
+  width: 100%;
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+  border-collapse: collapse;
+}
+.ch-breakdown th { text-align: start; font-weight: 700; color: var(--win-muted); padding: 0.1rem 0.25rem; }
+.ch-breakdown td { padding: 0.12rem 0.25rem; border-top: 1px solid rgb(148 163 184 / 0.35); }
+.ch-breakdown td small { color: var(--win-muted); }
+.ch-breakdown tr.is-missing td { color: var(--win-muted); }
+.ch-breakdown tr.is-watch td:nth-child(3) { color: #1d4ed8; font-weight: 700; }
+.ch-breakdown tr.is-investigate td:nth-child(3) { color: #b45309; font-weight: 700; }
+.ch-breakdown tr.is-critical td:nth-child(3) { color: #dc2626; font-weight: 700; }
+.ch-how { margin-top: 0.35rem; font-size: 0.75rem; }
+.ch-how summary { cursor: pointer; font-weight: 700; color: #1d4ed8; }
+.ch-how ul { margin: 0.35rem 0 0; padding-inline-start: 1.1rem; list-style: disc; display: flex; flex-direction: column; gap: 0.2rem; }
+
 .ch-table-health {
   display: inline-flex;
   align-items: center;
@@ -5405,6 +5422,29 @@ html[data-theme="dark"] .wh-note { background: #164e63; color: #a5f3fc; }
 .ed-flow-step.is-zero { opacity: 0.5; }
 .ed-flow-value { font-size: 1.1rem; font-weight: 800; line-height: 1; }
 .ed-flow-label { font-size: 0.7rem; font-weight: 600; color: var(--win-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ed-cartable { display: flex; flex-direction: column; gap: 0.6rem; }
+.ed-cartable-body { display: flex; flex-direction: column; gap: 0.5rem; }
+.ed-cartable-scan {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 28rem;
+}
+.ed-cartable-scan input { flex: 1; font-size: 0.95rem; padding: 0.35rem 0.5rem; }
+.ed-cartable-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--win-face-dark);
+  border-inline-start: 4px solid #2563eb;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+.ed-cartable-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.ed-cartable-facts { display: flex; flex-wrap: wrap; gap: 0.35rem 1.1rem; font-size: 0.78rem; }
+.ed-cartable-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.6rem; }
 
 .ed-mini {
   display: flex;

@@ -1556,8 +1556,19 @@ export interface CellHealthRow {
   status: CellHealthStatus;
   peer_delta_v: number | null;
   trend_mv_day: number | null;
+  life_pct: number | null;
   reasons: string[];
-  factors: { name: string; status: string; value: number | null }[];
+  factors: CellHealthFactor[];
+}
+
+export interface CellHealthFactor {
+  name: "peer_voltage" | "voltage_trend" | "un_ce" | "current_efficiency" | "life" | "electrolyzer";
+  status: string;
+  value: number | null;
+  score: number | null;
+  weight: number;
+  scope: "cell" | "electrolyzer";
+  detail: string | null;
 }
 
 export interface CellHealthBoard {
@@ -1740,6 +1751,8 @@ export const elementDashboardApi = {
     note?: string | null;
   }): Promise<{ moved: string[]; errors: { element_nr: string; error: string }[] }> =>
     (await apiClient.post("/element-dashboard/shop/move", payload)).data,
+  advance: async (payload: { element_nr: string; note?: string | null; date?: string | null }): Promise<{ element_nr: string; stage: T.ElementStage; from: T.ElementStage }> =>
+    (await apiClient.post("/element-dashboard/shop/advance", payload)).data,
   events: async (elementNr?: string): Promise<T.ShopEvent[]> =>
     (await apiClient.get("/element-dashboard/shop/events", { params: elementNr ? { element_nr: elementNr } : undefined })).data,
   parts: async (params: {

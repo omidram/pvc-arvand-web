@@ -201,6 +201,7 @@ function SettingsForm({ initial }: { initial: ElementDashSettings }) {
     membrane_life_days: String(initial.membrane_life_days ?? ""),
     warn_percent: String(initial.warn_percent ?? 85),
     coating_thickness_min: initial.coating_thickness_min == null ? "" : String(initial.coating_thickness_min),
+    shop_queue_days: String(initial.shop_queue_days ?? 90),
   });
   const save = useMutation({
     mutationFn: () => {
@@ -211,6 +212,7 @@ function SettingsForm({ initial }: { initial: ElementDashSettings }) {
         membrane_life_days: num(form.membrane_life_days),
         warn_percent: Number(form.warn_percent) || 85,
         coating_thickness_min: num(form.coating_thickness_min),
+        shop_queue_days: form.shop_queue_days.trim() === "" ? 90 : Number(form.shop_queue_days),
       });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["element-dashboard"] }),
@@ -242,7 +244,12 @@ function SettingsForm({ initial }: { initial: ElementDashSettings }) {
           {t("elDash.settings.thickness")}
           <input type="number" min={0} step="0.1" disabled={!editable} value={form.coating_thickness_min} onChange={set("coating_thickness_min")} />
         </label>
+        <label title={t("elDash.settings.queueDaysHint")}>
+          {t("elDash.settings.queueDays")}
+          <input type="number" min={0} max={3650} disabled={!editable} value={form.shop_queue_days} onChange={set("shop_queue_days")} />
+        </label>
       </div>
+      <p className="mon-sub">{t("elDash.settings.queueDaysHint")}</p>
       {editable ? (
         <div>
           <Button type="button" onClick={() => save.mutate()} disabled={save.isPending}>

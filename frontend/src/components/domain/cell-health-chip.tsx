@@ -1,6 +1,6 @@
 "use client";
 
-import type { CellHealthStatus } from "@/lib/endpoints";
+import type { CellHealthFactor, CellHealthStatus } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
 
@@ -41,6 +41,7 @@ export function CellHealthCard({
   avgVoltage,
   avgCurrentKa,
   reason,
+  factors,
 }: {
   score: number | null | undefined;
   status?: string | null;
@@ -50,6 +51,7 @@ export function CellHealthCard({
   avgVoltage?: number | null;
   avgCurrentKa?: number | null;
   reason?: string | null;
+  factors?: CellHealthFactor[];
 }) {
   const { t } = useI18n();
   const tone = healthTone(status);
@@ -88,7 +90,55 @@ export function CellHealthCard({
           </span>
         </div>
         {reason ? <p className="ch-card-reason">{reason}</p> : null}
+        {factors?.length ? <HealthBreakdown factors={factors} /> : null}
       </div>
     </div>
+  );
+}
+
+function factorValue(f: CellHealthFactor): string {
+  if (f.value == null) return "—";
+  switch (f.name) {
+    case "peer_voltage":
+      return `${f.value > 0 ? "+" : ""}${formatNumber(f.value * 1000, 0)} mV`;
+    case "voltage_trend":
+      return `${f.value > 0 ? "+" : ""}${formatNumber(f.value, 2)} mV/d`;
+    case "un_ce":
+      return `${formatNumber(f.value, 3)} V`;
+    case "current_efficiency":
+    case "life":
+      return `${formatNumber(f.value, 1)} %`;
+    default:
+      return formatNumber(f.value, 0);
+  }
+}
+
+/** How the score was built: every factor with its value, its 0–100 score and its weight. */
+export function HealthBreakdown({ factors }: { factors: CellHealthFactor[] }) {
+  const { t } = useI18n();
+  return (
+    <table className="ch-breakdown">
+      <thead>
+        <tr>
+          <th>{t("monitoring.healthFactor.title")}</th>
+          <th>{t("monitoring.healthFactor.value")}</th>
+          <th>{t("monitoring.healthFactor.score")}</th>
+          <th>{t("monitoring.healthFactor.weight")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {factors.map((f) => (
+          <tr key={f.name} className={f.score == null ? "is-missing" : `is-${healthTone(f.status)}`} title={f.detail || undefined}>
+            <td>
+              {t(`monitoring.healthFactor.${f.name}`)}
+              {f.scope === "electrolyzer" ? <small> ({t("monitoring.healthFactor.shared")})</small> : null}
+            </td>
+            <td>{factorValue(f)}</td>
+            <td>{f.score == null ? t("monitoring.healthFactor.noData") : formatNumber(f.score, 0)}</td>
+            <td>×{f.weight}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

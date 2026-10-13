@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { Chips, ExportButton, StageBadge } from "./element-dashboard-ui";
+import { ElementShopCartable } from "./element-shop-cartable";
 
 const MANUAL: ManualElementStage[] = ["awaiting_disassembly", "awaiting_assembly", "assembling", "awaiting_qc", "ready"];
 const FILTERS: (ElementStage | "shop" | "all")[] = [
@@ -122,6 +123,7 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
 
   return (
     <div className="mon-page">
+      <ElementShopCartable editable={editable} onPickStage={(k) => { setStage(k); setSelected(new Set()); }} />
       <p className="mon-help">{t("elDash.shopHelp")}</p>
       <Chips value={stage} options={chips} onChange={(k) => { setStage(k); setSelected(new Set()); }} />
 
@@ -219,6 +221,7 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
                     <td>
                       <StageBadge stage={r.state} />
                       {r.source === "inspection" ? <span className="ed-mute ms-1 text-[10px]">{t("elDash.fromInspection")}</span> : null}
+                      {r.source === "auto" ? <span className="ed-mute ms-1 text-[10px]">{t("elDash.cartable.auto")}</span> : null}
                     </td>
                     <td>{r.electrolyzer ? `${r.electrolyzer}-${r.position ?? ""}` : "—"}</td>
                     <td>{r.group_nr || "—"}</td>

@@ -221,6 +221,14 @@ export function CellHealthBoardPanel({ electrolyzers }: { electrolyzers: string[
         <div>
           <h2 className="mon-heading">{t("monitoring.healthTitle")}</h2>
           <p className="mon-sub">{t("monitoring.healthHelp")}</p>
+          <details className="ch-how">
+            <summary>{t("monitoring.healthHow.title")}</summary>
+            <ul>
+              {(["intro", "peer", "trend", "un", "ce", "life", "plant", "status"] as const).map((k) => (
+                <li key={k}>{t(`monitoring.healthHow.${k}`)}</li>
+              ))}
+            </ul>
+          </details>
         </div>
         <label className="ch-el-pick">
           <span>{t("monitoring.healthElectrolyzer")}</span>

@@ -66,13 +66,19 @@ def _status_from_score(score: float | None) -> str:
     return "critical"
 
 
-def _linear_slope_mv_per_day(points: list[tuple[date, float]]) -> float | None:
-    """Ordinary least-squares slope of voltage vs day, returned as mV/day."""
-    if len(points) < 4:
+TREND_MIN_POINTS = 8
+TREND_MIN_SPAN_DAYS = 14
+
+
+def _linear_slope_mv_per_day(points: list[tuple[date, float]]) -> tuple[float, float] | None:
+    """Least-squares slope of voltage vs day and its standard error, both in mV/day."""
+    if len(points) < TREND_MIN_POINTS:
         return None
     points = sorted(points, key=lambda item: item[0])
     t0 = points[0][0].toordinal()
     xs = [p[0].toordinal() - t0 for p in points]
+    if xs[-1] < TREND_MIN_SPAN_DAYS:
+        return None
     ys = [p[1] for p in points]
     n = len(xs)
     mean_x = sum(xs) / n
@@ -80,8 +86,11 @@ def _linear_slope_mv_per_day(points: list[tuple[date, float]]) -> float | None:
     denom = sum((x - mean_x) ** 2 for x in xs)
     if denom <= 0:
         return None
-    slope_v_per_day = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys)) / denom
-    return slope_v_per_day * 1000.0
+    slope = sum((x - mean_x) * (y - mean_y) for x, y in zip(xs, ys)) / denom
+    intercept = mean_y - slope * mean_x
+    rss = sum((y - (intercept + slope * x)) ** 2 for x, y in zip(xs, ys))
+    se = (rss / (n - 2) / denom) ** 0.5
+    return slope * 1000.0, se * 1000.0
 
 
 def _latest_norm(db: Session, electrolyzer: str) -> models.ElectrolyzerNormalization | None:
@@ -293,8 +302,8 @@ def _latest_readings_for_el(db: Session, electrolyzer: str) -> dict[str, models.
     return out
 
 
-def _trend_map(db: Session, electrolyzer: str, days: int = 45) -> dict[str, float | None]:
-    """Peer-relative voltage trend (mV/day): slope of (Ui − daily electrolyzer median)."""
+def _trend_map(db: Session, electrolyzer: str, days: int = 45) -> dict[str, tuple[float, float] | None]:
+    """Peer-relative voltage trend: (slope, standard error) in mV/day of (Ui − daily electrolyzer median)."""
     cutoff = datetime.utcnow() - timedelta(days=days)
     rows = (
         db.query(models.VoltageReading)
@@ -319,7 +328,7 @@ def _trend_map(db: Session, electrolyzer: str, days: int = 45) -> dict[str, floa
         by_pos_day.setdefault(pos, {})[day] = value
 
     day_median = {day: median(vals) for day, vals in by_day.items() if vals}
-    out: dict[str, float | None] = {}
+    out: dict[str, tuple[float, float] | None] = {}
     for pos, series in by_pos_day.items():
         residual: list[tuple[date, float]] = []
         for day, value in sorted(series.items()):
@@ -339,10 +348,6 @@ def _band_score(value: float, bands: list[tuple[float, float]]) -> float:
     return bands[-1][1]
 
 
-def _dol_score(days: int) -> float:
-    return _band_score(float(days), [(365, 100), (800, 92), (1500, 82), (2500, 68), (10_000, 50)])
-
-
 def _ce_score(pct: float) -> float:
     if pct >= 96:
         return 100
@@ -357,10 +362,6 @@ def _ce_score(pct: float) -> float:
 
 def _un_score(un: float) -> float:
     return _band_score(un, [(3.05, 100), (3.15, 86), (3.25, 72), (3.40, 58), (9, 40)])
-
-
-def _voltage_score(volts: float) -> float:
-    return _band_score(volts, [(3.20, 100), (3.30, 86), (3.40, 70), (3.50, 55), (9, 40)])
 
 
 def _current_score(ka: float) -> float:
@@ -478,89 +479,127 @@ def _lab_score(envelope: dict[str, Any]) -> float | None:
     return max(0.0, score)
 
 
+# Cell-specific evidence dominates; conditions shared by the whole electrolyzer count once.
+WEIGHTS = {
+    "peer_voltage": 3,
+    "voltage_trend": 2,
+    "un_ce": 2,
+    "current_efficiency": 2,
+    "life": 1,
+    "electrolyzer": 1,
+}
+
+
+def _peer_score(delta_v: float) -> float:
+    """Average voltage against the electrolyzer median: high = losses, far below = possible short / pinhole."""
+    if delta_v >= 0:
+        return _band_score(delta_v, [(0.02, 100), (VOLTAGE_PEER_WATCH, 85), (VOLTAGE_PEER_INVESTIGATE, 65), (VOLTAGE_PEER_CRITICAL, 45), (99, 25)])
+    return _band_score(-delta_v, [(0.10, 100), (0.20, 75), (0.35, 50), (99, 30)])
+
+
+def _trend_score(mv_per_day: float, se: float) -> float:
+    """A rise only counts when it is at least twice its standard error; otherwise the cell is treated as steady."""
+    if mv_per_day <= 0 or mv_per_day < 2 * se:
+        return 100
+    return _band_score(mv_per_day, [(0.2, 100), (TREND_WATCH_MV_DAY, 85), (TREND_INVESTIGATE_MV_DAY, 65), (2.0, 45), (1e9, 25)])
+
+
+def _life_score(pct: float) -> float:
+    return _band_score(pct, [(50, 100), (75, 90), (90, 75), (100, 60), (1e9, 45)])
+
+
+def electrolyzer_score(
+    *, el_ce: float | None, test_ce: float | None, test_spc: float | None, lab_score: float | None, avg_current_ka: float | None
+) -> tuple[float | None, list[str]]:
+    """One score for the conditions every cell of the electrolyzer shares, and which inputs it used."""
+    parts: list[float] = []
+    used: list[str] = []
+    if el_ce is not None:
+        parts.append(_ce_score(el_ce))
+        used.append(f"CE {el_ce:.1f}%")
+    if test_ce is not None:
+        parts.append(_ce_score(test_ce))
+        used.append(f"test CE {test_ce:.1f}%")
+    if test_spc is not None:
+        parts.append(_spc_score(test_spc))
+        used.append(f"SPC {test_spc:.0f}")
+    if lab_score is not None:
+        parts.append(lab_score)
+        used.append(f"lab {lab_score:.0f}")
+    if avg_current_ka is not None:
+        parts.append(_current_score(avg_current_ka))
+        used.append(f"{avg_current_ka:.1f} kA")
+    return (round(sum(parts) / len(parts), 1) if parts else None), used
+
+
 def score_cell(
     *,
-    dol_days: int | None,
-    ce_pct: float | None,
+    peer_delta_v: float | None,
+    trend_mv_day: float | None,
+    trend_se: float | None,
     un_avg: float | None,
-    test_ce: float | None,
-    test_spc: float | None,
-    lab_score: float | None,
-    avg_voltage: float | None,
-    avg_current_ka: float | None,
+    cell_ce: float | None,
+    life_pct: float | None,
+    dol_days: int | None,
+    plant_score: float | None,
+    plant_inputs: list[str] | None = None,
 ) -> dict[str, Any]:
-    """Health is the average of the factors that have data. Nothing else is scored."""
+    """Weighted average of the factors that have data (weights in ``WEIGHTS``)."""
     factors: list[dict[str, Any]] = []
-    scores: list[float] = []
-    reasons: list[str] = []
+    total = weight_sum = 0.0
+    reasons: list[tuple[float, str]] = []
 
-    def add(name: str, value: float | None, score: float | None, reason: str | None = None):
+    def add(name: str, value: float | None, score: float | None, scope: str, reason: str | None = None, detail: str | None = None):
+        weight = WEIGHTS[name]
         if score is None or value is None:
-            factors.append({"name": name, "status": "unknown", "value": value})
+            factors.append({"name": name, "status": "unknown", "value": value, "score": None, "weight": weight, "scope": scope, "detail": detail})
             return
-        scores.append(score)
+        nonlocal total, weight_sum
+        total += score * weight
+        weight_sum += weight
         status = _status_from_score(score)
-        factors.append({"name": name, "status": status, "value": round(value, 3)})
+        factors.append({"name": name, "status": status, "value": round(value, 4), "score": round(score, 1), "weight": weight, "scope": scope, "detail": detail})
         if reason and status != "ok":
-            reasons.append(reason)
+            reasons.append((score, reason))
 
-    if dol_days is not None:
-        life = _dol_score(dol_days)
-        add("operating_hours", float(dol_days), life, f"Operating life {dol_days} days")
-    else:
-        add("operating_hours", None, None)
+    add(
+        "peer_voltage",
+        peer_delta_v,
+        _peer_score(peer_delta_v) if peer_delta_v is not None else None,
+        "cell",
+        (f"{peer_delta_v * 1000:+.0f} mV against the electrolyzer median" if peer_delta_v is not None else None),
+    )
+    add(
+        "voltage_trend",
+        trend_mv_day,
+        _trend_score(trend_mv_day, trend_se or 0.0) if trend_mv_day is not None else None,
+        "cell",
+        (f"Voltage rising {trend_mv_day:.2f} mV/day faster than its peers" if trend_mv_day is not None else None),
+        (f"± {trend_se:.2f} mV/day" if trend_se is not None else None),
+    )
+    add("un_ce", un_avg, _un_score(un_avg) if un_avg is not None else None, "cell", (f"Average Un {un_avg:.3f} V" if un_avg is not None else None))
+    add(
+        "current_efficiency",
+        cell_ce,
+        _ce_score(cell_ce) if cell_ce is not None else None,
+        "cell",
+        (f"Element current efficiency {cell_ce:.1f}%" if cell_ce is not None else None),
+    )
+    add(
+        "life",
+        life_pct,
+        _life_score(life_pct) if life_pct is not None else None,
+        "cell",
+        (f"{life_pct:.0f}% of the membrane life used ({dol_days} days)" if life_pct is not None else None),
+        f"{dol_days} days" if dol_days is not None else None,
+    )
+    add("electrolyzer", plant_score, plant_score, "electrolyzer", "Electrolyzer conditions off target", ", ".join(plant_inputs or []) or None)
 
-    if ce_pct is not None:
-        add("current_efficiency", ce_pct, _ce_score(ce_pct), f"Current efficiency {ce_pct:.1f}%")
-    else:
-        add("current_efficiency", None, None)
-
-    if un_avg is not None:
-        add("un_ce", un_avg, _un_score(un_avg), f"Average Un {un_avg:.3f} V")
-    else:
-        add("un_ce", None, None)
-
-    if test_ce is not None or test_spc is not None:
-        parts = []
-        if test_ce is not None:
-            parts.append(_ce_score(test_ce))
-        if test_spc is not None:
-            parts.append(_spc_score(test_spc))
-        test_score = sum(parts) / len(parts)
-        marker = test_ce if test_ce is not None else test_spc
-        add("test_run", marker, test_score, "Test run result off target")
-    else:
-        add("test_run", None, None)
-
-    if lab_score is not None:
-        add("laboratory", lab_score, lab_score, "Laboratory quality off preferred range")
-    else:
-        add("laboratory", None, None)
-
-    if avg_voltage is not None:
-        add("avg_voltage", avg_voltage, _voltage_score(avg_voltage), f"Average voltage {avg_voltage:.3f} V")
-    else:
-        add("avg_voltage", None, None)
-
-    if avg_current_ka is not None:
-        add("avg_current", avg_current_ka, _current_score(avg_current_ka), f"Average current {avg_current_ka:.2f} kA")
-    else:
-        add("avg_current", None, None)
-
-    if not scores:
-        return {
-            "health_score": None,
-            "status": "unknown",
-            "reasons": ["No health inputs yet"],
-            "factors": factors,
-        }
-    score = max(0.0, min(100.0, round(sum(scores) / len(scores), 1)))
-    return {
-        "health_score": score,
-        "status": _status_from_score(score),
-        "reasons": reasons,
-        "factors": factors,
-    }
+    if not weight_sum:
+        return {"health_score": None, "status": "unknown", "reasons": ["No health inputs yet"], "factors": factors}
+    score = max(0.0, min(100.0, round(total / weight_sum, 1)))
+    reasons.sort(key=lambda r: r[0])
+    return {"health_score": score, "status": _status_from_score(score), "reasons": [r[1] for r in reasons], "factors": factors}
 
 
 def build_cell_health_board(db: Session, electrolyzer: str) -> dict[str, Any]:
@@ -577,6 +616,11 @@ def build_cell_health_board(db: Session, electrolyzer: str) -> dict[str, Any]:
     ce_by_pos, el_ce = _latest_ce_map(db, el)
     test_ce, test_spc = _latest_test_run(db, el)
     lab = _lab_score(envelope)
+    trends = _trend_map(db, el)
+    plant_score, plant_inputs = electrolyzer_score(el_ce=el_ce, test_ce=test_ce, test_spc=test_spc, lab_score=lab, avg_current_ka=avg_ka)
+    from .element_dashboard import get_settings, settings_dict
+
+    membrane_life = settings_dict(get_settings(db)).get("membrane_life_days")
 
     voltages = list(avg_v.values()) or [float(row.voltage) for row in readings.values() if row.voltage is not None]
     median_v = median(voltages) if voltages else None
@@ -594,22 +638,28 @@ def build_cell_health_board(db: Session, electrolyzer: str) -> dict[str, Any]:
                 asm.disassembly_date,
                 asm.decommissioning_date,
             )
-        ce = ce_by_pos.get(pos, el_ce)
+        cell_ce = ce_by_pos.get(pos)
+        ce = cell_ce if cell_ce is not None else el_ce
         un_avg = avg_un.get(pos)
         if un_avg is None and row is not None and row.standardized_voltage is not None:
             un_avg = float(row.standardized_voltage)
         avg_voltage = avg_v.get(pos)
         if avg_voltage is None and row is not None and row.voltage is not None:
             avg_voltage = float(row.voltage)
+        peer_delta = round(avg_voltage - median_v, 4) if avg_voltage is not None and median_v is not None else None
+        trend_fit = trends.get(pos)
+        trend, trend_se = trend_fit if trend_fit else (None, None)
+        life_pct = round(dol * 100.0 / membrane_life, 1) if dol is not None and membrane_life else None
         scored = score_cell(
-            dol_days=dol,
-            ce_pct=ce,
+            peer_delta_v=peer_delta,
+            trend_mv_day=trend,
+            trend_se=trend_se,
             un_avg=un_avg,
-            test_ce=test_ce,
-            test_spc=test_spc,
-            lab_score=lab,
-            avg_voltage=avg_voltage,
-            avg_current_ka=avg_ka,
+            cell_ce=cell_ce,
+            life_pct=life_pct,
+            dol_days=dol,
+            plant_score=plant_score,
+            plant_inputs=plant_inputs,
         )
         cells.append(
             {
@@ -637,8 +687,9 @@ def build_cell_health_board(db: Session, electrolyzer: str) -> dict[str, Any]:
                 "lab_score": lab,
                 "health_score": scored["health_score"],
                 "status": scored["status"],
-                "peer_delta_v": None,
-                "trend_mv_day": None,
+                "peer_delta_v": peer_delta,
+                "trend_mv_day": round(trend, 3) if trend is not None else None,
+                "life_pct": life_pct,
                 "reasons": scored["reasons"],
                 "factors": scored["factors"],
             }

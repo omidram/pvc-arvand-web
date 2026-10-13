@@ -247,6 +247,7 @@ export function CellPropertiesPanel({ electrolyzer, position }: { electrolyzer: 
           avgVoltage={health.avg_voltage}
           avgCurrentKa={health.avg_current_ka}
           reason={health.reasons[0] || null}
+          factors={health.factors}
         />
       ) : null}
       {!current ? <p className="psm-muted">{t("monitoring.noElement")}</p> : null}

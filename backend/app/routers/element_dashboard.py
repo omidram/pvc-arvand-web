@@ -1,6 +1,7 @@
 """Element management dashboard: cell-shop pipeline, electrode DOL / life, installed parts, coating, data links."""
 from __future__ import annotations
 
+from datetime import date as date_type
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -81,6 +82,25 @@ def move_shop(body: ShopMove, db: Session = Depends(get_db), user: models.User =
     db.commit()
     svc.clear_cache()
     return {"moved": moved, "errors": errors}
+
+
+class ShopAdvance(BaseModel):
+    element_nr: str = Field(min_length=1)
+    note: str | None = None
+    date: date_type | None = None  # dismantling date; today when empty
+
+
+@router.post("/shop/advance")
+def advance_shop(body: ShopAdvance, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """Cell-shop cartable: confirm the next step of one element (scan or pick its tag)."""
+    svc.clear_cache()
+    try:
+        result = svc.advance_stage(db, body.element_nr.strip(), (body.note or "").strip() or None, user.full_name or user.username, body.date)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    db.commit()
+    svc.clear_cache()
+    return result
 
 
 @router.get("/shop/events")
@@ -182,6 +202,7 @@ class SettingsBody(BaseModel):
     membrane_life_days: int | None = Field(None, ge=1, le=36500)
     warn_percent: int | None = Field(None, ge=1, le=100)
     coating_thickness_min: float | None = Field(None, ge=0)
+    shop_queue_days: int | None = Field(None, ge=0, le=3650)
 
 
 @router.get("/settings")
@@ -192,7 +213,7 @@ def get_settings(db: Session = Depends(get_db)):
 @router.put("/settings")
 def put_settings(body: SettingsBody, db: Session = Depends(get_db)):
     row = svc.get_settings(db)
-    for key, value in body.model_dump().items():
+    for key, value in body.model_dump(exclude_unset=True).items():
         setattr(row, key, value)
     db.commit()
     svc.clear_cache()
