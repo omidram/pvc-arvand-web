@@ -12,6 +12,20 @@ export function deepMerge<T extends Tree>(base: T, extra: Tree): T {
 }
 
 export const extraEn: Tree = {
+  appearance: {
+    defaultView: "Default view of forms",
+    defaultViewDesc: "How a data form (analyses, elements, inspections …) opens. A link to one specific record always opens that record's form.",
+    defaultViewSheet: "Datasheet view",
+    defaultViewSheetDesc: "Opens as a table (newest first). Double-click a row to edit it — safest against editing the wrong record.",
+    defaultViewForm: "Form view",
+    defaultViewFormDesc: "Opens directly on a record in the form (classic Access behaviour).",
+  },
+  analyses: {
+    saveAndNext: "Save & next",
+    nextForm: "Next",
+    formStep: "Form {n} of {total} on this level",
+    formNavHint: "Saves this sample (if changed) and opens the other form with the same electrolyzer / date / time.",
+  },
   shutdowns: {
     summaryTripTitle: "Trip causes — number of trips per cause",
     tripCauses: "Trip causes",
@@ -386,6 +400,20 @@ export const extraEn: Tree = {
 };
 
 export const extraFa: Tree = {
+  appearance: {
+    defaultView: "نمای پیش‌فرض فرم‌ها",
+    defaultViewDesc: "فرم‌های ورود داده (آنالیزها، المان‌ها، بازرسی‌ها و …) با کدام نما باز شوند. لینکی که به یک رکورد مشخص اشاره می‌کند همیشه فرم همان رکورد را باز می‌کند.",
+    defaultViewSheet: "نمای جدولی (Datasheet)",
+    defaultViewSheetDesc: "به‌صورت جدول باز می‌شود (جدیدترین بالا). با دوبار کلیک روی هر سطر ویرایش می‌شود — کمترین خطر ویرایش رکورد اشتباه.",
+    defaultViewForm: "نمای فرم (Form)",
+    defaultViewFormDesc: "مستقیم روی یک رکورد در فرم باز می‌شود (رفتار کلاسیک Access).",
+  },
+  analyses: {
+    saveAndNext: "ذخیره و بعدی",
+    nextForm: "بعدی",
+    formStep: "فرم {n} از {total} در این سطح",
+    formNavHint: "این نمونه (اگر تغییر کرده) ذخیره می‌شود و فرم دیگر با همان الکترولایزر / تاریخ / ساعت باز می‌شود.",
+  },
   shutdowns: {
     summaryTripTitle: "علل تریپ — تعداد تریپ برای هر علت",
     tripCauses: "علل تریپ",

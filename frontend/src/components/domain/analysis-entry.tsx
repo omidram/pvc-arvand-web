@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { analysesApi } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { AnalysisSample } from "@/lib/types";
 import {
   analysisForm,
+  analysisTypesForScope,
   brineFieldKey,
   buildParameters,
   calculateBrineHclConcentration,
@@ -31,6 +33,64 @@ import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { appAlert, appConfirm } from "@/lib/dialog";
+import { useDefaultView, type RecordView } from "@/lib/default-view";
+
+const IDENTITY_KEYS = ["electrolyzer", "position", "group", "train", "date", "time"] as const;
+type IdentityKey = (typeof IDENTITY_KEYS)[number];
+
+/** Newest sample first (date, then time, then id). */
+function newestFirst(a: AnalysisSample, b: AnalysisSample): number {
+  const da = (a.date || "").slice(0, 10);
+  const db = (b.date || "").slice(0, 10);
+  if (da !== db) return db.localeCompare(da);
+  const ta = cleanAnalysisTime(a.time);
+  const tb = cleanAnalysisTime(b.time);
+  if (ta !== tb) return tb.localeCompare(ta);
+  return b.id - a.id;
+}
+
+function sameText(a: string | null | undefined, b: string | null | undefined): boolean {
+  return (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
+}
+
+/** Existing sample of this form with the same electrolyzer / group / … and day (time preferred). */
+function findCarried(rows: AnalysisSample[], carry: Partial<Record<IdentityKey, string>>, form: AnalysisFormSpec) {
+  if (!carry.date) return -1;
+  const shown = new Set(form.identity);
+  const hits = rows
+    .map((row, i) => ({ row, i }))
+    .filter(({ row }) => {
+      if ((row.date || "").slice(0, 10) !== carry.date) return false;
+      if (shown.has("electrolyzer") && carry.electrolyzer && !sameText(row.electrolyzer, carry.electrolyzer)) return false;
+      if (shown.has("position") && carry.position && !sameText(row.position, carry.position)) return false;
+      if (shown.has("group") && carry.group && !sameText(row.group_nr, carry.group)) return false;
+      if (shown.has("train") && carry.train && !sameText(row.sub_plant, carry.train)) return false;
+      return true;
+    });
+  if (!hits.length) return -1;
+  const time = cleanAnalysisTime(carry.time).slice(0, 5);
+  const exact = time ? hits.find(({ row }) => cleanAnalysisTime(row.time).slice(0, 5) === time) : undefined;
+  return (exact ?? hits[0]).i;
+}
+
+/** Enter jumps to the next input of the form, like Tab. */
+function enterToNextField(e: React.KeyboardEvent<HTMLElement>) {
+  if (e.key !== "Enter" || e.shiftKey || e.ctrlKey || e.altKey) return;
+  const target = e.target as HTMLElement;
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
+  const items = Array.from(
+    e.currentTarget.querySelectorAll<HTMLElement>(
+      "input:not([disabled]):not([type=hidden]):not([type=checkbox]):not([type=radio]), select:not([disabled]), button[data-next-form]"
+    )
+  );
+  const i = items.indexOf(target);
+  if (i < 0) return;
+  e.preventDefault();
+  const next = items[i + 1];
+  if (!next) return;
+  next.focus();
+  if (next instanceof HTMLInputElement) next.select();
+}
 
 type Draft = {
   electrolyzer: string;
@@ -148,7 +208,20 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
     AnalysisSample,
     Partial<AnalysisSample>
   >("analyses", analysesApi, params);
-  const [view, setView] = useState<"form" | "datasheet">("form");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const carry = useMemo(() => {
+    if (searchParams.get("carry") !== "1") return null;
+    const out: Partial<Record<IdentityKey, string>> = {};
+    for (const key of IDENTITY_KEYS) {
+      const v = searchParams.get(key);
+      if (v) out[key] = v;
+    }
+    return out;
+  }, [searchParams]);
+  const defaultView = useDefaultView();
+  const [viewChoice, setView] = useState<RecordView | null>(() => (carry ? "form" : null));
+  const view = viewChoice ?? defaultView;
   const [index, setIndex] = useState(0);
   const [isNew, setIsNew] = useState(false);
   const [find, setFind] = useState("");
@@ -156,7 +229,7 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
   const [pendingId, setPendingId] = useState<number | null>(null);
   const [booted, setBooted] = useState(false);
 
-  const rows = listQuery.data ?? [];
+  const rows = useMemo(() => [...(listQuery.data ?? [])].sort(newestFirst), [listQuery.data]);
   const filtered = useMemo(() => {
     const needle = find.trim().toLowerCase();
     if (!needle) return rows;
@@ -168,16 +241,49 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
 
   useEffect(() => {
     if (!form) return;
-    setDraft(draftFrom(current, form));
+    const next = draftFrom(current, form);
+    if (isNew && carry) {
+      for (const key of IDENTITY_KEYS) if (carry[key] && form.identity.includes(key)) next[key] = carry[key]!;
+    }
+    setDraft(next);
     // Reload the draft only when the selected record changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recordKey, form]);
 
   useEffect(() => {
-    if (listQuery.isLoading || booted) return;
-    if (rows.length === 0) setIsNew(true);
+    if (listQuery.isLoading || booted || !form) return;
+    if (carry) {
+      const found = findCarried(rows, carry, form);
+      if (found >= 0) setIndex(found);
+      else setIsNew(true);
+    } else if (rows.length === 0) setIsNew(true);
     setBooted(true);
-  }, [listQuery.isLoading, booted, rows.length]);
+  }, [listQuery.isLoading, booted, rows, carry, form]);
+
+  const siblingTypes = analysisTypesForScope(normalizedScope);
+  const typePos = siblingTypes.indexOf(analysisType);
+  const prevType = typePos > 0 ? siblingTypes[typePos - 1] : null;
+  const nextType = typePos >= 0 && typePos < siblingTypes.length - 1 ? siblingTypes[typePos + 1] : null;
+
+  function isDirty(): boolean {
+    if (!form || !draft) return false;
+    if (isNew || !current) return Object.values(draft.params).some((v) => v.trim() !== "");
+    return JSON.stringify(draft) !== JSON.stringify(draftFrom(current, form));
+  }
+
+  async function goToForm(type: string) {
+    if (!form || !draft) return;
+    if (editable && isDirty()) {
+      const ok = await save();
+      if (!ok) return;
+    }
+    const query = new URLSearchParams({ type, scope: normalizedScope, carry: "1" });
+    for (const key of IDENTITY_KEYS) {
+      const v = (draft[key] || "").trim();
+      if (v) query.set(key, key === "time" ? cleanAnalysisTime(v) : v);
+    }
+    router.push(`/analyses?${query.toString()}`);
+  }
 
   useEffect(() => {
     if (pendingId == null) return;
@@ -302,8 +408,8 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
     );
   }
 
-  function save() {
-    if (!form || !draft) return;
+  async function save(): Promise<boolean> {
+    if (!form || !draft) return false;
     const shown = new Set(form.identity);
     const payload: Partial<AnalysisSample> = {
       analysis_type: analysisType,
@@ -316,13 +422,17 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
       sub_plant: shown.has("train") ? draft.train.trim() || null : isNew ? null : current?.sub_plant ?? null,
       parameters: buildParameters(current?.parameters, form, draft.params),
     };
-    if (current && !isNew) {
-      updateMutation.mutate({ id: current.id, payload });
-    } else {
-      setFind("");
-      createMutation.mutate(payload, {
-        onSuccess: (created) => setPendingId(created.id),
-      });
+    try {
+      if (current && !isNew) {
+        await updateMutation.mutateAsync({ id: current.id, payload });
+      } else {
+        setFind("");
+        const created = await createMutation.mutateAsync(payload);
+        setPendingId(created.id);
+      }
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -406,10 +516,11 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
               ? () => {
                   setIsNew(true);
                   setDraft(emptyDraft(form));
+                  setView("form");
                 }
               : undefined
           }
-          onSave={editable ? save : undefined}
+          onSave={editable ? () => void save() : undefined}
           onDelete={
             editable && current
               ? () => {
@@ -493,6 +604,38 @@ export function AnalysisEntry({ analysisType, scope }: { analysisType: string; s
           onParam={setParam}
           calculateLabel={analysisType === "pure_brine" ? t("analyses.calculateHcl") : null}
           onCalculate={analysisType === "pure_brine" && editable ? () => void calculateBrineHcl() : undefined}
+          footer={
+            prevType || nextType ? (
+              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[#808080] pt-3">
+                {prevType ? (
+                  <button
+                    type="button"
+                    className="access-menu-btn !w-auto px-3 py-1 text-[12px]"
+                    disabled={saving}
+                    onClick={() => void goToForm(prevType)}
+                    title={editable ? t("analyses.formNavHint") : undefined}
+                  >
+                    ◄ {t(analysisForm(prevType, normalizedScope)!.titleKey)}
+                  </button>
+                ) : null}
+                <span className="flex-1 text-center text-[11px] text-[var(--win-muted)]">
+                  {t("analyses.formStep", { n: typePos + 1, total: siblingTypes.length })}
+                </span>
+                {nextType ? (
+                  <button
+                    type="button"
+                    data-next-form
+                    className="access-menu-btn !w-auto px-3 py-1 text-[12px] font-bold"
+                    disabled={saving}
+                    onClick={() => void goToForm(nextType)}
+                    title={editable ? t("analyses.formNavHint") : undefined}
+                  >
+                    {editable ? t("analyses.saveAndNext") : t("analyses.nextForm")}: {t(analysisForm(nextType, normalizedScope)!.titleKey)} ►
+                  </button>
+                ) : null}
+              </div>
+            ) : null
+          }
         />
       ) : null}
     </AccessFormWindow>
@@ -541,6 +684,7 @@ function AnalysisRecordForm({
   onParam,
   calculateLabel,
   onCalculate,
+  footer,
 }: {
   form: AnalysisFormSpec;
   draft: Draft;
@@ -552,6 +696,7 @@ function AnalysisRecordForm({
   onParam: (key: string, value: string) => void;
   calculateLabel?: string | null;
   onCalculate?: () => void;
+  footer?: React.ReactNode;
 }) {
   const identityValue: Record<AnalysisIdentity, string> = {
     electrolyzer: draft.electrolyzer,
@@ -577,7 +722,7 @@ function AnalysisRecordForm({
     ));
 
   return (
-    <div className="access-sunken p-4">
+    <div className="access-sunken p-4" onKeyDown={enterToNextField}>
       <div className="mb-4 max-w-md space-y-2">
         {form.identity.map((key) => {
           const raw = identityValue[key];
@@ -628,6 +773,7 @@ function AnalysisRecordForm({
           </button>
         </div>
       ) : null}
+      {footer}
     </div>
   );
 }

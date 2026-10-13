@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { ExportButtons } from "@/components/domain/export-buttons";
 import { formatDate, humanizeKey, sameNr } from "@/lib/utils";
 import { appAlert, appConfirm } from "@/lib/dialog";
+import { useDefaultView, type RecordView } from "@/lib/default-view";
 
 const HIDDEN_SHEET_KEYS = new Set(["sign_insp_image", "sign_maint_image", "sign_proc_image", "signature"]);
 
@@ -121,7 +122,12 @@ export function AccessWorkspace<T extends object>({
     return [extra, ...baseRows.filter((row) => String(readId(row)) !== extraId)];
   }, [extra, baseRows, readId]);
   const paramName = recordParam ?? String(idField);
-  const [view, setView] = useState<"form" | "datasheet">("form");
+  const defaultView = useDefaultView();
+  // A link that points at one record (…?nr=12) opens that record's form.
+  const [viewChoice, setView] = useState<RecordView | null>(() =>
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).has(paramName) ? "form" : null
+  );
+  const view = viewChoice ?? defaultView;
   const [index, setIndex] = useState(0);
   const [isNew, setIsNew] = useState(false);
   const [findValue, setFindValue] = useState("");
@@ -421,6 +427,7 @@ export function AccessWorkspace<T extends object>({
           onNew={() => {
             setExtra(null);
             setIsNew(true);
+            setView("form");
             setSaveError("");
             setValues({
               ...(formBody ? {} : valuesFromRecord(fields, null)),

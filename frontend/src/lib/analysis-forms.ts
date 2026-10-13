@@ -270,6 +270,15 @@ export function analysisForm(type: string, scope: string): AnalysisFormSpec | nu
   return FORMS[`${type}:${normalizeAnalysisScope(scope)}`] ?? null;
 }
 
+/** Same order as the rows of the Analysis menu. */
+const TYPE_ORDER = ["anolyte", "catholyte", "pure_brine", "chlorine_gas", "hydrogen", "hcl", "demin_water", "caustic_feed"];
+
+/** Analysis forms of one level (plant, train, electrolyzer …) in menu order — used by the previous / next form buttons. */
+export function analysisTypesForScope(scope: string): string[] {
+  const s = normalizeAnalysisScope(scope);
+  return TYPE_ORDER.filter((type) => FORMS[`${type}:${s}`]);
+}
+
 function formatParam(value: number | string): string {
   if (typeof value === "number" && Number.isFinite(value)) {
     const rounded = Math.round((value + Number.EPSILON) * 1e6) / 1e6;

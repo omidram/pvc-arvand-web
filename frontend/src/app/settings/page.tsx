@@ -57,7 +57,8 @@ import { useCalendar } from "@/lib/calendar/context";
 import { formatDate } from "@/lib/utils";
 import type { ThemeColors, ThemePresetId } from "@/lib/theme/presets";
 import { NAMED_PRESETS } from "@/lib/theme/presets";
-import { Sun, Moon, MonitorCog, Contrast, Waves, Trees, Grape, Wheat, Palette, LayoutTemplate, Sparkles, CalendarDays } from "lucide-react";
+import { Sun, Moon, MonitorCog, Contrast, Waves, Trees, Grape, Wheat, Palette, LayoutTemplate, Sparkles, CalendarDays, Table2, FileText } from "lucide-react";
+import { setDefaultView, useDefaultView } from "@/lib/default-view";
 
 type T = ReturnType<typeof useI18n>["t"];
 
@@ -169,6 +170,7 @@ function AppearanceTab() {
   const { preset, resolvedColors, fontSize, setPreset, setColor, setFontSize, reset } = useTheme();
   const { uiStyle, setUiStyle } = useUiStyle();
   const { calendar, setCalendar } = useCalendar();
+  const defaultView = useDefaultView();
   const todayIso = new Date().toISOString().slice(0, 10);
 
   function selectUiStyle(style: "access" | "modern") {
@@ -237,6 +239,41 @@ function AppearanceTab() {
                 {t("appearance.uiModernDesc")}
               </div>
             </button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("appearance.defaultView")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4 text-xs text-[var(--win-muted)]">{t("appearance.defaultViewDesc")}</p>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {(
+              [
+                { value: "datasheet", icon: Table2, label: "appearance.defaultViewSheet", desc: "appearance.defaultViewSheetDesc" },
+                { value: "form", icon: FileText, label: "appearance.defaultViewForm", desc: "appearance.defaultViewFormDesc" },
+              ] as const
+            ).map(({ value, icon: Icon, label, desc }) => {
+              const active = defaultView === value;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setDefaultView(value)}
+                  className={
+                    active
+                      ? "flex flex-col items-start gap-1.5 border-2 border-[var(--win-navy)] bg-[var(--win-navy)] px-3 py-3 text-start text-white [border-style:inset]"
+                      : "flex flex-col items-start gap-1.5 border-2 border-[var(--win-face)] bg-[var(--win-face)] px-3 py-3 text-start [border-style:outset] hover:bg-[var(--win-face-hi)]"
+                  }
+                >
+                  <Icon size={20} className={active ? "text-white" : "text-[var(--win-navy)]"} />
+                  <div className="text-sm font-bold">{t(label)}</div>
+                  <div className={active ? "text-[11px] text-white/80" : "text-[11px] text-[var(--win-muted)]"}>{t(desc)}</div>
+                </button>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
