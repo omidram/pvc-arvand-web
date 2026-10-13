@@ -19,6 +19,7 @@ import { monitoringApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { formatDate } from "@/lib/utils";
+import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 import type { TrainId } from "@/lib/plant-topology";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 
@@ -32,12 +33,6 @@ const SPANS = [
 ] as const;
 
 type Scope = "plant" | "train" | "electrolyzer";
-
-function defaultCustomFrom() {
-  const d = new Date();
-  d.setDate(d.getDate() - 30);
-  return d.toISOString().slice(0, 10);
-}
 
 const SERIES = {
   voltage: { color: "#d6e35a", unit: "V", digits: 3 },
@@ -172,8 +167,8 @@ export default function PlantChartsPage() {
   const [train, setTrain] = useState<TrainId>("1");
   const [electrolyzer, setElectrolyzer] = useState("A1");
   const [span, setSpan] = useState("30");
-  const [dateFrom, setDateFrom] = useState(defaultCustomFrom);
-  const [dateTo, setDateTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [dateFrom, setDateFrom] = useState(monthStartIso);
+  const [dateTo, setDateTo] = useState(todayIsoLocal);
   const [showVoltage, setShowVoltage] = useState(true);
   const [showAmp, setShowAmp] = useState(true);
   const [showPower, setShowPower] = useState(true);

@@ -12,6 +12,31 @@ export function deepMerge<T extends Tree>(base: T, extra: Tree): T {
 }
 
 export const extraEn: Tree = {
+  shutdowns: {
+    summaryTripTitle: "Trip causes — number of trips per cause",
+    tripCauses: "Trip causes",
+    groupBy: "Group by",
+    by_reason: "Reason (code + reason)",
+    by_cause: "Trip cause",
+    by_category: "Category",
+    by_plant: "Part of plant / electrolyzer",
+    by_detail: "Trip details (remarks)",
+    col_reason: "Reason",
+    col_cause: "Trip cause",
+    col_category: "Category",
+    col_plant: "Part of plant",
+    col_detail: "Trip details",
+    trips: "Trips",
+    pctTrips: "% of trips",
+    pctDuration: "% of duration",
+    avgDuration: "Avg. duration",
+    maxDuration: "Longest",
+    lastTrip: "Last trip",
+    groupsCount: "Groups",
+    total: "Total",
+    ongoing: "Still down",
+    analysisHint: "Click a column header to sort (again to reverse). Click a row to see its individual trips. Percentages are the share of all trips / total down time in the selected period.",
+  },
   nav: {
     tickets: "Tickets",
     wf_c90: "Workflow group: C-90",
@@ -361,6 +386,31 @@ export const extraEn: Tree = {
 };
 
 export const extraFa: Tree = {
+  shutdowns: {
+    summaryTripTitle: "علل تریپ — تعداد تریپ برای هر علت",
+    tripCauses: "علل تریپ",
+    groupBy: "گروه‌بندی بر اساس",
+    by_reason: "دلیل (کد + دلیل)",
+    by_cause: "علت تریپ",
+    by_category: "دسته",
+    by_plant: "بخش واحد / الکترولایزر",
+    by_detail: "جزئیات تریپ (ملاحظات)",
+    col_reason: "دلیل",
+    col_cause: "علت تریپ",
+    col_category: "دسته",
+    col_plant: "بخش واحد",
+    col_detail: "جزئیات تریپ",
+    trips: "تعداد تریپ",
+    pctTrips: "٪ از تعداد",
+    pctDuration: "٪ از مدت",
+    avgDuration: "میانگین مدت",
+    maxDuration: "طولانی‌ترین",
+    lastTrip: "آخرین تریپ",
+    groupsCount: "تعداد گروه",
+    total: "جمع",
+    ongoing: "هنوز متوقف",
+    analysisHint: "برای مرتب‌سازی روی عنوان ستون کلیک کنید (کلیک دوباره ترتیب را برعکس می‌کند). با کلیک روی هر سطر، تریپ‌های آن نمایش داده می‌شود. درصدها سهم از کل تریپ‌ها / کل مدت توقف در بازه انتخابی است.",
+  },
   nav: {
     tickets: "تیکت‌ها",
     wf_c90: "گروه گردش کار: C-90",

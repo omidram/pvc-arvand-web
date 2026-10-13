@@ -11,6 +11,7 @@ import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import type { WhCompany } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
+import { defaultDateRange } from "@/lib/date-range";
 import {
   COATING_STEPS,
   DELAY_PARTIES,
@@ -867,7 +868,10 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
 
 export function WorkflowHistoryPanel({ companies, onOpen }: { companies: WhCompany[]; onOpen: (flow: WfFlow, id: number) => void }) {
   const { t } = useI18n();
-  const [form, setForm] = useState<Record<string, string>>({});
+  const [form, setForm] = useState<Record<string, string>>(() => {
+    const r = defaultDateRange();
+    return { date_from: r.from, date_to: r.to };
+  });
   const [query, setQuery] = useState<Record<string, string> | null>(null);
   const history = useQuery({
     queryKey: ["wf", "history", query],

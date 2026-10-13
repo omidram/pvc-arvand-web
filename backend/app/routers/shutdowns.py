@@ -187,8 +187,17 @@ def _hours(s: models.Shutdown) -> float:
 
 
 @summary_router.get("")
-def shutdown_summary(db: Session = Depends(get_db)):
-    shutdowns = db.query(models.Shutdown).all()
+def shutdown_summary(
+    date_from: datetime | None = Query(default=None),
+    date_to: datetime | None = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    query = db.query(models.Shutdown)
+    if date_from is not None:
+        query = query.filter(models.Shutdown.shutdown_time >= date_from)
+    if date_to is not None:
+        query = query.filter(models.Shutdown.shutdown_time <= date_to)
+    shutdowns = query.all()
     by_category: dict[str, dict] = {}
     by_reason: dict[str, dict] = {}
     for s in shutdowns:

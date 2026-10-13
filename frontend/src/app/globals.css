@@ -6090,3 +6090,25 @@ html[data-theme="dark"] .wf-alert { background: #450a0a; border-color: #7f1d1d; 
 html[data-theme="dark"] .wf-info { background: #172554; border-color: #1e3a8a; color: #bfdbfe; }
 html[data-theme="dark"] .wf-wait { background: #422006; border-color: #a16207; color: #fde68a; }
 html[data-theme="dark"] .wf-link { color: #93c5fd; }
+
+/* Shutdown reason / trip cause analysis */
+.sd-analysis-table th.sd-sort { cursor: pointer; user-select: none; white-space: nowrap; }
+.sd-analysis-table th.sd-sort:hover { text-decoration: underline; }
+.sd-sort-mark { margin-inline-start: 0.25rem; font-size: 9px; opacity: 0.7; }
+.sd-group-row { cursor: pointer; }
+.sd-group-row:hover td { background: #fff7d6; }
+.sd-bar { position: relative; height: 16px; min-width: 110px; background: #e5e7eb; border: 1px solid #9ca3af; }
+.sd-bar > span { position: absolute; inset-block: 0; inset-inline-start: 0; background: linear-gradient(90deg, #f59e0b, #dc2626); }
+.sd-bar > b { position: relative; display: block; text-align: center; font-size: 11px; line-height: 14px; color: #111827; text-shadow: 0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff; }
+.sd-trips-row > td { background: #f8fafc; padding: 0.35rem 0.5rem; }
+.sd-trips { width: 100%; border-collapse: collapse; font-size: 11px; }
+.sd-trips th, .sd-trips td { border: 1px solid #cbd5e1; padding: 2px 6px; text-align: start; }
+.sd-trips th { background: #e2e8f0; font-weight: 700; }
+.sd-total-row td { font-weight: 700; background: #e5e7eb; border-top: 2px solid #6b7280; }
+html[data-theme="dark"] .sd-group-row:hover td { background: #3b2f0b; }
+html[data-theme="dark"] .sd-bar { background: #1f2937; border-color: #475569; }
+html[data-theme="dark"] .sd-bar > b { color: #f8fafc; text-shadow: 0 0 2px #000, 0 0 3px #000; }
+html[data-theme="dark"] .sd-trips-row > td { background: #0f172a; }
+html[data-theme="dark"] .sd-trips th { background: #1e293b; color: #cbd5e1; }
+html[data-theme="dark"] .sd-trips th, html[data-theme="dark"] .sd-trips td { border-color: #334155; }
+html[data-theme="dark"] .sd-total-row td { background: #1e293b; }

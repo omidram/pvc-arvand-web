@@ -24,6 +24,7 @@ import {
 } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
+import { defaultDateRange } from "@/lib/date-range";
 
 const GROUPS = ["cell_shop", "warehouse", "lab", "inspection", "operation", "other"] as const;
 const ELEMENT_METRICS = ["el_new", "el_assembled", "el_disassembled", "el_commissioned", "el_decommissioned", "el_edited", "el_deleted"];
@@ -1120,7 +1121,7 @@ export default function ActivityPage() {
   const { canView } = useAuth();
   useCalendar();
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useState<Filters>({ range: { from: isoDay(-6), to: isoDay(0) }, roleId: "", username: "" });
+  const [filters, setFilters] = useState<Filters>(() => ({ range: defaultDateRange(), roleId: "", username: "" }));
 
   const base: ActivityFilters = useMemo(
     () => ({

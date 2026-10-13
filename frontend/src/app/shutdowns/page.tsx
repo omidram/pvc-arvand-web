@@ -7,7 +7,6 @@ import {
   shutdownsApi,
   shutdownCategoriesApi,
   shutdownCausesApi,
-  shutdownSummaryApi,
   settingsApi,
 } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
@@ -22,6 +21,8 @@ import { DateInput } from "@/components/ui/date-input";
 import { formatElectrolyzer } from "@/lib/plant-topology";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { appAlert, appConfirm } from "@/lib/dialog";
+import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
+import { ShutdownAnalysis, type ShutdownGroupBy } from "@/components/domain/shutdown-analysis";
 
 function pad2(n: number) {
   return String(n).padStart(2, "0");
@@ -115,6 +116,7 @@ function ShutdownMenu() {
           <div className="mb-2 text-[12px] font-bold">{t("menus.results")}</div>
           <div className="access-sunken flex w-[220px] flex-col gap-2">
             <AccessBtn href="/shutdowns?form=summary-reason">{t("fields.reason")}</AccessBtn>
+            <AccessBtn href="/shutdowns?form=summary-trip">{t("shutdowns.tripCauses")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=summary-category">{t("menus.category")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=period">{t("menus.timePeriod")}</AccessBtn>
           </div>
@@ -171,18 +173,14 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   const { canEdit, canViewField } = useAuth();
   const editable = canEdit("shutdowns") && !showPeriodFilter;
   const [active, setActive] = useState<number | "new" | null>(null);
-  const [from, setFrom] = useState(dateFrom || "");
-  const [to, setTo] = useState(dateTo || "");
+  const [from, setFrom] = useState(() => dateFrom || monthStartIso());
+  const [to, setTo] = useState(() => dateTo || todayIsoLocal());
   const [draft, setDraft] = useState<Partial<Shutdown>>({});
 
   const listParams = useMemo(() => {
     const params: Record<string, unknown> = { limit: 2000 };
-    if (from) params.date_from = new Date(from).toISOString();
-    if (to) {
-      const end = new Date(to);
-      end.setHours(23, 59, 59, 999);
-      params.date_to = end.toISOString();
-    }
+    if (from) params.date_from = `${from}T00:00:00`;
+    if (to) params.date_to = `${to}T23:59:59`;
     return params;
   }, [from, to]);
 
@@ -727,101 +725,27 @@ function CategoriesForm() {
   );
 }
 
-function SummaryReasonForm() {
+function SummaryForm({ groupBy, title }: { groupBy: ShutdownGroupBy; title: string }) {
   const { t } = useI18n();
-  const summaryQuery = useQuery({ queryKey: ["shutdowns", "summary"], queryFn: shutdownSummaryApi.get });
-  const rows = summaryQuery.data?.by_reason || [];
   return (
-    <AccessHub title={t("shutdowns.summaryReasonTitle")} titleBlue backHref="/shutdowns" backLabel={t("mainMenu.shutDown")}>
+    <AccessHub title={title} titleBlue backHref="/shutdowns" backLabel={t("mainMenu.shutDown")}>
       <PlantBar />
-      <table className="access-cont-table max-w-4xl">
-        <thead>
-          <tr>
-            <th className="w-16">{t("fields.code")}</th>
-            <th>{t("fields.reason")}</th>
-            <th className="w-32">{t("fields.category")}</th>
-            <th className="w-20">{t("shutdowns.count")}</th>
-            <th className="w-28">{t("fields.durationHm")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, idx) => {
-            const mins = Math.max(0, Math.round((row.total_hours || 0) * 60));
-            const hm = `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`;
-            return (
-            <tr key={`${row.code}-${row.cause}-${idx}`}>
-              <td>{row.code}</td>
-              <td>{row.cause}</td>
-              <td>{row.category}</td>
-              <td>{row.count}</td>
-              <td>{hm}</td>
-            </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <div className="mt-3 text-[12px] font-bold">
-        {t("shutdowns.totalShutdowns")}: {summaryQuery.data?.total_shutdowns ?? 0} &nbsp;·&nbsp;
-        {t("shutdowns.totalDuration")}:{" "}
-        {(() => {
-          const mins = Math.max(0, Math.round((summaryQuery.data?.total_hours ?? 0) * 60));
-          return `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`;
-        })()}
-      </div>
-    </AccessHub>
-  );
-}
-
-function SummaryCategoryForm() {
-  const { t } = useI18n();
-  const summaryQuery = useQuery({ queryKey: ["shutdowns", "summary"], queryFn: shutdownSummaryApi.get });
-  const rows = summaryQuery.data?.by_category || [];
-  return (
-    <AccessHub title={t("shutdowns.summaryCategoryTitle")} titleBlue backHref="/shutdowns" backLabel={t("mainMenu.shutDown")}>
-      <PlantBar />
-      <table className="access-cont-table max-w-xl">
-        <thead>
-          <tr>
-            <th>{t("fields.category")}</th>
-            <th className="w-20">{t("shutdowns.count")}</th>
-            <th className="w-28">{t("fields.durationHm")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => {
-            const mins = Math.max(0, Math.round((row.total_hours || 0) * 60));
-            const hm = `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`;
-            return (
-            <tr key={row.category}>
-              <td>{row.category}</td>
-              <td>{row.count}</td>
-              <td>{hm}</td>
-            </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <div className="mt-3 text-[12px] font-bold">
-        {t("shutdowns.totalShutdowns")}: {summaryQuery.data?.total_shutdowns ?? 0} &nbsp;·&nbsp;
-        {t("shutdowns.totalDuration")}:{" "}
-        {(() => {
-          const mins = Math.max(0, Math.round((summaryQuery.data?.total_hours ?? 0) * 60));
-          return `${Math.floor(mins / 60)}:${String(mins % 60).padStart(2, "0")}`;
-        })()}
-      </div>
+      <ShutdownAnalysis initialGroupBy={groupBy} />
     </AccessHub>
   );
 }
 
 function ShutdownsInner() {
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const form = searchParams.get("form");
   if (!form) return <ShutdownMenu />;
   if (form === "reasons") return <ReasonsForm />;
   if (form === "categories") return <CategoriesForm />;
   if (form === "period") return <ShutdownListForm showPeriodFilter />;
-  if (form === "summary-reason") return <SummaryReasonForm />;
-  if (form === "summary-category") return <SummaryCategoryForm />;
+  if (form === "summary-reason") return <SummaryForm groupBy="reason" title={t("shutdowns.summaryReasonTitle")} />;
+  if (form === "summary-category") return <SummaryForm groupBy="category" title={t("shutdowns.summaryCategoryTitle")} />;
+  if (form === "summary-trip") return <SummaryForm groupBy="cause" title={t("shutdowns.summaryTripTitle")} />;
   return <ShutdownListForm />;
 }
 

@@ -51,6 +51,7 @@ import { UnCeResultsPane, UnCeSettingsPanel } from "@/components/domain/un-ce-bo
 import { pairsToElements, unCeApi, type UnCeCalc, type UnCeQuery, type UnCeScope } from "@/lib/un-ce";
 import { DateInput } from "@/components/ui/date-input";
 import { appAlert, appConfirm } from "@/lib/dialog";
+import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 
 type T = ReturnType<typeof useI18n>["t"];
 const TOOLTIP_STYLE = { background: "#ffffff", border: "1px solid #808080", borderRadius: 0, fontSize: 12, color: "#000" };
@@ -324,13 +325,13 @@ function ReadingsTab() {
   const [showImport, setShowImport] = useState(() => searchParams.get("import") === "1");
   const electrolyzerNames = useElectrolyzerNames();
   const [filterEl, setFilterEl] = useState(() => formatElectrolyzer(searchParams.get("electrolyzer")) || "");
-  const [filterFrom, setFilterFrom] = useState("");
-  const [filterTill, setFilterTill] = useState("");
-  const [applied, setApplied] = useState({
+  const [filterFrom, setFilterFrom] = useState(monthStartIso);
+  const [filterTill, setFilterTill] = useState(todayIsoLocal);
+  const [applied, setApplied] = useState(() => ({
     electrolyzer: formatElectrolyzer(searchParams.get("electrolyzer")) || "",
-    date_from: "",
-    date_till: "",
-  });
+    date_from: monthStartIso(),
+    date_till: todayIsoLocal(),
+  }));
 
   const readingFormFields = useMemo(
     () => readingFields(t, electrolyzerFieldOptions(electrolyzerNames)),
@@ -961,8 +962,8 @@ function CurrentEfficiencyTab() {
  */
 function StandardizedVoltageBoard() {
   const { t } = useI18n();
-  const [from, setFrom] = useState("2006-06-01");
-  const [till, setTill] = useState("2016-10-04");
+  const [from, setFrom] = useState(monthStartIso);
+  const [till, setTill] = useState(todayIsoLocal);
   const [shown, setShown] = useState<{
     title: string;
     mode: "chart" | "table";

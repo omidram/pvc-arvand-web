@@ -11,6 +11,7 @@ import { LoadingState } from "@/components/ui/spinner";
 import { unCeApi } from "@/lib/un-ce";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
+import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 import { formatDisplayedDate } from "@/lib/utils";
 
 type Shown = { scope: "electrolyzer" | "plant"; calc: "individual" | "all"; el: string; unTable: "1" | "2"; ceBasis: "anodic" | "naoh" };
@@ -38,8 +39,8 @@ const COLUMNS: AccessTableColumn[] = [
 export default function UnCePage() {
   const { t } = useI18n();
   useCalendar();
-  const [from, setFrom] = useState("2006-06-01");
-  const [till, setTill] = useState("2016-10-04");
+  const [from, setFrom] = useState(monthStartIso);
+  const [till, setTill] = useState(todayIsoLocal);
   const [elNr, setElNr] = useState("");
   const [unTable, setUnTable] = useState<"1" | "2">("1");
   const [ceBasis, setCeBasis] = useState<"anodic" | "naoh">("anodic");

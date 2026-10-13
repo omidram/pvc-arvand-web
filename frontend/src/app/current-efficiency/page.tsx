@@ -13,11 +13,12 @@ import { AccessSeveralBox } from "@/components/ui/access-several-box";
 import { CellPicker } from "@/components/ui/cell-picker";
 import { LoadingState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
+import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 
 function CeBoard() {
   const { t } = useI18n();
-  const [from, setFrom] = useState("2006-06-01");
-  const [till, setTill] = useState("2016-10-04");
+  const [from, setFrom] = useState(monthStartIso);
+  const [till, setTill] = useState(todayIsoLocal);
   const [shown, setShown] = useState<{
     title: string;
     mode: "chart" | "table";

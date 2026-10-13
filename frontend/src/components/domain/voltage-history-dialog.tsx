@@ -10,6 +10,7 @@ import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { formatDate } from "@/lib/utils";
+import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 import { CellPropertiesPanel } from "@/components/domain/cell-dossier";
 import { MonitoringExport } from "@/components/domain/export-buttons";
 
@@ -33,12 +34,6 @@ type ChartRow = {
   prev_day_ka?: number | null;
   prev2_day_ka?: number | null;
 };
-
-function defaultCustomFrom() {
-  const d = new Date();
-  d.setDate(d.getDate() - 30);
-  return d.toISOString().slice(0, 10);
-}
 
 function shiftIsoDay(iso: string, days: number): string {
   const d = new Date(`${iso}T12:00:00`);
@@ -108,8 +103,8 @@ export function VoltageHistoryDialog({
 }) {
   const { t } = useI18n();
   const [span, setSpan] = useState("30");
-  const [dateFrom, setDateFrom] = useState(defaultCustomFrom);
-  const [dateTo, setDateTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [dateFrom, setDateFrom] = useState(monthStartIso);
+  const [dateTo, setDateTo] = useState(todayIsoLocal);
   const [showProps, setShowProps] = useState(false);
   const [showAmpChart, setShowAmpChart] = useState(false);
   useCalendar();

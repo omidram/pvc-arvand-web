@@ -21,6 +21,7 @@ import { DateInput } from "@/components/ui/date-input";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatNumber } from "@/lib/utils";
 import { formatElectrolyzer } from "@/lib/plant-topology";
+import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 
 const CHART_TOOLTIP = {
   background: "#ffffff",
@@ -29,10 +30,6 @@ const CHART_TOOLTIP = {
   fontSize: 12,
   color: "#000",
 };
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function fmt(v: number | null | undefined, digits = 2) {
   if (v == null || Number.isNaN(v)) return "";
@@ -205,9 +202,9 @@ function DolCells({
 
 function AveragePowerForm() {
   const { t } = useI18n();
-  const [from, setFrom] = useState("2016-06-01");
-  const [till, setTill] = useState(todayIso());
-  const [applied, setApplied] = useState({ from: "2016-06-01", till: todayIso() });
+  const [from, setFrom] = useState(monthStartIso);
+  const [till, setTill] = useState(todayIsoLocal);
+  const [applied, setApplied] = useState(() => ({ from: monthStartIso(), till: todayIsoLocal() }));
 
   const powerQuery = useQuery({
     queryKey: ["statistics", "average-power", applied.from, applied.till],
@@ -772,16 +769,16 @@ function VoltageForms({ form }: { form: string }) {
   const names = useElectrolyzerNames();
   const initialEl = formatElectrolyzer(searchParams.get("electrolyzer")) || names[0] || "A1";
   const [electrolyzer, setElectrolyzer] = useState(initialEl);
-  const [from, setFrom] = useState("");
-  const [till, setTill] = useState("");
+  const [from, setFrom] = useState(monthStartIso);
+  const [till, setTill] = useState(todayIsoLocal);
   const [minV, setMinV] = useState("");
   const [maxV, setMaxV] = useState("");
-  const [applied, setApplied] = useState<{ from: string; till: string; minV: string; maxV: string }>({
-    from: "",
-    till: "",
+  const [applied, setApplied] = useState<{ from: string; till: string; minV: string; maxV: string }>(() => ({
+    from: monthStartIso(),
+    till: todayIsoLocal(),
     minV: "",
     maxV: "",
-  });
+  }));
 
   useEffect(() => {
     if (!names.length) return;

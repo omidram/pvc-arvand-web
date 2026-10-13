@@ -10,22 +10,14 @@ import { AccessSeveralBox } from "@/components/ui/access-several-box";
 import { CellPicker } from "@/components/ui/cell-picker";
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-/** Access default window on the classic Energieverbrauch form. */
-function accessDefaultFrom() {
-  return "2016-06-01";
-}
+import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 
 type Scope = "plant" | "train" | "electrolyzer" | "group" | "element";
 
 export default function PowerConsumptionPage() {
   const { t } = useI18n();
-  const [from, setFrom] = useState(accessDefaultFrom);
-  const [till, setTill] = useState(todayIso);
+  const [from, setFrom] = useState(monthStartIso);
+  const [till, setTill] = useState(todayIsoLocal);
   const [shown, setShown] = useState<{
     scope: Scope;
     title: string;

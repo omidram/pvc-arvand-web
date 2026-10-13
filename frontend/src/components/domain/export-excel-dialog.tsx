@@ -7,6 +7,7 @@ import { Modal } from "@/components/ui/modal";
 import { fetchExportMeta, type ExportMeta } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { humanizeKey } from "@/lib/utils";
+import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 
 export type ExportColumnOption = { key: string; label?: string };
 
@@ -39,8 +40,8 @@ export function ExportExcelDialog({ open, prefix, params, columnHints, onClose, 
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [dateField, setDateField] = useState("");
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [dateFrom, setDateFrom] = useState(monthStartIso);
+  const [dateTo, setDateTo] = useState(todayIsoLocal);
 
   const hintMap = useMemo(() => new Map((columnHints ?? []).map((c) => [c.key, c.label])), [columnHints]);
   const metaParams = useMemo(() => {
