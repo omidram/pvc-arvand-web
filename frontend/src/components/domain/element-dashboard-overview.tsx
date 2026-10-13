@@ -22,7 +22,7 @@ import { ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { ElementReportGuideButton } from "./element-report-guide";
-import { DashKpi, STAGE_FLOW, STAGE_TONE, StageBadge } from "./element-dashboard-ui";
+import { MiniStat, STAGE_FLOW, STAGE_TONE, StageBadge } from "./element-dashboard-ui";
 
 export type DashTab = "overview" | "shop" | "parts" | "installed" | "cells" | "coating" | "integrity" | "settings";
 
@@ -124,48 +124,69 @@ export function ElementOverviewTab({ onOpen }: { onOpen: (target: OpenTarget) =>
         </div>
       </div>
 
-      <section>
+      <section className="mon-panel">
         <h3 className="mon-panel-title">{t("elDash.pipelineTitle")}</h3>
-        <div className="ed-pipeline">
+        <div className="ed-flow">
           {STAGE_FLOW.map((stage) => (
             <button
               key={stage}
               type="button"
-              className={`ed-stage ed-tone-${STAGE_TONE[stage]}`}
+              title={flowHints[stage]}
+              className={`ed-flow-step ed-tone-${STAGE_TONE[stage]}${counts[stage] ? "" : " is-zero"}`}
               onClick={() => onOpen(stage === "in_service" || stage === "installed" ? { tab: "installed" } : { tab: "shop", stage })}
             >
-              <span className="ed-stage-value">{formatNumber(counts[stage], 0)}</span>
-              <span className="ed-stage-label">{t(`elDash.stage.${stage}`)}</span>
-              <span className="ed-stage-hint">{flowHints[stage]}</span>
+              <span className="ed-flow-value">{formatNumber(counts[stage], 0)}</span>
+              <span className="ed-flow-label">{t(`elDash.stage.${stage}`)}</span>
             </button>
           ))}
-          <button type="button" className="ed-stage ed-tone-slate" onClick={() => onOpen({ tab: "shop", stage: "disassembled" })}>
-            <span className="ed-stage-value">{formatNumber(counts.disassembled, 0)}</span>
-            <span className="ed-stage-label">{t("elDash.stage.disassembled")}</span>
-            <span className="ed-stage-hint">{t("elDash.disassembledHint", { recent: data.recently_disassembled })}</span>
+          <button
+            type="button"
+            title={t("elDash.disassembledHint", { recent: data.recently_disassembled })}
+            className={`ed-flow-step ed-tone-slate${counts.disassembled ? "" : " is-zero"}`}
+            onClick={() => onOpen({ tab: "shop", stage: "disassembled" })}
+          >
+            <span className="ed-flow-value">{formatNumber(counts.disassembled, 0)}</span>
+            <span className="ed-flow-label">{t("elDash.stage.disassembled")}</span>
           </button>
         </div>
       </section>
 
-      <div className="mon-kpi-row">
-        <DashKpi label={t("elDash.kpi.capacity")} value={`${formatNumber(data.in_plant, 0)} / ${formatNumber(data.capacity, 0)}`} hint={data.occupancy_pct != null ? `${formatNumber(data.occupancy_pct, 1)} %` : undefined} tone="info" icon={Layers} onClick={() => onOpen({ tab: "installed" })} />
-        <DashKpi label={t("elDash.kpi.shop")} value={formatNumber(shopTotal, 0)} hint={t("elDash.kpi.shopHint")} tone={shopTotal ? "warning" : "neutral"} icon={Wrench} onClick={() => onOpen({ tab: "shop", stage: "shop" })} />
-        <DashKpi label={t("elDash.kpi.ready")} value={formatNumber(counts.ready, 0)} tone="ok" icon={CircleCheck} onClick={() => onOpen({ tab: "shop", stage: "ready" })} />
-        <DashKpi label={t("elDash.kpi.voltageAlerts")} value={`${data.alerts.danger} / ${data.alerts.warning}`} hint={t("elDash.kpi.voltageAlertsHint")} tone={data.alerts.danger ? "danger" : data.alerts.warning ? "warning" : "ok"} icon={ShieldAlert} />
-        <DashKpi label={t("elDash.kpi.anodeEol")} value={formatNumber(endOfLife("anode"), 0)} hint={t("elDash.kpi.eolHint", { expired: parts.anode.summary.installed_expired })} tone={parts.anode.summary.installed_expired ? "danger" : endOfLife("anode") ? "warning" : "ok"} icon={Flame} onClick={() => onOpen({ tab: "parts", kind: "anode", life: "alert", where: "installed" })} />
-        <DashKpi label={t("elDash.kpi.cathodeEol")} value={formatNumber(endOfLife("cathode"), 0)} hint={t("elDash.kpi.eolHint", { expired: parts.cathode.summary.installed_expired })} tone={parts.cathode.summary.installed_expired ? "danger" : endOfLife("cathode") ? "warning" : "ok"} icon={Flame} onClick={() => onOpen({ tab: "parts", kind: "cathode", life: "alert", where: "installed" })} />
-        <DashKpi label={t("elDash.kpi.membraneEol")} value={formatNumber(endOfLife("membrane"), 0)} hint={t("elDash.kpi.eolHint", { expired: parts.membrane.summary.installed_expired })} tone={parts.membrane.summary.installed_expired ? "danger" : endOfLife("membrane") ? "warning" : "ok"} icon={Flame} onClick={() => onOpen({ tab: "parts", kind: "membrane", life: "alert", where: "installed" })} />
-        <DashKpi label={t("elDash.kpi.due90")} value={formatNumber(due90, 0)} hint={t("elDash.kpi.due90Hint")} tone={due90 ? "warning" : "ok"} icon={CalendarClock} onClick={() => onOpen({ tab: "parts", kind: "anode", life: "all", where: "installed", due: "90" })} />
-        <DashKpi label={t("elDash.kpi.atCoater")} value={formatNumber(atCoater, 0)} hint={t("elDash.kpi.atCoaterHint", { anodes: coating.anode.at_coater, cathodes: coating.cathode.at_coater })} tone={atCoater ? "info" : "neutral"} icon={Boxes} onClick={() => onOpen({ tab: "coating" })} />
-        <DashKpi label={t("elDash.kpi.toCoat")} value={formatNumber(coating.anode.candidates + coating.cathode.candidates, 0)} hint={t("elDash.kpi.toCoatHint")} tone="warning" icon={AlertTriangle} onClick={() => onOpen({ tab: "coating" })} />
-        <DashKpi
-          label={t("elDash.kpi.integrity")}
-          value={integrityIssues == null ? "…" : formatNumber(integrityIssues, 0)}
-          hint={integrity.data ? t("elDash.kpi.integrityHint", { rows: integrity.data.spelling_rows + integrity.data.orphan_rows }) : undefined}
-          tone={integrityIssues ? "warning" : "ok"}
-          icon={Link2}
-          onClick={() => onOpen({ tab: "integrity" })}
-        />
+      <div className="ed-grid-3">
+        <section className="mon-panel">
+          <h3 className="mon-panel-title">{t("elDash.group.plant")}</h3>
+          <MiniStat label={t("elDash.kpi.capacity")} value={`${formatNumber(data.in_plant, 0)} / ${formatNumber(data.capacity, 0)}`} hint={data.occupancy_pct != null ? `${formatNumber(data.occupancy_pct, 1)} %` : undefined} tone="info" icon={Layers} onClick={() => onOpen({ tab: "installed" })} />
+          <MiniStat label={t("elDash.kpi.voltageAlerts")} value={`${data.alerts.danger} / ${data.alerts.warning}`} hint={t("elDash.kpi.voltageAlertsHint")} tone={data.alerts.danger ? "danger" : data.alerts.warning ? "warning" : "ok"} icon={ShieldAlert} />
+          <MiniStat
+            label={t("elDash.kpi.integrity")}
+            value={integrityIssues == null ? "…" : formatNumber(integrityIssues, 0)}
+            hint={integrity.data ? t("elDash.kpi.integrityHint", { rows: integrity.data.spelling_rows + integrity.data.orphan_rows }) : undefined}
+            tone={integrityIssues ? "warning" : "ok"}
+            icon={Link2}
+            onClick={() => onOpen({ tab: "integrity" })}
+          />
+        </section>
+        <section className="mon-panel">
+          <h3 className="mon-panel-title">{t("elDash.group.life")}</h3>
+          {(["anode", "cathode", "membrane"] as const).map((k) => (
+            <MiniStat
+              key={k}
+              label={t(`elDash.kpi.${k}Eol`)}
+              value={formatNumber(endOfLife(k), 0)}
+              hint={t("elDash.kpi.eolHint", { expired: parts[k].summary.installed_expired })}
+              tone={parts[k].summary.installed_expired ? "danger" : endOfLife(k) ? "warning" : "ok"}
+              icon={Flame}
+              onClick={() => onOpen({ tab: "parts", kind: k, life: "alert", where: "installed" })}
+            />
+          ))}
+          <MiniStat label={t("elDash.kpi.due90")} value={formatNumber(due90, 0)} hint={t("elDash.kpi.due90Hint")} tone={due90 ? "warning" : "ok"} icon={CalendarClock} onClick={() => onOpen({ tab: "parts", kind: "anode", life: "all", where: "installed", due: "90" })} />
+        </section>
+        <section className="mon-panel">
+          <h3 className="mon-panel-title">{t("elDash.group.shop")}</h3>
+          <MiniStat label={t("elDash.kpi.shop")} value={formatNumber(shopTotal, 0)} hint={t("elDash.kpi.shopHint")} tone={shopTotal ? "warning" : "neutral"} icon={Wrench} onClick={() => onOpen({ tab: "shop", stage: "shop" })} />
+          <MiniStat label={t("elDash.kpi.ready")} value={formatNumber(counts.ready, 0)} tone="ok" icon={CircleCheck} onClick={() => onOpen({ tab: "shop", stage: "ready" })} />
+          <MiniStat label={t("elDash.kpi.atCoater")} value={formatNumber(atCoater, 0)} hint={t("elDash.kpi.atCoaterHint", { anodes: coating.anode.at_coater, cathodes: coating.cathode.at_coater })} tone={atCoater ? "info" : "neutral"} icon={Boxes} onClick={() => onOpen({ tab: "coating" })} />
+          <MiniStat label={t("elDash.kpi.toCoat")} value={formatNumber(coating.anode.candidates + coating.cathode.candidates, 0)} hint={t("elDash.kpi.toCoatHint")} tone="warning" icon={AlertTriangle} onClick={() => onOpen({ tab: "coating" })} />
+        </section>
       </div>
 
       <div className="ed-grid-2">

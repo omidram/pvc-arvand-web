@@ -269,6 +269,20 @@ export const extraEn: Tree = {
   },
   elDash: {
     tab: { cells: "Cells" },
+    col: {
+      dolCoating: "DOL since last coating",
+      residual: "Residual coating (%)",
+    },
+    group: {
+      plant: "Plant",
+      life: "Parts near end of life",
+      shop: "Cell shop & coating",
+    },
+    kpi: {
+      anodeEol: "Anodes",
+      cathodeEol: "Cathodes",
+      membraneEol: "Membranes",
+    },
     cellCheck: {
       title: "Cell check: one element per cell",
       problems: "{count} cell problems",
@@ -657,6 +671,20 @@ export const extraFa: Tree = {
   },
   elDash: {
     tab: { cells: "سل‌ها" },
+    col: {
+      dolCoating: "DOL از آخرین پوشش",
+      residual: "پوشش باقی‌مانده (٪)",
+    },
+    group: {
+      plant: "کارخانه",
+      life: "قطعات نزدیک پایان عمر",
+      shop: "کارگاه سل و پوشش‌دهی",
+    },
+    kpi: {
+      anodeEol: "آندها",
+      cathodeEol: "کاتدها",
+      membraneEol: "غشاها",
+    },
     cellCheck: {
       title: "بررسی سل‌ها: یک المنت در هر سل",
       problems: "{count} مشکل در سل‌ها",

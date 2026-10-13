@@ -106,6 +106,43 @@ export function DashKpi({
   );
 }
 
+/** One compact line of a grouped KPI panel: icon, label (+ hint) and the value at the end. */
+export function MiniStat({
+  label,
+  value,
+  tone = "neutral",
+  icon: Icon,
+  hint,
+  onClick,
+}: {
+  label: string;
+  value: string | number;
+  tone?: "danger" | "warning" | "ok" | "neutral" | "info";
+  icon: React.ComponentType<{ size?: number }>;
+  hint?: string;
+  onClick?: () => void;
+}) {
+  const body = (
+    <>
+      <span className="ed-mini-icon">
+        <Icon size={15} />
+      </span>
+      <span className="ed-mini-text">
+        <span className="ed-mini-label">{label}</span>
+        {hint ? <span className="ed-mini-hint">{hint}</span> : null}
+      </span>
+      <span className="ed-mini-value">{value}</span>
+    </>
+  );
+  const cls = `ed-mini is-${tone}`;
+  if (!onClick) return <div className={cls}>{body}</div>;
+  return (
+    <button type="button" className={cls} onClick={onClick}>
+      {body}
+    </button>
+  );
+}
+
 export function Chips<K extends string>({
   value,
   options,

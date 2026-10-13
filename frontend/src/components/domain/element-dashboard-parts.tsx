@@ -46,7 +46,7 @@ export function partsCsv(rows: DashPart[], kind: Kind, t: (key: string, vars?: R
     t("elDash.col.electrolyzer"),
     t("elDash.col.where"),
     t("elDash.col.commissioned"),
-    t("elDash.col.dol"),
+    electrode ? t("elDash.col.dolCoating") : t("elDash.col.dol"),
     t("elDash.col.totalDol"),
     t("elDash.col.life"),
     t("elDash.col.status"),
@@ -101,7 +101,7 @@ export function PartsTable({ rows, kind, showReasons }: { rows: DashPart[]; kind
             {th("serial", t(`elDash.col.${kind}`))}
             {th("where", t("elDash.col.where"))}
             {th("commissioned", t("elDash.col.commissioned"))}
-            {th("dol", t("elDash.col.dol"))}
+            {th("dol", electrode ? t("elDash.col.dolCoating") : t("elDash.col.dol"))}
             {electrode ? th("total", t("elDash.col.totalDol")) : null}
             {th("life", t("elDash.col.life"))}
             <th>{t("elDash.col.status")}</th>

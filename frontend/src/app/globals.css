@@ -2809,6 +2809,17 @@ button.mon-history-link {
   border-color: #fcd34d;
 }
 
+.mon-toast-close {
+  flex-shrink: 0;
+  padding: 0.15rem;
+  border-radius: 0.35rem;
+  color: #64748b;
+}
+.mon-toast-close:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
 .mon-toast-title {
   font-weight: 800;
   font-size: 0.85rem;
@@ -5372,6 +5383,50 @@ html[data-theme="dark"] .wh-note { background: #164e63; color: #a5f3fc; }
 .ed-stage-value { font-size: 1.6rem; font-weight: 800; line-height: 1.05; letter-spacing: -0.03em; }
 .ed-stage-label { font-size: 0.74rem; font-weight: 700; color: var(--win-text); }
 .ed-stage-hint { font-size: 0.68rem; color: var(--win-muted); }
+.ed-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.ed-flow-step {
+  flex: 1 1 7.5rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--win-face-dark);
+  border-top-width: 3px;
+  border-radius: 0.5rem;
+  background: #fff;
+  text-align: start;
+}
+.ed-flow-step:hover { filter: brightness(0.96); }
+.ed-flow-step.is-zero { opacity: 0.5; }
+.ed-flow-value { font-size: 1.1rem; font-weight: 800; line-height: 1; }
+.ed-flow-label { font-size: 0.7rem; font-weight: 600; color: var(--win-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ed-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.4rem 0.3rem;
+  border-bottom: 1px solid var(--win-face-dark);
+  text-align: start;
+}
+.ed-mini:last-child { border-bottom: 0; }
+button.ed-mini:hover { background: rgb(15 23 42 / 0.04); }
+.ed-mini-icon { flex-shrink: 0; color: #64748b; }
+.ed-mini-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ed-mini-label { font-size: 0.78rem; font-weight: 600; }
+.ed-mini-hint { font-size: 0.66rem; color: var(--win-muted); }
+.ed-mini-value { font-size: 1.05rem; font-weight: 800; white-space: nowrap; }
+.ed-mini.is-danger .ed-mini-value, .ed-mini.is-danger .ed-mini-icon { color: #dc2626; }
+.ed-mini.is-warning .ed-mini-value, .ed-mini.is-warning .ed-mini-icon { color: #b45309; }
+.ed-mini.is-ok .ed-mini-value, .ed-mini.is-ok .ed-mini-icon { color: #15803d; }
+.ed-mini.is-info .ed-mini-value, .ed-mini.is-info .ed-mini-icon { color: #1d4ed8; }
+
 .ed-tone-green { border-top-color: #16a34a; }
 .ed-tone-blue { border-top-color: #2563eb; }
 .ed-tone-amber { border-top-color: #d97706; }
