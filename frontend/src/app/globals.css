@@ -6327,4 +6327,21 @@ html[data-theme="dark"] .sd-total-row td { background: #1e293b; }
 .ew-action-btns { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .ew-relocate { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
 .ew-relocate-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.45rem; padding: 0.45rem; border: 1px dashed #93c5fd; border-radius: 6px; background: #eff6ff; }
+/* Cell removal request (operation -> cell shop) */
+.cr-new { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; margin-top: 0.45rem; }
+.cr-form { display: flex; flex-direction: column; gap: 0.4rem; width: 100%; padding: 0.5rem; border: 1px dashed #fdba74; border-radius: 6px; background: #fff7ed; }
+.cr-grid { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.45rem; }
+.cr-grid textarea, .cr-talk textarea { width: 100%; min-width: 16rem; padding: 0.3rem 0.45rem; border: 1px solid #cbd5e1; border-radius: 4px; font: inherit; font-size: 0.8rem; }
+.cr-wide { flex: 1 1 100%; }
+.cr-check { display: inline-flex; flex-direction: row; align-items: center; gap: 0.3rem; font-size: 0.78rem; }
+.cr-box { display: flex; align-items: center; gap: 0.45rem; margin-top: 0.45rem; padding: 0.4rem 0.55rem; border: 1px solid #93c5fd; border-radius: 6px; background: #eff6ff; color: #1e3a8a; font-size: 0.8rem; }
+.cr-box.is-urgent { border-color: #fca5a5; background: #fef2f2; color: #991b1b; }
+.cr-box .wf-btn { margin-inline-start: auto; text-decoration: none; }
+.cr-toolbar { display: flex; gap: 1rem; margin: 0.25rem 0 0.4rem; }
+.cr-decide { display: flex; flex-direction: column; gap: 0.4rem; }
+.cr-talk { display: flex; flex-direction: column; gap: 0.35rem; }
+.cr-msg .wh-tl-title { color: #1e3a8a; }
+html[data-theme="dark"] .cr-form { background: #1c1917; border-color: #9a3412; }
+html[data-theme="dark"] .cr-box { background: #0f172a; border-color: #1e40af; color: #bfdbfe; }
+html[data-theme="dark"] .cr-box.is-urgent { background: #450a0a; border-color: #7f1d1d; color: #fecaca; }
 .ew-path-banner { margin: 0 0 0.5rem; padding: 0.4rem 0.55rem; border: 1px solid #93c5fd; border-radius: 6px; background: #eff6ff; font-size: 0.78rem; }

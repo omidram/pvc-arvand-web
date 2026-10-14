@@ -95,7 +95,11 @@ function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
       render: (r) => (r.groups.length ? r.groups.map((g) => t(`wf.group.${g}`)).join(" / ") : "—"),
       filterText: (r) => r.groups.map((g) => t(`wf.group.${g}`)).join(" "),
     },
-    { key: "pieces", header: t("wf.col.pieces"), render: (r) => t("wf.piecesShort", { a: r.anode_count, k: r.cathode_count }) },
+    {
+      key: "pieces",
+      header: t("wf.col.pieces"),
+      render: (r) => (r.flow === "cell" ? r.reason || "—" : t("wf.piecesShort", { a: r.anode_count, k: r.cathode_count })),
+    },
     { key: "company_name", header: t("wf.col.company"), render: (r) => r.company_name || "—" },
     { key: "indent_no", header: t("wf.col.indent"), render: (r) => r.indent_no || "—" },
     { key: "expected_date", header: t("wf.col.expected"), render: (r) => formatDate(r.expected_date) },

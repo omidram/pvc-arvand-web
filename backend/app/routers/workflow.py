@@ -1,12 +1,14 @@
-"""Recoating and new-purchase workflows with per-group cartables and notifications.
+"""Recoating, new-purchase and cell-removal workflows with per-group cartables and notifications.
 
-Groups are permission keys: wf_c90 (requesting unit), wf_procurement, wf_warehouse. "edit" on a key means
-the user belongs to that group and may act on its stages; admins may act everywhere.
+Groups are permission keys: wf_c90 (requesting unit), wf_procurement, wf_warehouse, wf_inspection,
+wf_operation (switches cells off), wf_cellshop (receives them). "edit" on a key means the user belongs to
+that group and may act on its stages; admins may act everywhere.
 """
 from __future__ import annotations
 
 import uuid
 from datetime import date, datetime
+from datetime import date as date_type
 from pathlib import Path
 from typing import Any
 
@@ -16,14 +18,17 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
+from .. import element_dashboard as svc
 from .. import models
 from ..auth import LEVEL_RANK, get_current_user, user_permission_map
 from ..database import get_db
 from ..paths import data_root
+from ..plant_topology import format_electrolyzer_name
 from ..warehouse import compact_nr, load_compact_index
 from ..warehouse_lifecycle import _stamp, log_event, upsert_state
 from ..workflow_excel import build_workbook, parse_report
 from ..workflow_models import (
+    WfCellRequest,
     WfCoatingBatch,
     WfCoatingItem,
     WfCoatingPackage,
@@ -37,8 +42,16 @@ from .tickets import BLOCKED_EXT, INLINE_TYPES, MAX_BYTES, _safe_name
 
 router = APIRouter(prefix="/workflow", tags=["workflow"], dependencies=[Depends(get_current_user)])
 
-GROUP_KEYS = {"c90": "wf_c90", "procurement": "wf_procurement", "warehouse": "wf_warehouse", "inspection": "wf_inspection"}
-VIEW_KEYS = ("storage", "anodes", "cathodes", *GROUP_KEYS.values())
+GROUP_KEYS = {
+    "c90": "wf_c90",
+    "procurement": "wf_procurement",
+    "warehouse": "wf_warehouse",
+    "inspection": "wf_inspection",
+    "operation": "wf_operation",
+    "cellshop": "wf_cellshop",
+}
+VIEW_KEYS = ("storage", "anodes", "cathodes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection")
+CELL_VIEW_KEYS = ("elements", "wf_operation", "wf_cellshop")
 
 COATING_STAGES: dict[str, list[str]] = {
     "await_company": ["procurement"],
@@ -55,7 +68,14 @@ PURCHASE_STAGES: dict[str, list[str]] = {
     "ordered": ["procurement", "warehouse"],
     "await_registration": ["c90"],
 }
-STAGES = {"coating": COATING_STAGES, "purchase": PURCHASE_STAGES}
+CELL_STAGES: dict[str, list[str]] = {
+    "await_shutdown": ["operation"],
+    "await_shop": ["cellshop"],
+    "in_shop": ["cellshop"],
+}
+STAGES = {"coating": COATING_STAGES, "purchase": PURCHASE_STAGES, "cell": CELL_STAGES}
+CELL_DECISIONS = ("keep", "disassemble", "relocated")
+AUTO_REQUEST_DAYS = 30  # a decommission typed into Assembly Data opens a request only when it is this recent
 CLOSED = ("completed", "cancelled")
 DELAY_PARTIES = ("employer", "company", "transport", "other")
 MAX_PALLET = 200
@@ -86,15 +106,19 @@ def _groups(db: Session, user: models.User, level: str = "edit") -> set[str]:
     return {g for g, key in GROUP_KEYS.items() if LEVEL_RANK.get(perms.get(key, "none"), 0) >= need}
 
 
-def _can_view(db: Session, user: models.User) -> bool:
+def _can_view(db: Session, user: models.User, keys: tuple[str, ...] = VIEW_KEYS) -> bool:
     if user.role == "admin":
         return True
     perms = user_permission_map(db, user)
-    return any(LEVEL_RANK.get(perms.get(k, "none"), 0) >= 1 for k in VIEW_KEYS)
+    return any(LEVEL_RANK.get(perms.get(k, "none"), 0) >= 1 for k in keys)
 
 
-def _require_view(db: Session, user: models.User) -> None:
-    if not _can_view(db, user):
+def _can_view_any(db: Session, user: models.User) -> bool:
+    return _can_view(db, user, VIEW_KEYS + CELL_VIEW_KEYS)
+
+
+def _require_view(db: Session, user: models.User, keys: tuple[str, ...] = VIEW_KEYS) -> None:
+    if not _can_view(db, user, keys):
         raise HTTPException(403, "You do not have access to the workflows")
 
 
@@ -123,6 +147,9 @@ def _members(db: Session, groups: list[str]) -> set[int]:
 def _title(flow: str, record: Any, db: Session) -> str:
     if flow == "purchase":
         return record.code
+    if flow == "cell":
+        cell = f" ({record.electrolyzer}-{record.position})" if record.electrolyzer else ""
+        return f"{'⚠ ' if record.urgent else ''}{record.element_nr}{cell}"
     codes = [p.code for p in db.query(WfCoatingPackage).filter_by(batch_id=record.id).order_by(WfCoatingPackage.seq)]
     if not codes:
         return f"#{record.id}"
@@ -327,10 +354,13 @@ def _purchase_summary(db: Session, p: WfPurchase) -> dict:
 def meta(db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     return {
         "can_view": _can_view(db, user),
+        "can_view_cell": _can_view(db, user, CELL_VIEW_KEYS),
+        "can_request_cell": _can_request_cell(db, user),
         "groups": sorted(_groups(db, user)),
         "view_groups": sorted(_groups(db, user, "view")),
         "coating_stages": COATING_STAGES,
         "purchase_stages": PURCHASE_STAGES,
+        "cell_stages": CELL_STAGES,
         "delay_parties": list(DELAY_PARTIES),
     }
 
@@ -348,6 +378,10 @@ def _cartable(db: Session, user: models.User) -> list[dict]:
     if p_status:
         for p in db.query(WfPurchase).filter(WfPurchase.status.in_(p_status)).order_by(WfPurchase.updated_at).all():
             out.append(_purchase_summary(db, p))
+    r_status = [s for s, g in CELL_STAGES.items() if groups & set(g)]
+    if r_status:
+        for r in db.query(WfCellRequest).filter(WfCellRequest.status.in_(r_status)).order_by(WfCellRequest.updated_at).all():
+            out.append(_cell_summary(db, r))
     out.sort(key=lambda r: r["updated_at"] or "")
     return out
 
@@ -360,7 +394,7 @@ def cartable(db: Session = Depends(get_db), user: models.User = Depends(get_curr
 @router.get("/summary")
 def summary(db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     """Bell data: items waiting for my groups and unread notices (cheap enough to poll)."""
-    if not _can_view(db, user):
+    if not _can_view_any(db, user):
         return {"cartable": 0, "unread": 0, "items": []}
     unread = (
         db.query(WfNotification)
@@ -1255,7 +1289,406 @@ def purchase_cancel(purchase_id: int, body: NoteIn, db: Session = Depends(get_db
     return _purchase_detail(db, p, user)
 
 
-# ------------------------------------------------------------------ files (both flows)
+# ------------------------------------------------------------------ cell removal (operation -> cell shop)
+
+
+def _can_request_cell(db: Session, user: models.User) -> bool:
+    if user.role == "admin" or "operation" in _groups(db, user):
+        return True
+    return user_permission_map(db, user).get("elements") == "edit"
+
+
+def _cell_summary(db: Session, r: WfCellRequest) -> dict:
+    return {
+        "flow": "cell",
+        "id": r.id,
+        "title": _title("cell", r, db),
+        "code": r.code,
+        "codes": [r.code],
+        "status": r.status,
+        "groups": CELL_STAGES.get(r.status, []),
+        "element_nr": r.element_nr,
+        "element_id": r.element_id,
+        "electrolyzer": r.electrolyzer,
+        "position": r.position,
+        "reason": r.reason,
+        "urgent": r.urgent,
+        "problem": r.problem,
+        "planned_date": _iso(r.planned_date),
+        "decommission_date": _iso(r.decommission_date),
+        "received_date": _iso(r.received_date),
+        "decision": r.decision,
+        "anode_count": 0,
+        "cathode_count": 0,
+        "company_id": None,
+        "company_name": None,
+        "indent_no": None,
+        "dispatch_date": _iso(r.planned_date),
+        "expected_date": None,
+        "actual_date": _iso(r.decommission_date),
+        "delay_days": None,
+        "created_by": r.created_by_name,
+        "created_at": _iso(r.created_at),
+        "updated_at": _iso(r.updated_at),
+        "last_note": r.last_note,
+    }
+
+
+def _cell_actions(db: Session, r: WfCellRequest, user: models.User) -> list[str]:
+    groups = _groups(db, user)
+    acts: list[str] = []
+    if r.status == "await_shutdown" and "operation" in groups:
+        acts.append("shutdown")
+    if r.status == "await_shop" and "cellshop" in groups:
+        acts.append("receive")
+    if r.status in ("await_shop", "in_shop") and "cellshop" in groups:
+        acts.append("decide")
+    if r.status == "await_shutdown" and (user.role == "admin" or "operation" in groups or r.created_by_id == user.id):
+        acts.append("cancel")
+    if r.status not in CLOSED and (groups or r.created_by_id == user.id):
+        acts.extend(["comment", "attach"])
+    return acts
+
+
+def _cell_item(db: Session, element_nr: str) -> dict | None:
+    key = compact_nr(element_nr)
+    return next((i for i in svc.build_pipeline(db) if i["key"] == key), None) if key else None
+
+
+def _cell_detail(db: Session, r: WfCellRequest, user: models.User) -> dict:
+    data = _cell_summary(db, r)
+    data.update(
+        {
+            "completed_at": _iso(r.completed_at),
+            "remarks": None,
+            "delay_party": None,
+            "delay_reason": None,
+            "element": _cell_item(db, r.element_nr),
+            "files": _files(db, "cell", r.id),
+            "events": _events(db, "cell", r.id),
+            "actions": _cell_actions(db, r, user),
+        }
+    )
+    return data
+
+
+def _load_cell(db: Session, request_id: int) -> WfCellRequest:
+    r = db.get(WfCellRequest, request_id)
+    if not r:
+        raise HTTPException(404, "Request not found")
+    return r
+
+
+def _open_cell_requests(db: Session, element_nr: str) -> list[WfCellRequest]:
+    key = compact_nr(element_nr)
+    rows = db.query(WfCellRequest).filter(WfCellRequest.status.notin_(CLOSED)).all()
+    return [r for r in rows if compact_nr(r.element_nr) == key] if key else []
+
+
+def _cell_move(
+    db: Session, r: WfCellRequest, to_status: str, action: str, actor: models.User,
+    note: str | None = None, data: dict | None = None, also: tuple[str, ...] = (),
+) -> None:
+    """Like _move, plus the creator and the given groups hear about it (both sides follow the cell)."""
+    before = r.status
+    r.status = to_status
+    if to_status in CLOSED:
+        r.completed_at = _now()
+    _event(db, "cell", r, action, actor, before, note, data)
+    extra = _members(db, list(also)) if also else set()
+    if r.created_by_id:
+        extra.add(r.created_by_id)
+    _notify(db, "cell", r, actor, extra)
+
+
+def _write_decommission(db: Session, r: WfCellRequest, day: date, reason: str | None, actor: models.User) -> date:
+    """Switch-off date and reason go to the Assembly Data row of this installation (the one source of truth)."""
+    el = db.get(models.Element, r.element_id) if r.element_id else None
+    if el is None:
+        raise HTTPException(409, f"Element {r.element_nr} has no Assembly Data row")
+    if el.disassembly_date:
+        raise HTTPException(409, f"Element {r.element_nr} is already dismantled in Assembly Data")
+    if el.decommissioning_date:
+        day = svc._as_date(el.decommissioning_date) or day
+    else:
+        if day > date.today():
+            raise HTTPException(400, "The switch-off date cannot be in the future")
+        started = svc._as_date(el.commissioning_date) or svc._as_date(el.assembly_date)
+        if started and day < started:
+            raise HTTPException(400, f"The switch-off date is before the element was started ({started.isoformat()})")
+        el.decommissioning_date = day
+        el.dol_days = svc.installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date)
+        db.add(
+            models.ElementShopEvent(
+                element_nr=str(el.element_nr)[:50], from_stage="in_service" if el.commissioning_date else "installed",
+                to_stage="decommissioned", note=f"{r.code}: {reason or r.reason}"[:500], user=_display(actor), created_at=_now(),
+            )
+        )
+    if not (el.decommission_reason or "").strip():
+        el.decommission_reason = (reason or r.reason)[:200]
+    r.decommission_date = day
+    return day
+
+
+class CellCreateIn(BaseModel):
+    element_nr: str = Field(min_length=1)
+    reason: str = Field(min_length=1, max_length=200)
+    urgent: bool = False
+    problem: str | None = None
+    planned_date: date | None = None
+    decommission_date: date | None = None  # already switched off: written to Assembly Data right away
+
+
+@router.get("/cell")
+def list_cell_requests(
+    status: str | None = None,
+    open_only: bool = False,
+    element_nr: str | None = None,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    _require_view(db, user, CELL_VIEW_KEYS)
+    q = db.query(WfCellRequest).order_by(WfCellRequest.created_at.desc())
+    if status:
+        q = q.filter(WfCellRequest.status == status)
+    if open_only:
+        q = q.filter(WfCellRequest.status.notin_(CLOSED))
+    rows = q.limit(2000).all()
+    if element_nr:
+        key = compact_nr(element_nr)
+        rows = [r for r in rows if compact_nr(r.element_nr) == key]
+    return [_cell_summary(db, r) for r in rows[:500]]
+
+
+@router.get("/cell/{request_id}")
+def get_cell_request(request_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    _require_view(db, user, CELL_VIEW_KEYS)
+    return _cell_detail(db, _load_cell(db, request_id), user)
+
+
+@router.post("/cell")
+def create_cell_request(body: CellCreateIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    if not _can_request_cell(db, user):
+        raise HTTPException(403, "Only operation or Assembly Data editors can ask for a cell to be taken out")
+    svc.clear_cache()
+    item = _cell_item(db, body.element_nr)
+    if item is None or item["row_id"] is None:
+        raise HTTPException(404, f"Element {body.element_nr} is not in Assembly Data")
+    base, state = item["base_state"], item["state"]
+    if base not in ("in_service", "installed") and not (base == "decommissioned" and state == "decommissioned"):
+        raise HTTPException(409, f"Element {item['element_nr']} is '{state}'; only an element that sits in a cell can be sent to the cell shop")
+    existing = _open_cell_requests(db, item["element_nr"])
+    if existing:
+        raise HTTPException(409, f"Request {existing[0].code} for element {item['element_nr']} is still open")
+    reason = body.reason.strip()
+    if not reason:
+        raise HTTPException(400, "Enter the reason")
+    seq = _next_seq(db, WfCellRequest.seq)
+    r = WfCellRequest(
+        code=_code("CR", date.today(), seq),
+        seq=seq,
+        status="await_shutdown",
+        element_nr=item["element_nr"][:50],
+        element_id=item["row_id"],
+        electrolyzer=item["electrolyzer"],
+        position=item["position"],
+        reason=reason[:200],
+        urgent=body.urgent,
+        problem=(body.problem or "").strip() or None,
+        planned_date=body.planned_date,
+        created_by_id=user.id,
+        created_by_name=_display(user),
+        created_at=_now(),
+        updated_at=_now(),
+    )
+    db.add(r)
+    db.flush()
+    _event(db, "cell", r, "created", user, None, body.problem, {"reason": r.reason, "urgent": r.urgent})
+    off = svc._as_date(item["decommissioning_date"]) if base == "decommissioned" else body.decommission_date
+    if off is not None:
+        day = _write_decommission(db, r, off, reason, user)
+        r.status = "await_shop"
+        _event(db, "cell", r, "shutdown", user, "await_shutdown", None, {"date": day.isoformat()})
+    # the cell shop hears about it from the start, even while operation still has to switch the cell off
+    _notify(db, "cell", r, user, _members(db, ["cellshop"]))
+    db.commit()
+    svc.clear_cache()
+    return _cell_detail(db, r, user)
+
+
+class CellShutdownIn(NoteIn):
+    date: date_type
+    reason: str | None = None
+
+
+@router.post("/cell/{request_id}/shutdown")
+def cell_shutdown(request_id: int, body: CellShutdownIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_cell(db, request_id)
+    _require_stage(db, user, "cell", r.status, ("await_shutdown",))
+    reason = (body.reason or "").strip() or None
+    if reason:
+        r.reason = reason[:200]
+    day = _write_decommission(db, r, body.date, reason, user)
+    _cell_move(db, r, "await_shop", "shutdown", user, body.note, {"date": day.isoformat()})
+    db.commit()
+    svc.clear_cache()
+    return _cell_detail(db, r, user)
+
+
+class CellReceiveIn(NoteIn):
+    date: date_type
+
+
+@router.post("/cell/{request_id}/receive")
+def cell_receive(request_id: int, body: CellReceiveIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_cell(db, request_id)
+    _require_stage(db, user, "cell", r.status, ("await_shop",))
+    if r.decommission_date and body.date < r.decommission_date:
+        raise HTTPException(400, f"The cell cannot arrive before it was switched off ({r.decommission_date.isoformat()})")
+    if body.date > date.today():
+        raise HTTPException(400, "The arrival date cannot be in the future")
+    r.received_date = body.date
+    _cell_move(db, r, "in_shop", "receive", user, body.note, {"date": body.date.isoformat()}, also=("operation",))
+    db.commit()
+    return _cell_detail(db, r, user)
+
+
+class CellDecideIn(NoteIn):
+    choice: str = Field(pattern="^(keep|disassemble|relocate)$")
+    electrolyzer: str | None = None
+    position: str | None = None
+    date: date_type | None = None
+
+
+@router.post("/cell/{request_id}/decide")
+def cell_decide(request_id: int, body: CellDecideIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """The cell shop's decision is the Element Workflow decision itself: kept healthy, dismantled, or moved to a new cell."""
+    from .element_dashboard import ShopRelocate, relocate_element
+
+    r = _load_cell(db, request_id)
+    _require_stage(db, user, "cell", r.status, ("await_shop", "in_shop"))
+    note = (body.note or "").strip() or None
+    svc.clear_cache()
+    data: dict[str, Any] = {"choice": body.choice}
+    if body.choice == "relocate":
+        if not (body.electrolyzer or "").strip() or not (body.position or "").strip():
+            raise HTTPException(400, "Choose the electrolyzer and the position of the new cell")
+        moved = relocate_element(
+            db, ShopRelocate(element_nr=r.element_nr, electrolyzer=body.electrolyzer, position=body.position, date=body.date, note=note), user
+        )
+        data["cell"] = f"{moved['electrolyzer']}-{moved['position']}"
+        r.decision = "relocated"
+    else:
+        try:
+            svc.decide_decommissioned(db, r.element_nr, body.choice, note, _display(user))
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+        r.decision = body.choice
+    if r.received_date is None:
+        r.received_date = date.today()
+    _cell_move(db, r, "completed", "decide", user, note, data, also=("operation",))
+    db.commit()
+    svc.clear_cache()
+    return _cell_detail(db, r, user)
+
+
+class CellCommentIn(BaseModel):
+    note: str = Field(min_length=1, max_length=2000)
+
+
+@router.post("/cell/{request_id}/comment")
+def cell_comment(request_id: int, body: CellCommentIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_cell(db, request_id)
+    if "comment" not in _cell_actions(db, r, user):
+        raise HTTPException(403, "Only the requester and the workflow groups can write on this request")
+    text = body.note.strip()
+    if not text:
+        raise HTTPException(400, "Write a message")
+    _event(db, "cell", r, "comment", user, r.status, text)
+    extra = _members(db, ["operation", "cellshop"])
+    if r.created_by_id:
+        extra.add(r.created_by_id)
+    _notify(db, "cell", r, user, extra)
+    db.commit()
+    return _cell_detail(db, r, user)
+
+
+@router.post("/cell/{request_id}/cancel")
+def cell_cancel(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_cell(db, request_id)
+    if "cancel" not in _cell_actions(db, r, user):
+        raise HTTPException(409, "Only a request whose cell is still running can be cancelled (by the requester or operation)")
+    _cell_move(db, r, "cancelled", "cancel", user, body.note, also=("cellshop",))
+    db.commit()
+    return _cell_detail(db, r, user)
+
+
+def close_cell_requests(db: Session, element_nr: str, decision: str, actor: models.User, note: str | None = None, cell: str | None = None) -> None:
+    """The cell shop decided from the element pipeline (not from the request): the open request is done too."""
+    for r in _open_cell_requests(db, element_nr):
+        r.decision = "relocated" if decision in ("relocate", "relocated") else decision
+        if r.received_date is None:
+            r.received_date = date.today()
+        data = {"choice": r.decision, **({"cell": cell} if cell else {})}
+        _cell_move(db, r, "completed", "decide", actor, (note or "").strip() or None, data, also=("operation",))
+
+
+def cell_on_element_saved(db: Session, el: models.Element, actor: models.User, had_decommission: bool, had_disassembly: bool) -> None:
+    """Assembly Data typed by hand stays in step with the requests (and the cell shop is told about a new switch-off)."""
+    key = compact_nr(el.element_nr)
+    if not key:
+        return
+    later = (
+        db.query(models.Element)
+        .filter(models.Element.element_nr == el.element_nr, models.Element.id != el.id, models.Element.assembly_date > el.assembly_date)
+        .first()
+        if el.assembly_date
+        else None
+    )
+    if later is not None:  # an older life was edited
+        return
+    opened = [r for r in _open_cell_requests(db, el.element_nr) if r.element_id in (None, el.id)]
+    if el.disassembly_date and not had_disassembly:
+        for r in opened:
+            r.decision = r.decision or "disassemble"
+            if r.decommission_date is None:
+                r.decommission_date = svc._as_date(el.decommissioning_date)
+            _cell_move(db, r, "completed", "assembly_data", actor, None, {"choice": "disassemble"}, also=("operation", "cellshop"))
+        return
+    if not el.decommissioning_date or had_decommission or el.disassembly_date:
+        return
+    day = svc._as_date(el.decommissioning_date)
+    for r in opened:
+        if r.status == "await_shutdown":
+            r.decommission_date = day
+            _cell_move(db, r, "await_shop", "assembly_data", actor, None, {"date": _iso(day)})
+    if opened or _open_cell_requests(db, el.element_nr) or day is None:
+        return
+    if not (0 <= (date.today() - day).days <= AUTO_REQUEST_DAYS):
+        return
+    seq = _next_seq(db, WfCellRequest.seq)
+    r = WfCellRequest(
+        code=_code("CR", date.today(), seq),
+        seq=seq,
+        status="await_shop",
+        element_nr=str(el.element_nr)[:50],
+        element_id=el.id,
+        electrolyzer=format_electrolyzer_name(el.electrolyzer) if el.electrolyzer else None,
+        position=el.position,
+        reason=((el.decommission_reason or "").strip() or "Assembly Data")[:200],
+        decommission_date=day,
+        created_by_id=actor.id,
+        created_by_name=_display(actor),
+        created_at=_now(),
+        updated_at=_now(),
+    )
+    db.add(r)
+    db.flush()
+    _event(db, "cell", r, "auto_created", actor, None, None, {"date": _iso(day)})
+    _notify(db, "cell", r, actor)
+
+
+# ------------------------------------------------------------------ files (all flows)
 
 
 def _record(db: Session, flow: str, record_id: int):
@@ -1263,6 +1696,8 @@ def _record(db: Session, flow: str, record_id: int):
         return _load_batch(db, record_id)
     if flow == "purchase":
         return _load_purchase(db, record_id)
+    if flow == "cell":
+        return _load_cell(db, record_id)
     raise HTTPException(404, "Unknown workflow")
 
 
@@ -1278,7 +1713,7 @@ def attach_files(
     rec = _record(db, flow, record_id)
     if rec.status in CLOSED:
         raise HTTPException(409, "The record is closed")
-    if not _groups(db, user):
+    if not _groups(db, user) and not (flow == "cell" and rec.created_by_id == user.id):
         raise HTTPException(403, "Only workflow groups can attach files")
     names = []
     for up in files:
@@ -1294,10 +1729,10 @@ def attach_files(
 
 @router.get("/files/{file_id}")
 def download_file(file_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    _require_view(db, user)
     f = db.get(WfFile, file_id)
     if not f:
         raise HTTPException(404, "File not found")
+    _require_view(db, user, CELL_VIEW_KEYS if f.flow == "cell" else VIEW_KEYS)
     root = (data_root() / "workflow" / f.flow / str(f.record_id)).resolve()
     path = (root / f.stored_name).resolve()
     if path.parent != root or not path.exists():

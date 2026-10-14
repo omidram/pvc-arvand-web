@@ -1,11 +1,18 @@
 import { apiClient } from "./api-client";
+import type { PipelineItem } from "./types";
 
-export type WfFlow = "coating" | "purchase";
-export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection";
+export type WfFlow = "coating" | "purchase" | "cell";
+export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "operation" | "cellshop";
 export type WfKind = "anode" | "cathode";
 
 export const COATING_STEPS = ["await_company", "await_indent", "await_dispatch", "at_coater", "await_report", "await_inspection", "await_approval", "completed"] as const;
 export const PURCHASE_STEPS = ["await_indent", "await_order", "ordered", "await_registration", "completed"] as const;
+export const CELL_STEPS = ["await_shutdown", "await_shop", "in_shop", "completed"] as const;
+
+/** Where a notice opens: cell requests live in the element dashboard, the others in the warehouse. */
+export function workflowHref(flow: string, id: number) {
+  return flow === "cell" ? `/element-dashboard?tab=requests&req=${id}` : `/storage?wf=${flow}:${id}`;
+}
 export const DELAY_PARTIES = ["employer", "company", "transport", "other"] as const;
 /** Any of these opens the warehouse page (workflow groups included). */
 export const WAREHOUSE_VIEW_KEYS = ["storage", "anodes", "cathodes", "membranes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection"];
@@ -31,6 +38,7 @@ export interface WfSummary {
   rejected?: boolean;
   rework_count?: number;
   registered?: number;
+  reason?: string;
   created_by: string | null;
   created_at: string | null;
   updated_at: string | null;
@@ -137,9 +145,45 @@ export interface WfCompanyStats {
 
 export interface WfMeta {
   can_view: boolean;
+  can_view_cell: boolean;
+  can_request_cell: boolean;
   groups: WfGroup[];
   view_groups: WfGroup[];
   delay_parties: string[];
+}
+
+export type CellDecision = "keep" | "disassemble" | "relocated";
+
+export interface CellRequest {
+  flow: "cell";
+  id: number;
+  title: string;
+  code: string;
+  status: string;
+  groups: WfGroup[];
+  element_nr: string;
+  element_id: number | null;
+  electrolyzer: string | null;
+  position: string | null;
+  reason: string;
+  urgent: boolean;
+  problem: string | null;
+  planned_date: string | null;
+  decommission_date: string | null;
+  received_date: string | null;
+  decision: CellDecision | null;
+  created_by: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  last_note: string | null;
+}
+
+export interface CellRequestDetail extends CellRequest {
+  completed_at: string | null;
+  element: PipelineItem | null;
+  files: WfFile[];
+  events: WfEvent[];
+  actions: string[];
 }
 
 const multipart = { headers: { "Content-Type": "multipart/form-data" } };
@@ -196,6 +240,19 @@ export const workflowApi = {
     (await apiClient.get("/workflow/history", { params })).data,
   companyReport: async (params: { date_from?: string; date_to?: string } = {}): Promise<WfCompanyStats[]> =>
     (await apiClient.get("/workflow/reports/companies", { params })).data,
+  cellList: async (params: { open_only?: boolean; element_nr?: string; status?: string } = {}): Promise<CellRequest[]> =>
+    (await apiClient.get("/workflow/cell", { params })).data,
+  cellGet: async (id: number): Promise<CellRequestDetail> => (await apiClient.get(`/workflow/cell/${id}`)).data,
+  cellCreate: async (body: {
+    element_nr: string;
+    reason: string;
+    urgent?: boolean;
+    problem?: string | null;
+    planned_date?: string | null;
+    decommission_date?: string | null;
+  }): Promise<CellRequestDetail> => (await apiClient.post("/workflow/cell", body)).data,
+  cellStep: async (id: number, action: string, body: Record<string, unknown>): Promise<CellRequestDetail> =>
+    (await apiClient.post(`/workflow/cell/${id}/${action}`, body)).data,
 };
 
 /** "A-001 ; dent on flange" or "A-001<TAB>dent" → serial + optional problem note, one per line. */

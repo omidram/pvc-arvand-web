@@ -24,7 +24,7 @@ from ..crud import build_crud_router
 from ..database import get_db
 from ..excel_import import import_excel_bytes, read_xlsx
 from ..import_jobs import spawn_import
-from ..auth import require_admin
+from ..auth import get_current_user, require_admin
 from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx, rows_to_dicts
 from ..plant_import import parse_assembly_excel
 
@@ -573,7 +573,9 @@ def _check_required(data: dict, existing: models.Element | None = None) -> None:
 
 
 @router.post("", response_model=schemas.ElementRead, status_code=201)
-def create_element(payload: schemas.ElementBase, db: Session = Depends(get_db)):
+def create_element(payload: schemas.ElementBase, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    from .workflow import cell_on_element_saved
+
     _check_required(payload.model_dump())
     _ensure_group(db, payload.group_nr)
     data = payload.model_dump()
@@ -584,16 +586,21 @@ def create_element(payload: schemas.ElementBase, db: Session = Depends(get_db)):
     _reject_same_installation(db, obj)
     db.add(obj)
     _sync_saved_element(db, obj)
+    db.flush()
+    cell_on_element_saved(db, obj, user, had_decommission=False, had_disassembly=False)
     db.commit()
     db.refresh(obj)
     return _enrich(obj)
 
 
 @router.put("/{item_id}", response_model=schemas.ElementRead)
-def update_element(item_id: int, payload: schemas.ElementBase, db: Session = Depends(get_db)):
+def update_element(item_id: int, payload: schemas.ElementBase, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    from .workflow import cell_on_element_saved
+
     obj = db.query(models.Element).filter(models.Element.id == item_id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
+    had_decommission, had_disassembly = obj.decommissioning_date is not None, obj.disassembly_date is not None
     data = payload.model_dump(exclude_unset=True)
     _check_required(data, obj)
     if "group_nr" in data:
@@ -604,6 +611,7 @@ def update_element(item_id: int, payload: schemas.ElementBase, db: Session = Dep
         setattr(obj, key, value)
     _reject_same_installation(db, obj)
     _sync_saved_element(db, obj)
+    cell_on_element_saved(db, obj, user, had_decommission, had_disassembly)
     db.commit()
     db.refresh(obj)
     return _enrich(obj)

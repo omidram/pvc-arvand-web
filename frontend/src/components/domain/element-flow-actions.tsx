@@ -52,6 +52,7 @@ export function DecommissionActions({
       });
       onNote("");
       void qc.invalidateQueries({ queryKey: ["element-dashboard"] });
+      void qc.invalidateQueries({ queryKey: ["wf"] });
       onDone?.();
     },
     onError: (err: ApiErr) => onMessage({ ok: false, text: errText(err) }),
@@ -138,6 +139,7 @@ export function RelocateForm({
       onMessage({ ok: true, text: t("elDash.cartable.relocateDone", { nr: res.element_nr, cell: `${res.electrolyzer}-${res.position}` }) });
       onNote("");
       void qc.invalidateQueries({ queryKey: ["element-dashboard"] });
+      void qc.invalidateQueries({ queryKey: ["wf"] });
       void qc.invalidateQueries({ queryKey: ["elements"] });
       onDone?.();
     },

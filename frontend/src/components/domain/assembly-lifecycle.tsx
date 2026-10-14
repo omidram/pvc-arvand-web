@@ -12,6 +12,7 @@ import { todayIsoLocal } from "@/lib/date-range";
 import { cn, formatDate, formatNumber } from "@/lib/utils";
 import { STAGE_TONE } from "./element-dashboard-ui";
 import { DecommissionActions, isHealthyKept, isShutdownDecision } from "./element-flow-actions";
+import { ElementCellRequest } from "./cell-request";
 
 /** One life of an element, in the order it really happens; after "disassembled" it starts again. */
 export const LIFE_CYCLE: ElementStage[] = [
@@ -209,6 +210,8 @@ export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; 
             <span className="asm-next-title">{t("asmFlow.nextTitle")}</span>
             <span>{t(`asmFlow.next.${item.state}`)}</span>
           </div>
+
+          {!older ? <ElementCellRequest item={item} /> : null}
 
           {editable && !older && (isShutdownDecision(item) || isHealthyKept(item) || item.state === "awaiting_disassembly") ? (
             <DecommissionActions item={item} editable={editable} note={note} onNote={setNote} onMessage={setMessage} />

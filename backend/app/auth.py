@@ -46,6 +46,9 @@ FORM_KEYS: list[str] = [
     "wf_procurement",
     "wf_warehouse",
     "wf_inspection",
+    # Cell removal: operation switches the cell off, the cell shop receives it and decides
+    "wf_operation",
+    "wf_cellshop",
 ]
 
 # Per-form table fields that can be granted view/edit independently of the
@@ -412,6 +415,18 @@ DEFAULT_ROLES: list[dict] = [
         "description": "بازرسی — بررسی گزارش نهایی شرکت پوشش‌دهنده پیش از تأیید نهایی C-90",
         "is_system": True,
         "permissions": {"anodes": "view", "cathodes": "view", "storage": "view", "wf_inspection": "edit"},
+    },
+    {
+        "name": "Operation",
+        "description": "بهره‌برداری — درخواست خروج المنت معیوب از سل، ثبت تاریخ خاموشی و اطلاع به کارگاه",
+        "is_system": True,
+        "permissions": {"elements": "view", "voltage": "view", "monitoring": "view", "wf_operation": "edit"},
+    },
+    {
+        "name": "Cell shop",
+        "description": "کارگاه سل — دریافت المنت از سالن، تصمیم (نگهداری سالم / دمونتاژ / جابجایی) و چرخه کارگاه",
+        "is_system": True,
+        "permissions": {"elements": "view", "anodes": "view", "cathodes": "view", "membranes": "view", "wf_cellshop": "edit"},
     },
 ]
 

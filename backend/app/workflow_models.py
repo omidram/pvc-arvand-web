@@ -102,6 +102,36 @@ class WfPurchaseItem(Base):
     registered_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 
+class WfCellRequest(Base):
+    """An in-service element taken out of its cell: operation switches it off, the cell shop receives and decides.
+
+    The dates written here are mirrored to Assembly Data (decommissioning date / reason) when they happen.
+    """
+
+    __tablename__ = "wf_cell_requests"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    seq: Mapped[int] = mapped_column(Integer, unique=True, index=True)
+    status: Mapped[str] = mapped_column(String(20), index=True)
+    element_nr: Mapped[str] = mapped_column(String(50), index=True)
+    element_id: Mapped[int | None] = mapped_column(Integer, index=True)  # Assembly Data row of the life being ended
+    electrolyzer: Mapped[str | None] = mapped_column(String(50))
+    position: Mapped[str | None] = mapped_column(String(20))
+    reason: Mapped[str] = mapped_column(String(200))
+    urgent: Mapped[bool] = mapped_column(default=False)
+    problem: Mapped[str | None] = mapped_column(Text)
+    planned_date: Mapped[date | None] = mapped_column(Date)
+    decommission_date: Mapped[date | None] = mapped_column(Date, index=True)
+    received_date: Mapped[date | None] = mapped_column(Date)
+    decision: Mapped[str | None] = mapped_column(String(20))  # keep | disassemble | relocated
+    last_note: Mapped[str | None] = mapped_column(Text)
+    created_by_id: Mapped[int | None] = mapped_column(Integer)
+    created_by_name: Mapped[str | None] = mapped_column(String(150))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
 class WfFile(Base):
     __tablename__ = "wf_files"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

@@ -71,16 +71,23 @@ class ShopMove(BaseModel):
 
 @router.post("/shop/move")
 def move_shop(body: ShopMove, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    from .workflow import close_cell_requests
+
     svc.clear_cache()
     moved: list[str] = []
     errors: list[dict[str, str]] = []
     items = {i["key"]: i for i in svc.build_pipeline(db)}
+    choice = {stage: c for c, stage in svc.DECOMMISSION_CHOICES.items()}.get(body.stage)
     for nr in dict.fromkeys(n.strip() for n in body.element_nrs if n and n.strip()):
         try:  # every check runs before anything is written, so a refused element leaves no half-change
             svc.set_shop_stage(db, nr, body.stage, (body.note or "").strip() or None, user.full_name or user.username, items)
             moved.append(nr)
         except ValueError as exc:
             errors.append({"element_nr": nr, "error": str(exc)})
+            continue
+        item = items.get(compact_nr(nr))
+        if choice and item and item["base_state"] == "decommissioned":
+            close_cell_requests(db, nr, choice, user, body.note)
     if not moved and errors:
         raise HTTPException(status_code=400, detail=errors[0]["error"])
     db.commit()
@@ -97,11 +104,15 @@ class ShopAdvance(BaseModel):
 @router.post("/shop/advance")
 def advance_shop(body: ShopAdvance, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     """Cell-shop cartable: confirm the next step of one element (scan or pick its tag)."""
+    from .workflow import close_cell_requests
+
     svc.clear_cache()
     try:
         result = svc.advance_stage(db, body.element_nr.strip(), (body.note or "").strip() or None, user.full_name or user.username, body.date)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if result["stage"] == "disassembled":
+        close_cell_requests(db, result["element_nr"], "disassemble", user, body.note)
     db.commit()
     svc.clear_cache()
     return result
@@ -116,11 +127,14 @@ class ShopDecide(BaseModel):
 @router.post("/shop/decide")
 def decide_shop(body: ShopDecide, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     """After the Decommission Date: healthy cell stays in the cell shop, or goes to disassembly."""
+    from .workflow import close_cell_requests
+
     svc.clear_cache()
     try:
         result = svc.decide_decommissioned(db, body.element_nr.strip(), body.choice, (body.note or "").strip() or None, user.full_name or user.username)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    close_cell_requests(db, result["element_nr"], body.choice, user, body.note)
     db.commit()
     svc.clear_cache()
     return result
@@ -141,6 +155,17 @@ def relocate_shop(body: ShopRelocate, db: Session = Depends(get_db), user: model
 
     The row of the old installation is closed by the usual Assembly Data rule (a newer installation ends the earlier one).
     """
+    from .workflow import close_cell_requests
+
+    result = relocate_element(db, body, user)
+    close_cell_requests(db, result["element_nr"], "relocated", user, body.note, cell=f"{result['electrolyzer']}-{result['position']}")
+    db.commit()
+    svc.clear_cache()
+    return result
+
+
+def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict[str, Any]:
+    """Write the new installation row and close the old one; the caller commits."""
     from .elements import _ensure_group, _normalize_position, _reject_same_installation, _sync_saved_element
     from ..assembly_integrity import cell_key, is_open
     from ..plant_topology import all_electrolyzers, format_electrolyzer_name
@@ -208,8 +233,6 @@ def relocate_shop(body: ShopRelocate, db: Session = Depends(get_db), user: model
             user=user.full_name or user.username, created_at=datetime.now(),
         )
     )
-    db.commit()
-    svc.clear_cache()
     return {"element_nr": old.element_nr, "electrolyzer": electrolyzer, "position": position, "id": new.id}
 
 

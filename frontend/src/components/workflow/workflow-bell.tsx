@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClipboardList, MailOpen } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
 import { cn, formatDateTime } from "@/lib/utils";
-import { workflowApi, type WfNotice } from "@/lib/workflow";
+import { workflowApi, workflowHref, type WfNotice } from "@/lib/workflow";
 
 type Toast = { id: number; flow: string; recordId: number; title: string; text: string };
 
@@ -32,7 +32,7 @@ function beep() {
 }
 
 function href(n: { flow: string; record_id: number }) {
-  return `/storage?wf=${n.flow}:${n.record_id}`;
+  return workflowHref(n.flow, n.record_id);
 }
 
 /** Cartable button in the top bar: items waiting for my workflow groups, plus a pop-up when a new one lands. */

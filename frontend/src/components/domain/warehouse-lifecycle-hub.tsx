@@ -26,7 +26,7 @@ import {
 } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
-import { workflowApi, type WfFlow } from "@/lib/workflow";
+import { workflowApi, workflowHref, type WfFlow } from "@/lib/workflow";
 
 export type WhSection =
   | "dashboard"
@@ -109,7 +109,7 @@ export function WarehouseLifecycleHub() {
   const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: 15_000 });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["wh"] });
-  const openRecord = (flow: WfFlow, id: number) => setOpened({ flow, id });
+  const openRecord = (flow: WfFlow, id: number) => (flow === "cell" ? router.push(workflowHref(flow, id)) : setOpened({ flow, id }));
   const closeRecord = () => {
     setOpened(null);
     if (urlTarget) {
