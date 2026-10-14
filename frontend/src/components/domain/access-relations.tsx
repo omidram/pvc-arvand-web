@@ -430,6 +430,9 @@ export function MembraneRelations({ membraneNr }: { membraneNr: string }) {
 export function SegregationRelations({ row }: { row: ElectrodeSegregation }) {
   const { t } = useI18n();
   const serial = row.serial_nr;
+  const flowLabel = row.flow_outcome
+    ? `${t(`elFlow.outcome.${row.flow_outcome}`)}${row.flow_destination ? ` → ${t(`elFlow.destination.${row.flow_destination}`)}` : ""}${row.flow_vendor ? ` · ${row.flow_vendor}` : ""}`
+    : null;
   const elementsQuery = useQuery({
     queryKey: ["elements", { q: serial, limit: 200 }],
     queryFn: () => elementsApi.list({ q: serial, limit: 200 }),
@@ -440,6 +443,14 @@ export function SegregationRelations({ row }: { row: ElectrodeSegregation }) {
   );
   return (
     <>
+      {flowLabel ? (
+        <p className="ew-path-banner">
+          <strong>{t("elFlow.path")}:</strong> {flowLabel}{" "}
+          <a className="asm-link" href="/element-dashboard?tab=flow">
+            {t("elDash.tab.flow")}
+          </a>
+        </p>
+      ) : null}
       <RelatedLinks
         anodeNr={row.electrode_kind === "cathode" ? null : serial}
         cathodeNr={row.electrode_kind === "anode" ? null : serial}

@@ -1753,6 +1753,20 @@ export const elementDashboardApi = {
     (await apiClient.post("/element-dashboard/shop/move", payload)).data,
   advance: async (payload: { element_nr: string; note?: string | null; date?: string | null }): Promise<{ element_nr: string; stage: T.ElementStage; from: T.ElementStage }> =>
     (await apiClient.post("/element-dashboard/shop/advance", payload)).data,
+  decide: async (payload: { element_nr: string; choice: "keep" | "disassemble"; note?: string | null }): Promise<{ element_nr: string; stage: T.ElementStage }> =>
+    (await apiClient.post("/element-dashboard/shop/decide", payload)).data,
+  relocate: async (payload: {
+    element_nr: string;
+    electrolyzer: string;
+    position: string;
+    date?: string | null;
+    group_nr?: string | null;
+    note?: string | null;
+  }): Promise<{ element_nr: string; electrolyzer: string; position: string; id: number }> =>
+    (await apiClient.post("/element-dashboard/shop/relocate", payload)).data,
+  flow: async (): Promise<T.FlowOverview> => (await apiClient.get("/element-dashboard/flow")).data,
+  flowList: async (params: { node: string; q?: string; limit?: number }): Promise<T.FlowList> =>
+    (await apiClient.get("/element-dashboard/flow/list", { params })).data,
   events: async (elementNr?: string): Promise<T.ShopEvent[]> =>
     (await apiClient.get("/element-dashboard/shop/events", { params: elementNr ? { element_nr: elementNr } : undefined })).data,
   parts: async (params: {

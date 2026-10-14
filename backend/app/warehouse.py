@@ -216,6 +216,14 @@ def _segregation_bucket(rows, after: date | None) -> str | None:
         return "out_repair"
     if re.search(r"\bok\b", low):
         return "ok"
+    # Element Workflow: the decision itself (reusable / rate off / coating or mechanical problem)
+    from .segregation_flow import classify_row
+
+    outcome = classify_row(latest)["outcome"]
+    if outcome == "reusable":
+        return "ok"
+    if outcome in ("rate_off", "coating_problem", "mechanical_problem"):
+        return "not_ok"
     return None
 
 

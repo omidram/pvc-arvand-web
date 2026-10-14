@@ -11,6 +11,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { todayIsoLocal } from "@/lib/date-range";
 import { cn, formatDate, formatNumber } from "@/lib/utils";
 import { STAGE_TONE } from "./element-dashboard-ui";
+import { DecommissionActions, isHealthyKept, isShutdownDecision } from "./element-flow-actions";
 
 /** One life of an element, in the order it really happens; after "disassembled" it starts again. */
 export const LIFE_CYCLE: ElementStage[] = [
@@ -26,7 +27,6 @@ export const LIFE_CYCLE: ElementStage[] = [
 ];
 
 const NEXT: Partial<Record<ElementStage, ElementStage>> = {
-  decommissioned: "disassembled",
   awaiting_disassembly: "disassembled",
   disassembled: "awaiting_assembly",
   awaiting_assembly: "assembling",
@@ -203,6 +203,10 @@ export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; 
             <span className="asm-next-title">{t("asmFlow.nextTitle")}</span>
             <span>{t(`asmFlow.next.${item.state}`)}</span>
           </div>
+
+          {editable && !older && (isShutdownDecision(item) || isHealthyKept(item) || item.state === "awaiting_disassembly") ? (
+            <DecommissionActions item={item} editable={editable} note={note} onNote={setNote} onMessage={setMessage} />
+          ) : null}
 
           {editable && next && !older ? (
             <div className="asm-actions">

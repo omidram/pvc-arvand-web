@@ -75,6 +75,11 @@ export default function SegregationPage() {
     { key: "pair_serial_nr", header: t("segregation.pairSerial") },
     { key: "voltage_quality", header: t("segregation.voltageQuality") },
     { key: "decision", header: t("segregation.decision") },
+    {
+      key: "flow_outcome",
+      header: t("elFlow.path"),
+      render: (r) => (r.flow_outcome ? `${t(`elFlow.outcome.${r.flow_outcome}`)}${r.flow_vendor ? ` · ${r.flow_vendor}` : ""}` : "—"),
+    },
     { key: "pallet", header: t("segregation.pallet") },
     { key: "inspection_date", header: t("fields.date"), render: (r) => formatDate(r.inspection_date) },
   ];

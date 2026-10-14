@@ -26,6 +26,9 @@ _CACHE: dict[Any, tuple[float, Any]] = {}
 
 def clear_cache() -> None:
     _CACHE.clear()
+    from . import element_flow  # imported late: element_flow builds on this module
+
+    element_flow.clear_cache()
 
 
 def _freeze(value: Any) -> Any:
@@ -61,7 +64,9 @@ PLANT_CAPACITY = len(all_electrolyzers()) * CELLS_PER_ELECTROLYZER
 MANUAL_STAGES = ("awaiting_disassembly", "awaiting_assembly", "assembling", "awaiting_qc", "ready")
 STAGE_RANK = {"awaiting_assembly": 1, "assembling": 2, "awaiting_qc": 3, "ready": 4}
 ALLOWED_BY_BASE = {
-    "decommissioned": {"awaiting_disassembly"},
+    # Element Workflow: switched off -> the shop decides. Healthy cell = kept in the shop ("ready", waits for a new
+    # position); otherwise it goes to disassembly.
+    "decommissioned": {"awaiting_disassembly", "ready"},
     "disassembled": {"awaiting_assembly", "assembling", "awaiting_qc", "ready"},
     "new": {"awaiting_assembly", "assembling", "awaiting_qc", "ready"},
 }
@@ -89,7 +94,7 @@ DEFAULT_SETTINGS = {
 
 # One confirmation moves an element to the next step of the cell-shop cycle.
 NEXT_STAGE = {
-    "decommissioned": "disassembled",
+    # decommissioned is the flowchart decision (keep / relocate / disassemble) — not a single next step
     "awaiting_disassembly": "disassembled",
     "disassembled": "awaiting_assembly",
     "new": "awaiting_assembly",
@@ -258,8 +263,6 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
             since = stamp.date()
             if source == "manual" and st is not None:
                 note, updated_by = st.note, st.updated_by
-        elif base == "decommissioned":
-            stage, source = "awaiting_disassembly", "auto"
         elif base == "disassembled" and queue_days and event is not None and (today - event).days <= queue_days:
             stage, source = "awaiting_assembly", "auto"
 
@@ -346,6 +349,25 @@ def set_shop_stage(
     row.updated_at = datetime.now()  # local time, comparable with the plant dates
     db.add(models.ElementShopEvent(element_nr=shown[:50], from_stage=previous, to_stage=stage, note=note, user=user, created_at=datetime.now()))
     return {"element_nr": shown, "stage": stage}
+
+
+DECOMMISSION_CHOICES = {"keep": "ready", "disassemble": "awaiting_disassembly"}
+
+
+def decide_decommissioned(db: Session, element_nr: str, choice: str, note: str | None, user: str | None) -> dict[str, Any]:
+    """Flowchart branch after the Decommission Date: healthy cell kept in the cell shop, or sent to disassembly.
+
+    (Moving a healthy cell straight to a new position is ``relocate`` in the router; it writes Assembly Data.)
+    """
+    stage = DECOMMISSION_CHOICES.get(choice)
+    if stage is None:
+        raise ValueError(f"Unknown choice '{choice}'")
+    key = compact_nr(element_nr)
+    item = next((i for i in build_pipeline(db) if i["key"] == key), None)
+    if item is None or item["base_state"] != "decommissioned":
+        raise ValueError(f"Element {element_nr} is not waiting after being switched off")
+    result = set_shop_stage(db, item["element_nr"], stage, note, user, {key: item})
+    return {**result, "from": item["state"]}
 
 
 def advance_stage(db: Session, element_nr: str, note: str | None, user: str | None, day: date | None = None) -> dict[str, Any]:
@@ -675,6 +697,8 @@ def coating_overview(
             reasons.append("thin_coating")
         if r["bucket"] == "not_ok" and r["reason"] == "coating":
             reasons.append("coating_failed")
+        if r["bucket"] == "not_ok" and r["reason"] == "segregation":
+            reasons.append("segregation_problem")
         if r["wh_status"] == "ready_dispatch":
             reasons.append("ready_dispatch")
         if reasons:

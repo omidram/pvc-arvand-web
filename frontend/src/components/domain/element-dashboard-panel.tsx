@@ -8,11 +8,12 @@ import { ElementCellsTab } from "./element-dashboard-cells";
 import { ElementCoatingTab } from "./element-dashboard-coating";
 import { ElementInstalledTab } from "./element-dashboard-installed";
 import { ElementIntegrityTab, ElementSettingsTab } from "./element-dashboard-integrity";
+import { ElementFlowTab } from "./element-dashboard-flow";
 import { ElementOverviewTab, type DashTab, type OpenTarget } from "./element-dashboard-overview";
 import { ElementPartsTab } from "./element-dashboard-parts";
 import { ElementShopTab } from "./element-dashboard-shop";
 
-const TABS: DashTab[] = ["overview", "shop", "parts", "installed", "cells", "coating", "integrity", "settings"];
+const TABS: DashTab[] = ["overview", "flow", "shop", "parts", "installed", "cells", "coating", "integrity", "settings"];
 const KINDS = ["anode", "cathode", "membrane"] as const;
 
 /** The element management dashboard: one place for the whole life cycle of cells, anodes, cathodes and membranes. */
@@ -54,6 +55,7 @@ export function ElementDashboardPanel() {
       }}
       tabs={[
         { key: "overview", label: t("elDash.tab.overview"), content: <ElementOverviewTab onOpen={open} /> },
+        { key: "flow", label: t("elDash.tab.flow"), content: <ElementFlowTab key={`flow-${nonce}`} onOpen={open} /> },
         { key: "shop", label: t("elDash.tab.shop"), content: <ElementShopTab key={`shop-${nonce}`} initialStage={target.tab === "shop" ? target.stage : undefined} /> },
         {
           key: "parts",

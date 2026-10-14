@@ -24,7 +24,7 @@ import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { ElementReportGuideButton } from "./element-report-guide";
 import { MiniStat, STAGE_FLOW, STAGE_TONE, StageBadge } from "./element-dashboard-ui";
 
-export type DashTab = "overview" | "shop" | "parts" | "installed" | "cells" | "coating" | "integrity" | "settings";
+export type DashTab = "overview" | "flow" | "shop" | "parts" | "installed" | "cells" | "coating" | "integrity" | "settings";
 
 export interface OpenTarget {
   tab: DashTab;
@@ -108,6 +108,9 @@ export function ElementOverviewTab({ onOpen }: { onOpen: (target: OpenTarget) =>
           <p className="mon-sub">{t("elDash.updatedAt", { time: formatDateTime(data.generated_at) })}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <button type="button" className="asm-link" onClick={() => onOpen({ tab: "flow" })}>
+            {t("elDash.tab.flow")}
+          </button>
           <ElementReportGuideButton />
           <Button
             type="button"

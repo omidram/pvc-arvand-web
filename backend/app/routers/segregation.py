@@ -18,11 +18,12 @@ from ..segregation_enrich import (
     enrich_segregation_fields,
 )
 from ..relations_sync import MASTERS, find_master, link_serial
+from ..segregation_flow import classify_row
 from ..warehouse import compact_eq, compact_nr
 
 router = APIRouter(prefix="/electrode-segregations", tags=["segregation"])
 
-EXPORT_FIELDS = list(schemas.ElectrodeSegregationRead.model_fields.keys())
+EXPORT_FIELDS = [k for k in schemas.ElectrodeSegregationRead.model_fields if not k.startswith("flow_")]
 
 _SEG_FIELD_NAMES = set(schemas.ElectrodeSegregationBase.model_fields.keys())
 
@@ -75,6 +76,10 @@ def _safe_read(obj: models.ElectrodeSegregation) -> schemas.ElectrodeSegregation
         data[key] = value
     if not data.get("serial_nr"):
         data["serial_nr"] = ""
+    flow = classify_row(obj)
+    data["flow_outcome"] = flow["outcome"]
+    data["flow_destination"] = flow["destination"]
+    data["flow_vendor"] = flow["vendor"]
     return schemas.ElectrodeSegregationRead.model_validate(data)
 
 

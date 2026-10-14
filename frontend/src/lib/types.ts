@@ -590,6 +590,10 @@ export interface ElectrodeSegregation {
   pallet: string | null;
   inspection_form_serial: string | null;
   remarks: string | null;
+  /** Derived from the decision text (Element Workflow flowchart); not stored. */
+  flow_outcome?: string | null;
+  flow_destination?: string | null;
+  flow_vendor?: string | null;
 }
 
 export interface DashboardVoltageStats {
@@ -1216,6 +1220,67 @@ export interface PipelineItem {
 export interface ShopList {
   counts: Record<ElementStage | "total", number>;
   items: PipelineItem[];
+  truncated: boolean;
+}
+
+export type FlowNode =
+  | "reusable_good"
+  | "reusable_medium"
+  | "reusable_open"
+  | "rate_off"
+  | "coating_warranty"
+  | "coating_no_warranty"
+  | "mechanical_warranty"
+  | "mechanical_no_warranty"
+  | "undecided";
+
+export type FlowIssue =
+  | "decommission_no_reason"
+  | "disassembled_no_decision"
+  | "warranty_no_vendor"
+  | "rate_off_installed"
+  | "problem_installed"
+  | "warehouse_ok_but_not_reusable"
+  | "warehouse_bad_but_reusable";
+
+export interface FlowOverview {
+  elements: Record<ElementStage | "healthy_kept", number>;
+  electrodes: Record<FlowNode, { anode: number; cathode: number; total: number }>;
+  vendors: { vendor: string; count: number }[];
+  at_coater: number;
+  issues: Record<FlowIssue, number>;
+  recent_days: number;
+}
+
+export interface FlowItem {
+  kind: "anode" | "cathode";
+  serial: string;
+  key: string;
+  element_nr: string | null;
+  installed: boolean;
+  node: FlowNode | null;
+  outcome: string;
+  quality: string | null;
+  warranty: boolean | null;
+  vendor: string | null;
+  destination: string;
+  steps: string[];
+  date: string | null;
+  decision: string | null;
+  segregation: string | null;
+  problems: string | null;
+  pallet: string | null;
+  bucket: string | null;
+  at_coater: boolean;
+  resolved: boolean;
+  current: boolean;
+  detail: string | null;
+}
+
+export interface FlowList {
+  node: string;
+  total: number;
+  items: FlowItem[];
   truncated: boolean;
 }
 

@@ -107,6 +107,129 @@ def advance_shop(body: ShopAdvance, db: Session = Depends(get_db), user: models.
     return result
 
 
+class ShopDecide(BaseModel):
+    element_nr: str = Field(min_length=1)
+    choice: str  # keep | disassemble
+    note: str | None = None
+
+
+@router.post("/shop/decide")
+def decide_shop(body: ShopDecide, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """After the Decommission Date: healthy cell stays in the cell shop, or goes to disassembly."""
+    svc.clear_cache()
+    try:
+        result = svc.decide_decommissioned(db, body.element_nr.strip(), body.choice, (body.note or "").strip() or None, user.full_name or user.username)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    db.commit()
+    svc.clear_cache()
+    return result
+
+
+class ShopRelocate(BaseModel):
+    element_nr: str = Field(min_length=1)
+    electrolyzer: str = Field(min_length=1)
+    position: str = Field(min_length=1)
+    date: date_type | None = None  # day it is placed in the new cell; today when empty
+    group_nr: str | None = None  # keeps the previous group when empty
+    note: str | None = None
+
+
+@router.post("/shop/relocate")
+def relocate_shop(body: ShopRelocate, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """Healthy cell -> new position (flowchart: "assign new position"). Same element number and parts, a new installation row.
+
+    The row of the old installation is closed by the usual Assembly Data rule (a newer installation ends the earlier one).
+    """
+    from .elements import _ensure_group, _normalize_position, _reject_same_installation, _sync_saved_element
+    from ..assembly_integrity import cell_key, is_open
+    from ..plant_topology import all_electrolyzers, format_electrolyzer_name
+
+    key = compact_nr(body.element_nr)
+    item = next((i for i in svc.build_pipeline(db) if i["key"] == key), None)
+    if item is None or item["base_state"] != "decommissioned":
+        raise HTTPException(status_code=400, detail=f"Element {body.element_nr} is not a switched-off, healthy cell")
+    rows = [el for el in db.query(models.Element).all() if compact_nr(el.element_nr) == key]
+    old = max(rows, key=svc._life_key)
+    electrolyzer = format_electrolyzer_name(body.electrolyzer.strip())
+    if not electrolyzer or electrolyzer not in {format_electrolyzer_name(n) for n in all_electrolyzers()}:
+        raise HTTPException(status_code=400, detail=f"'{body.electrolyzer}' is not an electrolyzer of this plant")
+    position = _normalize_position(body.position)
+    day = body.date or date_type.today()
+    last = svc._as_date(old.decommissioning_date) or svc._as_date(old.commissioning_date) or svc._as_date(old.assembly_date)
+    if last and day < last:
+        raise HTTPException(status_code=400, detail=f"The new position cannot start before the element was switched off ({last.isoformat()})")
+
+    probe = models.Element(electrolyzer=electrolyzer, position=position)
+    target = cell_key(probe)
+    busy = next((el for el in db.query(models.Element).filter(models.Element.electrolyzer.isnot(None)).all() if is_open(el) and cell_key(el) == target and el.id != old.id), None)
+    if busy is not None:
+        raise HTTPException(status_code=409, detail=f"Cell {electrolyzer}-{position} is occupied by element {busy.element_nr}")
+
+    group_nr = (body.group_nr or old.group_nr or "").strip() or None
+    _ensure_group(db, group_nr)
+    new = models.Element(
+        element_nr=old.element_nr,
+        electrolyzer=electrolyzer,
+        position=position,
+        group_nr=group_nr,
+        generation=old.generation,
+        anode_nr=old.anode_nr,
+        cathode_nr=old.cathode_nr,
+        membrane_nr=old.membrane_nr,
+        membrane_type=old.membrane_type,
+        gap_mm=old.gap_mm,
+        ispb=old.ispb,
+        assembly_date=day,
+        anode_coating=old.anode_coating,
+        anode_electrode=old.anode_electrode,
+        anode_shell=old.anode_shell,
+        cathode_coating=old.cathode_coating,
+        cathode_electrode=old.cathode_electrode,
+        cathode_shell=old.cathode_shell,
+        membrane_info=old.membrane_info,
+        remarks=(body.note or "").strip() or f"Moved from {old.electrolyzer or '—'}-{old.position or '—'} (healthy cell)",
+    )
+    _reject_same_installation(db, new)
+    db.add(new)
+    _sync_saved_element(db, new)
+    db.flush()
+    if old.disassembly_date is None:  # the old installation ends the day the cell is moved
+        old.disassembly_date = day
+        old.dol_days = svc.installation_dol(old.assembly_date, old.commissioning_date, old.disassembly_date, old.decommissioning_date)
+    for state in db.query(models.ElementShopState).all():
+        if compact_nr(state.element_nr) == key:
+            db.delete(state)
+    from datetime import datetime
+
+    db.add(
+        models.ElementShopEvent(
+            element_nr=str(old.element_nr)[:50], from_stage=item["state"], to_stage="relocated", note=f"{electrolyzer}-{position}" + (f": {body.note.strip()}" if (body.note or "").strip() else ""),
+            user=user.full_name or user.username, created_at=datetime.now(),
+        )
+    )
+    db.commit()
+    svc.clear_cache()
+    return {"element_nr": old.element_nr, "electrolyzer": electrolyzer, "position": position, "id": new.id}
+
+
+# ---------------------------------------------------------------- element workflow (flowchart)
+
+
+@router.get("/flow")
+def flow_overview(db: Session = Depends(get_db)):
+    from .. import element_flow
+
+    return element_flow.overview(db)
+
+
+@router.get("/flow/list")
+def flow_list(node: str, q: str | None = None, limit: int = Query(500, ge=1, le=5000), db: Session = Depends(get_db)):
+    from .. import element_flow
+
+    return element_flow.node_list(db, node, q, limit)
+
+
 @router.get("/shop/events")
 def shop_events(element_nr: str | None = None, limit: int = Query(100, ge=1, le=1000), db: Session = Depends(get_db)):
     query = db.query(models.ElementShopEvent)

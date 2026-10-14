@@ -1040,3 +1040,7 @@ class ElectrodeSegregationBase(ORMModel):
 
 class ElectrodeSegregationRead(ElectrodeSegregationBase):
     id: int
+    # Derived from the decision text by segregation_flow (Element Workflow flowchart); never stored.
+    flow_outcome: str | None = None  # reusable | coating_problem | mechanical_problem | rate_off | undecided
+    flow_destination: str | None = None  # assembly | vendor | warehouse | rate_off | decision
+    flow_vendor: str | None = None

@@ -11,9 +11,9 @@ import { useI18n } from "@/lib/i18n/context";
 import { todayIsoLocal } from "@/lib/date-range";
 import { formatDate, formatNumber } from "@/lib/utils";
 import { StageBadge, STAGE_TONE } from "./element-dashboard-ui";
+import { DecommissionActions, isHealthyKept, isShutdownDecision } from "./element-flow-actions";
 
 const NEXT: Partial<Record<ElementStage, ElementStage>> = {
-  decommissioned: "disassembled",
   awaiting_disassembly: "disassembled",
   disassembled: "awaiting_assembly",
   awaiting_assembly: "assembling",
@@ -21,7 +21,7 @@ const NEXT: Partial<Record<ElementStage, ElementStage>> = {
   awaiting_qc: "ready",
 };
 
-const TODO: ElementStage[] = ["awaiting_disassembly", "awaiting_assembly", "assembling", "awaiting_qc", "ready"];
+const TODO: ElementStage[] = ["decommissioned", "awaiting_disassembly", "awaiting_assembly", "assembling", "awaiting_qc", "ready"];
 
 const squeeze = (s: string) => s.replace(/[\s\-_/.]/g, "").toUpperCase();
 
@@ -156,7 +156,20 @@ export function ElementShopCartable({ editable, onPickStage }: { editable: boole
                 <span>{t("elDash.col.cathode")}: {found.cathode_nr || "—"}</span>
                 <span>{t("elDash.col.membrane")}: {found.membrane_nr || "—"}</span>
               </div>
-              {next ? (
+              {isShutdownDecision(found) || isHealthyKept(found) ? (
+                <DecommissionActions
+                  item={found}
+                  editable={editable}
+                  note={note}
+                  onNote={setNote}
+                  onMessage={setMessage}
+                  onDone={() => {
+                    setTag("");
+                    setFound(null);
+                    inputRef.current?.focus();
+                  }}
+                />
+              ) : next ? (
                 <div className="ed-cartable-actions">
                   {next === "disassembled" ? (
                     <label className="ed-filters">
@@ -176,6 +189,20 @@ export function ElementShopCartable({ editable, onPickStage }: { editable: boole
               ) : (
                 <p className="ed-note">{found.state === "ready" ? t("elDash.cartable.readyHint") : t("elDash.cartable.noStep")}</p>
               )}
+              {found.state === "awaiting_disassembly" ? (
+                <DecommissionActions
+                  item={found}
+                  editable={editable}
+                  note={note}
+                  onNote={setNote}
+                  onMessage={setMessage}
+                  onDone={() => {
+                    setTag("");
+                    setFound(null);
+                    inputRef.current?.focus();
+                  }}
+                />
+              ) : null}
               {next === "disassembled" ? <p className="mon-sub">{t("elDash.cartable.writesAssembly")}</p> : null}
             </div>
           ) : null}
