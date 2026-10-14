@@ -1743,7 +1743,7 @@ export const fieldOptionsApi = {
 export const elementDashboardApi = {
   overview: async (refresh = false): Promise<T.ElementDashOverview> =>
     (await apiClient.get("/element-dashboard/overview", { params: refresh ? { refresh: true } : undefined })).data,
-  shop: async (params: { state?: string; q?: string; limit?: number; refresh?: boolean }): Promise<T.ShopList> =>
+  shop: async (params: { state?: string; q?: string; element_nr?: string; limit?: number; refresh?: boolean }): Promise<T.ShopList> =>
     (await apiClient.get("/element-dashboard/shop", { params })).data,
   move: async (payload: {
     element_nrs: string[];

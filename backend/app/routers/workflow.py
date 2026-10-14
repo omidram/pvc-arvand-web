@@ -37,7 +37,7 @@ from .tickets import BLOCKED_EXT, INLINE_TYPES, MAX_BYTES, _safe_name
 
 router = APIRouter(prefix="/workflow", tags=["workflow"], dependencies=[Depends(get_current_user)])
 
-GROUP_KEYS = {"c90": "wf_c90", "procurement": "wf_procurement", "warehouse": "wf_warehouse"}
+GROUP_KEYS = {"c90": "wf_c90", "procurement": "wf_procurement", "warehouse": "wf_warehouse", "inspection": "wf_inspection"}
 VIEW_KEYS = ("storage", "anodes", "cathodes", *GROUP_KEYS.values())
 
 COATING_STAGES: dict[str, list[str]] = {
@@ -46,6 +46,7 @@ COATING_STAGES: dict[str, list[str]] = {
     "await_dispatch": ["procurement"],
     "at_coater": ["warehouse", "procurement"],
     "await_report": ["procurement"],
+    "await_inspection": ["inspection"],
     "await_approval": ["c90"],
 }
 PURCHASE_STAGES: dict[str, list[str]] = {
@@ -465,6 +466,63 @@ def _clean_lines(lines: list[CoatingLineIn], kind: str, index: dict[str, str], u
     return out
 
 
+def _meaningful(text: str | None) -> str | None:
+    t = (text or "").strip()
+    return t[:500] if any(ch.isalpha() for ch in t) else None
+
+
+def segregation_problems(db: Session, wanted: set[tuple[str, str]]) -> dict[tuple[str, str], str]:
+    """(kind, compact serial) -> problem text from the latest segregation record,
+    falling back to the newest decommission reason of an element that used the electrode."""
+    if not wanted:
+        return {}
+    out: dict[tuple[str, str], str] = {}
+    S = models.ElectrodeSegregation
+    segs = (
+        db.query(S.serial_nr, S.electrode_kind, S.problems)
+        .filter(S.problems.isnot(None), S.problems != "")
+        .order_by(func.coalesce(S.inspection_date, S.disassemble_date, S.decommission_date), S.id)
+        .all()
+    )
+    for serial, kind, text in segs:
+        k = ((kind or "").lower(), compact_nr(serial))
+        p = _meaningful(text)
+        if k in wanted and p:
+            out[k] = p
+    missing = wanted - out.keys()
+    if missing:
+        E = models.Element
+        rows = (
+            db.query(E.anode_nr, E.cathode_nr, E.decommission_reason)
+            .filter(E.decommission_reason.isnot(None), E.decommission_reason != "")
+            .order_by(func.coalesce(E.decommissioning_date, E.disassembly_date, E.assembly_date), E.id)
+            .all()
+        )
+        fallback: dict[tuple[str, str], str] = {}
+        for anode, cathode, text in rows:
+            p = _meaningful(text)
+            if not p:
+                continue
+            for kind, serial in (("anode", anode), ("cathode", cathode)):
+                k = (kind, compact_nr(serial or ""))
+                if k in missing:
+                    fallback[k] = p
+        out.update(fallback)
+    return out
+
+
+def _fill_problems(db: Session, items: list) -> None:
+    """Fill empty item problems from segregation (in memory; persisted only if the caller commits)."""
+    empty = [i for i in items if not (i.problem or "").strip()]
+    if not empty:
+        return
+    found = segregation_problems(db, {(i.element_kind, compact_nr(i.serial)) for i in empty})
+    for i in empty:
+        p = found.get((i.element_kind, compact_nr(i.serial)))
+        if p:
+            i.problem = p
+
+
 @router.post("/coating")
 def create_coating(body: CoatingCreateIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     _require_group(db, user, "c90")
@@ -495,6 +553,9 @@ def create_coating(body: CoatingCreateIn, db: Session = Depends(get_db), user: m
     clash = [ln["serial"] for ln in lines if (ln["kind"], ln["key"]) in busy_keys]
     if clash:
         raise HTTPException(409, f"Already in an open recoating request: {', '.join(clash[:20])}")
+    found = segregation_problems(db, {(ln["kind"], ln["key"]) for ln in lines})
+    for ln in lines:
+        ln["problem"] = found.get((ln["kind"], ln["key"])) or ln["problem"]
 
     today = date.today()
     batch = WfCoatingBatch(
@@ -558,6 +619,8 @@ def _coating_actions(db: Session, b: WfCoatingBatch, user: models.User) -> list[
         acts.append("receive")
     if b.status == "await_report" and mine:
         acts += ["report", "submit", "rework"]
+    if b.status == "await_inspection" and mine:
+        acts += ["inspect_ok", "inspect_reject"]
     if b.status == "await_approval" and mine:
         acts += ["approve", "reject"]
     if b.status in ("await_company", "await_indent", "await_dispatch") and ("c90" in groups or user.role == "admin"):
@@ -571,6 +634,7 @@ def _coating_detail(db: Session, b: WfCoatingBatch, user: models.User) -> dict:
     data = _coating_summary(db, b)
     packages = db.query(WfCoatingPackage).filter_by(batch_id=b.id).order_by(WfCoatingPackage.seq).all()
     items = db.query(WfCoatingItem).filter_by(batch_id=b.id).order_by(WfCoatingItem.package_id, WfCoatingItem.line_no).all()
+    _fill_problems(db, items)
     files = _files(db, "coating", b.id)
     data.update(
         {
@@ -810,7 +874,29 @@ def coating_submit(batch_id: int, body: NoteIn, db: Session = Depends(get_db), u
     if not db.query(WfFile).filter_by(flow="coating", record_id=b.id, kind="report").first():
         raise HTTPException(400, "Upload the final report (Excel) from the coating company first")
     b.rejected = False
-    _move(db, "coating", b, "await_approval", "submit", user, body.note, notify_creator=True)
+    _move(db, "coating", b, "await_inspection", "submit", user, body.note, notify_creator=True)
+    db.commit()
+    return _coating_detail(db, b, user)
+
+
+@router.post("/coating/{batch_id}/inspect_ok")
+def coating_inspect_ok(batch_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """Inspection checked the returned pieces and the company report; C-90 gives the final approval next."""
+    b = _load_batch(db, batch_id)
+    _require_stage(db, user, "coating", b.status, ("await_inspection",))
+    _move(db, "coating", b, "await_approval", "inspect_ok", user, body.note)
+    db.commit()
+    return _coating_detail(db, b, user)
+
+
+@router.post("/coating/{batch_id}/inspect_reject")
+def coating_inspect_reject(batch_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    b = _load_batch(db, batch_id)
+    _require_stage(db, user, "coating", b.status, ("await_inspection",))
+    if not (body.note or "").strip():
+        raise HTTPException(400, "Write why the result is not accepted")
+    b.rejected = True
+    _move(db, "coating", b, "await_report", "inspect_reject", user, body.note)
     db.commit()
     return _coating_detail(db, b, user)
 
@@ -907,6 +993,7 @@ def coating_excel(batch_id: int, package_id: int | None = None, db: Session = De
         if not packages:
             raise HTTPException(404, "Pallet not found")
     items = _batch_items(db, b)
+    _fill_problems(db, items)
     sheets = []
     for p in packages:
         rows = sorted((i for i in items if i.package_id == p.id), key=lambda i: i.line_no)

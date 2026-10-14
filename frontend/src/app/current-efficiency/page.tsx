@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { ReportColumn, useColumnState } from "@/components/layout/access-report";
 import { CurrentEfficiencyDataInput, type CeInputMode } from "@/components/domain/current-efficiency-data-input";
+import { CeFormulaGuide } from "@/components/domain/ce-formula-guide";
 import { UnCeResultsPane, UnCeSettingsPanel } from "@/components/domain/un-ce-board";
 import { pairsToElements, unCeApi, type UnCeCalc, type UnCeQuery, type UnCeScope } from "@/lib/un-ce";
 import { ElectrolyzerCombo, useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
@@ -116,6 +117,10 @@ function CeBoard() {
           </div>
         </div>
         <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
+      </div>
+
+      <div className="mb-2">
+        <CeFormulaGuide />
       </div>
 
       <UnCeSettingsPanel />

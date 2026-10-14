@@ -10,6 +10,7 @@ import { useCrudResource } from "@/lib/use-resource";
 import type { Element } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
 import { ElementRelations } from "@/components/domain/access-relations";
+import { AssemblyLifecycleStrip, ElementLifecycleCard } from "@/components/domain/assembly-lifecycle";
 import type { FieldDef } from "@/components/ui/resource-form";
 import type { Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,16 @@ export function AssemblyDataForm() {
   const queryClient = useQueryClient();
   const [showImport, setShowImport] = useState<"assembly" | "disassembly" | null>(null);
   const [showRelations, setShowRelations] = useState(false);
+  const [jump, setJump] = useState(0);
+
+  function openRecord(elementNr: string, rowId: number | null) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("element_nr", elementNr);
+    if (rowId != null) url.searchParams.set("id", String(rowId));
+    else url.searchParams.delete("id");
+    window.history.replaceState(null, "", `${url.pathname}?${url.searchParams.toString()}`);
+    setJump((n) => n + 1);
+  }
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Element>(
     "elements",
     elementsApi,
@@ -180,7 +191,9 @@ export function AssemblyDataForm() {
 
   return (
     <>
+      <AssemblyLifecycleStrip onOpen={openRecord} />
       <AccessWorkspace<Element>
+        key={jump}
         caption={t("menus.assemblyData")}
         helpKey="elements"
         backHref="/elements"
@@ -234,7 +247,12 @@ export function AssemblyDataForm() {
             group_nr: String(values.group_nr ?? ""),
           });
         }}
-        related={(row) => <ElementRelations row={row} />}
+        related={(row) => (
+          <>
+            <ElementLifecycleCard row={row} editable={editable} onOpen={openRecord} />
+            <ElementRelations row={row} />
+          </>
+        )}
         commands={
           editable && isAdmin ? (
             <>

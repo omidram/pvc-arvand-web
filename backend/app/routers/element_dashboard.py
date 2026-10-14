@@ -34,11 +34,15 @@ def get_overview(db: Session = Depends(get_db)):
 def list_shop(
     state: str | None = Query(None, description="one of the pipeline states, or 'all'"),
     q: str | None = None,
+    element_nr: str | None = Query(None, description="exact element number (spacing ignored)"),
     limit: int = Query(600, ge=1, le=5000),
     db: Session = Depends(get_db),
 ):
     items = list(svc.build_pipeline(db))
     counts = svc.pipeline_counts(items)
+    if element_nr:
+        key = compact_nr(element_nr)
+        items = [i for i in items if i["key"] == key]
     if state == "shop":  # everything that needs a decision: not in service, not already-archived dismantled cells
         items = [i for i in items if i["state"] not in ("in_service", "disassembled")]
     elif state and state != "all":

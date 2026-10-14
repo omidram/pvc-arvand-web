@@ -11,7 +11,7 @@ import { ErrorState } from "@/components/ui/spinner";
 import { appConfirm } from "@/lib/dialog";
 import { useI18n } from "@/lib/i18n/context";
 
-const TYPES = ["anolyte", "catholyte", "pure_brine", "chlorine_gas", "hydrogen", "hcl", "demin_water", "caustic_feed"];
+const TYPES = ["anolyte", "catholyte", "hcl", "pure_brine", "chlorine_gas", "hydrogen", "demin_water", "caustic_feed"];
 const SCOPES: [string, string][] = [
   ["total_plant", "scopeTotalPlant"],
   ["sub_plant", "scopeSubPlant"],

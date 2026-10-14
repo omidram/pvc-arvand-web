@@ -18,10 +18,10 @@ import { useAuth } from "@/lib/auth/context";
 const ROW: Record<string, number> = {
   anolyte: 1,
   catholyte: 2,
-  pure_brine: 3,
-  chlorine_gas: 4,
-  hydrogen: 5,
-  hcl: 6,
+  hcl: 3,
+  pure_brine: 4,
+  chlorine_gas: 5,
+  hydrogen: 6,
   demin_water: 7,
   caustic_feed: 8,
 };

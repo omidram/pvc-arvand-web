@@ -45,6 +45,7 @@ FORM_KEYS: list[str] = [
     "wf_c90",
     "wf_procurement",
     "wf_warehouse",
+    "wf_inspection",
 ]
 
 # Per-form table fields that can be granted view/edit independently of the
@@ -405,6 +406,12 @@ DEFAULT_ROLES: list[dict] = [
         "description": "انبار — ثبت شماره ایندنت و تاریخ ورود به انبار",
         "is_system": True,
         "permissions": {"storage": "view", "wf_warehouse": "edit"},
+    },
+    {
+        "name": "Inspection",
+        "description": "بازرسی — بررسی گزارش نهایی شرکت پوشش‌دهنده پیش از تأیید نهایی C-90",
+        "is_system": True,
+        "permissions": {"anodes": "view", "cathodes": "view", "storage": "view", "wf_inspection": "edit"},
     },
 ]
 

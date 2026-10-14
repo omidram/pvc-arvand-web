@@ -53,8 +53,8 @@ export function ElementShopCartable({ editable, onPickStage }: { editable: boole
     }
     let hit = shop.data?.items.find((i) => squeeze(i.element_nr) === key) ?? null;
     if (!hit) {
-      const res = await elementDashboardApi.shop({ state: "all", q: value.trim(), limit: 20 }).catch(() => null);
-      hit = res?.items.find((i) => squeeze(i.element_nr) === key) ?? null;
+      const res = await elementDashboardApi.shop({ state: "all", element_nr: value.trim(), limit: 5 }).catch(() => null);
+      hit = res?.items[0] ?? null;
     }
     setFound(hit);
     setNotFound(!hit);

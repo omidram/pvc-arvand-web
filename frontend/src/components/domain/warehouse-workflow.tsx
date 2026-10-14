@@ -43,7 +43,7 @@ function daysBetween(from: string | null | undefined, to: string | null | undefi
 function statusColor(status: string): "emerald" | "rose" | "amber" | "cyan" | "violet" | "slate" {
   if (status === "completed") return "emerald";
   if (status === "cancelled") return "slate";
-  if (status === "await_approval" || status === "await_registration") return "violet";
+  if (status === "await_approval" || status === "await_inspection" || status === "await_registration") return "violet";
   if (status === "at_coater" || status === "ordered") return "cyan";
   return "amber";
 }
@@ -815,12 +815,22 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
 
       <div className="wh-form-inline wf-inline-plain">
         <label className="wh-grow">
-          {main.includes("reject") ? t("wf.noteReject") : t("wf.note")}
+          {main.includes("reject") || main.includes("inspect_reject") ? t("wf.noteReject") : t("wf.note")}
           <input value={note} onChange={(e) => setNote(e.target.value)} />
         </label>
         {main.includes("submit") ? (
           <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("submit")}>
             <Send size={14} /> {t("wf.action.submit")}
+          </button>
+        ) : null}
+        {main.includes("inspect_ok") ? (
+          <button type="button" className="wf-btn is-ok" disabled={run.isPending} onClick={() => go("inspect_ok")}>
+            <Check size={14} /> {t("wf.action.inspect_ok")}
+          </button>
+        ) : null}
+        {main.includes("inspect_reject") ? (
+          <button type="button" className="wf-btn is-bad" disabled={run.isPending || !note.trim()} onClick={() => go("inspect_reject")}>
+            <X size={14} /> {t("wf.action.inspect_reject")}
           </button>
         ) : null}
         {main.includes("approve") ? (

@@ -1190,6 +1190,7 @@ export interface ElementDashSettings {
 export interface PipelineItem {
   element_nr: string;
   key: string;
+  row_id: number | null;
   state: ElementStage;
   base_state: string;
   source: "derived" | "manual" | "inspection" | "auto";

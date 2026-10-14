@@ -28,7 +28,7 @@ Session = sessionmaker(bind=engine)
 with Session() as db:
     seed_default_roles(db)
     roles = {r.name: r.id for r in db.query(models.AppRole).all()}
-    for name, role in (("c90", "C-90"), ("proc", "Procurement"), ("wh", "Warehouse"), ("viewer", "Viewer")):
+    for name, role in (("c90", "C-90"), ("proc", "Procurement"), ("wh", "Warehouse"), ("insp", "Inspection"), ("viewer", "Viewer")):
         db.add(models.User(username=name, full_name=name.upper(), password_hash="x", role="user", role_id=roles[role]))
     db.add(models.WhCompany(name="CoatCo", is_coating=True, is_supplier=False))
     db.add(models.WhCompany(name="SupCo", is_coating=False, is_supplier=True))
@@ -36,6 +36,8 @@ with Session() as db:
         db.add(models.Anode(anode_nr=f"A-{i:03d}"))
     for i in range(1, 6):
         db.add(models.Cathode(cathode_nr=f"K-{i:03d}"))
+    db.add(models.ElectrodeSegregation(serial_nr="a-003 ", electrode_kind="anode", problems="flange leak"))
+    db.add(models.Element(element_nr=1, anode_nr="X", cathode_nr="K-002", decommission_reason="high voltage"))
     db.commit()
     users = {u.username: u.id for u in db.query(models.User).all()}
 
@@ -86,6 +88,8 @@ print("codes:", codes)
 assert len(codes) == 4 and codes[0].startswith("CO-") and codes[0].endswith("-0001") and codes[-1].endswith("-0004")
 assert [len(p["items"]) for p in d["packages"]] == [20, 20, 5, 2]
 assert d["packages"][0]["items"][0]["serial"] == "A-001"  # mapped to the catalog spelling
+assert d["packages"][0]["items"][2]["problem"] == "flange leak"  # from segregation
+assert d["packages"][3]["items"][1]["problem"] == "high voltage"  # from element decommission reason
 bid = d["id"]
 assert as_("c90").post("/workflow/coating", json={"anodes": [{"serial": "A-001"}]}).status_code == 409
 
@@ -128,6 +132,15 @@ assert res["rows_filled"] == 47, res["rows_filled"]
 item = res["detail"]["packages"][0]["items"][0]
 assert item["final_report"] == "recoated OK" and item["pre_inspection"] == "pitting"
 d = ok(as_("proc").post(f"/workflow/coating/{bid}/submit", json={"note": "report attached"}))
+assert d["status"] == "await_inspection"
+assert as_("c90").post(f"/workflow/coating/{bid}/approve", json={}).status_code == 409
+assert as_("c90").post(f"/workflow/coating/{bid}/inspect_ok", json={}).status_code == 403
+assert as_("insp").post(f"/workflow/coating/{bid}/inspect_reject", json={}).status_code == 400
+d = ok(as_("insp").post(f"/workflow/coating/{bid}/inspect_reject", json={"note": "A-010 coating thin"}))
+assert d["status"] == "await_report" and d["rejected"]
+d = ok(as_("proc").post(f"/workflow/coating/{bid}/submit", json={}))
+assert as_("insp").get(f"/workflow/coating/{bid}").json()["actions"][:2] == ["inspect_ok", "inspect_reject"]
+d = ok(as_("insp").post(f"/workflow/coating/{bid}/inspect_ok", json={"note": "checked"}))
 assert d["status"] == "await_approval"
 assert as_("c90").post(f"/workflow/coating/{bid}/reject", json={}).status_code == 400
 d = ok(as_("c90").post(f"/workflow/coating/{bid}/reject", json={"note": "K-002 not coated"}))
@@ -137,6 +150,7 @@ assert d["status"] == "at_coater" and d["rework_count"] == 1
 d = ok(as_("wh").post(f"/workflow/coating/{bid}/receive", json={"actual_date": "2026-02-18"}))
 assert d["delay_days"] == -2
 d = ok(as_("proc").post(f"/workflow/coating/{bid}/submit", json={}))
+d = ok(as_("insp").post(f"/workflow/coating/{bid}/inspect_ok", json={}))
 d = ok(as_("c90").post(f"/workflow/coating/{bid}/approve", json={"note": "ok"}))
 assert d["status"] == "completed" and "approve" not in d["actions"]
 with Session() as db:

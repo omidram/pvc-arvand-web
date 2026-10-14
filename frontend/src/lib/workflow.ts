@@ -1,14 +1,14 @@
 import { apiClient } from "./api-client";
 
 export type WfFlow = "coating" | "purchase";
-export type WfGroup = "c90" | "procurement" | "warehouse";
+export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection";
 export type WfKind = "anode" | "cathode";
 
-export const COATING_STEPS = ["await_company", "await_indent", "await_dispatch", "at_coater", "await_report", "await_approval", "completed"] as const;
+export const COATING_STEPS = ["await_company", "await_indent", "await_dispatch", "at_coater", "await_report", "await_inspection", "await_approval", "completed"] as const;
 export const PURCHASE_STEPS = ["await_indent", "await_order", "ordered", "await_registration", "completed"] as const;
 export const DELAY_PARTIES = ["employer", "company", "transport", "other"] as const;
 /** Any of these opens the warehouse page (workflow groups included). */
-export const WAREHOUSE_VIEW_KEYS = ["storage", "anodes", "cathodes", "membranes", "wf_c90", "wf_procurement", "wf_warehouse"];
+export const WAREHOUSE_VIEW_KEYS = ["storage", "anodes", "cathodes", "membranes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection"];
 
 export interface WfSummary {
   flow: WfFlow;

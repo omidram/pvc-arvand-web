@@ -271,7 +271,7 @@ export function analysisForm(type: string, scope: string): AnalysisFormSpec | nu
 }
 
 /** Same order as the rows of the Analysis menu. */
-const TYPE_ORDER = ["anolyte", "catholyte", "pure_brine", "chlorine_gas", "hydrogen", "hcl", "demin_water", "caustic_feed"];
+const TYPE_ORDER = ["anolyte", "catholyte", "hcl", "pure_brine", "chlorine_gas", "hydrogen", "demin_water", "caustic_feed"];
 
 /** Analysis forms of one level (plant, train, electrolyzer …) in menu order — used by the previous / next form buttons. */
 export function analysisTypesForScope(scope: string): string[] {

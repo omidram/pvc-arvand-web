@@ -271,6 +271,7 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
             {
                 "element_nr": str(display).strip(),
                 "key": key,
+                "row_id": el.id if el is not None else None,
                 "state": stage,
                 "base_state": base,
                 "source": source,
