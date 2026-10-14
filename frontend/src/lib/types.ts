@@ -1215,6 +1215,8 @@ export interface PipelineItem {
   dol: number | null;
   note: string | null;
   updated_by: string | null;
+  /** ISO date a stage was recorded, when known (shop move, inspection, or Assembly Data). */
+  stage_dates?: Partial<Record<ElementStage, string | null>>;
 }
 
 export interface ShopList {

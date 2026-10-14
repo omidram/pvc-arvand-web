@@ -228,6 +228,11 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
         key = compact_nr(rep.element_nr)
         if key:
             reports[key].append(rep)
+    shop_events: dict[str, list[models.ElementShopEvent]] = defaultdict(list)
+    for ev in db.query(models.ElementShopEvent).all():
+        key = compact_nr(ev.element_nr)
+        if key:
+            shop_events[key].append(ev)
 
     # shop-only elements (never installed yet)
     keys = set(latest) | set(manual)
@@ -270,6 +275,46 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
         if el is not None and base in ("in_service", "installed", "decommissioned"):
             dol = installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date)
         display = (el.element_nr if el is not None else (st.element_nr if st else key)) or key
+        stage_dates: dict[str, str] = {}
+        if el is not None:
+            if el.assembly_date:
+                stage_dates["installed"] = _iso(el.assembly_date)
+            if el.commissioning_date:
+                stage_dates["in_service"] = _iso(el.commissioning_date)
+            if el.decommissioning_date:
+                stage_dates["decommissioned"] = _iso(el.decommissioning_date)
+            if el.disassembly_date:
+                taken_apart = _iso(el.disassembly_date)
+                if taken_apart:
+                    stage_dates["disassembled"] = taken_apart
+                    if stage in ("awaiting_assembly", "assembling", "awaiting_qc", "ready"):
+                        stage_dates.setdefault("awaiting_assembly", taken_apart)
+        life_from = None
+        if el is not None:
+            if stage in ("installed", "in_service", "decommissioned"):
+                life_from = _as_date(el.assembly_date)
+            elif stage in ("awaiting_assembly", "assembling", "awaiting_qc", "ready"):
+                life_from = _as_date(el.disassembly_date)
+            elif stage == "awaiting_disassembly":
+                life_from = _as_date(el.decommissioning_date)
+        for rep in reports.get(key, []):
+            rep_stage, stamp = _report_signal(rep)
+            day = _as_date(rep.assembly_date) or stamp.date()
+            if life_from and day and day < life_from:
+                continue
+            iso = _iso(day)
+            if iso:
+                stage_dates.setdefault(rep_stage, iso)
+        for ev in sorted(shop_events.get(key, []), key=lambda e: (e.created_at or datetime.min, e.id or 0)):
+            day = _as_date(ev.created_at)
+            if life_from and day and day < life_from:
+                continue
+            iso = _iso(day)
+            if iso and ev.to_stage in ALL_STATES:
+                stage_dates[ev.to_stage] = iso
+        stamp = _iso(since)
+        if stamp:
+            stage_dates.setdefault(stage, stamp)
         out.append(
             {
                 "element_nr": str(display).strip(),
@@ -295,6 +340,7 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
                 "dol": dol,
                 "note": note,
                 "updated_by": updated_by,
+                "stage_dates": stage_dates,
             }
         )
     out.sort(key=lambda r: (r["state"], r["element_nr"]))

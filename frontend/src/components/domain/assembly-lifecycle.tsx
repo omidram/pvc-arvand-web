@@ -34,7 +34,8 @@ const NEXT: Partial<Record<ElementStage, ElementStage>> = {
   awaiting_qc: "ready",
 };
 
-const DATE_OF: Partial<Record<ElementStage, keyof PipelineItem>> = {
+type LifeDateKey = "assembly_date" | "commissioning_date" | "decommissioning_date" | "disassembly_date";
+const DATE_OF: Partial<Record<ElementStage, LifeDateKey>> = {
   installed: "assembly_date",
   in_service: "commissioning_date",
   decommissioned: "decommissioning_date",
@@ -188,7 +189,12 @@ export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; 
           <ol className="asm-steps">
             {LIFE_CYCLE.map((stage, i) => {
               const dateKey = DATE_OF[stage];
-              const when = !older && dateKey && i <= at ? (item[dateKey] as string | null) : null;
+              const recorded = older
+                ? (dateKey ? row[dateKey] : null)
+                : i > at
+                  ? null
+                  : item.stage_dates?.[stage] || (dateKey ? item[dateKey] : null) || (i === at ? item.since : null);
+              const when = recorded ? String(recorded).trim() || null : null;
               return (
                 <li key={stage} className={cn("asm-step", i < at && "is-done", i === at && `is-now ed-tone-${STAGE_TONE[stage]}`)}>
                   <span className="asm-dot">{i < at ? "✓" : i + 1}</span>
