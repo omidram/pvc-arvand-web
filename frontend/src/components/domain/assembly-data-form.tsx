@@ -253,6 +253,7 @@ export function AssemblyDataForm() {
             <ElementRelations row={row} />
           </>
         )}
+        sheetRelated={(row) => <ElementLifecycleCard row={row} editable={editable} onOpen={openRecord} />}
         commands={
           editable && isAdmin ? (
             <>

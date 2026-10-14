@@ -41,6 +41,7 @@ export function AccessWorkspace<T extends object>({
   onCreate,
   onDelete,
   related,
+  sheetRelated,
   commands,
   exportPrefix,
   exportParams,
@@ -75,6 +76,8 @@ export function AccessWorkspace<T extends object>({
   onCreate: (values: Record<string, unknown>) => void | Promise<void>;
   onDelete: (id: string | number) => void;
   related?: (row: T) => React.ReactNode;
+  /** Shown under the datasheet when a row is selected (single click). Double-click still opens form view. */
+  sheetRelated?: (row: T) => React.ReactNode;
   commands?: React.ReactNode;
   exportPrefix?: string;
   exportParams?: Record<string, unknown>;
@@ -133,6 +136,8 @@ export function AccessWorkspace<T extends object>({
   const [findValue, setFindValue] = useState("");
   const [saveError, setSaveError] = useState("");
   const [values, setValues] = useState<Record<string, unknown>>(() => valuesFromRecord(fields, null));
+  const [sheetPeek, setSheetPeek] = useState(false);
+  const sheetRelatedRef = useRef<HTMLDivElement>(null);
 
   const current = !isNew && rows[index] ? rows[index] : null;
 
@@ -174,6 +179,13 @@ export function AccessWorkspace<T extends object>({
   }, [rows, paramName]);
 
   const currentId = current ? String(readId(current)) : isNew ? "__new__" : "";
+  const showSheetRelated = view === "datasheet" && Boolean(sheetRelated) && sheetPeek && Boolean(current) && !isNew;
+
+  useEffect(() => {
+    if (!showSheetRelated) return;
+    sheetRelatedRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [showSheetRelated, currentId]);
+
   useEffect(() => {
     const defaults = newDefaults?.() ?? {};
     if (formBody) {
@@ -356,8 +368,24 @@ export function AccessWorkspace<T extends object>({
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState message={error.message} />;
 
+  function selectSheetRow(row: T) {
+    const found = locate(row);
+    if (found < 0) return;
+    go(found);
+    setSheetPeek(true);
+  }
+
+  function openSheetRow(row: T) {
+    const found = locate(row);
+    if (found < 0) return;
+    go(found);
+    setSheetPeek(false);
+    setView("form");
+  }
+
   const body =
     view === "datasheet" ? (
+      <div className={showSheetRelated ? "access-sheet-with-related" : undefined}>
         <DatasheetPane
           columns={sheetColumns}
           rows={rows}
@@ -365,17 +393,8 @@ export function AccessWorkspace<T extends object>({
           selectedKey={current ? readId(current) : null}
           canEdit={canEdit}
           emptyTitle={t("common.noRecordsFound")}
-          onSelect={(row) => {
-            const found = locate(row);
-            if (found >= 0) go(found);
-          }}
-          onOpen={(row) => {
-            const found = locate(row);
-            if (found >= 0) {
-              go(found);
-              setView("form");
-            }
-          }}
+          onSelect={selectSheetRow}
+          onOpen={openSheetRow}
           onDelete={
             canEdit
               ? (row) => {
@@ -385,6 +404,12 @@ export function AccessWorkspace<T extends object>({
               : undefined
           }
         />
+        {showSheetRelated && current && sheetRelated ? (
+          <div ref={sheetRelatedRef} className="access-sheet-related">
+            {sheetRelated(current)}
+          </div>
+        ) : null}
+      </div>
       ) : (
         <>
           {formBody ? (
@@ -427,6 +452,7 @@ export function AccessWorkspace<T extends object>({
           onNew={() => {
             setExtra(null);
             setIsNew(true);
+            setSheetPeek(false);
             setView("form");
             setSaveError("");
             setValues({
@@ -440,7 +466,11 @@ export function AccessWorkspace<T extends object>({
           findValue={findValue}
           saving={submitting}
           view={view}
-          onView={setView}
+          onView={(next) => {
+            setView(next);
+            if (next === "datasheet" && current && !isNew) setSheetPeek(true);
+            if (next === "form") setSheetPeek(false);
+          }}
           hideFind={view === "datasheet"}
         />
   );

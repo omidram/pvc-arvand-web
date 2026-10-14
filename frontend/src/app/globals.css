@@ -659,6 +659,13 @@ html:not([data-theme="dark"]) .dt-value-filter-foot {
   border-color: #cbd5e1;
 }
 
+.access-sheet-with-related .ui-table-wrap {
+  max-height: min(48vh, 520px);
+}
+.access-sheet-related {
+  margin-top: 0.45rem;
+}
+
 .access-subform {
   border: 2px inset #ffffff;
   background: var(--win-face);
