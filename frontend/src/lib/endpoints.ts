@@ -919,6 +919,9 @@ export type WarehouseItem = {
   repair_return: string | null;
   coating: string | null;
   manufacturer: string | null;
+  wf_id: number | null;
+  wf_code: string | null;
+  wf_status: string | null;
 };
 
 export type WarehouseBoard = {
@@ -944,8 +947,16 @@ export const storageApi = {
     action: "dispatch_maintenance" | "dispatch_recoating" | "return" | "ok" | "not_ok";
     date?: string;
     note?: string;
-  }): Promise<{ ok: boolean; already?: boolean; serial: string; action: string }> =>
-    (await apiClient.post("/storage/board/move", payload)).data,
+  }): Promise<{
+    ok: boolean;
+    already?: boolean;
+    added?: boolean;
+    serial: string;
+    action: string;
+    wf_id?: number;
+    wf_code?: string;
+    wf_status?: string;
+  }> => (await apiClient.post("/storage/board/move", payload)).data,
 };
 
 export type WhCompany = {

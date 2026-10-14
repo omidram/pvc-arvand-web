@@ -1,3 +1,4 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { apiClient } from "./api-client";
 import type { PipelineItem } from "./types";
 
@@ -15,6 +16,13 @@ export function workflowHref(flow: string, id: number) {
 }
 export const DELAY_PARTIES = ["employer", "company", "transport", "other"] as const;
 /** Any of these opens the warehouse page (workflow groups included). */
+export const LIVE_MS = 20_000;
+
+/** Warehouse board, lifecycle, workflows and the element dashboard read the same pieces. */
+export function refreshWarehouseData(qc: QueryClient) {
+  for (const key of ["wf", "wh", "storage", "element-dashboard"]) void qc.invalidateQueries({ queryKey: [key] });
+}
+
 export const WAREHOUSE_VIEW_KEYS = ["storage", "anodes", "cathodes", "membranes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection"];
 
 export interface WfSummary {

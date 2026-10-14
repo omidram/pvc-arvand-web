@@ -24,7 +24,7 @@ from ..auth import LEVEL_RANK, get_current_user, user_permission_map
 from ..database import get_db
 from ..paths import data_root
 from ..plant_topology import format_electrolyzer_name
-from ..warehouse import compact_nr, load_compact_index
+from ..warehouse import compact_nr, ensure_indexed, load_compact_index
 from ..warehouse_lifecycle import _stamp, log_event, upsert_state
 from ..workflow_excel import build_workbook, parse_report
 from ..workflow_models import (
@@ -195,6 +195,7 @@ def _event(db: Session, flow: str, record: Any, action: str, actor: models.User,
     record.updated_at = _now()
     if note and note.strip():
         record.last_note = note.strip()
+    svc.clear_cache()
 
 
 def _move(db: Session, flow: str, record: Any, to_status: str, action: str, actor: models.User, note: str | None = None, data: dict | None = None, notify_creator: bool = False) -> None:
@@ -636,6 +637,64 @@ def create_coating(body: CoatingCreateIn, db: Session = Depends(get_db), user: m
     _notify(db, "coating", batch, user)
     db.commit()
     return _coating_detail(db, batch, user)
+
+
+def coating_from_board(db: Session, kind: str, serial: str, user: models.User, note: str | None) -> dict:
+    """Live board "Send to recoating": the piece joins the open request that still waits for a
+    coating company (procurement has not picked one yet), otherwise a new request is opened."""
+    model, field = (models.Anode, "anode_nr") if kind == "anode" else (models.Cathode, "cathode_nr")
+    ensure_indexed(db, model, field, serial, None)
+    stored = load_compact_index(db, model, field).get(compact_nr(serial)) or serial.strip()[:50]
+    problem = segregation_problems(db, {(kind, compact_nr(stored))}).get((kind, compact_nr(stored))) or note
+    today = date.today()
+    b = (
+        db.query(WfCoatingBatch)
+        .filter(WfCoatingBatch.status == "await_company")
+        .order_by(WfCoatingBatch.created_at.desc())
+        .first()
+    )
+    created = b is None
+    if created:
+        b = WfCoatingBatch(
+            status="await_company",
+            pallet_size=20,
+            remarks="Live board",
+            created_by_id=user.id,
+            created_by_name=_display(user),
+            created_at=_now(),
+            updated_at=_now(),
+        )
+        db.add(b)
+        db.flush()
+    pkg = db.query(WfCoatingPackage).filter_by(batch_id=b.id).order_by(WfCoatingPackage.seq.desc()).first()
+    lines = db.query(WfCoatingItem).filter_by(package_id=pkg.id).all() if pkg else []
+    if pkg is None or len(lines) >= (b.pallet_size or 20) or any(i.element_kind != kind for i in lines):
+        seq = _next_seq(db, WfCoatingPackage.seq)
+        pallet_no = (db.query(func.count(WfCoatingPackage.id)).filter_by(batch_id=b.id).scalar() or 0) + 1
+        pkg = WfCoatingPackage(batch_id=b.id, code=_code("CO", today, seq), seq=seq, pallet_no=pallet_no, created_at=_now())
+        db.add(pkg)
+        db.flush()
+        lines = []
+    db.add(
+        WfCoatingItem(
+            batch_id=b.id,
+            package_id=pkg.id,
+            line_no=len(lines) + 1,
+            element_kind=kind,
+            serial=stored,
+            problem=(problem or "").strip()[:500] or None,
+        )
+    )
+    if kind == "anode":
+        b.anode_count = (b.anode_count or 0) + 1
+    else:
+        b.cathode_count = (b.cathode_count or 0) + 1
+    upsert_state(db, kind, stored, lifecycle_status="ready_dispatch")
+    log_event(db, kind, stored, "coating_request", today, f"Recoating request {pkg.code} (Live board)", ref_kind="wf_coating", ref_id=b.id, details={"code": pkg.code})
+    _event(db, "coating", b, "created" if created else "board_add", user, None if created else b.status, note, {"codes": [pkg.code], "serial": stored, "kind": kind})
+    _notify(db, "coating", b, user, {b.created_by_id} if b.created_by_id else None)
+    db.commit()
+    return {"wf_id": b.id, "wf_code": pkg.code, "wf_status": b.status, "added": not created}
 
 
 def _coating_actions(db: Session, b: WfCoatingBatch, user: models.User) -> list[str]:

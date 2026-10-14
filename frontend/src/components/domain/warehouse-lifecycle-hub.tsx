@@ -26,7 +26,7 @@ import {
 } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
-import { workflowApi, workflowHref, type WfFlow } from "@/lib/workflow";
+import { LIVE_MS, refreshWarehouseData, workflowApi, workflowHref, type WfFlow } from "@/lib/workflow";
 
 export type WhSection =
   | "dashboard"
@@ -102,14 +102,19 @@ export function WarehouseLifecycleHub() {
   const section: WhSection =
     picked ?? (urlSection && SECTIONS.includes(urlSection) ? urlSection : urlTarget ? (urlTarget.flow === "coating" ? "coating" : "purchase") : defaultSection);
   const target = opened ?? (urlTarget && params.get("wf") !== closedUrlTarget ? urlTarget : null);
-  const dash = useQuery({ queryKey: ["wh", "dashboard"], queryFn: () => warehouseLifecycleApi.dashboard() });
+  const [timelineFor, setTimelineFor] = useState<TimelineTarget | null>(null);
+  const dash = useQuery({ queryKey: ["wh", "dashboard"], queryFn: () => warehouseLifecycleApi.dashboard(), refetchInterval: LIVE_MS });
   const companies = useQuery({ queryKey: ["wh", "companies"], queryFn: () => warehouseLifecycleApi.companies() });
-  const decommissions = useQuery({ queryKey: ["wh", "decommissions"], queryFn: () => warehouseLifecycleApi.decommissions() });
-  const states = useQuery({ queryKey: ["wh", "states"], queryFn: () => warehouseLifecycleApi.elementStates() });
+  const decommissions = useQuery({ queryKey: ["wh", "decommissions"], queryFn: () => warehouseLifecycleApi.decommissions(), refetchInterval: LIVE_MS });
+  const states = useQuery({ queryKey: ["wh", "states"], queryFn: () => warehouseLifecycleApi.elementStates(), refetchInterval: LIVE_MS });
   const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: 15_000 });
 
-  const invalidate = () => qc.invalidateQueries({ queryKey: ["wh"] });
+  const invalidate = () => refreshWarehouseData(qc);
   const openRecord = (flow: WfFlow, id: number) => (flow === "cell" ? router.push(workflowHref(flow, id)) : setOpened({ flow, id }));
+  const openTimeline = (kind: string, serial: string) => {
+    setTimelineFor({ kind: kind === "cathode" ? "cathode" : "anode", serial });
+    setPicked("timeline");
+  };
   const closeRecord = () => {
     setOpened(null);
     if (urlTarget) {
@@ -131,8 +136,8 @@ export function WarehouseLifecycleHub() {
       <SectionNav section={section} setSection={setPicked} waiting={summary.data?.cartable ?? 0} t={t} />
       {section === "dashboard" ? <DashboardPanel dash={dash} t={t} /> : null}
       {section === "cartable" ? <WorkflowCartablePanel onOpen={openRecord} /> : null}
-      {section === "inventory" ? <WarehouseInventoryPanel /> : null}
-      {section === "elements" ? <ElementsPanel states={states} t={t} setSection={setPicked} /> : null}
+      {section === "inventory" ? <WarehouseInventoryPanel onOpenRecord={openRecord} onTimeline={openTimeline} /> : null}
+      {section === "elements" ? <ElementsPanel states={states} t={t} setSection={setPicked} onTimeline={openTimeline} /> : null}
       {section === "companies" ? <CompaniesPanel companies={companies} editable={editable} t={t} onSaved={invalidate} /> : null}
       {section === "coating" ? <CoatingWorkflowPanel onOpen={openRecord} /> : null}
       {section === "purchase" ? <PurchaseWorkflowPanel companies={companyList} onOpen={openRecord} /> : null}
@@ -140,7 +145,7 @@ export function WarehouseLifecycleHub() {
       {section === "decommission" ? (
         <DecommissionPanel rows={decommissions} editable={editable} t={t} onSaved={invalidate} />
       ) : null}
-      {section === "timeline" ? <TimelinePanel t={t} /> : null}
+      {section === "timeline" ? <TimelinePanel key={timelineFor ? `${timelineFor.kind}:${timelineFor.serial}` : ""} t={t} initial={timelineFor} /> : null}
       {section === "search" ? <SearchPanel t={t} companies={companyList} /> : null}
       <WorkflowDetailModal target={target} companies={companyList} onClose={closeRecord} />
     </div>
@@ -196,10 +201,12 @@ function ElementsPanel({
   states,
   t,
   setSection,
+  onTimeline,
 }: {
   states: ReturnType<typeof useQuery>;
   t: (k: string) => string;
   setSection: (s: WhSection) => void;
+  onTimeline: (kind: string, serial: string) => void;
 }) {
   type Row = { element_kind: string; serial: string; lifecycle_status: string; company_name: string | null };
   const cols: Column<Row>[] = [
@@ -227,6 +234,7 @@ function ElementsPanel({
         data={((states.data as Row[]) ?? []).map((r) => ({ ...r, _key: `${r.element_kind}:${r.serial}` }))}
         keyField="_key"
         isLoading={states.isLoading}
+        onRowClick={(r) => onTimeline(r.element_kind, r.serial)}
         emptyTitle={t("wh.empty")}
         maxHeight="min(50vh, 560px)"
       />
@@ -436,14 +444,17 @@ function DecommissionPanel({
   );
 }
 
-function TimelinePanel({ t }: { t: (k: string) => string }) {
-  const [kind, setKind] = useState<"anode" | "cathode">("anode");
-  const [serial, setSerial] = useState("");
-  const [qSerial, setQSerial] = useState("");
+type TimelineTarget = { kind: "anode" | "cathode"; serial: string };
+
+function TimelinePanel({ t, initial }: { t: (k: string) => string; initial: TimelineTarget | null }) {
+  const [kind, setKind] = useState<"anode" | "cathode">(initial?.kind ?? "anode");
+  const [serial, setSerial] = useState(initial?.serial ?? "");
+  const [qSerial, setQSerial] = useState(initial?.serial ?? "");
   const timeline = useQuery({
     queryKey: ["wh", "timeline", kind, qSerial],
     queryFn: () => warehouseLifecycleApi.elementTimeline(kind, qSerial),
     enabled: qSerial.length > 0,
+    refetchInterval: LIVE_MS,
   });
   const data = timeline.data as WhElementTimeline | undefined;
   return (

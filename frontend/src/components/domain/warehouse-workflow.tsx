@@ -15,8 +15,10 @@ import { defaultDateRange } from "@/lib/date-range";
 import {
   COATING_STEPS,
   DELAY_PARTIES,
+  LIVE_MS,
   PURCHASE_STEPS,
   parseSerialLines,
+  refreshWarehouseData,
   workflowApi,
   type WfCompanyStats,
   type WfDetail,
@@ -115,7 +117,7 @@ function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
 export function WorkflowCartablePanel({ onOpen }: { onOpen: (flow: WfFlow, id: number) => void }) {
   const { t } = useI18n();
   const meta = useWorkflowMeta();
-  const cartable = useQuery({ queryKey: ["wf", "cartable"], queryFn: workflowApi.cartable, refetchInterval: 20_000 });
+  const cartable = useQuery({ queryKey: ["wf", "cartable"], queryFn: workflowApi.cartable, refetchInterval: LIVE_MS });
   const groups = meta.data?.groups ?? [];
   return (
     <div className="wh-panel-block">
@@ -150,7 +152,7 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
   const meta = useWorkflowMeta();
   const canRequest = (meta.data?.groups ?? []).includes("c90");
   const [openOnly, setOpenOnly] = useState(true);
-  const list = useQuery({ queryKey: ["wf", "list", "coating", openOnly], queryFn: () => workflowApi.list("coating", { open_only: openOnly }) });
+  const list = useQuery({ queryKey: ["wf", "list", "coating", openOnly], queryFn: () => workflowApi.list("coating", { open_only: openOnly }), refetchInterval: LIVE_MS });
   const [anodes, setAnodes] = useState("");
   const [cathodes, setCathodes] = useState("");
   const [palletSize, setPalletSize] = useState(20);
@@ -179,7 +181,7 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
       setRemarks("");
       setUnknown([]);
       setAllowUnknown(false);
-      void qc.invalidateQueries({ queryKey: ["wf"] });
+      refreshWarehouseData(qc);
       onOpen("coating", d.id);
     },
     onError: (err: Error) => {
@@ -279,7 +281,7 @@ export function PurchaseWorkflowPanel({ companies, onOpen }: { companies: WhComp
   const canCreate = (meta.data?.groups ?? []).includes("procurement");
   const suppliers = companies.filter((c) => c.is_supplier);
   const [openOnly, setOpenOnly] = useState(true);
-  const list = useQuery({ queryKey: ["wf", "list", "purchase", openOnly], queryFn: () => workflowApi.list("purchase", { open_only: openOnly }) });
+  const list = useQuery({ queryKey: ["wf", "list", "purchase", openOnly], queryFn: () => workflowApi.list("purchase", { open_only: openOnly }), refetchInterval: LIVE_MS });
   const [supplierId, setSupplierId] = useState<number | "">("");
   const [anodeCount, setAnodeCount] = useState(0);
   const [cathodeCount, setCathodeCount] = useState(0);
@@ -304,7 +306,7 @@ export function PurchaseWorkflowPanel({ companies, onOpen }: { companies: WhComp
       setApprovalRef("");
       setRemarks("");
       setFiles([]);
-      void qc.invalidateQueries({ queryKey: ["wf"] });
+      refreshWarehouseData(qc);
       onOpen("purchase", d.id);
     },
   });
@@ -407,6 +409,7 @@ export function WorkflowDetailModal({
       return d;
     },
     enabled: !!target,
+    refetchInterval: LIVE_MS,
   });
   const d = detail.data;
   return (
@@ -600,8 +603,7 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
 
   const done = (next: WfDetail) => {
     qc.setQueryData(["wf", "detail", next.flow, next.id], next);
-    void qc.invalidateQueries({ queryKey: ["wf"] });
-    void qc.invalidateQueries({ queryKey: ["wh"] });
+    refreshWarehouseData(qc);
     setNote("");
     setFiles([]);
   };

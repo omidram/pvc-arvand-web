@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from .. import models
 from ..auth import require_admin, require_any_form_access
 from ..database import get_db
+from ..element_dashboard import clear_cache
 from ..excel_import import read_xlsx
 from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx
 from ..import_jobs import spawn_import
@@ -336,9 +337,11 @@ async def warehouse_import(_admin=Depends(require_admin), file: UploadFile = Fil
 def warehouse_move(
     payload: WarehouseMove,
     db: Session = Depends(get_db),
-    _: models.User = Depends(require_any_form_access("storage", "anodes", "cathodes")),
+    user: models.User = Depends(require_any_form_access("storage", "anodes", "cathodes")),
 ):
     try:
-        return apply_move(db, payload.kind, payload.serial, payload.action, payload.date, payload.note)
+        result = apply_move(db, payload.kind, payload.serial, payload.action, payload.date, payload.note, user)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    clear_cache()
+    return result

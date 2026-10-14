@@ -542,7 +542,7 @@ const en = {
     title: "Anode & Cathode Warehouse",
     board: "Live warehouse board",
     description:
-      "Legacy live board (assembly + maintenance + recoating). For coating shipments, purchases, punch and lifecycle timeline use the sections above.",
+      "Live stock of every anode and cathode (assembly + maintenance + recoating + workflow). \"Send to recoating\" opens or joins a recoating request in the Workflow cartable; the piece then follows the request (at the coater, returned) here automatically.",
     inStock: "In stock",
     searchPlaceholder: "Search serial / cell / element / remarks…",
     tabAnodes: "Anodes",
@@ -581,6 +581,14 @@ const en = {
     actionDate: "Date",
     showing: "Showing {shown} of the filtered list.",
     emptyWarehouse: "No serials in this list",
+    actionNote: "Note / problem",
+    wfColumn: "Workflow",
+    openRequest: "Open request",
+    history: "History",
+    addedToRequest: "Added to recoating request {code}. Procurement was notified to choose the coating company; follow it in the Workflow cartable and Recoating process.",
+    newRequest: "Recoating request {code} was opened. Procurement was notified to choose the coating company; follow it in the Workflow cartable and Recoating process.",
+    alreadyInRequest: "This serial is already in recoating request {code}.",
+    mountedHint: "This piece is still mounted in a cell. Disassemble it in Assembly Data before sending it out.",
   },
   wh: {
     title: "Anode & Cathode Management",
@@ -2449,7 +2457,7 @@ const en = {
     },
     storage: {
       title: "Warehouse",
-      body: "Live anode and cathode warehouse.\nA serial is on the rack while its latest assembly row has no dismantle date.\nOtherwise it is out for repair (open maintenance or recoating dispatch, or a dismantle note that it was sent out), returned and waiting for a coating check, OK and ready to install, or NOT OK.\nDOL is the days from installation (or assembly, when installation is blank) to dismantle, or to today if it is still in.\nSend to maintenance, send to recoating, mark returned, and mark OK / NOT OK write the same rows the six forms edit, so both sides stay together.\nImport the montage / demontage workbook here or from Assembly Data. Membrane stock is the usable membranes that are not mounted.",
+      body: "Live anode and cathode warehouse.\nA serial is on the rack while its latest assembly row has no dismantle date.\nOtherwise it is out for repair (open maintenance or recoating dispatch, or a dismantle note that it was sent out), returned and waiting for a coating check, OK and ready to install, or NOT OK.\nDOL is the days from installation (or assembly, when installation is blank) to dismantle, or to today if it is still in.\nSend to maintenance, mark returned, and mark OK / NOT OK write the same rows the six forms edit, so both sides stay together. Send to recoating opens (or joins) a recoating request in the Workflow cartable and notifies procurement; the piece then follows that request on this board.\nImport the montage / demontage workbook here or from Assembly Data. Membrane stock is the usable membranes that are not mounted.",
     },
     logs: {
       title: "Audit Logs",
@@ -3340,7 +3348,7 @@ const fa: DeepPartialStrings<typeof en> = {
     title: "انبار آند و کاتد",
     board: "تابلوی زنده انبار",
     description:
-      "تابلوی قدیمی (مونتاژ + نگهداری + بازپوشش). برای ارسال پوشش، خرید، Punch و Timeline از بخش‌های بالای صفحه استفاده کنید.",
+      "موجودی زنده همه آندها و کاتدها (مونتاژ + نگهداری + بازپوشش + گردش کار). «ارسال به بازپوشش» یک درخواست بازپوشش در کارتابل باز می‌کند یا قطعه را به درخواست باز اضافه می‌کند؛ از آن به بعد وضعیت قطعه (نزد پوشش‌دهنده، برگشته) خودکار همین‌جا دیده می‌شود.",
     inStock: "موجود در انبار",
     searchPlaceholder: "جستجوی سریال / سلول / المنت / توضیحات…",
     tabAnodes: "آندها",
@@ -3379,6 +3387,14 @@ const fa: DeepPartialStrings<typeof en> = {
     actionDate: "تاریخ",
     showing: "نمایش {shown} ردیف از فهرست فیلترشده.",
     emptyWarehouse: "سریالی در این فهرست نیست",
+    actionNote: "توضیح / مشکل",
+    wfColumn: "گردش کار",
+    openRequest: "باز کردن درخواست",
+    history: "تاریخچه",
+    addedToRequest: "به درخواست بازپوشش {code} اضافه شد. به تدارکات برای انتخاب شرکت پوشش‌دهنده اطلاع داده شد؛ روند را در کارتابل و بخش بازپوشش دنبال کنید.",
+    newRequest: "درخواست بازپوشش {code} باز شد. به تدارکات برای انتخاب شرکت پوشش‌دهنده اطلاع داده شد؛ روند را در کارتابل و بخش بازپوشش دنبال کنید.",
+    alreadyInRequest: "این سریال همین حالا در درخواست بازپوشش {code} است.",
+    mountedHint: "این قطعه هنوز روی سلول نصب است. قبل از ارسال، دمونتاژ آن را در داده‌های مونتاژ ثبت کنید.",
   },
   wh: {
     title: "مدیریت آند و کاتد",
@@ -5246,7 +5262,7 @@ const fa: DeepPartialStrings<typeof en> = {
     },
     storage: {
       title: "انبار",
-      body: "انبار زنده آند و کاتد.\nتا وقتی آخرین ردیف مونتاژ تاریخ دمونتاژ نداشته باشد، سریال روی رک است.\nدر غیر این صورت بیرون برای تعمیر است (اعزام بازِ نگهداری یا بازپوشش، یا توضیح دمونتاژ که ارسال شده)، یا برگشته و منتظر بررسی پوشش است، یا OK و آماده نصب است، یا NOT OK.\nDOL از تاریخ نصب (اگر خالی باشد از تاریخ مونتاژ) تا دمونتاژ است، و اگر هنوز داخل سلول باشد تا امروز.\nدکمه‌های ارسال به نگهداری، ارسال به بازپوشش، ثبت بازگشت و OK / NOT OK همان ردیف‌هایی را می‌نویسند که شش فرم ویرایش می‌کنند.\nفایل مونتاژ و دمونتاژ را از همین صفحه یا از داده‌های مونتاژ وارد کنید. انبار غشا، غشاهای قابل استفاده و نصب‌نشده است.",
+      body: "انبار زنده آند و کاتد.\nتا وقتی آخرین ردیف مونتاژ تاریخ دمونتاژ نداشته باشد، سریال روی رک است.\nدر غیر این صورت بیرون برای تعمیر است (اعزام بازِ نگهداری یا بازپوشش، یا توضیح دمونتاژ که ارسال شده)، یا برگشته و منتظر بررسی پوشش است، یا OK و آماده نصب است، یا NOT OK.\nDOL از تاریخ نصب (اگر خالی باشد از تاریخ مونتاژ) تا دمونتاژ است، و اگر هنوز داخل سلول باشد تا امروز.\nدکمه‌های ارسال به نگهداری، ثبت بازگشت و OK / NOT OK همان ردیف‌هایی را می‌نویسند که شش فرم ویرایش می‌کنند. «ارسال به بازپوشش» یک درخواست بازپوشش در کارتابل گردش کار باز می‌کند (یا به درخواست باز اضافه می‌کند) و به تدارکات اطلاع می‌دهد؛ قطعه از آن به بعد همراه همان درخواست روی این تابلو دیده می‌شود.\nفایل مونتاژ و دمونتاژ را از همین صفحه یا از داده‌های مونتاژ وارد کنید. انبار غشا، غشاهای قابل استفاده و نصب‌نشده است.",
     },
     logs: {
       title: "لاگ‌های سیستم",

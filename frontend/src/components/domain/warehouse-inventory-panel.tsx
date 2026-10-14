@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
   ExternalLink,
+  History,
   Package,
   PackageCheck,
   PackageOpen,
@@ -25,6 +26,7 @@ import { storageApi, type WarehouseItem } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import type { Membrane } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
+import { LIVE_MS, refreshWarehouseData, type WfFlow } from "@/lib/workflow";
 
 type Kind = "anode" | "cathode" | "membrane";
 type Bucket = "warehouse" | "out_repair" | "pending" | "ok" | "not_ok" | "on_rack" | "all";
@@ -83,16 +85,24 @@ function filtersLabel(t: (path: string) => string, bucket: Bucket) {
   return t("storage.all");
 }
 
-export function WarehouseInventoryPanel() {
+export function WarehouseInventoryPanel({
+  onOpenRecord,
+  onTimeline,
+}: {
+  onOpenRecord?: (flow: WfFlow, id: number) => void;
+  onTimeline?: (kind: string, serial: string) => void;
+} = {}) {
   const { t } = useI18n();
   const { canView, canEdit } = useAuth();
   const queryClient = useQueryClient();
   const [kind, setKind] = useState<Kind>("anode");
   const [bucket, setBucket] = useState<Bucket>("warehouse");
   const [q, setQ] = useState("");
-  const [selected, setSelected] = useState<WarehouseItem | null>(null);
+  const [picked, setPicked] = useState<WarehouseItem | null>(null);
   const [actionDate, setActionDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [remark, setRemark] = useState("");
   const [note, setNote] = useState("");
+  const [lastWf, setLastWf] = useState<number | null>(null);
   const allowed = canView("storage") || canView("anodes") || canView("cathodes") || canView("membranes");
   const editable = canEdit("storage") || canEdit("anodes") || canEdit("cathodes");
   const electrode = kind === "anode" || kind === "cathode";
@@ -101,12 +111,16 @@ export function WarehouseInventoryPanel() {
     queryKey: ["storage", "board", kind, bucket, q],
     queryFn: () => storageApi.board(kind as "anode" | "cathode", bucket, q || undefined),
     enabled: allowed && electrode,
+    refetchInterval: LIVE_MS,
   });
   const membranesQuery = useQuery({
     queryKey: ["storage", "membranes", q],
     queryFn: () => storageApi.membranes(q || undefined),
     enabled: allowed && kind === "membrane",
+    refetchInterval: LIVE_MS,
   });
+  const selected = (picked && boardQuery.data?.items.find((row) => row.key === picked.key)) || picked;
+  const mounted = selected?.bucket === "on_rack";
   const move = useMutation({
     mutationFn: (action: "dispatch_maintenance" | "dispatch_recoating" | "return" | "ok" | "not_ok") => {
       if (!selected || !electrode) throw new Error(t("storage.selectRow"));
@@ -115,11 +129,18 @@ export function WarehouseInventoryPanel() {
         serial: selected.serial,
         action,
         date: actionDate || undefined,
+        note: remark.trim() || undefined,
       });
     },
-    onSuccess: async (result) => {
-      setNote(result.already ? t("storage.alreadyOut") : t("storage.saved"));
-      await queryClient.invalidateQueries({ queryKey: ["storage"] });
+    onSuccess: (result) => {
+      setLastWf(result.wf_id ?? null);
+      if (result.wf_code) {
+        setNote(t(result.already ? "storage.alreadyInRequest" : result.added ? "storage.addedToRequest" : "storage.newRequest", { code: result.wf_code }));
+      } else {
+        setNote(result.already ? t("storage.alreadyOut") : t("storage.saved"));
+      }
+      setRemark("");
+      refreshWarehouseData(queryClient);
     },
     onError: (err: Error) => setNote(err.message),
   });
@@ -157,6 +178,12 @@ export function WarehouseInventoryPanel() {
             ? `${row.repair || ""}${row.repair_dispatch ? ` ${formatDate(row.repair_dispatch)}` : ""}${row.repair_return ? ` → ${formatDate(row.repair_return)}` : ""}`
             : "—",
         filterText: (row) => `${row.repair || ""} ${row.repair_dispatch || ""} ${row.repair_return || ""}`,
+      },
+      {
+        key: "wf_code",
+        header: t("storage.wfColumn"),
+        render: (row) => (row.wf_code ? <Badge color="violet">{`${row.wf_code} · ${t(`wf.status.${row.wf_status}`)}`}</Badge> : "—"),
+        filterText: (row) => (row.wf_code ? `${row.wf_code} ${t(`wf.status.${row.wf_status}`)}` : ""),
       },
       { key: "remarks", header: t("fields.remarks"), render: (row) => row.remarks || "—", className: "max-w-[14rem] whitespace-normal" },
     ],
@@ -214,7 +241,7 @@ export function WarehouseInventoryPanel() {
             className={`wh-tab${kind === id ? " is-active" : ""}`}
             onClick={() => {
               setKind(id);
-              setSelected(null);
+              setPicked(null);
               setNote("");
               if (id === "membrane") setBucket("warehouse");
             }}
@@ -263,17 +290,45 @@ export function WarehouseInventoryPanel() {
                       <span>{t("fields.elementNr")}</span>
                       <b>{selected.element_nr || "—"}</b>
                     </div>
+                    {selected.wf_code ? (
+                      <div>
+                        <span>{t("storage.wfColumn")}</span>
+                        <b>
+                          {selected.wf_code} · {t(`wf.status.${selected.wf_status}`)}
+                        </b>
+                      </div>
+                    ) : null}
                   </div>
+                  <div className="wh-related-grid wh-related-inline">
+                    {selected.wf_id && onOpenRecord ? (
+                      <button type="button" className="wh-chip wh-chip-btn" onClick={() => onOpenRecord("coating", selected.wf_id!)}>
+                        <ExternalLink size={12} /> {t("storage.openRequest")}
+                      </button>
+                    ) : null}
+                    {onTimeline ? (
+                      <button type="button" className="wh-chip wh-chip-btn" onClick={() => onTimeline(selected.kind, selected.serial)}>
+                        <History size={12} /> {t("storage.history")}
+                      </button>
+                    ) : null}
+                  </div>
+                  {mounted ? <p className="wh-empty-select">{t("storage.mountedHint")}</p> : null}
                 </div>
               ) : (
                 <p className="wh-empty-select">{t("storage.selectRow")}</p>
               )}
               {editable ? (
                 <div className="wh-actions">
-                  <button type="button" disabled={!selected || move.isPending} onClick={() => move.mutate("dispatch_maintenance")}>
+                  <input
+                    className="wh-action-note"
+                    value={remark}
+                    onChange={(e) => setRemark(e.target.value)}
+                    placeholder={t("storage.actionNote")}
+                    disabled={!selected}
+                  />
+                  <button type="button" disabled={!selected || mounted || move.isPending} onClick={() => move.mutate("dispatch_maintenance")}>
                     <Send size={14} /> {t("storage.sendMaintenance")}
                   </button>
-                  <button type="button" disabled={!selected || move.isPending} onClick={() => move.mutate("dispatch_recoating")}>
+                  <button type="button" disabled={!selected || mounted || !!selected.wf_id || move.isPending} onClick={() => move.mutate("dispatch_recoating")}>
                     <RefreshCw size={14} /> {t("storage.sendRecoating")}
                   </button>
                   <button type="button" disabled={!selected || move.isPending} onClick={() => move.mutate("return")}>
@@ -289,7 +344,16 @@ export function WarehouseInventoryPanel() {
               ) : (
                 <p className="wh-empty-select">{t("common.viewOnly")}</p>
               )}
-              {note ? <p className="wh-note">{note}</p> : null}
+              {note ? (
+                <p className="wh-note">
+                  {note}
+                  {lastWf && onOpenRecord ? (
+                    <button type="button" className="wh-chip wh-chip-btn" onClick={() => onOpenRecord("coating", lastWf)}>
+                      <ExternalLink size={12} /> {t("storage.openRequest")}
+                    </button>
+                  ) : null}
+                </p>
+              ) : null}
             </aside>
             <div className="wh-table">
               {boardQuery.isLoading ? <LoadingState /> : null}
@@ -307,8 +371,9 @@ export function WarehouseInventoryPanel() {
                     keyField="key"
                     selectedKey={selected?.key}
                     onRowClick={(row) => {
-                      setSelected(row);
+                      setPicked(row);
                       setNote("");
+                      setLastWf(null);
                     }}
                     emptyTitle={t("storage.emptyWarehouse")}
                     maxHeight="min(52vh, 640px)"

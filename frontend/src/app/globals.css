@@ -5207,6 +5207,15 @@ html[data-theme="dark"][data-ui="modern"] .mon-empty { color: #94a3b8; }
   cursor: default;
   background: color-mix(in srgb, var(--win-face) 55%, white);
 }
+.wh-action-note {
+  min-height: 30px;
+  padding: 0 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--win-navy) 16%, var(--win-face-dark));
+  border-radius: 0.55rem;
+  font-size: 12px;
+}
+.wh-note .wh-chip { margin-top: 0.4rem; }
+.wh-selected .wh-related-grid { margin-top: 0.45rem; }
 .wh-actions button.is-ok { color: #047857; border-color: #a7f3d0; background: #ecfdf5; }
 .wh-actions button.is-bad { color: #b91c1c; border-color: #fecaca; background: #fef2f2; }
 .wh-note {

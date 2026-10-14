@@ -293,9 +293,36 @@ def _classify(kind: str, latest, maintenance, recoating, checks, segs, catalog) 
     return "ok", "ready", returned, None
 
 
+WF_OPEN_BUCKET = {
+    "at_coater": "out_repair",
+    "await_report": "pending",
+    "await_inspection": "pending",
+    "await_approval": "pending",
+}
+
+
+def open_coating_requests(db: Session, kind: str) -> dict[str, dict]:
+    """compact serial -> the open recoating workflow request that holds the piece."""
+    from .workflow_models import WfCoatingBatch, WfCoatingItem, WfCoatingPackage
+
+    rows = (
+        db.query(WfCoatingItem.serial, WfCoatingBatch.id, WfCoatingBatch.status, WfCoatingBatch.dispatch_date, WfCoatingBatch.return_date, WfCoatingPackage.code)
+        .join(WfCoatingBatch, WfCoatingBatch.id == WfCoatingItem.batch_id)
+        .join(WfCoatingPackage, WfCoatingPackage.id == WfCoatingItem.package_id)
+        .filter(WfCoatingItem.element_kind == kind, WfCoatingBatch.status.notin_(("completed", "cancelled")))
+        .all()
+    )
+    return {
+        compact_nr(serial): {"id": batch_id, "status": status, "dispatch": dispatch, "return": returned, "code": code}
+        for serial, batch_id, status, dispatch, returned, code in rows
+        if compact_nr(serial)
+    }
+
+
 def build_board(db: Session, kind: str, bucket: str | None = None, q: str | None = None, limit: int = 2500) -> dict:
     spec = _KIND[kind]
     field = spec["field"]
+    wf_open = open_coating_requests(db, kind)
     elements = _grouped(db.query(models.Element).all(), field)
     catalogs = {compact_nr(getattr(row, field)): row for row in db.query(spec["catalog"]).all() if compact_nr(getattr(row, field))}
     maintenance = _grouped(db.query(spec["maintenance"]).all(), field)
@@ -325,6 +352,9 @@ def build_board(db: Session, kind: str, bucket: str | None = None, q: str | None
             segs.get(key) or [],
             catalog,
         )
+        wf = wf_open.get(key)
+        if wf and bucket_name != "on_rack" and wf["status"] in WF_OPEN_BUCKET:
+            bucket_name, reason, repair, coating = WF_OPEN_BUCKET[wf["status"]], "recoating", None, None
         counts[bucket_name] += 1
         display = None
         if latest is not None:
@@ -366,10 +396,13 @@ def build_board(db: Session, kind: str, bucket: str | None = None, q: str | None
                 "runs": len(lives),
                 "remarks": latest.remarks if latest else None,
                 "repair": reason if reason in {"maintenance", "recoating", "returned"} else None,
-                "repair_dispatch": _iso(getattr(repair, "dispatch_date", None)) if repair is not None else None,
-                "repair_return": _iso(getattr(repair, "return_date", None)) if repair is not None else None,
+                "repair_dispatch": _iso(wf["dispatch"]) if wf and wf["dispatch"] else (_iso(getattr(repair, "dispatch_date", None)) if repair is not None else None),
+                "repair_return": _iso(wf["return"]) if wf and wf["return"] else (_iso(getattr(repair, "return_date", None)) if repair is not None else None),
                 "coating": coating_text,
                 "manufacturer": catalog.manufacturer if catalog is not None else None,
+                "wf_id": wf["id"] if wf else None,
+                "wf_code": wf["code"] if wf else None,
+                "wf_status": wf["status"] if wf else None,
             }
         )
 
@@ -389,6 +422,7 @@ def build_board(db: Session, kind: str, bucket: str | None = None, q: str | None
             or needle in (item["electrolyzer"] or "").lower()
             or needle in (item["element_nr"] or "").lower()
             or needle in (item["coating"] or "").lower()
+            or needle in (item["wf_code"] or "").lower()
         ]
     order = {"out_repair": 0, "pending": 1, "not_ok": 2, "ok": 3, "on_rack": 4}
     items.sort(key=lambda item: (order.get(item["bucket"], 9), item["serial"]))
@@ -416,7 +450,25 @@ def _close_open(rows, day: date) -> int:
     return closed
 
 
-def apply_move(db: Session, kind: str, serial: str, action: str, when: date | None, note: str | None) -> dict:
+_MOVE_EVENT = {
+    "dispatch_maintenance": ("maintenance_dispatch", "Sent for maintenance (Live board)"),
+    "return": ("board_return", "Returned to the warehouse (Live board)"),
+    "ok": ("qc_ok", "Marked OK (Live board)"),
+    "not_ok": ("qc_not_ok", "Marked NOT OK (Live board)"),
+}
+
+
+def _mounted(db: Session, field: str, serial: str) -> models.Element | None:
+    lives = _rows_for(db, models.Element, field, serial)
+    latest = max(lives, key=_life_key) if lives else None
+    if latest is not None and _as_date(latest.disassembly_date) is None and (
+        latest.electrolyzer or latest.commissioning_date or latest.assembly_date
+    ):
+        return latest
+    return None
+
+
+def apply_move(db: Session, kind: str, serial: str, action: str, when: date | None, note: str | None, user: models.User | None = None) -> dict:
     spec = _KIND.get(kind)
     if spec is None:
         raise ValueError("kind must be anode or cathode")
@@ -428,10 +480,27 @@ def apply_move(db: Session, kind: str, serial: str, action: str, when: date | No
         raise ValueError("serial is required")
     day = when or date.today()
     field = spec["field"]
+    note_text = (note or "").strip() or None
+    if action in ("dispatch_maintenance", "dispatch_recoating"):
+        on_rack = _mounted(db, field, stored)
+        if on_rack is not None:
+            where = f"{on_rack.electrolyzer or ''}-{on_rack.position or ''}".strip("-")
+            raise ValueError(f"{stored} is still mounted ({where}). Disassemble it in Assembly Data first.")
+    wf = open_coating_requests(db, kind).get(compact_nr(stored))
+    if action == "dispatch_recoating":
+        from .routers.workflow import coating_from_board
+
+        if wf:
+            return {"ok": True, "already": True, "serial": stored, "action": action, "wf_id": wf["id"], "wf_code": wf["code"], "wf_status": wf["status"]}
+        if user is None:
+            raise ValueError("user is required")
+        return {"ok": True, "serial": stored, "action": action, **coating_from_board(db, kind, stored, user, note_text)}
+    if wf and wf["status"] not in ("await_company", "await_indent", "await_dispatch"):
+        raise ValueError(f"{stored} is in recoating request {wf['code']}. Continue it from the Workflow cartable.")
+
     ensure_indexed(db, spec["catalog"], field, stored, None)
     maintenance = _rows_for(db, spec["maintenance"], field, stored)
     recoating = _rows_for(db, spec["recoating"], field, stored)
-    note_text = (note or "").strip() or None
 
     if action == "dispatch_maintenance":
         if _open_job(maintenance, None):
@@ -447,15 +516,6 @@ def apply_move(db: Session, kind: str, serial: str, action: str, when: date | No
                 }
             )
         )
-    elif action == "dispatch_recoating":
-        if _open_job(recoating, None):
-            return {"ok": True, "already": True, "serial": stored, "action": action}
-        payload = {
-            field: stored,
-            "dispatch_date": _stamp(day),
-            "remarks": note_text or "ارسال برای بازپوشش",
-        }
-        db.add(spec["recoating"](**payload))
     elif action == "return":
         closed = _close_open(maintenance, day) + _close_open(recoating, day)
         if closed == 0:
@@ -488,6 +548,12 @@ def apply_move(db: Session, kind: str, serial: str, action: str, when: date | No
             payload["dol_days"] = dol
         db.add(spec["check"](**payload))
 
+    from .warehouse_lifecycle import log_event, upsert_state
+
+    event_type, title = _MOVE_EVENT[action]
+    if not wf and action != "dispatch_maintenance":
+        upsert_state(db, kind, stored, lifecycle_status="in_plant", qc_result={"ok": "ok", "not_ok": "not_ok"}.get(action))
+    log_event(db, kind, stored, event_type, day, f"{title}{f' — {note_text}' if note_text else ''}", ref_kind="board")
     db.commit()
     return {"ok": True, "serial": stored, "action": action, "date": day.isoformat()}
 
