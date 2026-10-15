@@ -82,6 +82,14 @@ function durationHm(row: DurationFields): string {
   return `${h}:${String(m).padStart(2, "0")}`;
 }
 
+const PLANT_SCOPES = ["Train1", "Train2", "CA Total Plant"] as const;
+
+function plantPartValue(v: string | null | undefined): string {
+  const raw = (v || "").trim();
+  const scope = PLANT_SCOPES.find((s) => s.toLowerCase() === raw.toLowerCase());
+  return scope ?? (formatElectrolyzer(raw) || raw);
+}
+
 function PlantBar() {
   const { t } = useI18n();
   useCalendar();
@@ -358,11 +366,12 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                       <ElectrolyzerCombo
                         variant="access"
                         className="w-full min-w-[4rem]"
-                        value={row.plant_part || ""}
-                        onChange={(v) => saveRow(row, { plant_part: formatElectrolyzer(v) || v || null })}
+                        plainOptions={PLANT_SCOPES}
+                        value={plantPartValue(row.plant_part)}
+                        onChange={(v) => saveRow(row, { plant_part: plantPartValue(v) || null })}
                       />
                     ) : (
-                      <span className="block px-1">{formatElectrolyzer(row.plant_part) || row.plant_part || "—"}</span>
+                      <span className="block px-1">{plantPartValue(row.plant_part) || "—"}</span>
                     )}
                   </td>
                 ) : null}
@@ -461,8 +470,9 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                     <ElectrolyzerCombo
                       variant="access"
                       className="w-full min-w-[4rem]"
-                      value={draft.plant_part || ""}
-                      onChange={(v) => setDraft((d) => ({ ...d, plant_part: formatElectrolyzer(v) || v || null }))}
+                      plainOptions={PLANT_SCOPES}
+                      value={plantPartValue(draft.plant_part)}
+                      onChange={(v) => setDraft((d) => ({ ...d, plant_part: plantPartValue(v) || null }))}
                     />
                   </td>
                 ) : null}

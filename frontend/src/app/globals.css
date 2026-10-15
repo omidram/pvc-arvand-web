@@ -5624,6 +5624,7 @@ button.ed-mini:hover { background: rgb(15 23 42 / 0.04); }
 .ed-table tr.is-selected td { background: #dbeafe; }
 .ed-table tr:hover td { background: #f1f5f9; }
 .ed-num { font-variant-numeric: tabular-nums; text-align: end; }
+.ed-table td.ed-num { text-align: start; }
 .ed-mute { color: var(--win-muted); }
 .ed-actionbar {
   display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.6rem;

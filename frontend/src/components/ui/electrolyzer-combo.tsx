@@ -57,6 +57,8 @@ type ElectrolyzerComboProps = {
   variant?: "default" | "access";
   /** Extra names (e.g. from a live board response) merged into the list */
   extraOptions?: readonly string[];
+  /** Non-electrolyzer choices listed after the electrolyzers and kept exactly as written (e.g. Train1). */
+  plainOptions?: readonly string[];
   id?: string;
   "aria-label"?: string;
 };
@@ -75,17 +77,20 @@ export function ElectrolyzerCombo({
   className,
   variant = "default",
   extraOptions,
+  plainOptions,
   id,
   "aria-label": ariaLabel,
 }: ElectrolyzerComboProps) {
   const autoId = useId();
   const selectId = id || `electrolyzer-${autoId.replace(/:/g, "")}`;
   const names = useElectrolyzerNames(extraOptions);
-  const display = formatElectrolyzer(value) || value;
+  const plain = useMemo(() => plainOptions ?? [], [plainOptions]);
+  const display = plain.includes(value) ? value : formatElectrolyzer(value) || value;
   const options = useMemo(() => {
-    if (display && !names.includes(display)) return [...names, display];
-    return names;
-  }, [names, display]);
+    const all = [...names, ...plain];
+    if (display && !all.includes(display)) return [...all, display];
+    return all;
+  }, [names, plain, display]);
 
   return (
     <select
@@ -98,7 +103,7 @@ export function ElectrolyzerCombo({
         variant === "access" ? "access-inset-field" : "access-inset-field w-full",
         className
       )}
-      onChange={(e) => onChange(formatElectrolyzer(e.target.value) || e.target.value)}
+      onChange={(e) => onChange(plain.includes(e.target.value) ? e.target.value : formatElectrolyzer(e.target.value) || e.target.value)}
     >
       {!display ? <option value="">{placeholder || "—"}</option> : null}
       {options.map((name) => (
