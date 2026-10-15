@@ -293,6 +293,32 @@ def date_window(*, end: date | None = None, lookback_days: int = 7, include_toda
     return start_day, end_day
 
 
+def resolve_window(
+    row: models.AriaLimsSyncSettings, *, include_today: bool, today: date | None = None
+) -> tuple[date, date]:
+    """StartTime / EndTime of a pull from the start/end modes (both days inclusive)."""
+    today = today or date.today()
+    end_mode = row.end_mode or "auto"
+    if end_mode == "fixed" and row.end_date:
+        end = row.end_date
+    elif end_mode == "today":
+        end = today
+    elif end_mode == "yesterday":
+        end = today - timedelta(days=1)
+    else:
+        end = today if include_today else today - timedelta(days=1)
+
+    start_mode = row.start_mode or "lookback"
+    if start_mode == "fixed" and row.start_date:
+        start = row.start_date
+    elif start_mode == "last_success" and row.last_success_at:
+        # Whole day of the last success: late lab entries for that day are picked up again (merged, not duplicated).
+        start = row.last_success_at.replace(tzinfo=timezone.utc).astimezone().date()
+    else:
+        start = end - timedelta(days=max(1, int(row.lookback_days or 7)) - 1)
+    return min(start, end), end
+
+
 def _value(raw: Any) -> Any:
     """'1.32' → 1.32; text such as '<0.1' stays text."""
     if isinstance(raw, (int, float)):
@@ -442,7 +468,7 @@ def pull_from_arialims(
     row = row or get_or_create_settings(db)
     cfg = config_from_settings(row)
     types = set(selected_analysis_types(row))
-    start, end = date_window(lookback_days=row.lookback_days or 7, include_today=include_today)
+    start, end = resolve_window(row, include_today=include_today)
 
     result: dict[str, Any] = {
         "ok": False,
@@ -545,6 +571,8 @@ def pull_from_arialims(
 
 def _mark_run(db: Session, row: models.AriaLimsSyncSettings, *, status: str, message: str) -> None:
     row.last_run_at = datetime.now(timezone.utc).replace(tzinfo=None)
+    if status == "success":
+        row.last_success_at = row.last_run_at
     row.last_run_status = status
     row.last_run_message = message
     db.commit()

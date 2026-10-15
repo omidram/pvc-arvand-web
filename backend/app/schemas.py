@@ -1,5 +1,6 @@
 """Pydantic schemas. One Base (create/update body) + Read (adds id) per model."""
 from datetime import date, datetime
+from typing import Literal
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field
 
@@ -196,6 +197,10 @@ class AriaLimsSyncSettingsBase(ORMModel):
     username: str | None = None
     daily_time: str = "01:00"
     lookback_days: int = Field(default=7, ge=1, le=90)
+    start_mode: Literal["lookback", "last_success", "fixed"] | None = "lookback"
+    start_date: date | None = None
+    end_mode: Literal["auto", "yesterday", "today", "fixed"] | None = "auto"
+    end_date: date | None = None
     # Comma-separated analysis types; empty = all catalogued types.
     analysis_types: str | None = None
 
@@ -211,9 +216,13 @@ class AriaLimsSyncSettingsRead(AriaLimsSyncSettingsBase):
     password_set: bool = False
     api_token_set: bool = False
     last_run_at: datetime | None = None
+    last_success_at: datetime | None = None
     last_run_status: str | None = None
     last_run_message: str | None = None
     next_run_at: str | None = None
+    # StartTime / EndTime the next scheduled pull and a "Pull now" would request (yyyy-mm-dd).
+    scheduled_window: list[str] = []
+    manual_window: list[str] = []
     contract_ready: bool = False
     catalog: list[dict] = []
 

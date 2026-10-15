@@ -977,14 +977,24 @@ export interface AriaLimsSyncSettings {
   api_token_set: boolean;
   daily_time: string;
   lookback_days: number;
+  start_mode: AriaLimsStartMode | null;
+  start_date: string | null;
+  end_mode: AriaLimsEndMode | null;
+  end_date: string | null;
   analysis_types: string | null;
   last_run_at: string | null;
+  last_success_at: string | null;
   last_run_status: string | null;
   last_run_message: string | null;
   next_run_at: string | null;
+  scheduled_window: string[];
+  manual_window: string[];
   contract_ready: boolean;
   catalog: AriaLimsCatalogItem[];
 }
+
+export type AriaLimsStartMode = "lookback" | "last_success" | "fixed";
+export type AriaLimsEndMode = "auto" | "yesterday" | "today" | "fixed";
 
 export interface AriaLimsSyncRunResult {
   ok: boolean;

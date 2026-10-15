@@ -6,13 +6,26 @@ import { Save, Play, RefreshCw, Wifi } from "lucide-react";
 import { ariaLimsSyncApi, type ImportProgress } from "@/lib/endpoints";
 import { ImportProgressBar } from "@/components/domain/import-progress";
 import { AriaLimsPoints } from "@/components/domain/arialims-points";
-import type { AriaLimsSyncRunResult, AriaLimsSyncSettings } from "@/lib/types";
+import type { AriaLimsEndMode, AriaLimsStartMode, AriaLimsSyncRunResult, AriaLimsSyncSettings } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input, Label } from "@/components/ui/input";
+import { DateInput } from "@/components/ui/date-input";
+import { Input, Label, Select } from "@/components/ui/input";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
-import { formatDateTime } from "@/lib/utils";
+import { formatDate, formatDateTime } from "@/lib/utils";
+
+const START_MODES: AriaLimsStartMode[] = ["lookback", "last_success", "fixed"];
+const END_MODES: AriaLimsEndMode[] = ["auto", "yesterday", "today", "fixed"];
+
+function WindowText({ range, t }: { range: string[]; t: (k: string, v?: Record<string, string>) => string }) {
+  if (range.length !== 2) return <>—</>;
+  return (
+    <span dir="ltr">
+      {t("ariaLimsSync.windowRange", { from: range[0], to: range[1] })} ({formatDate(range[0])} – {formatDate(range[1])})
+    </span>
+  );
+}
 
 function SyncForm({ initial }: { initial: AriaLimsSyncSettings }) {
   const { t } = useI18n();
@@ -25,6 +38,10 @@ function SyncForm({ initial }: { initial: AriaLimsSyncSettings }) {
   const [apiToken, setApiToken] = useState("");
   const [dailyTime, setDailyTime] = useState(initial.daily_time || "01:00");
   const [lookbackDays, setLookbackDays] = useState(initial.lookback_days || 7);
+  const [startMode, setStartMode] = useState<AriaLimsStartMode>(initial.start_mode || "lookback");
+  const [startDate, setStartDate] = useState(initial.start_date || "");
+  const [endMode, setEndMode] = useState<AriaLimsEndMode>(initial.end_mode || "auto");
+  const [endDate, setEndDate] = useState(initial.end_date || "");
   const [analysisTypes, setAnalysisTypes] = useState(initial.analysis_types || "");
   const [saved, setSaved] = useState(false);
   const [lastResult, setLastResult] = useState<AriaLimsSyncRunResult | null>(null);
@@ -41,6 +58,10 @@ function SyncForm({ initial }: { initial: AriaLimsSyncSettings }) {
         api_token: apiToken || undefined,
         daily_time: dailyTime || "01:00",
         lookback_days: lookbackDays,
+        start_mode: startMode,
+        start_date: startDate || null,
+        end_mode: endMode,
+        end_date: endDate || null,
         analysis_types: analysisTypes || null,
       }),
     onSuccess: (data) => {
@@ -134,8 +155,55 @@ function SyncForm({ initial }: { initial: AriaLimsSyncSettings }) {
             value={lookbackDays}
             onChange={(e) => setLookbackDays(Math.min(90, Math.max(1, Number(e.target.value) || 7)))}
             className="max-w-[160px]"
+            disabled={startMode === "fixed"}
           />
           <p className="mt-1 text-xs text-[var(--win-text-dim)]">{t("ariaLimsSync.lookbackDaysHelp")}</p>
+        </div>
+        <div>
+          <Label>{t("ariaLimsSync.startMode")}</Label>
+          <Select value={startMode} onChange={(e) => setStartMode(e.target.value as AriaLimsStartMode)}>
+            {START_MODES.map((m) => (
+              <option key={m} value={m}>
+                {t(`ariaLimsSync.startModes.${m}`)}
+              </option>
+            ))}
+          </Select>
+          {startMode === "fixed" ? (
+            <div className="mt-2">
+              <Label>{t("ariaLimsSync.startDate")}</Label>
+              <DateInput value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </div>
+          ) : null}
+          {startMode === "last_success" && !initial.last_success_at ? (
+            <p className="mt-1 text-xs text-amber-800">{t("ariaLimsSync.lastSuccessFallback")}</p>
+          ) : null}
+        </div>
+        <div>
+          <Label>{t("ariaLimsSync.endMode")}</Label>
+          <Select value={endMode} onChange={(e) => setEndMode(e.target.value as AriaLimsEndMode)}>
+            {END_MODES.map((m) => (
+              <option key={m} value={m}>
+                {t(`ariaLimsSync.endModes.${m}`)}
+              </option>
+            ))}
+          </Select>
+          {endMode === "fixed" ? (
+            <div className="mt-2">
+              <Label>{t("ariaLimsSync.endDate")}</Label>
+              <DateInput value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            </div>
+          ) : null}
+        </div>
+        <div className="sm:col-span-2 rounded border border-[var(--win-shadow)] bg-[var(--win-face-hi)] px-3 py-2 text-xs">
+          <div>
+            <span className="font-semibold">{t("ariaLimsSync.windowScheduled")}: </span>
+            <WindowText range={initial.scheduled_window} t={t} />
+          </div>
+          <div>
+            <span className="font-semibold">{t("ariaLimsSync.windowManual")}: </span>
+            <WindowText range={initial.manual_window} t={t} />
+          </div>
+          <div className="mt-1 text-[var(--win-text-dim)]">{t("ariaLimsSync.windowHint")}</div>
         </div>
         <div className="sm:col-span-2">
           <Label>{t("ariaLimsSync.analysisTypes")}</Label>
@@ -160,6 +228,10 @@ function SyncForm({ initial }: { initial: AriaLimsSyncSettings }) {
       </div>
 
       <div className="rounded border border-[var(--win-shadow)] bg-[var(--win-face-hi)] p-3 text-sm">
+        <div className="mt-1">
+          <span className="font-semibold">{t("ariaLimsSync.lastSuccess")}: </span>
+          {initial.last_success_at ? formatDateTime(initial.last_success_at) : t("ariaLimsSync.lastRunNever")}
+        </div>
         <div className="mt-1">
           <span className="font-semibold">{t("ariaLimsSync.lastRun")}: </span>
           {initial.last_run_at ? formatDateTime(initial.last_run_at) : t("ariaLimsSync.lastRunNever")}

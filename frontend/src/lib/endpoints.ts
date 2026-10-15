@@ -1367,6 +1367,10 @@ export const ariaLimsSyncApi = {
       api_token: string;
       daily_time: string;
       lookback_days: number;
+      start_mode: T.AriaLimsStartMode;
+      start_date: string | null;
+      end_mode: T.AriaLimsEndMode;
+      end_date: string | null;
       analysis_types: string | null;
     }>
   ): Promise<T.AriaLimsSyncSettings> => (await apiClient.put("/arialims-sync/settings", payload)).data,

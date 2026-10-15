@@ -274,6 +274,23 @@ def _ensure_arialims_sync_table() -> None:
         return
     models.AriaLimsSyncSettings.__table__.create(bind=engine, checkfirst=True)
     models.AriaLimsSamplingPoint.__table__.create(bind=engine, checkfirst=True)
+    present = {col["name"] for col in inspect(engine).get_columns("arialims_sync_settings")}
+    additions = {
+        "start_mode": "VARCHAR(20) DEFAULT 'lookback'",
+        "start_date": "DATE",
+        "end_mode": "VARCHAR(20) DEFAULT 'auto'",
+        "end_date": "DATE",
+        "last_success_at": "TIMESTAMP" if engine.dialect.name == "postgresql" else "DATETIME",
+    }
+    for name, sql_type in additions.items():
+        if name in present:
+            continue
+        with engine.begin() as conn:
+            conn.execute(text(f"ALTER TABLE arialims_sync_settings ADD COLUMN {name} {sql_type}"))
+            if name == "last_success_at":
+                conn.execute(
+                    text("UPDATE arialims_sync_settings SET last_success_at = last_run_at WHERE last_run_status = 'success'")
+                )
 
 
 _ensure_arialims_sync_table()

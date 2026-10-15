@@ -1,4 +1,6 @@
 """AriaLIMS REST → Analysis samples (sampling points, preview, pull)."""
+from datetime import date, datetime
+
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
@@ -27,6 +29,14 @@ def _to_read(obj: models.AriaLimsSyncSettings) -> schemas.AriaLimsSyncSettingsRe
         data.next_run_at = arialims_sync_scheduler.get_next_run_at() if obj.enabled else None
     except Exception:  # noqa: BLE001
         data.next_run_at = None
+    run_day = date.today()
+    if data.next_run_at:
+        try:
+            run_day = datetime.fromisoformat(data.next_run_at).date()
+        except ValueError:
+            pass
+    data.scheduled_window = [d.isoformat() for d in arialims_sync.resolve_window(obj, include_today=False, today=run_day)]
+    data.manual_window = [d.isoformat() for d in arialims_sync.resolve_window(obj, include_today=True)]
     return data
 
 
@@ -52,6 +62,12 @@ def update_arialims_sync_settings(
         obj.api_token = str(api_token)
     if not (obj.daily_time or "").strip():
         obj.daily_time = "01:00"
+    if obj.start_mode == "fixed" and not obj.start_date:
+        raise HTTPException(status_code=400, detail="Choose the StartTime date")
+    if obj.end_mode == "fixed" and not obj.end_date:
+        raise HTTPException(status_code=400, detail="Choose the EndTime date")
+    if obj.start_mode == "fixed" and obj.end_mode == "fixed" and obj.start_date > obj.end_date:
+        raise HTTPException(status_code=400, detail="StartTime is after EndTime")
     db.commit()
     db.refresh(obj)
     try:

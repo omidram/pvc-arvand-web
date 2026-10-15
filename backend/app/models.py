@@ -148,9 +148,16 @@ class AriaLimsSyncSettings(Base):
     api_token: Mapped[str | None] = mapped_column(String(500), nullable=True)
     daily_time: Mapped[str] = mapped_column(String(5), default="01:00")
     lookback_days: Mapped[int] = mapped_column(Integer, default=7)
+    # StartTime: lookback (lookback_days before EndTime) | last_success (day of the last successful pull) | fixed
+    start_mode: Mapped[str | None] = mapped_column(String(20), default="lookback", nullable=True)
+    start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # EndTime: auto (scheduled = yesterday, Sync Now = today) | yesterday (midnight) | today | fixed
+    end_mode: Mapped[str | None] = mapped_column(String(20), default="auto", nullable=True)
+    end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     # Comma-separated analysis types to pull; empty = all supported types.
     analysis_types: Mapped[str | None] = mapped_column(String(255), nullable=True)
     last_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    last_success_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     last_run_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
     last_run_message: Mapped[str | None] = mapped_column(String(500), nullable=True)
     # JSON bookmark for incremental sync (cursor / last sample id / last timestamp).
