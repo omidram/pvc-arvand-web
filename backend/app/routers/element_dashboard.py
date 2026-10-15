@@ -104,7 +104,7 @@ class ShopAdvance(BaseModel):
 @router.post("/shop/advance")
 def advance_shop(body: ShopAdvance, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     """Cell-shop cartable: confirm the next step of one element (scan or pick its tag)."""
-    from .workflow import close_cell_requests
+    from .workflow import close_cell_requests, inspection_on_element_dismantled
 
     svc.clear_cache()
     try:
@@ -113,6 +113,8 @@ def advance_shop(body: ShopAdvance, db: Session = Depends(get_db), user: models.
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     if result["stage"] == "disassembled":
         close_cell_requests(db, result["element_nr"], "disassemble", user, body.note)
+        db.flush()
+        inspection_on_element_dismantled(db, result["element_nr"], user)
     db.commit()
     svc.clear_cache()
     return result

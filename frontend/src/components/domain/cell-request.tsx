@@ -15,8 +15,9 @@ import { useI18n } from "@/lib/i18n/context";
 import { todayIsoLocal } from "@/lib/date-range";
 import type { PipelineItem } from "@/lib/types";
 import { cn, formatDate, formatDateTime } from "@/lib/utils";
-import { CELL_STEPS, workflowApi, workflowHref, type CellRequest, type CellRequestDetail, type WfGroup } from "@/lib/workflow";
+import { CARTABLE_MS, CELL_STEPS, workflowApi, workflowHref, type CellRequest, type CellRequestDetail, type WfGroup } from "@/lib/workflow";
 import { StageBadge } from "./element-dashboard-ui";
+import { DeadlineBadge } from "./warehouse-workflow";
 
 type ApiErr = Error & { response?: { data?: { detail?: string } } };
 type T = (k: string, vars?: Record<string, string | number | null | undefined>) => string;
@@ -199,7 +200,7 @@ export function CellRequestsTab({ initialId }: { initialId?: number }) {
   const [openOnly, setOpenOnly] = useState(true);
   const [mine, setMine] = useState(false);
   const [opened, setOpened] = useState<number | null>(initialId ?? null);
-  const list = useQuery({ queryKey: ["wf", "cell", "list", openOnly], queryFn: () => workflowApi.cellList({ open_only: openOnly }), refetchInterval: 20_000 });
+  const list = useQuery({ queryKey: ["wf", "cell", "list", openOnly], queryFn: () => workflowApi.cellList({ open_only: openOnly }), refetchInterval: CARTABLE_MS });
   const groups = meta.data?.groups ?? [];
   const rows = (list.data ?? []).filter((r) => !mine || r.groups.some((g) => groups.includes(g)));
 
@@ -209,6 +210,7 @@ export function CellRequestsTab({ initialId }: { initialId?: number }) {
     { key: "cell", header: t("cellReq.col.cell"), render: (r) => (r.electrolyzer ? `${r.electrolyzer}-${r.position ?? ""}` : "—"), filterText: (r) => `${r.electrolyzer ?? ""}-${r.position ?? ""}` },
     { key: "reason", header: t("cellReq.col.reason"), render: (r) => r.reason },
     { key: "status", header: t("cellReq.col.status"), render: (r) => <StatusBadge r={r} t={t} />, filterText: (r) => t(`wf.status.${r.status}`) },
+    { key: "sla_state", header: t("wf.col.deadline"), render: (r) => <DeadlineBadge row={r} t={t} /> },
     {
       key: "groups",
       header: t("cellReq.col.waiting"),

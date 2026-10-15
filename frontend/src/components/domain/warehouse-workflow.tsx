@@ -2,7 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Ban, Check, Download, FileSpreadsheet, Inbox, Paperclip, Plus, RotateCcw, Search, Send, Upload, X } from "lucide-react";
+import { Ban, Check, ClipboardCheck, Clock, Download, FileSpreadsheet, FileText, Inbox, Paperclip, Plus, RotateCcw, Search, Send, Upload, X } from "lucide-react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { DateInput } from "@/components/ui/date-input";
@@ -13,13 +14,18 @@ import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { defaultDateRange } from "@/lib/date-range";
 import {
+  CARTABLE_MS,
+  CELL_STEPS,
   COATING_STEPS,
   DELAY_PARTIES,
+  INSPECTION_STEPS,
   LIVE_MS,
   PURCHASE_STEPS,
+  inspectionFormHref,
   parseSerialLines,
   refreshWarehouseData,
   workflowApi,
+  type WfDeadline,
   type WfCompanyStats,
   type WfDetail,
   type WfFlow,
@@ -61,6 +67,28 @@ function DelayBadge({ days, t }: { days: number | null | undefined; t: T }) {
   return <Badge color="emerald">{t("wf.onTime")}</Badge>;
 }
 
+function spanText(minutes: number, t: T): string {
+  const m = Math.abs(minutes);
+  if (m >= 48 * 60) return t("wf.sla.days", { n: Math.floor(m / 1440) });
+  if (m >= 60) return t("wf.sla.hours", { n: Math.floor(m / 60) });
+  return t("wf.sla.minutes", { n: m });
+}
+
+/** Green while on time, amber when the warning share of the window is left, red once the deadline passed. */
+export function DeadlineBadge({ row, t }: { row: WfDeadline; t: T }) {
+  if (!row.sla_state || row.sla_left_minutes == null) return <>—</>;
+  const late = row.sla_state === "late";
+  const color = late ? "rose" : row.sla_state === "warn" ? "amber" : "emerald";
+  const text = late ? t("wf.sla.late", { d: spanText(row.sla_left_minutes, t) }) : t("wf.sla.left", { d: spanText(row.sla_left_minutes, t) });
+  return (
+    <span title={row.due_at ? t("wf.sla.dueAt", { d: formatDateTime(row.due_at), h: row.sla_hours ?? "" }) : undefined}>
+      <Badge color={color}>
+        <Clock size={11} /> {text}
+      </Badge>
+    </span>
+  );
+}
+
 function StatusBadge({ row, t }: { row: Pick<WfSummary, "status" | "rejected">; t: T }) {
   return (
     <span className="wf-status-cell">
@@ -70,8 +98,9 @@ function StatusBadge({ row, t }: { row: Pick<WfSummary, "status" | "rejected">; 
   );
 }
 
-function Stepper({ flow, status, t }: { flow: WfFlow; status: string; t: T }) {
-  const steps: readonly string[] = flow === "coating" ? COATING_STEPS : PURCHASE_STEPS;
+export function Stepper({ flow, status, t }: { flow: WfFlow; status: string; t: T }) {
+  const steps: readonly string[] =
+    flow === "coating" ? COATING_STEPS : flow === "cell" ? CELL_STEPS : flow === "inspection" ? INSPECTION_STEPS : PURCHASE_STEPS;
   const at = steps.indexOf(status);
   return (
     <ol className="wf-stepper">
@@ -92,6 +121,12 @@ function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
     { key: "title", header: t("wf.col.code"), render: (r) => <strong className="wf-code">{r.title}</strong> },
     { key: "status", header: t("wf.col.status"), render: (r) => <StatusBadge row={r} t={t} />, filterText: (r) => t(`wf.status.${r.status}`) },
     {
+      key: "sla_state",
+      header: t("wf.col.deadline"),
+      render: (r) => <DeadlineBadge row={r} t={t} />,
+      filterText: (r) => (r.sla_state ? t(`wf.sla.state.${r.sla_state}`) : ""),
+    },
+    {
       key: "groups",
       header: t("wf.col.waitingFor"),
       render: (r) => (r.groups.length ? r.groups.map((g) => t(`wf.group.${g}`)).join(" / ") : "—"),
@@ -100,7 +135,12 @@ function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
     {
       key: "pieces",
       header: t("wf.col.pieces"),
-      render: (r) => (r.flow === "cell" ? r.reason || "—" : t("wf.piecesShort", { a: r.anode_count, k: r.cathode_count })),
+      render: (r) =>
+        r.flow === "cell"
+          ? r.reason || "—"
+          : r.flow === "inspection"
+            ? [r.element_nr && t("wf.insp.elementShort", { n: r.element_nr }), r.anode_nr, r.cathode_nr].filter(Boolean).join(" · ") || "—"
+            : t("wf.piecesShort", { a: r.anode_count, k: r.cathode_count }),
     },
     { key: "company_name", header: t("wf.col.company"), render: (r) => r.company_name || "—" },
     { key: "indent_no", header: t("wf.col.indent"), render: (r) => r.indent_no || "—" },
@@ -117,7 +157,8 @@ function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
 export function WorkflowCartablePanel({ onOpen }: { onOpen: (flow: WfFlow, id: number) => void }) {
   const { t } = useI18n();
   const meta = useWorkflowMeta();
-  const cartable = useQuery({ queryKey: ["wf", "cartable"], queryFn: workflowApi.cartable, refetchInterval: LIVE_MS });
+  const cartable = useQuery({ queryKey: ["wf", "cartable"], queryFn: workflowApi.cartable, refetchInterval: CARTABLE_MS });
+  const late = (cartable.data ?? []).filter((r) => r.sla_state === "late").length;
   const groups = meta.data?.groups ?? [];
   return (
     <div className="wh-panel-block">
@@ -130,6 +171,7 @@ export function WorkflowCartablePanel({ onOpen }: { onOpen: (flow: WfFlow, id: n
         </span>
       </div>
       <p className="wh-subdesc">{t("wf.cartableHint")}</p>
+      {late ? <div className="wf-alert">{t("wf.sla.lateCount", { n: late })}</div> : null}
       {cartable.isError ? <ErrorState message={(cartable.error as Error).message} /> : null}
       <DataTable
         columns={summaryColumns(t, true)}
@@ -430,6 +472,30 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
+function InspectionCell({ item, t }: { item: NonNullable<WfDetail["packages"]>[number]["items"][number]; t: T }) {
+  const form = item.inspection;
+  if (form) {
+    return (
+      <span className="wf-insp-cell">
+        <Link className="wf-link" href={`/inspections?id=${form.id}`} target="_blank">
+          <ClipboardCheck size={13} /> {formatDate(form.date) || `#${form.id}`}
+        </Link>
+        <button type="button" className="wf-link" title="PDF" onClick={() => void workflowApi.downloadInspectionPdf(form)}>
+          <FileText size={13} />
+        </button>
+      </span>
+    );
+  }
+  if (item.inspection_request) {
+    return <Badge color="amber">{t("wf.insp.asked", { code: item.inspection_request.code })}</Badge>;
+  }
+  return (
+    <Link className="wf-link is-bad" href={inspectionFormHref(item.element_kind === "anode" ? { anode_nr: item.serial } : { cathode_nr: item.serial })} target="_blank">
+      {t("wf.insp.missing")}
+    </Link>
+  );
+}
+
 function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; t: T }) {
   const coating = d.flow === "coating";
   const reports = d.files.filter((f) => f.kind === "report");
@@ -442,6 +508,18 @@ function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; 
         <Fact label={t("wf.col.status")}>
           <StatusBadge row={d} t={t} />
         </Fact>
+        {d.sla_state ? (
+          <Fact label={t("wf.col.deadline")}>
+            <DeadlineBadge row={d} t={t} />
+          </Fact>
+        ) : null}
+        {coating && d.inspections_total ? (
+          <Fact label={t("wf.insp.formsTitle")}>
+            <Badge color={d.inspections_done === d.inspections_total ? "emerald" : "rose"}>
+              <ClipboardCheck size={11} /> {t("wf.insp.formsCount", { done: d.inspections_done ?? 0, total: d.inspections_total })}
+            </Badge>
+          </Fact>
+        ) : null}
         <Fact label={t("wf.col.pieces")}>{t("wf.piecesShort", { a: d.anode_count, k: d.cathode_count })}</Fact>
         <Fact label={t("wf.col.company")}>{d.company_name || "—"}</Fact>
         <Fact label={t("wf.col.indent")}>{d.indent_no || "—"}</Fact>
@@ -498,11 +576,12 @@ function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; 
                     <th>{t("wf.col.preInspection")}</th>
                     <th>{t("wf.col.finalReport")}</th>
                     <th>{t("wf.col.remark")}</th>
+                    <th>{t("wf.insp.formCol")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {p.items.map((i) => (
-                    <tr key={i.id}>
+                    <tr key={i.id} className={i.inspection ? undefined : "wf-row-missing"}>
                       <td>{i.line_no}</td>
                       <td>{t(`wf.kind.${i.element_kind}`)}</td>
                       <td className="wf-code">{i.serial}</td>
@@ -510,6 +589,9 @@ function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; 
                       <td>{i.pre_inspection || ""}</td>
                       <td>{i.final_report || ""}</td>
                       <td>{i.remark || ""}</td>
+                      <td>
+                        <InspectionCell item={i} t={t} />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -630,14 +712,23 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
     },
   });
 
-  const main = acts.filter((a) => a !== "attach" && a !== "cancel");
+  const askForms = useMutation({
+    mutationFn: () => workflowApi.coatingRequestInspections(d.id, note || undefined),
+    onSuccess: (res) => {
+      setInfo(t("wf.insp.askedCount", { n: res.created }));
+      done(res.detail);
+    },
+  });
+
+  const main = acts.filter((a) => a !== "attach" && a !== "cancel" && a !== "request_inspections");
+  const formsMissing = (d.inspections_total ?? 0) - (d.inspections_done ?? 0);
   if (!acts.length) {
     if (d.status === "completed" || d.status === "cancelled") return null;
     return <div className="wf-wait">{t("wf.waitingFor", { group: d.groups.map((g: WfGroup) => t(`wf.group.${g}`)).join(" / ") })}</div>;
   }
   const delay = daysBetween(d.expected_date, date1);
   const late = delay != null && delay > 0;
-  const error = (run.error || upload.error || attach.error) as Error | null;
+  const error = (run.error || upload.error || attach.error || askForms.error) as Error | null;
   const go = (action: string, body: Record<string, unknown> = {}) => run.mutate({ action, body: { note: note || undefined, ...body } });
   const coatingCos = companies.filter((c) => c.is_coating);
 
@@ -649,6 +740,16 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
   return (
     <section className="wf-actions">
       <h4>{t("wf.yourStep")}</h4>
+      {formsMissing > 0 && (acts.includes("request_inspections") || main.includes("dispatch")) ? (
+        <div className="wf-alert wf-insp-alert">
+          <span>{t("wf.insp.missingAlert", { n: formsMissing, total: d.inspections_total ?? 0 })}</span>
+          {acts.includes("request_inspections") ? (
+            <button type="button" className="wf-btn" disabled={askForms.isPending} onClick={() => askForms.mutate()}>
+              <ClipboardCheck size={14} /> {t("wf.insp.askMissing")}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       {main.includes("company") ? (
         <div className="wh-form-inline wf-inline-plain">
           <label>
@@ -692,7 +793,13 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
             <DateInput type="date" value={date2} onChange={(e) => setDate2(e.target.value)} />
           </label>
           {main.includes("dispatch") ? (
-            <button type="button" className="wf-btn is-primary" disabled={!date2 || run.isPending} onClick={() => go("dispatch", { dispatch_date: date1, expected_return_date: date2 })}>
+            <button
+              type="button"
+              className="wf-btn is-primary"
+              disabled={!date2 || run.isPending || formsMissing > 0}
+              title={formsMissing > 0 ? t("wf.insp.missingAlert", { n: formsMissing, total: d.inspections_total ?? 0 }) : undefined}
+              onClick={() => go("dispatch", { dispatch_date: date1, expected_return_date: date2 })}
+            >
               <Send size={14} /> {t("wf.action.dispatch")}
             </button>
           ) : null}

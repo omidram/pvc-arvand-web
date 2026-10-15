@@ -27,13 +27,13 @@ $ws = New-Object -ComObject WScript.Shell
 $start = $ws.CreateShortcut((Join-Path $programs "PVC Arvand.lnk"))
 $start.TargetPath = $exe
 $start.WorkingDirectory = $Dest
-$start.Description = "PVC Arvand Electrolyzer Management Program"
+$start.Description = "PVC Arvand Electrolyzer Management Software"
 $start.Save()
 
 $desk = $ws.CreateShortcut((Join-Path $desktop "PVC Arvand.lnk"))
 $desk.TargetPath = $exe
 $desk.WorkingDirectory = $Dest
-$desk.Description = "PVC Arvand Electrolyzer Management Program"
+$desk.Description = "PVC Arvand Electrolyzer Management Software"
 $desk.Save()
 
 Write-Host "Installed. Shortcuts created on the Desktop and in the Start Menu."

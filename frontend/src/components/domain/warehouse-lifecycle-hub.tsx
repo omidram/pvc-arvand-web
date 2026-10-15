@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { useState } from "react";
 import { ExternalLink, History, Search } from "lucide-react";
+import { InspectionRequestModal, InspectionRequestsPanel } from "@/components/domain/inspection-request";
 import { WarehouseInventoryPanel } from "@/components/domain/warehouse-inventory-panel";
 import {
   CoatingWorkflowPanel,
@@ -26,7 +27,7 @@ import {
 } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
-import { LIVE_MS, refreshWarehouseData, workflowApi, workflowHref, type WfFlow } from "@/lib/workflow";
+import { CARTABLE_MS, LIVE_MS, refreshWarehouseData, workflowApi, workflowHref, type WfFlow } from "@/lib/workflow";
 
 export type WhSection =
   | "dashboard"
@@ -35,13 +36,27 @@ export type WhSection =
   | "elements"
   | "companies"
   | "coating"
+  | "inspection"
   | "purchase"
   | "history"
   | "decommission"
   | "timeline"
   | "search";
 
-const SECTIONS: WhSection[] = ["dashboard", "cartable", "inventory", "elements", "companies", "coating", "purchase", "history", "decommission", "timeline", "search"];
+const SECTIONS: WhSection[] = [
+  "dashboard",
+  "cartable",
+  "inventory",
+  "elements",
+  "companies",
+  "coating",
+  "inspection",
+  "purchase",
+  "history",
+  "decommission",
+  "timeline",
+  "search",
+];
 
 const DECOMM_REASONS = ["failure", "end_of_life", "mechanical", "no_recoat", "out_of_spec", "other"] as const;
 
@@ -60,11 +75,13 @@ function SectionNav({
   section,
   setSection,
   waiting,
+  late,
   t,
 }: {
   section: WhSection;
   setSection: (s: WhSection) => void;
   waiting: number;
+  late: number;
   t: (k: string) => string;
 }) {
   return (
@@ -72,7 +89,7 @@ function SectionNav({
       {SECTIONS.map((id) => (
         <button key={id} type="button" className={`wh-section-btn${section === id ? " is-active" : ""}`} onClick={() => setSection(id)}>
           {t(`wh.nav.${id}`)}
-          {id === "cartable" && waiting > 0 ? <span className="wf-nav-count">{waiting}</span> : null}
+          {id === "cartable" && waiting > 0 ? <span className={`wf-nav-count${late > 0 ? " is-late" : ""}`}>{waiting}</span> : null}
         </button>
       ))}
     </nav>
@@ -80,7 +97,7 @@ function SectionNav({
 }
 
 function parseTarget(raw: string | null): { flow: WfFlow; id: number } | null {
-  const m = raw?.match(/^(coating|purchase):(\d+)$/);
+  const m = raw?.match(/^(coating|purchase|inspection):(\d+)$/);
   return m ? { flow: m[1] as WfFlow, id: Number(m[2]) } : null;
 }
 
@@ -100,14 +117,14 @@ export function WarehouseLifecycleHub() {
   const [closedUrlTarget, setClosedUrlTarget] = useState<string | null>(null);
   const defaultSection: WhSection = (meta.data?.groups.length ?? 0) > 0 ? "cartable" : "dashboard";
   const section: WhSection =
-    picked ?? (urlSection && SECTIONS.includes(urlSection) ? urlSection : urlTarget ? (urlTarget.flow === "coating" ? "coating" : "purchase") : defaultSection);
+    picked ?? (urlSection && SECTIONS.includes(urlSection) ? urlSection : urlTarget ? (urlTarget.flow === "inspection" ? "inspection" : urlTarget.flow === "coating" ? "coating" : "purchase") : defaultSection);
   const target = opened ?? (urlTarget && params.get("wf") !== closedUrlTarget ? urlTarget : null);
   const [timelineFor, setTimelineFor] = useState<TimelineTarget | null>(null);
   const dash = useQuery({ queryKey: ["wh", "dashboard"], queryFn: () => warehouseLifecycleApi.dashboard(), refetchInterval: LIVE_MS });
   const companies = useQuery({ queryKey: ["wh", "companies"], queryFn: () => warehouseLifecycleApi.companies() });
   const decommissions = useQuery({ queryKey: ["wh", "decommissions"], queryFn: () => warehouseLifecycleApi.decommissions(), refetchInterval: LIVE_MS });
   const states = useQuery({ queryKey: ["wh", "states"], queryFn: () => warehouseLifecycleApi.elementStates(), refetchInterval: LIVE_MS });
-  const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: 15_000 });
+  const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: CARTABLE_MS });
 
   const invalidate = () => refreshWarehouseData(qc);
   const openRecord = (flow: WfFlow, id: number) => (flow === "cell" ? router.push(workflowHref(flow, id)) : setOpened({ flow, id }));
@@ -133,13 +150,14 @@ export function WarehouseLifecycleHub() {
           <p>{t("wh.subtitle")}</p>
         </div>
       </header>
-      <SectionNav section={section} setSection={setPicked} waiting={summary.data?.cartable ?? 0} t={t} />
+      <SectionNav section={section} setSection={setPicked} waiting={summary.data?.cartable ?? 0} late={summary.data?.late ?? 0} t={t} />
       {section === "dashboard" ? <DashboardPanel dash={dash} t={t} /> : null}
       {section === "cartable" ? <WorkflowCartablePanel onOpen={openRecord} /> : null}
       {section === "inventory" ? <WarehouseInventoryPanel onOpenRecord={openRecord} onTimeline={openTimeline} /> : null}
       {section === "elements" ? <ElementsPanel states={states} t={t} setSection={setPicked} onTimeline={openTimeline} /> : null}
       {section === "companies" ? <CompaniesPanel companies={companies} editable={editable} t={t} onSaved={invalidate} /> : null}
       {section === "coating" ? <CoatingWorkflowPanel onOpen={openRecord} /> : null}
+      {section === "inspection" ? <InspectionRequestsPanel onOpen={(id) => openRecord("inspection", id)} /> : null}
       {section === "purchase" ? <PurchaseWorkflowPanel companies={companyList} onOpen={openRecord} /> : null}
       {section === "history" ? <WorkflowHistoryPanel companies={companyList} onOpen={openRecord} /> : null}
       {section === "decommission" ? (
@@ -147,7 +165,8 @@ export function WarehouseLifecycleHub() {
       ) : null}
       {section === "timeline" ? <TimelinePanel key={timelineFor ? `${timelineFor.kind}:${timelineFor.serial}` : ""} t={t} initial={timelineFor} /> : null}
       {section === "search" ? <SearchPanel t={t} companies={companyList} /> : null}
-      <WorkflowDetailModal target={target} companies={companyList} onClose={closeRecord} />
+      <WorkflowDetailModal target={target?.flow === "inspection" ? null : target} companies={companyList} onClose={closeRecord} />
+      <InspectionRequestModal id={target?.flow === "inspection" ? target.id : null} onClose={closeRecord} />
     </div>
   );
 }

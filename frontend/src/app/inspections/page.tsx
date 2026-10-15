@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { inspectionGridsApi, inspectionsApi } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
@@ -29,9 +30,22 @@ function saveError(err: unknown): string {
 }
 
 export default function InspectionsPage() {
+  return (
+    <Suspense fallback={null}>
+      <InspectionsWorkspace />
+    </Suspense>
+  );
+}
+
+const PREFILL_KEYS = ["element_nr", "anode_nr", "cathode_nr"] as const;
+
+function InspectionsWorkspace() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
   const editable = canWorkInspections(canEdit);
+  const params = useSearchParams();
+  const startNew = editable && params.get("new") === "1";
+  const prefill = Object.fromEntries(PREFILL_KEYS.map((k) => [k, params.get(k)]).filter(([, v]) => v));
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const { listQuery, removeMutation } = useCrudResource<InspectionReport>("inspections", inspectionsApi, { limit: 500 });
@@ -84,6 +98,7 @@ export default function InspectionsPage() {
 
   return (
     <AccessWorkspace<InspectionReport>
+      key={startNew ? "new" : "list"}
       caption={t("menus.elementInspection")}
       helpKey="inspections"
       backHref="/elements"
@@ -112,6 +127,9 @@ export default function InspectionsPage() {
         />
       )}
       related={(row) => <InspectionRelations row={row} />}
+      startNew={startNew}
+      newDefaults={startNew ? () => prefill : undefined}
+      newDefaultsKey={startNew ? JSON.stringify(prefill) : undefined}
     />
   );
 }

@@ -57,6 +57,7 @@ export function AccessWorkspace<T extends object>({
   titleBlue,
   newDefaults,
   newDefaultsKey,
+  startNew = false,
   validate,
   /** Default: datasheet shows every form field. Use "summary" only for a short column list. */
   sheetMode = "fields",
@@ -106,6 +107,8 @@ export function AccessWorkspace<T extends object>({
   titleBlue?: boolean;
   newDefaults?: () => Record<string, unknown>;
   newDefaultsKey?: string;
+  /** Open on a new record (form view) filled from newDefaults. */
+  startNew?: boolean;
   validate?: (values: Record<string, unknown>, ctx: { isNew: boolean }) => string | null;
   sheetMode?: "fields" | "summary";
 }) {
@@ -128,11 +131,11 @@ export function AccessWorkspace<T extends object>({
   const defaultView = useDefaultView();
   // A link that points at one record (…?nr=12) opens that record's form.
   const [viewChoice, setView] = useState<RecordView | null>(() =>
-    typeof window !== "undefined" && new URLSearchParams(window.location.search).has(paramName) ? "form" : null
+    startNew || (typeof window !== "undefined" && new URLSearchParams(window.location.search).has(paramName)) ? "form" : null
   );
   const view = viewChoice ?? defaultView;
   const [index, setIndex] = useState(0);
-  const [isNew, setIsNew] = useState(false);
+  const [isNew, setIsNew] = useState(startNew);
   const [findValue, setFindValue] = useState("");
   const [saveError, setSaveError] = useState("");
   const [values, setValues] = useState<Record<string, unknown>>(() => valuesFromRecord(fields, null));

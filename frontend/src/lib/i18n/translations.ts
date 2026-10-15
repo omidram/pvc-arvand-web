@@ -6,7 +6,7 @@ import { deepMerge, extraEn, extraFa, type Tree } from "./translations-extra";
 
 const en = {
   app: {
-    name: "Arvand Electrolyzer Management Program",
+    name: "Arvand Electrolyzer Management Software",
     subtitle: "Arvand Petrochemical Company",
     footer: "Data migrated from Uhde Administrator",
   },
@@ -160,7 +160,7 @@ const en = {
     databaseTables: "All tables",
   },
   mainMenu: {
-    programTitle: "Arvand Electrolyzer Management Program",
+    programTitle: "Arvand Electrolyzer Management Software",
     client: "Client",
     typeOfPlant: "Type of Plant",
     uan: "UAN",
@@ -2813,7 +2813,7 @@ type DeepPartialStrings<T> = { [K in keyof T]: T[K] extends string ? string : De
 
 const fa: DeepPartialStrings<typeof en> = {
   app: {
-    name: "Arvand Electrolyzer Management Program",
+    name: "Arvand Electrolyzer Management Software",
     subtitle: "شرکت پتروشیمی اروند",
     footer: "داده‌ها از نرم‌افزار Uhde Administrator منتقل شده‌اند",
   },
@@ -2967,7 +2967,7 @@ const fa: DeepPartialStrings<typeof en> = {
     databaseTables: "همه جدول‌ها",
   },
   mainMenu: {
-    programTitle: "Arvand Electrolyzer Management Program",
+    programTitle: "Arvand Electrolyzer Management Software",
     client: "کارفرما",
     typeOfPlant: "نوع واحد",
     uan: "UAN",

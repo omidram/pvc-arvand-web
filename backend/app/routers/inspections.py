@@ -8,6 +8,22 @@ from ..relations_sync import multi_hook
 from ..export_utils import ExportFilters, build_export_meta, export_xlsx, rows_to_dicts
 from ..inspection_pdf import inspection_pdf_response
 
+_serial_links = multi_hook(
+    ("anode", "anode_nr"),
+    ("cathode", "cathode_nr"),
+    ("membrane", "membrane_nr"),
+    ("anode", "electrode_nr_anode"),
+    ("cathode", "electrode_nr_cathode"),
+)
+
+
+def _after_save(db: Session, obj: models.InspectionReport) -> None:
+    from .workflow import inspection_report_saved
+
+    _serial_links(db, obj)
+    inspection_report_saved(db, obj)
+
+
 router = build_crud_router(
     model=models.InspectionReport,
     read_schema=schemas.InspectionReportRead,
@@ -16,13 +32,7 @@ router = build_crud_router(
     tags=["inspections"],
     search_fields=["element_nr", "inspector_name", "anode_nr", "cathode_nr", "membrane_nr", "client", "electrolyzer"],
     default_order="inspection_date",
-    after_save=multi_hook(
-        ("anode", "anode_nr"),
-        ("cathode", "cathode_nr"),
-        ("membrane", "membrane_nr"),
-        ("anode", "electrode_nr_anode"),
-        ("cathode", "electrode_nr_cathode"),
-    ),
+    after_save=_after_save,
 )
 
 grids_router = APIRouter(prefix="/inspections/{inspection_id}/grids", tags=["inspections"])

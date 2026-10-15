@@ -2,13 +2,21 @@ import type { QueryClient } from "@tanstack/react-query";
 import { apiClient } from "./api-client";
 import type { PipelineItem } from "./types";
 
-export type WfFlow = "coating" | "purchase" | "cell";
+export type WfFlow = "coating" | "purchase" | "cell" | "inspection";
 export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "operation" | "cellshop";
 export type WfKind = "anode" | "cathode";
 
 export const COATING_STEPS = ["await_company", "await_indent", "await_dispatch", "at_coater", "await_report", "await_inspection", "await_approval", "completed"] as const;
 export const PURCHASE_STEPS = ["await_indent", "await_order", "ordered", "await_registration", "completed"] as const;
 export const CELL_STEPS = ["await_shutdown", "await_shop", "in_shop", "completed"] as const;
+export const INSPECTION_STEPS = ["await_request", "await_inspection", "completed"] as const;
+/** Stages that carry a deadline, per flow (the order of the settings table). */
+export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
+  coating: COATING_STEPS.filter((s) => s !== "completed"),
+  purchase: PURCHASE_STEPS.filter((s) => s !== "completed"),
+  cell: CELL_STEPS.filter((s) => s !== "completed"),
+  inspection: INSPECTION_STEPS.filter((s) => s !== "completed"),
+};
 
 /** Where a notice opens: cell requests live in the element dashboard, the others in the warehouse. */
 export function workflowHref(flow: string, id: number) {
@@ -17,6 +25,24 @@ export function workflowHref(flow: string, id: number) {
 export const DELAY_PARTIES = ["employer", "company", "transport", "other"] as const;
 /** Any of these opens the warehouse page (workflow groups included). */
 export const LIVE_MS = 20_000;
+/** The cartable and its notifications refresh faster so every role sees new work at once. */
+export const CARTABLE_MS = 10_000;
+
+export type SlaState = "ok" | "warn" | "late";
+
+export interface WfDeadline {
+  stage_since?: string | null;
+  due_at?: string | null;
+  sla_hours?: number | null;
+  sla_state?: SlaState | null;
+  sla_left_minutes?: number | null;
+}
+
+export interface WfSlaConfig {
+  hours: Record<string, Record<string, number>>;
+  warn_percent: number;
+  defaults?: Record<string, Record<string, number>>;
+}
 
 /** Warehouse board, lifecycle, workflows and the element dashboard read the same pieces. */
 export function refreshWarehouseData(qc: QueryClient) {
@@ -25,7 +51,7 @@ export function refreshWarehouseData(qc: QueryClient) {
 
 export const WAREHOUSE_VIEW_KEYS = ["storage", "anodes", "cathodes", "membranes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection"];
 
-export interface WfSummary {
+export interface WfSummary extends WfDeadline {
   flow: WfFlow;
   id: number;
   title: string;
@@ -47,6 +73,9 @@ export interface WfSummary {
   rework_count?: number;
   registered?: number;
   reason?: string;
+  element_nr?: string | null;
+  anode_nr?: string | null;
+  cathode_nr?: string | null;
   created_by: string | null;
   created_at: string | null;
   updated_at: string | null;
@@ -83,6 +112,15 @@ export interface WfCoatingItem {
   pre_inspection: string | null;
   final_report: string | null;
   remark: string | null;
+  inspection?: InspectionBrief | null;
+  inspection_request?: { id: number; code: string; status: string } | null;
+}
+
+export interface InspectionBrief {
+  id: number;
+  element_nr: string | null;
+  date: string | null;
+  inspector: string | null;
 }
 
 export interface WfDetail extends WfSummary {
@@ -90,6 +128,8 @@ export interface WfDetail extends WfSummary {
   delay_reason: string | null;
   remarks: string | null;
   completed_at: string | null;
+  inspections_done?: number;
+  inspections_total?: number;
   pallet_size?: number;
   packages?: { id: number; code: string; pallet_no: number; has_report: boolean; items: WfCoatingItem[] }[];
   items?: { id: number; element_kind: WfKind; serial: string; coating: string | null; manufacturer: string | null }[];
@@ -155,14 +195,58 @@ export interface WfMeta {
   can_view: boolean;
   can_view_cell: boolean;
   can_request_cell: boolean;
+  can_view_inspection?: boolean;
+  can_request_inspection?: boolean;
   groups: WfGroup[];
   view_groups: WfGroup[];
   delay_parties: string[];
+  sla?: WfSlaConfig;
+}
+
+export interface InspectionRequest extends WfDeadline {
+  flow: "inspection";
+  id: number;
+  title: string;
+  code: string;
+  status: string;
+  groups: WfGroup[];
+  element_nr: string | null;
+  element_id: number | null;
+  electrolyzer: string | null;
+  position: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  disassembly_date: string | null;
+  reason: string | null;
+  report_id: number | null;
+  created_by: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  last_note: string | null;
+}
+
+export interface InspectionRequestDetail extends InspectionRequest {
+  completed_at: string | null;
+  report: InspectionBrief | null;
+  candidates: InspectionBrief[];
+  files: WfFile[];
+  events: WfEvent[];
+  actions: string[];
+}
+
+/** Opens a new Element Inspection form already filled with the element of a request. */
+export function inspectionFormHref(r: { element_nr?: string | null; anode_nr?: string | null; cathode_nr?: string | null }) {
+  const q = new URLSearchParams({ new: "1" });
+  if (r.element_nr) q.set("element_nr", r.element_nr);
+  if (r.anode_nr) q.set("anode_nr", r.anode_nr);
+  if (r.cathode_nr) q.set("cathode_nr", r.cathode_nr);
+  return `/inspections?${q.toString()}`;
 }
 
 export type CellDecision = "keep" | "disassemble" | "relocated";
 
-export interface CellRequest {
+export interface CellRequest extends WfDeadline {
   flow: "cell";
   id: number;
   title: string;
@@ -217,7 +301,7 @@ async function saveBlob(url: string, filename: string, params?: Record<string, u
 
 export const workflowApi = {
   meta: async (): Promise<WfMeta> => (await apiClient.get("/workflow/meta")).data,
-  summary: async (): Promise<{ cartable: number; unread: number; items: WfNotice[] }> => (await apiClient.get("/workflow/summary")).data,
+  summary: async (): Promise<{ cartable: number; unread: number; late?: number; items: WfNotice[] }> => (await apiClient.get("/workflow/summary")).data,
   notifications: async (limit = 20): Promise<WfNotice[]> => (await apiClient.get("/workflow/notifications", { params: { limit } })).data,
   markRead: async (body: { ids?: number[]; flow?: WfFlow; record_id?: number; all?: boolean }) =>
     (await apiClient.post("/workflow/notifications/read", body)).data,
@@ -242,6 +326,7 @@ export const workflowApi = {
   attach: async (flow: WfFlow, id: number, files: File[], note?: string) =>
     (await apiClient.post(`/workflow/${flow}/${id}/files`, filesForm(files, { note }), multipart)).data,
   downloadFile: (file: WfFile) => saveBlob(`/workflow/files/${file.id}`, file.name),
+  downloadInspectionPdf: (report: InspectionBrief) => saveBlob(`/inspections/${report.id}/sheet.pdf`, `inspection-${report.element_nr || report.id}.pdf`),
   downloadExcel: (id: number, name: string, packageId?: number) =>
     saveBlob(`/workflow/coating/${id}/excel`, `${name}.xlsx`, packageId ? { package_id: packageId } : undefined),
   history: async (params: Record<string, string>): Promise<{ rows: WfHistoryRow[]; totals: Record<string, number> }> =>
@@ -261,6 +346,18 @@ export const workflowApi = {
   }): Promise<CellRequestDetail> => (await apiClient.post("/workflow/cell", body)).data,
   cellStep: async (id: number, action: string, body: Record<string, unknown>): Promise<CellRequestDetail> =>
     (await apiClient.post(`/workflow/cell/${id}/${action}`, body)).data,
+  inspectionList: async (params: { open_only?: boolean; serial?: string; status?: string } = {}): Promise<InspectionRequest[]> =>
+    (await apiClient.get("/workflow/inspection", { params })).data,
+  inspectionGet: async (id: number): Promise<InspectionRequestDetail> => (await apiClient.get(`/workflow/inspection/${id}`)).data,
+  inspectionCreate: async (body: { element_nr?: string; anode_nr?: string; cathode_nr?: string; reason?: string; note?: string }): Promise<InspectionRequestDetail> =>
+    (await apiClient.post("/workflow/inspection", body)).data,
+  inspectionStep: async (id: number, action: string, body: Record<string, unknown>): Promise<InspectionRequestDetail> =>
+    (await apiClient.post(`/workflow/inspection/${id}/${action}`, body)).data,
+  coatingRequestInspections: async (id: number, note?: string): Promise<{ created: number; detail: WfDetail }> =>
+    (await apiClient.post(`/workflow/coating/${id}/request_inspections`, { note })).data,
+  settings: async (): Promise<WfSlaConfig> => (await apiClient.get("/workflow/settings")).data,
+  saveSettings: async (body: { hours: WfSlaConfig["hours"]; warn_percent: number }): Promise<WfSlaConfig> =>
+    (await apiClient.put("/workflow/settings", body)).data,
 };
 
 /** "A-001 ; dent on flange" or "A-001<TAB>dent" → serial + optional problem note, one per line. */

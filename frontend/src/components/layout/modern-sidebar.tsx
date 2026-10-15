@@ -46,7 +46,7 @@ import { monitoringApi } from "@/lib/endpoints";
 import { TopbarClock } from "@/components/layout/topbar-clock";
 import { TicketBell } from "@/components/tickets/ticket-bell";
 import { WorkflowBell } from "@/components/workflow/workflow-bell";
-import { WAREHOUSE_VIEW_KEYS, workflowApi } from "@/lib/workflow";
+import { CARTABLE_MS, WAREHOUSE_VIEW_KEYS, workflowApi } from "@/lib/workflow";
 
 const NAV_GROUPS: {
   groupKey: string;
@@ -149,7 +149,7 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
     refetchInterval: 20_000,
   });
   const openAlerts = alertSummary.data?.open_total ?? 0;
-  const wfSummary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: 15_000 });
+  const wfSummary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: CARTABLE_MS });
   const wfWaiting = wfSummary.data?.cartable ?? 0;
 
   return (

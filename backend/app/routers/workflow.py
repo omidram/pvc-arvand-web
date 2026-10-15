@@ -7,7 +7,7 @@ that group and may act on its stages; admins may act everywhere.
 from __future__ import annotations
 
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from datetime import date as date_type
 from pathlib import Path
 from typing import Any
@@ -34,9 +34,11 @@ from ..workflow_models import (
     WfCoatingPackage,
     WfEvent,
     WfFile,
+    WfInspectionRequest,
     WfNotification,
     WfPurchase,
     WfPurchaseItem,
+    WfSettings,
 )
 from .tickets import BLOCKED_EXT, INLINE_TYPES, MAX_BYTES, _safe_name
 
@@ -73,7 +75,21 @@ CELL_STAGES: dict[str, list[str]] = {
     "await_shop": ["cellshop"],
     "in_shop": ["cellshop"],
 }
-STAGES = {"coating": COATING_STAGES, "purchase": PURCHASE_STAGES, "cell": CELL_STAGES}
+INSPECTION_STAGES: dict[str, list[str]] = {
+    "await_request": ["c90"],
+    "await_inspection": ["inspection"],
+}
+STAGES = {"coating": COATING_STAGES, "purchase": PURCHASE_STAGES, "cell": CELL_STAGES, "inspection": INSPECTION_STAGES}
+INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections",)
+# Allowed time per stage in hours (editable in Settings -> Workflow deadlines). A stage that has its own
+# promised date (coater return, supplier delivery) is due on that date instead.
+DEFAULT_SLA: dict[str, dict[str, int]] = {
+    "coating": {"await_company": 72, "await_indent": 72, "await_dispatch": 120, "at_coater": 720, "await_report": 72, "await_inspection": 72, "await_approval": 48},
+    "purchase": {"await_indent": 72, "await_order": 168, "ordered": 720, "await_registration": 72},
+    "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120},
+    "inspection": {"await_request": 24, "await_inspection": 72},
+}
+DEFAULT_WARN_PERCENT = 25
 CELL_DECISIONS = ("keep", "disassemble", "relocated")
 AUTO_REQUEST_DAYS = 30  # a decommission typed into Assembly Data opens a request only when it is this recent
 CLOSED = ("completed", "cancelled")
@@ -114,7 +130,7 @@ def _can_view(db: Session, user: models.User, keys: tuple[str, ...] = VIEW_KEYS)
 
 
 def _can_view_any(db: Session, user: models.User) -> bool:
-    return _can_view(db, user, VIEW_KEYS + CELL_VIEW_KEYS)
+    return _can_view(db, user, INSPECTION_VIEW_KEYS)
 
 
 def _require_view(db: Session, user: models.User, keys: tuple[str, ...] = VIEW_KEYS) -> None:
@@ -150,6 +166,8 @@ def _title(flow: str, record: Any, db: Session) -> str:
     if flow == "cell":
         cell = f" ({record.electrolyzer}-{record.position})" if record.electrolyzer else ""
         return f"{'⚠ ' if record.urgent else ''}{record.element_nr}{cell}"
+    if flow == "inspection":
+        return f"{record.code} · {record.element_nr or record.anode_nr or record.cathode_nr or ''}".strip(" ·")
     codes = [p.code for p in db.query(WfCoatingPackage).filter_by(batch_id=record.id).order_by(WfCoatingPackage.seq)]
     if not codes:
         return f"#{record.id}"
@@ -291,10 +309,70 @@ class NoteIn(BaseModel):
     note: str | None = None
 
 
+# ------------------------------------------------------------------ deadlines
+
+
+def _settings_row(db: Session) -> WfSettings:
+    row = db.get(WfSettings, 1)
+    if row is None:
+        row = WfSettings(id=1, sla_hours={}, warn_percent=DEFAULT_WARN_PERCENT)
+        db.add(row)
+        db.flush()
+    return row
+
+
+def sla_config(db: Session) -> dict:
+    row = db.get(WfSettings, 1)
+    saved = (row.sla_hours or {}) if row else {}
+    hours = {
+        flow: {status: int(saved.get(flow, {}).get(status, default)) for status, default in stages.items()}
+        for flow, stages in DEFAULT_SLA.items()
+    }
+    warn = row.warn_percent if row and row.warn_percent is not None else DEFAULT_WARN_PERCENT
+    return {"hours": hours, "warn_percent": warn}
+
+
+def _stage_since(db: Session, flow: str, record: Any) -> datetime:
+    ev = (
+        db.query(WfEvent.created_at)
+        .filter(WfEvent.flow == flow, WfEvent.record_id == record.id, WfEvent.to_status == record.status)
+        .order_by(WfEvent.created_at.desc(), WfEvent.id.desc())
+        .first()
+    )
+    return ev[0] if ev else record.created_at
+
+
+def _promised(flow: str, record: Any) -> date | None:
+    if flow == "coating" and record.status == "at_coater":
+        return record.expected_return_date
+    if flow == "purchase" and record.status == "ordered":
+        return record.expected_delivery_date
+    return None
+
+
+def _sla_fields(db: Session, flow: str, record: Any, conf: dict | None = None) -> dict:
+    """since / due_at / sla_state (ok | warn | late) of the stage the record waits in."""
+    empty = {"stage_since": None, "due_at": None, "sla_hours": None, "sla_state": None, "sla_left_minutes": None}
+    if record.status in CLOSED:
+        return empty
+    conf = conf or sla_config(db)
+    hours = conf["hours"].get(flow, {}).get(record.status)
+    if hours is None:
+        return empty
+    warn = conf["warn_percent"]
+    since = _stage_since(db, flow, record) or _now()
+    promised = _promised(flow, record)
+    due = datetime.combine(promised, datetime.max.time().replace(microsecond=0)) if promised else since + timedelta(hours=hours)
+    window = max((due - since).total_seconds(), 1)
+    left = (due - _now()).total_seconds()
+    state = "late" if left < 0 else "warn" if left < window * warn / 100 else "ok"
+    return {"stage_since": _iso(since), "due_at": _iso(due), "sla_hours": hours, "sla_state": state, "sla_left_minutes": int(left // 60)}
+
+
 # ------------------------------------------------------------------ cartable / notifications
 
 
-def _coating_summary(db: Session, b: WfCoatingBatch) -> dict:
+def _coating_summary(db: Session, b: WfCoatingBatch, conf: dict | None = None) -> dict:
     co = _company(db, b.company_id)
     packages = db.query(WfCoatingPackage).filter_by(batch_id=b.id).order_by(WfCoatingPackage.seq).all()
     return {
@@ -319,10 +397,11 @@ def _coating_summary(db: Session, b: WfCoatingBatch) -> dict:
         "created_at": _iso(b.created_at),
         "updated_at": _iso(b.updated_at),
         "last_note": b.last_note,
+        **_sla_fields(db, "coating", b, conf),
     }
 
 
-def _purchase_summary(db: Session, p: WfPurchase) -> dict:
+def _purchase_summary(db: Session, p: WfPurchase, conf: dict | None = None) -> dict:
     co = _company(db, p.supplier_id)
     registered = db.query(func.count(WfPurchaseItem.id)).filter_by(purchase_id=p.id).scalar() or 0
     return {
@@ -348,6 +427,7 @@ def _purchase_summary(db: Session, p: WfPurchase) -> dict:
         "created_at": _iso(p.created_at),
         "updated_at": _iso(p.updated_at),
         "last_note": p.last_note,
+        **_sla_fields(db, "purchase", p, conf),
     }
 
 
@@ -362,8 +442,44 @@ def meta(db: Session = Depends(get_db), user: models.User = Depends(get_current_
         "coating_stages": COATING_STAGES,
         "purchase_stages": PURCHASE_STAGES,
         "cell_stages": CELL_STAGES,
+        "inspection_stages": INSPECTION_STAGES,
+        "can_view_inspection": _can_view(db, user, INSPECTION_VIEW_KEYS),
+        "can_request_inspection": _can_request_inspection(db, user),
         "delay_parties": list(DELAY_PARTIES),
+        "sla": sla_config(db),
     }
+
+
+class SlaIn(BaseModel):
+    hours: dict[str, dict[str, int]]
+    warn_percent: int = Field(ge=1, le=90)
+
+
+@router.get("/settings")
+def get_settings(db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    return {**sla_config(db), "defaults": DEFAULT_SLA}
+
+
+@router.put("/settings")
+def put_settings(body: SlaIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    if user.role != "admin" and user_permission_map(db, user).get("settings") != "edit":
+        raise HTTPException(403, "Only administrators can change the workflow deadlines")
+    clean: dict[str, dict[str, int]] = {}
+    for flow, stages in DEFAULT_SLA.items():
+        for status in stages:
+            value = body.hours.get(flow, {}).get(status)
+            if value is None:
+                continue
+            if not 1 <= int(value) <= 24 * 365:
+                raise HTTPException(400, f"{flow} / {status}: hours must be between 1 and 8760")
+            clean.setdefault(flow, {})[status] = int(value)
+    row = _settings_row(db)
+    row.sla_hours = clean
+    row.warn_percent = body.warn_percent
+    row.updated_by = _display(user)
+    row.updated_at = _now()
+    db.commit()
+    return {**sla_config(db), "defaults": DEFAULT_SLA}
 
 
 def _cartable(db: Session, user: models.User) -> list[dict]:
@@ -371,19 +487,25 @@ def _cartable(db: Session, user: models.User) -> list[dict]:
     if not groups:
         return []
     out: list[dict] = []
+    conf = sla_config(db)
     c_status = [s for s, g in COATING_STAGES.items() if groups & set(g)]
     p_status = [s for s, g in PURCHASE_STAGES.items() if groups & set(g)]
     if c_status:
         for b in db.query(WfCoatingBatch).filter(WfCoatingBatch.status.in_(c_status)).order_by(WfCoatingBatch.updated_at).all():
-            out.append(_coating_summary(db, b))
+            out.append(_coating_summary(db, b, conf))
     if p_status:
         for p in db.query(WfPurchase).filter(WfPurchase.status.in_(p_status)).order_by(WfPurchase.updated_at).all():
-            out.append(_purchase_summary(db, p))
+            out.append(_purchase_summary(db, p, conf))
     r_status = [s for s, g in CELL_STAGES.items() if groups & set(g)]
     if r_status:
         for r in db.query(WfCellRequest).filter(WfCellRequest.status.in_(r_status)).order_by(WfCellRequest.updated_at).all():
-            out.append(_cell_summary(db, r))
-    out.sort(key=lambda r: r["updated_at"] or "")
+            out.append(_cell_summary(db, r, conf))
+    i_status = [s for s, g in INSPECTION_STAGES.items() if groups & set(g)]
+    if i_status:
+        for r in db.query(WfInspectionRequest).filter(WfInspectionRequest.status.in_(i_status)).order_by(WfInspectionRequest.updated_at).all():
+            out.append(_insp_summary(db, r, conf))
+    # most urgent first: late, then the nearest deadline
+    out.sort(key=lambda r: (r["due_at"] is None, r["due_at"] or "", r["updated_at"] or ""))
     return out
 
 
@@ -396,7 +518,7 @@ def cartable(db: Session = Depends(get_db), user: models.User = Depends(get_curr
 def summary(db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     """Bell data: items waiting for my groups and unread notices (cheap enough to poll)."""
     if not _can_view_any(db, user):
-        return {"cartable": 0, "unread": 0, "items": []}
+        return {"cartable": 0, "late": 0, "unread": 0, "items": []}
     unread = (
         db.query(WfNotification)
         .filter(WfNotification.user_id == user.id, WfNotification.read_at.is_(None))
@@ -410,7 +532,13 @@ def summary(db: Session = Depends(get_db), user: models.User = Depends(get_curre
         .scalar()
         or 0
     )
-    return {"cartable": len(_cartable(db, user)), "unread": total_unread, "items": [_notice(n) for n in unread]}
+    waiting = _cartable(db, user)
+    return {
+        "cartable": len(waiting),
+        "late": sum(1 for r in waiting if r["sla_state"] == "late"),
+        "unread": total_unread,
+        "items": [_notice(n) for n in unread],
+    }
 
 
 def _notice(n: WfNotification) -> dict:
@@ -717,7 +845,7 @@ def _coating_actions(db: Session, b: WfCoatingBatch, user: models.User) -> list[
     if b.status == "await_approval" and mine:
         acts += ["approve", "reject"]
     if b.status in ("await_company", "await_indent", "await_dispatch") and ("c90" in groups or user.role == "admin"):
-        acts.append("cancel")
+        acts += ["cancel", "request_inspections"]
     if b.status not in CLOSED and groups:
         acts.append("attach")
     return acts
@@ -729,8 +857,12 @@ def _coating_detail(db: Session, b: WfCoatingBatch, user: models.User) -> dict:
     items = db.query(WfCoatingItem).filter_by(batch_id=b.id).order_by(WfCoatingItem.package_id, WfCoatingItem.line_no).all()
     _fill_problems(db, items)
     files = _files(db, "coating", b.id)
+    forms = coating_inspections(db, items)
+    asked = _open_inspection_by_serial(db)
     data.update(
         {
+            "inspections_done": sum(1 for i in items if forms.get(i.id)),
+            "inspections_total": len(items),
             "pallet_size": b.pallet_size,
             "delay_party": b.delay_party,
             "delay_reason": b.delay_reason,
@@ -752,6 +884,8 @@ def _coating_detail(db: Session, b: WfCoatingBatch, user: models.User) -> dict:
                             "pre_inspection": i.pre_inspection,
                             "final_report": i.final_report,
                             "remark": i.remark,
+                            "inspection": forms.get(i.id),
+                            "inspection_request": asked.get((i.element_kind, compact_nr(i.serial))),
                         }
                         for i in items
                         if i.package_id == p.id
@@ -868,6 +1002,15 @@ def _do_dispatch(db: Session, b: WfCoatingBatch, body: DispatchIn, user: models.
 def coating_dispatch(batch_id: int, body: DispatchIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     b = _load_batch(db, batch_id)
     _require_stage(db, user, "coating", b.status, ("await_dispatch",))
+    items = _batch_items(db, b)
+    forms = coating_inspections(db, items)
+    missing = [i.serial for i in items if not forms.get(i.id)]
+    if missing:
+        raise HTTPException(
+            409,
+            f"Element Inspection form missing for {len(missing)} of {len(items)} pieces: {', '.join(missing[:30])}"
+            f"{' …' if len(missing) > 30 else ''}. Every piece sent for recoating needs its inspection form.",
+        )
     _do_dispatch(db, b, body, user, "dispatch")
     db.commit()
     return _coating_detail(db, b, user)
@@ -1357,7 +1500,7 @@ def _can_request_cell(db: Session, user: models.User) -> bool:
     return user_permission_map(db, user).get("elements") == "edit"
 
 
-def _cell_summary(db: Session, r: WfCellRequest) -> dict:
+def _cell_summary(db: Session, r: WfCellRequest, conf: dict | None = None) -> dict:
     return {
         "flow": "cell",
         "id": r.id,
@@ -1390,6 +1533,7 @@ def _cell_summary(db: Session, r: WfCellRequest) -> dict:
         "created_at": _iso(r.created_at),
         "updated_at": _iso(r.updated_at),
         "last_note": r.last_note,
+        **_sla_fields(db, "cell", r, conf),
     }
 
 
@@ -1713,6 +1857,7 @@ def cell_on_element_saved(db: Session, el: models.Element, actor: models.User, h
             if r.decommission_date is None:
                 r.decommission_date = svc._as_date(el.decommissioning_date)
             _cell_move(db, r, "completed", "assembly_data", actor, None, {"choice": "disassemble"}, also=("operation", "cellshop"))
+        inspection_on_disassembly(db, el, actor)
         return
     if not el.decommissioning_date or had_decommission or el.disassembly_date:
         return
@@ -1747,6 +1892,424 @@ def cell_on_element_saved(db: Session, el: models.Element, actor: models.User, h
     _notify(db, "cell", r, actor)
 
 
+# ------------------------------------------------------------------ element inspection (C-90 -> inspection)
+
+
+def _can_request_inspection(db: Session, user: models.User) -> bool:
+    return user.role == "admin" or bool(_groups(db, user) & {"c90", "cellshop"})
+
+
+def _report_index(db: Session) -> dict[tuple[str, str], list[tuple[date | None, int]]]:
+    """(anode | cathode | element, compact nr) -> [(inspection day, report id)] of every Element Inspection."""
+    R = models.InspectionReport
+    out: dict[tuple[str, str], list[tuple[date | None, int]]] = {}
+    for rid, day, a, c, ea, ec, el in db.query(R.id, R.inspection_date, R.anode_nr, R.cathode_nr, R.electrode_nr_anode, R.electrode_nr_cathode, R.element_nr):
+        d = svc._as_date(day)
+        for kind, value in (("anode", a), ("anode", ea), ("cathode", c), ("cathode", ec), ("element", el)):
+            k = compact_nr(value)
+            if k and (d, rid) not in out.setdefault((kind, k), []):
+                out[(kind, k)].append((d, rid))
+    return out
+
+
+def _last_disassembly(db: Session) -> dict[tuple[str, str], date]:
+    E = models.Element
+    out: dict[tuple[str, str], date] = {}
+    for a, c, off in db.query(E.anode_nr, E.cathode_nr, E.disassembly_date).filter(E.disassembly_date.isnot(None)):
+        d = svc._as_date(off)
+        for kind, value in (("anode", a), ("cathode", c)):
+            k = compact_nr(value)
+            if k and d and (out.get((kind, k)) is None or d > out[(kind, k)]):
+                out[(kind, k)] = d
+    return out
+
+
+def _pick_report(index: dict, kind: str, key: str, after: date | None) -> int | None:
+    """Newest report of the piece made since its last dismantling (an undated report counts)."""
+    hits = [h for h in index.get((kind, key), []) if after is None or h[0] is None or h[0] >= after]
+    return max(hits, key=lambda h: (h[0] or date.min, h[1]))[1] if hits else None
+
+
+def _report_brief(db: Session, report_id: int | None) -> dict | None:
+    r = db.get(models.InspectionReport, report_id) if report_id else None
+    if r is None:
+        return None
+    return {"id": r.id, "element_nr": r.element_nr, "date": _iso(svc._as_date(r.inspection_date)), "inspector": r.inspector_name or r.sign_insp_name}
+
+
+def coating_inspections(db: Session, items: list[WfCoatingItem]) -> dict[int, dict | None]:
+    """Recoating item id -> the Element Inspection form attached to that piece (None when missing)."""
+    if not items:
+        return {}
+    index, off = _report_index(db), _last_disassembly(db)
+    out: dict[int, dict | None] = {}
+    for it in items:
+        key = compact_nr(it.serial)
+        out[it.id] = _report_brief(db, _pick_report(index, it.element_kind, key, off.get((it.element_kind, key))))
+    return out
+
+
+def _open_inspection_by_serial(db: Session) -> dict[tuple[str, str], dict]:
+    out: dict[tuple[str, str], dict] = {}
+    for r in db.query(WfInspectionRequest).filter(WfInspectionRequest.status.notin_(CLOSED)):
+        brief = {"id": r.id, "code": r.code, "status": r.status}
+        for kind, value in (("anode", r.anode_nr), ("cathode", r.cathode_nr)):
+            if compact_nr(value):
+                out[(kind, compact_nr(value))] = brief
+    return out
+
+
+def _insp_summary(db: Session, r: WfInspectionRequest, conf: dict | None = None) -> dict:
+    return {
+        "flow": "inspection",
+        "id": r.id,
+        "title": _title("inspection", r, db),
+        "code": r.code,
+        "codes": [r.code],
+        "status": r.status,
+        "groups": INSPECTION_STAGES.get(r.status, []),
+        "element_nr": r.element_nr,
+        "element_id": r.element_id,
+        "electrolyzer": r.electrolyzer,
+        "position": r.position,
+        "anode_nr": r.anode_nr,
+        "cathode_nr": r.cathode_nr,
+        "membrane_nr": r.membrane_nr,
+        "disassembly_date": _iso(r.disassembly_date),
+        "reason": r.reason,
+        "report_id": r.report_id,
+        "anode_count": 1 if r.anode_nr else 0,
+        "cathode_count": 1 if r.cathode_nr else 0,
+        "company_id": None,
+        "company_name": None,
+        "indent_no": None,
+        "dispatch_date": _iso(r.disassembly_date),
+        "expected_date": None,
+        "actual_date": None,
+        "delay_days": None,
+        "created_by": r.created_by_name,
+        "created_at": _iso(r.created_at),
+        "updated_at": _iso(r.updated_at),
+        "last_note": r.last_note,
+        **_sla_fields(db, "inspection", r, conf),
+    }
+
+
+def _insp_actions(db: Session, r: WfInspectionRequest, user: models.User) -> list[str]:
+    groups = _groups(db, user)
+    acts: list[str] = []
+    if r.status == "await_request" and "c90" in groups:
+        acts += ["send", "cancel"]
+    if r.status == "await_inspection" and "inspection" in groups:
+        acts += ["fill", "link"]
+    if r.status == "await_inspection" and ("c90" in groups or r.created_by_id == user.id):
+        acts.append("cancel")
+    if r.status not in CLOSED and (groups or r.created_by_id == user.id):
+        acts += ["comment", "attach"]
+    return acts
+
+
+def _insp_candidates(db: Session, r: WfInspectionRequest) -> list[dict]:
+    """Element Inspection forms that could belong to this request (same element, anode or cathode)."""
+    index = _report_index(db)
+    ids: set[int] = set()
+    for kind, value in (("element", r.element_nr), ("anode", r.anode_nr), ("cathode", r.cathode_nr)):
+        for day, rid in index.get((kind, compact_nr(value)), []) if compact_nr(value) else []:
+            if r.disassembly_date is None or day is None or day >= r.disassembly_date:
+                ids.add(rid)
+    return [b for b in (_report_brief(db, i) for i in sorted(ids, reverse=True)[:20]) if b]
+
+
+def _insp_detail(db: Session, r: WfInspectionRequest, user: models.User) -> dict:
+    data = _insp_summary(db, r)
+    data.update(
+        {
+            "completed_at": _iso(r.completed_at),
+            "remarks": None,
+            "report": _report_brief(db, r.report_id),
+            "candidates": _insp_candidates(db, r) if r.status not in CLOSED else [],
+            "files": _files(db, "inspection", r.id),
+            "events": _events(db, "inspection", r.id),
+            "actions": _insp_actions(db, r, user),
+        }
+    )
+    return data
+
+
+def _load_insp(db: Session, request_id: int) -> WfInspectionRequest:
+    r = db.get(WfInspectionRequest, request_id)
+    if not r:
+        raise HTTPException(404, "Inspection request not found")
+    return r
+
+
+def _insp_move(db: Session, r: WfInspectionRequest, to_status: str, action: str, actor: Any, note: str | None = None, data: dict | None = None) -> None:
+    before = r.status
+    r.status = to_status
+    if to_status in CLOSED:
+        r.completed_at = _now()
+    _event(db, "inspection", r, action, actor, before, note, data)
+    extra = _members(db, ["c90"]) if to_status in CLOSED else set()
+    if r.created_by_id:
+        extra.add(r.created_by_id)
+    _notify(db, "inspection", r, actor, extra)
+
+
+def _life_of(db: Session, element_nr: str | None = None, kind: str | None = None, serial: str | None = None) -> models.Element | None:
+    """Latest Assembly Data row of an element, or the latest one an anode / cathode was mounted in."""
+    E = models.Element
+    if element_nr:
+        key = compact_nr(element_nr)
+        rows = [e for e in db.query(E).filter(func.upper(func.replace(E.element_nr, " ", "")) == key)]
+    elif kind and serial:
+        col = E.anode_nr if kind == "anode" else E.cathode_nr
+        rows = db.query(E).filter(func.upper(func.replace(col, " ", "")) == compact_nr(serial)).all()
+    else:
+        return None
+    return max(rows, key=svc._life_key) if rows else None
+
+
+def _open_insp_for(db: Session, element_nr: str | None, anode_nr: str | None, cathode_nr: str | None) -> WfInspectionRequest | None:
+    keys = {("e", compact_nr(element_nr)), ("a", compact_nr(anode_nr)), ("c", compact_nr(cathode_nr))} - {("e", ""), ("a", ""), ("c", "")}
+    for r in db.query(WfInspectionRequest).filter(WfInspectionRequest.status.notin_(CLOSED)):
+        mine = {("e", compact_nr(r.element_nr)), ("a", compact_nr(r.anode_nr)), ("c", compact_nr(r.cathode_nr))}
+        if keys & mine:
+            return r
+    return None
+
+
+def _new_insp(
+    db: Session, actor: Any, status: str, el: models.Element | None, *, element_nr: str | None = None,
+    anode_nr: str | None = None, cathode_nr: str | None = None, reason: str | None = None,
+) -> WfInspectionRequest:
+    seq = _next_seq(db, WfInspectionRequest.seq)
+    r = WfInspectionRequest(
+        code=_code("IN", date.today(), seq),
+        seq=seq,
+        status=status,
+        element_nr=(str(el.element_nr) if el is not None and el.element_nr else element_nr or None),
+        element_id=el.id if el is not None else None,
+        electrolyzer=format_electrolyzer_name(el.electrolyzer) if el is not None and el.electrolyzer else None,
+        position=el.position if el is not None else None,
+        anode_nr=(el.anode_nr if el is not None else None) or anode_nr,
+        cathode_nr=(el.cathode_nr if el is not None else None) or cathode_nr,
+        membrane_nr=el.membrane_nr if el is not None else None,
+        disassembly_date=svc._as_date(el.disassembly_date) if el is not None else None,
+        reason=(reason or "").strip()[:200] or None,
+        created_by_id=getattr(actor, "id", None),
+        created_by_name=_display(actor),
+        created_at=_now(),
+        updated_at=_now(),
+    )
+    db.add(r)
+    db.flush()
+    return r
+
+
+def _close_if_reported(db: Session, r: WfInspectionRequest, actor: Any) -> bool:
+    found = _insp_candidates(db, r)
+    if not found:
+        return False
+    r.report_id = found[0]["id"]
+    _insp_move(db, r, "completed", "report_filled", actor, None, {"report_id": r.report_id})
+    return True
+
+
+class InspCreateIn(BaseModel):
+    element_nr: str | None = None
+    anode_nr: str | None = None
+    cathode_nr: str | None = None
+    reason: str | None = None
+    note: str | None = None
+
+
+@router.get("/inspection")
+def list_inspection_requests(
+    status: str | None = None,
+    open_only: bool = False,
+    serial: str | None = None,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    _require_view(db, user, INSPECTION_VIEW_KEYS)
+    q = db.query(WfInspectionRequest).order_by(WfInspectionRequest.created_at.desc())
+    if status:
+        q = q.filter(WfInspectionRequest.status == status)
+    if open_only:
+        q = q.filter(WfInspectionRequest.status.notin_(CLOSED))
+    rows = q.limit(2000).all()
+    if serial:
+        key = compact_nr(serial)
+        rows = [r for r in rows if key in {compact_nr(r.element_nr), compact_nr(r.anode_nr), compact_nr(r.cathode_nr)}]
+    conf = sla_config(db)
+    return [_insp_summary(db, r, conf) for r in rows[:500]]
+
+
+@router.get("/inspection/{request_id}")
+def get_inspection_request(request_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    _require_view(db, user, INSPECTION_VIEW_KEYS)
+    return _insp_detail(db, _load_insp(db, request_id), user)
+
+
+@router.post("/inspection")
+def create_inspection_request(body: InspCreateIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """C-90 (or the cell shop) asks inspection for the Element Inspection form of an element, anode or cathode."""
+    if not _can_request_inspection(db, user):
+        raise HTTPException(403, "Only C-90 or the cell shop can ask for an Element Inspection")
+    el = None
+    if (body.element_nr or "").strip():
+        el = _life_of(db, element_nr=body.element_nr)
+        if el is None:
+            raise HTTPException(404, f"Element {body.element_nr} is not in Assembly Data")
+    elif (body.anode_nr or "").strip():
+        el = _life_of(db, kind="anode", serial=body.anode_nr)
+    elif (body.cathode_nr or "").strip():
+        el = _life_of(db, kind="cathode", serial=body.cathode_nr)
+    else:
+        raise HTTPException(400, "Enter the element, anode or cathode number")
+    existing = _open_insp_for(db, el.element_nr if el is not None else None, body.anode_nr or (el.anode_nr if el else None), body.cathode_nr or (el.cathode_nr if el else None))
+    if existing:
+        raise HTTPException(409, f"Inspection request {existing.code} is still open for this element")
+    r = _new_insp(db, user, "await_inspection", el, anode_nr=(body.anode_nr or "").strip() or None, cathode_nr=(body.cathode_nr or "").strip() or None, reason=body.reason)
+    _event(db, "inspection", r, "created", user, None, body.note, {"reason": r.reason})
+    if not _close_if_reported(db, r, user):
+        _notify(db, "inspection", r, user)
+    db.commit()
+    return _insp_detail(db, r, user)
+
+
+@router.post("/inspection/{request_id}/send")
+def inspection_send(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_insp(db, request_id)
+    _require_stage(db, user, "inspection", r.status, ("await_request",))
+    if not _close_if_reported(db, r, user):
+        _insp_move(db, r, "await_inspection", "send", user, body.note)
+    db.commit()
+    return _insp_detail(db, r, user)
+
+
+class InspLinkIn(NoteIn):
+    report_id: int
+
+
+@router.post("/inspection/{request_id}/link")
+def inspection_link(request_id: int, body: InspLinkIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_insp(db, request_id)
+    _require_stage(db, user, "inspection", r.status, ("await_inspection",))
+    if body.report_id not in {c["id"] for c in _insp_candidates(db, r)}:
+        raise HTTPException(400, "This Element Inspection form is not for this element (or it is older than the dismantling)")
+    r.report_id = body.report_id
+    _insp_move(db, r, "completed", "report_filled", user, body.note, {"report_id": r.report_id})
+    db.commit()
+    return _insp_detail(db, r, user)
+
+
+@router.post("/inspection/{request_id}/comment")
+def inspection_comment(request_id: int, body: CellCommentIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_insp(db, request_id)
+    if "comment" not in _insp_actions(db, r, user):
+        raise HTTPException(403, "Only the requester and the workflow groups can write on this request")
+    text = body.note.strip()
+    _event(db, "inspection", r, "comment", user, r.status, text)
+    extra = _members(db, ["c90", "inspection"])
+    if r.created_by_id:
+        extra.add(r.created_by_id)
+    _notify(db, "inspection", r, user, extra)
+    db.commit()
+    return _insp_detail(db, r, user)
+
+
+@router.post("/inspection/{request_id}/cancel")
+def inspection_cancel(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_insp(db, request_id)
+    if "cancel" not in _insp_actions(db, r, user):
+        raise HTTPException(409, "This request cannot be cancelled")
+    if not (body.note or "").strip():
+        raise HTTPException(400, "Write why the inspection is not needed")
+    _insp_move(db, r, "cancelled", "cancel", user, body.note)
+    db.commit()
+    return _insp_detail(db, r, user)
+
+
+@router.post("/coating/{batch_id}/request_inspections")
+def coating_request_inspections(batch_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """C-90 asks inspection for the missing Element Inspection forms of a recoating request in one go."""
+    b = _load_batch(db, batch_id)
+    if "request_inspections" not in _coating_actions(db, b, user):
+        raise HTTPException(403, "Only C-90 can ask for inspections before the pieces are sent")
+    items = _batch_items(db, b)
+    forms = coating_inspections(db, items)
+    codes = _title("coating", b, db)
+    made = 0
+    for it in items:
+        if forms.get(it.id):
+            continue
+        a = it.serial if it.element_kind == "anode" else None
+        c = it.serial if it.element_kind == "cathode" else None
+        el = _life_of(db, kind=it.element_kind, serial=it.serial)
+        if _open_insp_for(db, None, a, c):
+            continue
+        r = _new_insp(db, user, "await_inspection", el, anode_nr=a, cathode_nr=c, reason=f"Recoating {codes}")
+        _event(db, "inspection", r, "created", user, None, body.note, {"coating_id": b.id})
+        _notify(db, "inspection", r, user)
+        made += 1
+    _event(db, "coating", b, "request_inspections", user, b.status, body.note, {"count": made})
+    db.commit()
+    return {"created": made, "detail": _coating_detail(db, b, user)}
+
+
+class _System:
+    """Actor for changes that come from a saved form rather than a workflow button."""
+
+    def __init__(self, name: str):
+        self.id = None
+        self.full_name = name
+        self.username = name
+        self.role = "system"
+
+
+def inspection_on_disassembly(db: Session, el: models.Element, actor: Any) -> None:
+    """A dismantled element waits in C-90's cartable until C-90 sends the inspection request."""
+    day = svc._as_date(el.disassembly_date)
+    if day is None or not (0 <= (date.today() - day).days <= AUTO_REQUEST_DAYS):
+        return
+    if _open_insp_for(db, el.element_nr, el.anode_nr, el.cathode_nr):
+        return
+    done = db.query(WfInspectionRequest).filter(WfInspectionRequest.element_id == el.id, WfInspectionRequest.status.in_(CLOSED)).first()
+    if done is not None:
+        return
+    r = _new_insp(db, actor, "await_request", el, reason="Dismantled")
+    _event(db, "inspection", r, "auto_created", actor, None, None, {"date": _iso(svc._as_date(el.disassembly_date))})
+    if not _close_if_reported(db, r, actor):
+        _notify(db, "inspection", r, actor)
+
+
+def inspection_on_element_dismantled(db: Session, element_nr: str, actor: Any) -> None:
+    el = _life_of(db, element_nr=element_nr)
+    if el is not None:
+        inspection_on_disassembly(db, el, actor)
+
+
+def inspection_report_saved(db: Session, report: models.InspectionReport) -> None:
+    """crud after_save hook: an Element Inspection saved for an element closes its open inspection request."""
+    db.flush()
+    keys = {("e", compact_nr(report.element_nr)), ("a", compact_nr(report.anode_nr)), ("a", compact_nr(report.electrode_nr_anode)),
+            ("c", compact_nr(report.cathode_nr)), ("c", compact_nr(report.electrode_nr_cathode))}
+    keys = {k for k in keys if k[1]}
+    if not keys:
+        return
+    day = svc._as_date(report.inspection_date)
+    actor = _System(report.inspector_name or report.sign_insp_name or "Element Inspection")
+    for r in db.query(WfInspectionRequest).filter(WfInspectionRequest.status.notin_(CLOSED)).all():
+        mine = {("e", compact_nr(r.element_nr)), ("a", compact_nr(r.anode_nr)), ("c", compact_nr(r.cathode_nr))}
+        if not keys & mine:
+            continue
+        if r.disassembly_date and day and day < r.disassembly_date:
+            continue
+        r.report_id = report.id
+        _insp_move(db, r, "completed", "report_filled", actor, None, {"report_id": report.id})
+
+
 # ------------------------------------------------------------------ files (all flows)
 
 
@@ -1757,6 +2320,8 @@ def _record(db: Session, flow: str, record_id: int):
         return _load_purchase(db, record_id)
     if flow == "cell":
         return _load_cell(db, record_id)
+    if flow == "inspection":
+        return _load_insp(db, record_id)
     raise HTTPException(404, "Unknown workflow")
 
 
@@ -1772,7 +2337,7 @@ def attach_files(
     rec = _record(db, flow, record_id)
     if rec.status in CLOSED:
         raise HTTPException(409, "The record is closed")
-    if not _groups(db, user) and not (flow == "cell" and rec.created_by_id == user.id):
+    if not _groups(db, user) and not (flow in ("cell", "inspection") and rec.created_by_id == user.id):
         raise HTTPException(403, "Only workflow groups can attach files")
     names = []
     for up in files:
@@ -1791,7 +2356,7 @@ def download_file(file_id: int, db: Session = Depends(get_db), user: models.User
     f = db.get(WfFile, file_id)
     if not f:
         raise HTTPException(404, "File not found")
-    _require_view(db, user, CELL_VIEW_KEYS if f.flow == "cell" else VIEW_KEYS)
+    _require_view(db, user, CELL_VIEW_KEYS if f.flow == "cell" else INSPECTION_VIEW_KEYS if f.flow == "inspection" else VIEW_KEYS)
     root = (data_root() / "workflow" / f.flow / str(f.record_id)).resolve()
     path = (root / f.stored_name).resolve()
     if path.parent != root or not path.exists():

@@ -78,7 +78,7 @@ class DesktopApp:
         frame.grid(sticky="nsew")
 
         ttk.Label(frame, text="PVC Arvand", font=("Segoe UI", 14, "bold")).grid(row=0, column=0, columnspan=2, sticky="w")
-        ttk.Label(frame, text="Electrolyzer Management Program").grid(row=1, column=0, columnspan=2, sticky="w", pady=(0, 10))
+        ttk.Label(frame, text="Electrolyzer Management Software").grid(row=1, column=0, columnspan=2, sticky="w", pady=(0, 10))
         ttk.Label(frame, text="The application is running at:").grid(row=2, column=0, columnspan=2, sticky="w")
         ttk.Label(frame, text=self.url, font=("Consolas", 10)).grid(row=3, column=0, columnspan=2, sticky="w", pady=(0, 12))
         ttk.Label(

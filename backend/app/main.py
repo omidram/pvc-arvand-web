@@ -304,7 +304,7 @@ with SessionLocal() as _db:
     except Exception:  # noqa: BLE001
         _db.rollback()
 
-app = FastAPI(title="Arvand Electrolyzer Management Program", version="1.10")
+app = FastAPI(title="Arvand Electrolyzer Management Software", version="1.10")
 
 # Register SQLAlchemy audit listeners (imported for side effects).
 _ = audit

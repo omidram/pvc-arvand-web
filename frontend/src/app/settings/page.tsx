@@ -48,6 +48,7 @@ import { FieldListsTab } from "@/components/domain/field-lists-tab";
 import { GroupDefinitionTab } from "@/components/domain/group-definition-tab";
 import { DatabaseTab } from "@/components/domain/database-tab";
 import { DirectoryTab } from "@/components/domain/directory-tab";
+import { WorkflowSlaTab } from "@/components/domain/workflow-sla-tab";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useTheme } from "@/lib/theme/context";
@@ -648,6 +649,7 @@ function SettingsPageInner() {
           ...(canEdit("import_export")
             ? [{ key: "import-export", label: t("importExport.title"), content: <ImportExportTab /> }]
             : []),
+          ...(canEdit("settings") || isAdmin ? [{ key: "workflow-sla", label: t("wfSla.title"), content: <WorkflowSlaTab /> }] : []),
           ...(canEdit("settings") ? [{ key: "backup", label: t("backup.title"), content: <BackupTab /> }] : []),
           ...(canEdit("settings")
             ? [{ key: "voltage-sync", label: t("voltageSync.title"), content: <VoltageSyncTab /> }]

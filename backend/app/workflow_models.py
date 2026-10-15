@@ -132,6 +132,44 @@ class WfCellRequest(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime)
 
 
+class WfInspectionRequest(Base):
+    """Element Inspection after dismantling: C-90 sends the request, inspection fills the form (one per element,
+    it covers the element's anode and cathode). Saving a matching Element Inspection closes it."""
+
+    __tablename__ = "wf_inspection_requests"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    seq: Mapped[int] = mapped_column(Integer, unique=True, index=True)
+    status: Mapped[str] = mapped_column(String(20), index=True)  # await_request | await_inspection | completed | cancelled
+    element_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    element_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    electrolyzer: Mapped[str | None] = mapped_column(String(50))
+    position: Mapped[str | None] = mapped_column(String(20))
+    anode_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    cathode_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    membrane_nr: Mapped[str | None] = mapped_column(String(50))
+    disassembly_date: Mapped[date | None] = mapped_column(Date)
+    reason: Mapped[str | None] = mapped_column(String(200))
+    report_id: Mapped[int | None] = mapped_column(Integer, index=True)  # inspection_reports.id once filled
+    last_note: Mapped[str | None] = mapped_column(Text)
+    created_by_id: Mapped[int | None] = mapped_column(Integer)
+    created_by_name: Mapped[str | None] = mapped_column(String(150))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class WfSettings(Base):
+    """Single row: allowed time per workflow stage ({flow: {status: hours}}) and when a deadline turns yellow."""
+
+    __tablename__ = "wf_settings"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sla_hours: Mapped[dict] = mapped_column(JSON, default=dict)
+    warn_percent: Mapped[int] = mapped_column(Integer, default=25)
+    updated_by: Mapped[str | None] = mapped_column(String(150))
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
 class WfFile(Base):
     __tablename__ = "wf_files"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

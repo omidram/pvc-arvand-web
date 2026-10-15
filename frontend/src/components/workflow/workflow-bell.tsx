@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClipboardList, MailOpen } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
 import { cn, formatDateTime } from "@/lib/utils";
-import { workflowApi, workflowHref, type WfNotice } from "@/lib/workflow";
+import { CARTABLE_MS, workflowApi, workflowHref, type WfNotice } from "@/lib/workflow";
 
 type Toast = { id: number; flow: string; recordId: number; title: string; text: string };
 
@@ -47,7 +47,7 @@ export function WorkflowBell({ classic }: { classic?: boolean }) {
   const box = useRef<HTMLDivElement>(null);
 
   const meta = useQuery({ queryKey: ["wf", "meta"], queryFn: workflowApi.meta, staleTime: 60_000 });
-  const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: 15_000, refetchOnWindowFocus: true });
+  const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: CARTABLE_MS, refetchOnWindowFocus: true });
   const list = useQuery({ queryKey: ["wf", "notifications"], queryFn: () => workflowApi.notifications(15), enabled: open });
 
   useEffect(() => {
@@ -86,6 +86,7 @@ export function WorkflowBell({ classic }: { classic?: boolean }) {
 
   const waiting = summary.data?.cartable ?? 0;
   const unread = summary.data?.unread ?? 0;
+  const late = summary.data?.late ?? 0;
   const member = (meta.data?.groups.length ?? 0) > 0;
   if (!member && !waiting && !unread) return null;
 
@@ -106,18 +107,19 @@ export function WorkflowBell({ classic }: { classic?: boolean }) {
       <button
         type="button"
         className={cn(classic ? "tk-bell-btn is-classic" : "access-toolbar-btn tk-bell-btn", (waiting > 0 || unread > 0) && "has-unread")}
-        title={t("wf.bellTitle", { n: waiting })}
+        title={late > 0 ? `${t("wf.bellTitle", { n: waiting })} — ${t("wf.sla.lateCount", { n: late })}` : t("wf.bellTitle", { n: waiting })}
         aria-label={t("wf.bellTitle", { n: waiting })}
         onClick={() => setOpen((v) => !v)}
       >
         <ClipboardList size={13} />
-        {waiting > 0 ? <span className="tk-bell-count wf-bell-count">{waiting > 99 ? "99+" : waiting}</span> : null}
+        {waiting > 0 ? <span className={cn("tk-bell-count wf-bell-count", late > 0 && "is-late")}>{waiting > 99 ? "99+" : waiting}</span> : null}
       </button>
 
       {open ? (
         <div className="tk-drop" role="dialog" aria-label={t("wf.cartableTitle")}>
           <div className="tk-drop-head">
             <strong>{t("wf.cartableTitle")}</strong>
+            {late > 0 ? <span className="wf-late-chip">{t("wf.sla.lateCount", { n: late })}</span> : null}
             <button type="button" className="tk-drop-link" onClick={markAll} disabled={!unread}>
               <MailOpen size={13} /> {t("tickets.markAllRead")}
             </button>
