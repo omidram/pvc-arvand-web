@@ -6,7 +6,9 @@ that group and may act on its stages; admins may act everywhere.
 """
 from __future__ import annotations
 
+import io
 import uuid
+import zipfile
 from datetime import date, datetime, timedelta
 from datetime import date as date_type
 from pathlib import Path
@@ -394,6 +396,8 @@ def _coating_summary(db: Session, b: WfCoatingBatch, conf: dict | None = None) -
         "delay_days": b.delay_days,
         "rejected": b.rejected,
         "rework_count": b.rework_count,
+        "warranty_months": b.warranty_months,
+        "warranty_start": _iso(b.warranty_start),
         "created_by": b.created_by_name,
         "created_at": _iso(b.created_at),
         "updated_at": _iso(b.updated_at),
@@ -603,7 +607,6 @@ class CoatingCreateIn(BaseModel):
     pallet_size: int = Field(20, ge=1, le=MAX_PALLET)
     separate_kinds: bool = True
     remarks: str | None = None
-    allow_unknown: bool = False
 
 
 def _next_seq(db: Session, column) -> int:
@@ -614,7 +617,7 @@ def _code(prefix: str, day: date, seq: int) -> str:
     return f"{prefix}-{day:%Y%m%d}-{seq:04d}"
 
 
-def _clean_lines(lines: list[CoatingLineIn], kind: str, index: dict[str, str], unknown: list[str], allow_unknown: bool) -> list[dict]:
+def _clean_lines(lines: list[CoatingLineIn], kind: str, index: dict[str, str], unknown: list[str]) -> list[dict]:
     out = []
     for line in lines:
         raw = (line.serial or "").strip()
@@ -623,9 +626,8 @@ def _clean_lines(lines: list[CoatingLineIn], kind: str, index: dict[str, str], u
         key = compact_nr(raw)
         serial = index.get(key)
         if serial is None:
-            if not allow_unknown:
-                unknown.append(raw)
-            serial = raw[:50]
+            unknown.append(raw)
+            continue
         out.append({"kind": kind, "serial": serial, "key": key, "problem": (line.problem or "").strip()[:500] or None})
     return out
 
@@ -729,8 +731,8 @@ def coating_candidates(db: Session = Depends(get_db)):
 def create_coating(body: CoatingCreateIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     _require_group(db, user, "c90")
     unknown: list[str] = []
-    anodes = _clean_lines(body.anodes, "anode", load_compact_index(db, models.Anode, "anode_nr"), unknown, body.allow_unknown)
-    cathodes = _clean_lines(body.cathodes, "cathode", load_compact_index(db, models.Cathode, "cathode_nr"), unknown, body.allow_unknown)
+    anodes = _clean_lines(body.anodes, "anode", load_compact_index(db, models.Anode, "anode_nr"), unknown)
+    cathodes = _clean_lines(body.cathodes, "cathode", load_compact_index(db, models.Cathode, "cathode_nr"), unknown)
     lines = anodes + cathodes
     if not lines:
         raise HTTPException(400, "Enter at least one anode or cathode number")
@@ -955,16 +957,32 @@ def _batch_items(db: Session, b: WfCoatingBatch) -> list[WfCoatingItem]:
 def list_coating(
     status: str | None = None,
     open_only: bool = False,
+    q: str | None = Query(default=None),
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_user),
 ):
     _require_view(db, user)
-    q = db.query(WfCoatingBatch).order_by(WfCoatingBatch.created_at.desc())
+    query = db.query(WfCoatingBatch).order_by(WfCoatingBatch.created_at.desc())
     if status:
-        q = q.filter(WfCoatingBatch.status == status)
+        query = query.filter(WfCoatingBatch.status == status)
     if open_only:
-        q = q.filter(WfCoatingBatch.status.notin_(CLOSED))
-    return [_coating_summary(db, b) for b in q.limit(500).all()]
+        query = query.filter(WfCoatingBatch.status.notin_(CLOSED))
+    needle = (q or "").strip()
+    if needle:
+        # Match CO-* package code, indent, or any anode/cathode serial on the batch.
+        like = f"%{needle}%"
+        key = compact_nr(needle)
+        item_clauses = [WfCoatingItem.serial.ilike(like)]
+        if key and key != needle.lower().replace(" ", ""):
+            item_clauses.append(WfCoatingItem.serial.ilike(f"%{key}%"))
+        batch_ids = {r[0] for r in db.query(WfCoatingItem.batch_id).filter(or_(*item_clauses)).distinct().all()}
+        pkg_ids = {r[0] for r in db.query(WfCoatingPackage.batch_id).filter(WfCoatingPackage.code.ilike(like)).distinct().all()}
+        ids = batch_ids | pkg_ids
+        clauses = [WfCoatingBatch.indent_no.ilike(like), WfCoatingBatch.remarks.ilike(like)]
+        if ids:
+            clauses.append(WfCoatingBatch.id.in_(ids))
+        query = query.filter(or_(*clauses))
+    return [_coating_summary(db, b) for b in query.limit(500).all()]
 
 
 @router.get("/coating/{batch_id}")
@@ -1059,6 +1077,8 @@ class ReceiveIn(NoteIn):
     actual_date: date
     delay_party: str | None = None
     delay_reason: str | None = None
+    warranty_months: int | None = Field(None, ge=0, le=240)
+    warranty_start: date | None = None
 
 
 @router.post("/coating/{batch_id}/receive")
@@ -1074,6 +1094,9 @@ def coating_receive(batch_id: int, body: ReceiveIn, db: Session = Depends(get_db
     late = days is not None and days > 0
     b.delay_party = body.delay_party if late else None
     b.delay_reason = ((body.delay_reason or "").strip() or None) if late else None
+    if body.warranty_months is not None:
+        b.warranty_months = body.warranty_months
+        b.warranty_start = body.warranty_start or body.actual_date
     codes = {p.id: p.code for p in db.query(WfCoatingPackage).filter_by(batch_id=b.id)}
     for it in _batch_items(db, b):
         upsert_state(db, it.element_kind, it.serial, lifecycle_status="pending_receive", company_id=b.company_id)
@@ -1084,7 +1107,14 @@ def coating_receive(batch_id: int, body: ReceiveIn, db: Session = Depends(get_db
         )
     _move(
         db, "coating", b, "await_report", "receive", user, body.note,
-        {"return_date": body.actual_date.isoformat(), "delay_days": days, "delay_party": b.delay_party, "delay_reason": b.delay_reason},
+        {
+            "return_date": body.actual_date.isoformat(),
+            "delay_days": days,
+            "delay_party": b.delay_party,
+            "delay_reason": b.delay_reason,
+            "warranty_months": b.warranty_months,
+            "warranty_start": b.warranty_start.isoformat() if b.warranty_start else None,
+        },
     )
     db.commit()
     return _coating_detail(db, b, user)
@@ -1187,6 +1217,31 @@ def coating_rework(batch_id: int, body: DispatchIn, db: Session = Depends(get_db
     return _coating_detail(db, b, user)
 
 
+def _prior_coating_service_days(db: Session, kind: str, serial: str, until: date | None) -> int | None:
+    """Operating days of the previous coating when this piece is sent again (return → this dispatch)."""
+    if not until:
+        return None
+    if kind == "anode":
+        prev = (
+            db.query(models.AnodeRecoating)
+            .filter(models.AnodeRecoating.anode_nr == serial, models.AnodeRecoating.return_date.isnot(None))
+            .order_by(models.AnodeRecoating.return_date.desc())
+            .first()
+        )
+        start = prev.return_date.date() if prev and prev.return_date else None
+    else:
+        prev = (
+            db.query(models.CathodeRecoating)
+            .filter(models.CathodeRecoating.cathode_nr == serial, models.CathodeRecoating.return_date.isnot(None))
+            .order_by(models.CathodeRecoating.return_date.desc())
+            .first()
+        )
+        start = prev.return_date.date() if prev and prev.return_date else None
+    if not start:
+        return None
+    return max(0, (until - start).days)
+
+
 @router.post("/coating/{batch_id}/approve")
 def coating_approve(batch_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     b = _load_batch(db, batch_id)
@@ -1199,6 +1254,7 @@ def coating_approve(batch_id: int, body: NoteIn, db: Session = Depends(get_db), 
         upsert_state(db, it.element_kind, it.serial, lifecycle_status="in_plant", company_id=None)
         log_event(db, it.element_kind, it.serial, "coating_approved", day, f"Recoating approved {code}", ref_kind="wf_coating", ref_id=b.id, details={"code": code})
         remark = f"Workflow {code}" + (f" — {it.final_report}" if it.final_report else "")
+        prior = _prior_coating_service_days(db, it.element_kind, it.serial, b.dispatch_date)
         if it.element_kind == "anode":
             n = db.query(func.count(models.AnodeRecoating.id)).filter(models.AnodeRecoating.anode_nr == it.serial).scalar() or 0
             db.add(
@@ -1210,6 +1266,9 @@ def coating_approve(batch_id: int, body: NoteIn, db: Session = Depends(get_db), 
                     manufacturer=co.name[:100] if co else None,
                     recoating_number=str(n + 1),
                     remarks=remark,
+                    warranty_months=b.warranty_months,
+                    warranty_start=b.warranty_start,
+                    prior_service_days=prior,
                 )
             )
         else:
@@ -1220,6 +1279,9 @@ def coating_approve(batch_id: int, body: NoteIn, db: Session = Depends(get_db), 
                     return_date=_stamp(b.return_date) if b.return_date else None,
                     manufacturer=co.name[:100] if co else None,
                     remarks=remark,
+                    warranty_months=b.warranty_months,
+                    warranty_start=b.warranty_start,
+                    prior_service_days=prior,
                 )
             )
     _move(db, "coating", b, "completed", "approve", user, body.note, notify_creator=True)
@@ -1288,6 +1350,61 @@ def coating_excel(batch_id: int, package_id: int | None = None, db: Session = De
         content=build_workbook(sheets),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f'attachment; filename="{name}.xlsx"'},
+    )
+
+
+@router.get("/coating/{batch_id}/dispatch-pack")
+def coating_dispatch_pack(batch_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """ZIP for the coater: Excel of all pallets + latest Element Inspection PDF per piece (named by serial)."""
+    _require_view(db, user)
+    b = _load_batch(db, batch_id)
+    co = _company(db, b.company_id)
+    packages = db.query(WfCoatingPackage).filter_by(batch_id=b.id).order_by(WfCoatingPackage.seq).all()
+    items = _batch_items(db, b)
+    _fill_problems(db, items)
+    forms = coating_inspections(db, items)
+    sheets = []
+    for p in packages:
+        rows = sorted((i for i in items if i.package_id == p.id), key=lambda i: i.line_no)
+        sheets.append(
+            {
+                "code": p.code,
+                "pallet_no": p.pallet_no,
+                "pallets": len(packages),
+                "date": p.created_at.date().isoformat() if p.created_at else "",
+                "company": co.name if co else "",
+                "indent_no": b.indent_no or "",
+                "items": [{"kind": i.element_kind, "serial": i.serial, "problem": i.problem} for i in rows],
+            }
+        )
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr(f"recoating-{b.id}.xlsx", build_workbook(sheets))
+        from ..inspection_pdf import inspection_pdf_bytes
+        from ..routers.inspections import _pack
+
+        for it in items:
+            info = forms.get(it.id) or {}
+            report_id = info.get("id")
+            if not report_id:
+                continue
+            report = db.get(models.InspectionReport, int(report_id))
+            if report is None:
+                continue
+            try:
+                pdf = inspection_pdf_bytes(_pack(db, [report]))
+            except Exception:  # noqa: BLE001
+                continue
+            if not pdf:
+                continue
+            safe = "".join(ch if ch.isalnum() or ch in "-_ ." else "_" for ch in (it.serial or "piece")).strip() or "piece"
+            zf.writestr(f"{safe}.pdf", pdf)
+    codes = "-".join(p.code for p in packages[:3])
+    fname = f"{codes or f'recoating-{b.id}'}-pack.zip"
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
     )
 
 

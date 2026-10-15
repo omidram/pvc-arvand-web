@@ -70,6 +70,16 @@ const L = {
   tAnHint: "(from catholyte temperature)",
 } as const;
 
+/** Access ``t An = t Ka + TemperaturkorrekturAnolyt`` (plant default −0.5 °C). */
+const ANOLYTE_TEMP_OFFSET = -0.5;
+
+function deriveAnolyteTemp(name: string, value: unknown): Record<string, unknown> | void {
+  if (name !== "catholyte_temp") return;
+  const n = value === "" || value == null ? null : Number(value);
+  if (n == null || Number.isNaN(n)) return { anolyte_temp: "" };
+  return { anolyte_temp: String(Math.round((n + ANOLYTE_TEMP_OFFSET) * 100) / 100) };
+}
+
 function accessTime(value: string | null | undefined): string {
   if (!value) return "—";
   const text = String(value).trim();
@@ -174,8 +184,14 @@ function ElectrolyzersInput() {
       { name: "time", label: `${L.time}:` },
       { name: "total_current", label: `${L.iTotal}: ${L.unitKA}`, type: "number", step: "0.01" },
       { name: "catholyte_conc", label: `${L.cc}: ${L.unitPct}`, type: "number", step: "0.01" },
-      { name: "anolyte_temp", label: `${L.tAn}: ${L.unitC}`, type: "number", step: "0.1" },
       { name: "catholyte_temp", label: `${L.tKa}: ${L.unitC}`, type: "number", step: "0.1" },
+      {
+        name: "anolyte_temp",
+        label: `${L.tAn}: ${L.unitC} ${L.tAnHint}`,
+        type: "number",
+        step: "0.1",
+        fieldReadOnly: true,
+      },
       { name: "total_voltage", label: `${L.uTotal}: ${L.unitV}`, type: "number", step: "0.01" },
       { name: "element_count", label: `${L.noElements}:`, type: "number" },
     ],
@@ -278,6 +294,7 @@ function ElectrolyzersInput() {
           initialValues={formInitial}
           submitting={createMutation.isPending || updateMutation.isPending}
           onCancel={() => setShowForm(false)}
+          onValuesChange={deriveAnolyteTemp}
           onSubmit={(values) => {
             const p = withCcPayload(values as Record<string, unknown>);
             if (editing) {
@@ -313,8 +330,14 @@ function AllElementsInput() {
       { name: "time", label: `${L.time}:` },
       { name: "total_current", label: `${L.iGesamt}: ${L.unitKA}`, type: "number", step: "0.01" },
       { name: "catholyte_conc", label: `${L.cc}: ${L.unitPct}`, type: "number", step: "0.01" },
-      { name: "anolyte_temp", label: `${L.tAn}: ${L.unitC}`, type: "number", step: "0.1" },
       { name: "catholyte_temp", label: `${L.tKa}: ${L.unitC}`, type: "number", step: "0.1" },
+      {
+        name: "anolyte_temp",
+        label: `${L.tAn}: ${L.unitC} ${L.tAnHint}`,
+        type: "number",
+        step: "0.1",
+        fieldReadOnly: true,
+      },
     ],
     [elNames]
   );
@@ -505,6 +528,7 @@ function AllElementsInput() {
           initialValues={editingMaster ? { ...editingMaster, catholyte_conc: ccOf(editingMaster) } : undefined}
           submitting={masters.createMutation.isPending || masters.updateMutation.isPending}
           onCancel={() => setShowMaster(false)}
+          onValuesChange={deriveAnolyteTemp}
           onSubmit={(values) => {
             const p = withCcPayload(values as Record<string, unknown>);
             if (editingMaster) {
@@ -574,8 +598,14 @@ function GroupInput() {
       { name: "time", label: `${L.time}:` },
       { name: "total_current", label: `${L.iTotal}: ${L.unitKA}`, type: "number", step: "0.01" },
       { name: "naoh_pct", label: `${L.cc}: ${L.unitPct}`, type: "number", step: "0.01" },
-      { name: "anolyte_temp", label: `${L.tAn}: ${L.unitC}`, type: "number", step: "0.1" },
       { name: "catholyte_temp", label: `${L.tKa}: ${L.unitC}`, type: "number", step: "0.1" },
+      {
+        name: "anolyte_temp",
+        label: `${L.tAn}: ${L.unitC} ${L.tAnHint}`,
+        type: "number",
+        step: "0.1",
+        fieldReadOnly: true,
+      },
       { name: "total_voltage", label: `${L.uTotal}: ${L.unitV}`, type: "number", step: "0.01" },
       { name: "element_count", label: `${L.noElements}:`, type: "number" },
     ],
@@ -641,6 +671,7 @@ function GroupInput() {
           initialValues={editing ?? undefined}
           submitting={crud.createMutation.isPending || crud.updateMutation.isPending}
           onCancel={() => setShowForm(false)}
+          onValuesChange={deriveAnolyteTemp}
           onSubmit={(values) => {
             const p = values as Partial<VoltageUnGroupInput>;
             if (editing) crud.updateMutation.mutate({ id: editing.id, payload: p }, { onSuccess: () => setShowForm(false) });
@@ -667,8 +698,14 @@ function SingleElementInput() {
       { name: "time", label: `${L.time}:` },
       { name: "total_current", label: `${L.iTotal}: ${L.unitKA}`, type: "number", step: "0.01" },
       { name: "naoh_pct", label: `${L.naoh}: ${L.unitPct}`, type: "number", step: "0.01" },
-      { name: "anolyte_temp", label: `${L.tAn}: ${L.unitC}`, type: "number", step: "0.1" },
       { name: "catholyte_temp", label: `${L.tKa}: ${L.unitC}`, type: "number", step: "0.1" },
+      {
+        name: "anolyte_temp",
+        label: `${L.tAn}: ${L.unitC} ${L.tAnHint}`,
+        type: "number",
+        step: "0.1",
+        fieldReadOnly: true,
+      },
       { name: "voltage", label: `${L.u}: ${L.unitV}`, type: "number", step: "0.001" },
     ],
     [elNames]
@@ -733,6 +770,7 @@ function SingleElementInput() {
           initialValues={editing ?? undefined}
           submitting={crud.createMutation.isPending || crud.updateMutation.isPending}
           onCancel={() => setShowForm(false)}
+          onValuesChange={deriveAnolyteTemp}
           onSubmit={(values) => {
             const p = values as Partial<VoltageUnElementInput>;
             if (editing) crud.updateMutation.mutate({ id: editing.id, payload: p }, { onSuccess: () => setShowForm(false) });

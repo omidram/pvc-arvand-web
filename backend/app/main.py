@@ -228,6 +228,62 @@ def _ensure_segregation_enrich_columns() -> None:
 _ensure_segregation_enrich_columns()
 
 
+def _ensure_shutdown_trip_columns() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("shutdowns")}
+    except Exception:
+        return
+    for name in ("ka_before_trip", "lost_load", "lost_production", "mtbf_days"):
+        if name in present:
+            continue
+        with engine.begin() as conn:
+            conn.execute(text(f"ALTER TABLE shutdowns ADD COLUMN {name} FLOAT"))
+        present.add(name)
+
+
+_ensure_shutdown_trip_columns()
+
+
+def _ensure_coating_warranty_columns() -> None:
+    for table, cols in (
+        (
+            "wf_coating_batches",
+            {
+                "warranty_months": "INTEGER",
+                "warranty_start": "DATE",
+            },
+        ),
+        (
+            "anode_recoating",
+            {
+                "warranty_months": "INTEGER",
+                "warranty_start": "DATE",
+                "prior_service_days": "INTEGER",
+            },
+        ),
+        (
+            "cathode_recoating",
+            {
+                "warranty_months": "INTEGER",
+                "warranty_start": "DATE",
+                "prior_service_days": "INTEGER",
+            },
+        ),
+    ):
+        try:
+            present = {col["name"] for col in inspect(engine).get_columns(table)}
+        except Exception:
+            continue
+        for name, sql_type in cols.items():
+            if name in present:
+                continue
+            with engine.begin() as conn:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {sql_type}"))
+
+
+_ensure_coating_warranty_columns()
+
+
 def _ensure_normalization_energy_columns() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("electrolyzer_normalizations")}

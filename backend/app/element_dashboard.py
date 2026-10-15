@@ -427,6 +427,18 @@ def advance_stage(db: Session, element_nr: str, note: str | None, user: str | No
     target = NEXT_STAGE.get(item["state"])
     if target is None:
         raise ValueError(f"Element {item['element_nr']} is '{item['state']}'; there is no next cell-shop step (installing is entered in Assembly Data)")
+    if item["state"] == "awaiting_qc" and target == "ready":
+        # New assemblies cannot leave QC until the confirmation / inspection form is signed.
+        signed = (
+            db.query(models.AssemblyInspectionReport)
+            .filter(models.AssemblyInspectionReport.element_nr == item["element_nr"])
+            .order_by(models.AssemblyInspectionReport.id.desc())
+            .first()
+        )
+        if signed is None or not (getattr(signed, "sign_insp_name", None) or "").strip():
+            raise ValueError(
+                f"Element {item['element_nr']}: fill and sign the assembly confirmation form before it can be used (ready)."
+            )
     if target != "disassembled":
         result = set_shop_stage(db, item["element_nr"], target, note, user, {key: item})
         return {**result, "from": item["state"]}

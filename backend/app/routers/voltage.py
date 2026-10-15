@@ -123,6 +123,21 @@ def _select_readings(
     rows.sort(key=lambda r: (_parse_day(r.date) or date.min, _pos_key(r.position), r.id or 0))
     return start, end, rows
 
+# Access: t An = t Ka + TemperaturkorrekturAnolyt (tblGewDaten; plant SQL uses −0.5 °C).
+ANOLYTE_TEMP_OFFSET = -0.5
+
+
+def _derive_anolyte_temp(obj) -> None:
+    """When t Ka is set, fill t An like Access ``t_Ka_AfterUpdate`` (anolyte not measured)."""
+    t_ka = getattr(obj, "catholyte_temp", None)
+    if t_ka is None:
+        return
+    try:
+        obj.anolyte_temp = round(float(t_ka) + ANOLYTE_TEMP_OFFSET, 2)
+    except (TypeError, ValueError):
+        pass
+
+
 normalizations_router = build_crud_router(
     model=models.ElectrolyzerNormalization,
     read_schema=schemas.ElectrolyzerNormalizationRead,
@@ -131,6 +146,7 @@ normalizations_router = build_crud_router(
     tags=["voltage"],
     search_fields=["electrolyzer"],
     default_order="date",
+    prepare=_derive_anolyte_temp,
 )
 
 un_element_inputs_router = build_crud_router(
@@ -141,6 +157,7 @@ un_element_inputs_router = build_crud_router(
     tags=["voltage"],
     search_fields=["electrolyzer", "position"],
     default_order="date",
+    prepare=_derive_anolyte_temp,
 )
 
 un_group_inputs_router = build_crud_router(
@@ -151,6 +168,7 @@ un_group_inputs_router = build_crud_router(
     tags=["voltage"],
     search_fields=["group_nr"],
     default_order="date",
+    prepare=_derive_anolyte_temp,
 )
 
 readings_router = build_crud_router(

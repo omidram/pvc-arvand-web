@@ -196,7 +196,12 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
   const meta = useWorkflowMeta();
   const canRequest = (meta.data?.groups ?? []).includes("c90");
   const [openOnly, setOpenOnly] = useState(true);
-  const list = useQuery({ queryKey: ["wf", "list", "coating", openOnly], queryFn: () => workflowApi.list("coating", { open_only: openOnly }), refetchInterval: LIVE_MS });
+  const [pieceQ, setPieceQ] = useState("");
+  const list = useQuery({
+    queryKey: ["wf", "list", "coating", openOnly, pieceQ],
+    queryFn: () => workflowApi.list("coating", { open_only: openOnly, q: pieceQ.trim() || undefined }),
+    refetchInterval: LIVE_MS,
+  });
   const candidates = useQuery({
     queryKey: ["wf", "coating-candidates"],
     queryFn: workflowApi.coatingCandidates,
@@ -211,7 +216,6 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
   const [separate, setSeparate] = useState(true);
   const [remarks, setRemarks] = useState("");
   const [unknown, setUnknown] = useState<string[]>([]);
-  const [allowUnknown, setAllowUnknown] = useState(false);
   const aLines = useMemo(() => aPicked.map((c) => ({ serial: c.serial, problem: c.problem })), [aPicked]);
   const kLines = useMemo(() => kPicked.map((c) => ({ serial: c.serial, problem: c.problem })), [kPicked]);
   const pallets = separate
@@ -225,14 +229,12 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
         pallet_size: palletSize,
         separate_kinds: separate,
         remarks: remarks || undefined,
-        allow_unknown: allowUnknown,
       }),
     onSuccess: (d) => {
       setAPicked([]);
       setKPicked([]);
       setRemarks("");
       setUnknown([]);
-      setAllowUnknown(false);
       refreshWarehouseData(qc);
       onOpen("coating", d.id);
     },
@@ -296,10 +298,6 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
           {unknown.length ? (
             <div className="wf-alert">
               <strong>{t("wf.coating.unknownTitle")}</strong> {unknown.join("، ")}
-              <label className="wh-check">
-                <input type="checkbox" checked={allowUnknown} onChange={(e) => setAllowUnknown(e.target.checked)} />
-                {t("wf.coating.allowUnknown")}
-              </label>
             </div>
           ) : null}
           {createError ? <div className="wf-alert">{createError}</div> : null}
@@ -317,6 +315,16 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
         <label className="wh-check wf-small">
           <input type="checkbox" checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} />
           {t("wf.openOnly")}
+        </label>
+      </div>
+      <div className="wh-form-inline wf-inline-plain" style={{ marginBottom: "0.5rem" }}>
+        <label className="wh-grow">
+          {t("wf.coating.searchPiece")}
+          <input
+            value={pieceQ}
+            onChange={(e) => setPieceQ(e.target.value)}
+            placeholder={t("wf.coating.searchPieceHint")}
+          />
         </label>
       </div>
       <DataTable
@@ -566,6 +574,9 @@ function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; 
             <button type="button" className="wf-btn" onClick={() => void workflowApi.downloadExcel(d.id, `recoating-${d.id}`)}>
               <FileSpreadsheet size={14} /> {t("wf.coating.excelAll")}
             </button>
+            <button type="button" className="wf-btn" onClick={() => void workflowApi.downloadDispatchPack(d.id, `recoating-${d.id}`)}>
+              <Download size={14} /> {t("wf.coating.dispatchPack")}
+            </button>
           </div>
           {d.packages.map((p) => (
             <details key={p.id} className="wf-pallet" open={d.packages!.length === 1}>
@@ -693,6 +704,8 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
   const [date2, setDate2] = useState("");
   const [party, setParty] = useState("");
   const [reason, setReason] = useState("");
+  const [warrantyMonths, setWarrantyMonths] = useState(d.warranty_months != null ? String(d.warranty_months) : "");
+  const [warrantyStart, setWarrantyStart] = useState(d.warranty_start?.slice(0, 10) || todayIso());
   const [files, setFiles] = useState<File[]>([]);
   const [packageId, setPackageId] = useState<number | "">("");
   const [regAnodes, setRegAnodes] = useState("");
@@ -864,11 +877,37 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
               </label>
             </div>
           ) : null}
+          {main.includes("receive") ? (
+            <div className="wh-form-inline wf-inline-plain">
+              <label>
+                {t("wf.coating.warrantyMonths")}
+                <input
+                  type="number"
+                  min={0}
+                  max={240}
+                  value={warrantyMonths}
+                  onChange={(e) => setWarrantyMonths(e.target.value)}
+                />
+              </label>
+              <label>
+                {t("wf.coating.warrantyStart")}
+                <DateInput type="date" value={warrantyStart} onChange={(e) => setWarrantyStart(e.target.value)} />
+              </label>
+            </div>
+          ) : null}
           <button
             type="button"
             className="wf-btn is-primary"
             disabled={run.isPending || (late && (!party || !reason.trim()))}
-            onClick={() => go(main.includes("receive") ? "receive" : "deliver", { actual_date: date1, delay_party: late ? party : undefined, delay_reason: late ? reason : undefined })}
+            onClick={() =>
+              go(main.includes("receive") ? "receive" : "deliver", {
+                actual_date: date1,
+                delay_party: late ? party : undefined,
+                delay_reason: late ? reason : undefined,
+                warranty_months: main.includes("receive") && warrantyMonths !== "" ? Number(warrantyMonths) : undefined,
+                warranty_start: main.includes("receive") && warrantyMonths !== "" ? warrantyStart : undefined,
+              })
+            }
           >
             <Check size={14} /> {t(main.includes("receive") ? "wf.action.receive" : "wf.action.deliver")}
           </button>

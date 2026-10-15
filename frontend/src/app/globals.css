@@ -2968,6 +2968,34 @@ button.mon-history-link {
   letter-spacing: -0.02em;
 }
 
+.er-report .dash-voltage-title,
+.er-report .dash-voltage-sub,
+.er-report .dash-total-label,
+.er-report .er-stage-label,
+.er-report .er-stage-value,
+.er-report .er-cells-title,
+.er-report .er-cells-train-name,
+.er-report .dash-total-value {
+  text-align: center;
+}
+
+.er-report .dash-voltage-head {
+  justify-content: center;
+  text-align: center;
+}
+
+.er-report .dash-total-metrics {
+  justify-content: center;
+}
+
+/* Element cells / report tables: centre titles and values */
+.mon-page .ed-table th,
+.mon-page .ed-table td,
+.er-report .ed-table th,
+.er-report .ed-table td {
+  text-align: center;
+}
+
 .dash-voltage-sub {
   margin: 0.2rem 0 0;
   font-size: 0.8rem;

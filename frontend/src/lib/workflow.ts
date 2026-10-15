@@ -71,6 +71,8 @@ export interface WfSummary extends WfDeadline {
   delay_days: number | null;
   rejected?: boolean;
   rework_count?: number;
+  warranty_months?: number | null;
+  warranty_start?: string | null;
   registered?: number;
   reason?: string;
   element_nr?: string | null;
@@ -318,7 +320,7 @@ export const workflowApi = {
   markRead: async (body: { ids?: number[]; flow?: WfFlow; record_id?: number; all?: boolean }) =>
     (await apiClient.post("/workflow/notifications/read", body)).data,
   cartable: async (): Promise<WfSummary[]> => (await apiClient.get("/workflow/cartable")).data,
-  list: async (flow: WfFlow, params?: { status?: string; open_only?: boolean }): Promise<WfSummary[]> =>
+  list: async (flow: WfFlow, params?: { status?: string; open_only?: boolean; q?: string }): Promise<WfSummary[]> =>
     (await apiClient.get(`/workflow/${flow}`, { params })).data,
   get: async (flow: WfFlow, id: number): Promise<WfDetail> => (await apiClient.get(`/workflow/${flow}/${id}`)).data,
   coatingCandidates: async (): Promise<WfCoatingCandidate[]> => (await apiClient.get("/workflow/coating-candidates")).data,
@@ -328,7 +330,6 @@ export const workflowApi = {
     pallet_size: number;
     separate_kinds: boolean;
     remarks?: string;
-    allow_unknown?: boolean;
   }): Promise<WfDetail> => (await apiClient.post("/workflow/coating", body)).data,
   createPurchase: async (body: { supplier_id: number; anode_count: number; cathode_count: number; approval_ref?: string; remarks?: string }): Promise<WfDetail> =>
     (await apiClient.post("/workflow/purchase", body)).data,
@@ -342,6 +343,7 @@ export const workflowApi = {
   downloadInspectionPdf: (report: InspectionBrief) => saveBlob(`/inspections/${report.id}/sheet.pdf`, `inspection-${report.element_nr || report.id}.pdf`),
   downloadExcel: (id: number, name: string, packageId?: number) =>
     saveBlob(`/workflow/coating/${id}/excel`, `${name}.xlsx`, packageId ? { package_id: packageId } : undefined),
+  downloadDispatchPack: (id: number, name: string) => saveBlob(`/workflow/coating/${id}/dispatch-pack`, `${name}-pack.zip`),
   history: async (params: Record<string, string>): Promise<{ rows: WfHistoryRow[]; totals: Record<string, number> }> =>
     (await apiClient.get("/workflow/history", { params })).data,
   companyReport: async (params: { date_from?: string; date_to?: string } = {}): Promise<WfCompanyStats[]> =>

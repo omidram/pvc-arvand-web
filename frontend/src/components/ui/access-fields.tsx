@@ -74,7 +74,9 @@ export function AccessFields({
       className="access-fields grid gap-x-4 gap-y-1"
       style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
     >
-      {fields.map((f) => (
+      {fields.map((f) => {
+        const locked = readOnly || Boolean(f.fieldReadOnly);
+        return (
         <div key={f.name} className={cn("flex items-start gap-2", f.span === 2 && columns > 1 ? "col-span-2" : "")}>
           {f.type === "checkbox" ? (
             <label className="flex items-center gap-2 py-0.5 text-[11px]">
@@ -83,7 +85,7 @@ export function AccessFields({
                 checked={Boolean(values[f.name])}
                 onChange={(e) => onChange(f.name, e.target.checked)}
                 className="h-3.5 w-3.5 accent-[var(--win-navy)]"
-                disabled={readOnly}
+                disabled={locked}
               />
               {f.label}
             </label>
@@ -101,7 +103,7 @@ export function AccessFields({
                     value={String(values[f.name] ?? "")}
                     onChange={(e) => onChange(f.name, e.target.value)}
                     onBlur={(e) => onCommit?.(f.name, e.target.value)}
-                    disabled={readOnly}
+                    disabled={locked}
                     className="py-0.5 text-[11px]"
                   />
                 ) : f.type === "select" ? (
@@ -112,7 +114,7 @@ export function AccessFields({
                       onChange(f.name, e.target.value);
                       onCommit?.(f.name, e.target.value);
                     }}
-                    disabled={readOnly}
+                    disabled={locked}
                     className="h-[22px] py-0 text-[11px]"
                   >
                     <option value="">—</option>
@@ -142,7 +144,7 @@ export function AccessFields({
                       onKeyDown={(e) => {
                         if (e.key === "Enter") e.currentTarget.blur();
                       }}
-                      disabled={readOnly}
+                      disabled={locked}
                       placeholder={f.placeholder}
                       className="h-[22px] py-0 text-[11px]"
                       {...OFF_AUTOCOMPLETE}
@@ -171,7 +173,7 @@ export function AccessFields({
                     onKeyDown={(e) => {
                       if (e.key === "Enter") e.currentTarget.blur();
                     }}
-                    disabled={readOnly}
+                    disabled={locked}
                     placeholder={f.placeholder}
                     className="h-[22px] py-0 text-[11px]"
                     {...OFF_AUTOCOMPLETE}
@@ -181,7 +183,8 @@ export function AccessFields({
             </>
           )}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

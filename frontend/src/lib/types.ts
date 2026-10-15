@@ -477,6 +477,10 @@ export interface Shutdown {
   code: string | null;
   category: string | null;
   cause: string | null;
+  ka_before_trip: number | null;
+  lost_load: number | null;
+  lost_production: number | null;
+  mtbf_days: number | null;
   duration_hours: number | null;
 }
 

@@ -32,6 +32,9 @@ class WfCoatingBatch(Base):
     rejected: Mapped[bool] = mapped_column(default=False)
     remarks: Mapped[str | None] = mapped_column(Text)
     last_note: Mapped[str | None] = mapped_column(Text)
+    # Procurement fills these after return from the coater (applies to every piece on approve).
+    warranty_months: Mapped[int | None] = mapped_column(Integer)
+    warranty_start: Mapped[date | None] = mapped_column(Date)
     created_by_id: Mapped[int | None] = mapped_column(Integer)
     created_by_name: Mapped[str | None] = mapped_column(String(150))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)

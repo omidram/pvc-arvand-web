@@ -61,6 +61,10 @@ FORM_FIELDS: dict[str, list[str]] = {
         "code",
         "cause",
         "category",
+        "ka_before_trip",
+        "lost_load",
+        "lost_production",
+        "mtbf_days",
         "remarks",
     ],
     "elements": [

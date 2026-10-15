@@ -242,6 +242,10 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         code: row.code,
         category: row.category,
         cause: row.cause,
+        ka_before_trip: row.ka_before_trip,
+        lost_load: row.lost_load,
+        lost_production: row.lost_production,
+        mtbf_days: row.mtbf_days,
         ...patch,
       },
     });
@@ -288,6 +292,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         code: draft.code || null,
         category: draft.category || null,
         cause: draft.cause || null,
+        ka_before_trip: draft.ka_before_trip ?? null,
+        mtbf_days: draft.mtbf_days ?? null,
       } as never,
       {
         onSuccess: () => {
@@ -337,7 +343,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         </div>
       </div>
       <div className="overflow-auto shutdown-list-scroll">
-        <table className="access-cont-table shutdown-list-table min-w-[1100px]">
+        <table className="access-cont-table shutdown-list-table min-w-[1600px]">
           <thead>
             <tr>
               <th className="w-4" />
@@ -347,7 +353,11 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               {fieldVisible("startup_time") ? <th className="w-40">{t("fields.startupTime")}</th> : null}
               <th className="w-24">{t("fields.durationHm")}</th>
               {fieldVisible("code") ? <th className="w-16">{t("fields.code")}</th> : null}
-              {fieldVisible("cause") ? <th className="w-44">{t("fields.reason")}</th> : null}
+              {fieldVisible("cause") ? <th className="w-44">{t("fields.cause")}</th> : null}
+              {fieldVisible("ka_before_trip") ? <th className="w-24">{t("fields.kaBeforeTrip")}</th> : null}
+              {fieldVisible("lost_load") ? <th className="w-28">{t("fields.lostLoad")}</th> : null}
+              {fieldVisible("lost_production") ? <th className="w-28">{t("fields.lostProduction")}</th> : null}
+              {fieldVisible("mtbf_days") ? <th className="w-24">{t("fields.mtbfDays")}</th> : null}
               {fieldVisible("category") ? <th className="w-28">{t("fields.category")}</th> : null}
               {fieldVisible("remarks") ? <th>{t("fields.remarks")}</th> : null}
               {editable ? <th className="w-16" /> : null}
@@ -420,6 +430,43 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                       value={row.cause || ""}
                       disabled={!editable}
                       onChange={(v) => applyCause(row, v, false)}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("ka_before_trip") ? (
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-20 text-center tabular-nums"
+                      value={row.ka_before_trip ?? ""}
+                      disabled={!editable}
+                      onChange={(e) =>
+                        saveRow(row, { ka_before_trip: e.target.value === "" ? null : Number(e.target.value) })
+                      }
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("lost_load") ? (
+                  <td>
+                    <input className="w-24 text-center tabular-nums" value={row.lost_load ?? ""} readOnly tabIndex={-1} title="Duration × KA / 4.85" />
+                  </td>
+                ) : null}
+                {fieldVisible("lost_production") ? (
+                  <td>
+                    <input className="w-24 text-center tabular-nums" value={row.lost_production ?? ""} readOnly tabIndex={-1} title="Lost load × 1.112" />
+                  </td>
+                ) : null}
+                {fieldVisible("mtbf_days") ? (
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="w-20 text-center tabular-nums"
+                      value={row.mtbf_days ?? ""}
+                      disabled={!editable}
+                      title={t("fields.mtbfDays")}
+                      onChange={(e) => saveRow(row, { mtbf_days: e.target.value === "" ? null : Number(e.target.value) })}
                     />
                   </td>
                 ) : null}
@@ -517,6 +564,42 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                       options={causeOptions}
                       value={draft.cause || ""}
                       onChange={(v) => applyCause(null, v, true)}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("ka_before_trip") ? (
+                  <td>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-20 text-center tabular-nums"
+                      value={draft.ka_before_trip ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, ka_before_trip: e.target.value === "" ? null : Number(e.target.value) }))
+                      }
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("lost_load") ? (
+                  <td>
+                    <input className="w-24 text-center tabular-nums" value="" readOnly tabIndex={-1} title="Duration × KA / 4.85" />
+                  </td>
+                ) : null}
+                {fieldVisible("lost_production") ? (
+                  <td>
+                    <input className="w-24 text-center tabular-nums" value="" readOnly tabIndex={-1} title="Lost load × 1.112" />
+                  </td>
+                ) : null}
+                {fieldVisible("mtbf_days") ? (
+                  <td>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="w-20 text-center tabular-nums"
+                      value={draft.mtbf_days ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, mtbf_days: e.target.value === "" ? null : Number(e.target.value) }))
+                      }
                     />
                   </td>
                 ) : null}

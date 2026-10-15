@@ -253,7 +253,15 @@ def apply_parsed_voltage(
                 "time": tlabel,
                 "total_voltage": float(total_v) if total_v is not None else None,
                 "element_count": counts.get((stamp, tlabel)),
-                "anolyte_temp": slot.get("anolyte_temp"),
+                "anolyte_temp": (
+                    slot.get("anolyte_temp")
+                    if slot.get("anolyte_temp") is not None
+                    else (
+                        round(float(slot["catholyte_temp"]) - 0.5, 2)
+                        if slot.get("catholyte_temp") is not None
+                        else None
+                    )
+                ),
                 "catholyte_temp": slot.get("catholyte_temp"),
                 "total_current": slot.get("load"),
                 "rack_a_avg": slot.get("rack_a_avg"),

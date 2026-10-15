@@ -704,6 +704,11 @@ class AnodeRecoating(Base):
     manufacturer: Mapped[str | None] = mapped_column(String(100))
     recoating_number: Mapped[str | None] = mapped_column(String(20))
     remarks: Mapped[str | None] = mapped_column(Text)
+    # Set by procurement after return from the coater
+    warranty_months: Mapped[int | None] = mapped_column(Integer)
+    warranty_start: Mapped[date | None] = mapped_column(Date)
+    # Operating days of the previous coating when this piece was sent again
+    prior_service_days: Mapped[int | None] = mapped_column(Integer)
 
 
 class CathodeRecoating(Base):
@@ -714,6 +719,9 @@ class CathodeRecoating(Base):
     return_date: Mapped[datetime | None] = mapped_column(DateTime)
     manufacturer: Mapped[str | None] = mapped_column(String(100))
     remarks: Mapped[str | None] = mapped_column(Text)
+    warranty_months: Mapped[int | None] = mapped_column(Integer)
+    warranty_start: Mapped[date | None] = mapped_column(Date)
+    prior_service_days: Mapped[int | None] = mapped_column(Integer)
 
 
 class AnodeCoatingCheck(Base):
@@ -798,7 +806,12 @@ class Shutdown(Base):
     remarks: Mapped[str | None] = mapped_column(Text)
     code: Mapped[str | None] = mapped_column(String(10))
     category: Mapped[str | None] = mapped_column(String(50))
-    cause: Mapped[str | None] = mapped_column(String(200))
+    cause: Mapped[str | None] = mapped_column(String(200))  # Trip Cause (IDC / lookup)
+    # Trip report extras (plant note 2026-10): KA before trip, lost load/production, MTBF
+    ka_before_trip: Mapped[float | None] = mapped_column(Float)
+    lost_load: Mapped[float | None] = mapped_column(Float)  # Duration(h) * KA / 4.85
+    lost_production: Mapped[float | None] = mapped_column(Float)  # lost_load * 1.112
+    mtbf_days: Mapped[float | None] = mapped_column(Float)  # days since previous trip of same plant_part
 
 
 # ==========================================================================

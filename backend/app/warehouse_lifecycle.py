@@ -381,8 +381,49 @@ def search_lifecycle(
             }
         )
 
-    if send_no:
-        d = db.query(models.WhCoatingDispatch).filter(models.WhCoatingDispatch.send_no.ilike(f"%{send_no.strip()}%")).all()
+    if send_no or serial:
+        # Legacy dispatch send_no plus workflow CO-* packages / piece serials.
+        try:
+            from .workflow_models import WfCoatingBatch, WfCoatingItem, WfCoatingPackage
+
+            if send_no:
+                for pkg in db.query(WfCoatingPackage).filter(WfCoatingPackage.code.ilike(f"%{send_no.strip()}%")).limit(limit).all():
+                    batch = db.query(WfCoatingBatch).filter(WfCoatingBatch.id == pkg.batch_id).first()
+                    results.append(
+                        {
+                            "hit": "coating_package",
+                            "send_no": pkg.code,
+                            "date": (batch.dispatch_date.isoformat() if batch and batch.dispatch_date else None),
+                            "status": batch.status if batch else None,
+                            "batch_id": pkg.batch_id,
+                        }
+                    )
+            if serial:
+                key = compact_nr(serial)
+                for item in (
+                    db.query(WfCoatingItem)
+                    .filter(func.upper(func.replace(WfCoatingItem.serial, " ", "")).like(f"%{key}%"))
+                    .order_by(WfCoatingItem.id.desc())
+                    .limit(limit)
+                    .all()
+                ):
+                    pkg = db.query(WfCoatingPackage).filter(WfCoatingPackage.id == item.package_id).first() if item.package_id else None
+                    batch = db.query(WfCoatingBatch).filter(WfCoatingBatch.id == item.batch_id).first()
+                    results.append(
+                        {
+                            "hit": "coating_piece",
+                            "element_kind": item.element_kind,
+                            "serial": item.serial,
+                            "send_no": pkg.code if pkg else None,
+                            "date": (batch.dispatch_date.isoformat() if batch and batch.dispatch_date else None),
+                            "status": batch.status if batch else None,
+                            "batch_id": item.batch_id,
+                            "problem": item.problem,
+                        }
+                    )
+        except Exception:  # noqa: BLE001
+            pass
+        d = db.query(models.WhCoatingDispatch).filter(models.WhCoatingDispatch.send_no.ilike(f"%{(send_no or '').strip()}%")).all() if send_no else []
         for row in d:
             results.append({"hit": "dispatch", "send_no": row.send_no, "date": row.dispatch_date.isoformat(), "status": row.status})
     if receive_no:

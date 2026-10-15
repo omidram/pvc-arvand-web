@@ -17,14 +17,53 @@ router = APIRouter(prefix="/shutdowns", tags=["shutdowns"])
 SHUTDOWN_EXPORT_FIELDS = list(schemas.ShutdownRead.model_fields.keys())
 
 
+def _duration_hours(obj: models.Shutdown) -> float | None:
+    if not (obj.shutdown_time and obj.startup_time):
+        return None
+    seconds = (obj.startup_time - obj.shutdown_time).total_seconds()
+    return round(max(seconds, 0) / 3600, 4) if seconds >= 0 else 0.0
+
+
+def _mtbf_days(db: Session, obj: models.Shutdown) -> float | None:
+    """Days from the previous shutdown of the same plant part (switch / electrolyzer) to this one."""
+    part = (obj.plant_part or "").strip()
+    if not part or not obj.shutdown_time:
+        return None
+    prev = (
+        db.query(models.Shutdown)
+        .filter(
+            models.Shutdown.plant_part == part,
+            models.Shutdown.shutdown_time.isnot(None),
+            models.Shutdown.shutdown_time < obj.shutdown_time,
+            models.Shutdown.nr != obj.nr if obj.nr else True,
+        )
+        .order_by(models.Shutdown.shutdown_time.desc())
+        .first()
+    )
+    if not prev or not prev.shutdown_time:
+        return None
+    return round((obj.shutdown_time - prev.shutdown_time).total_seconds() / 86400, 2)
+
+
+def _apply_trip_metrics(db: Session, obj: models.Shutdown) -> None:
+    """Fill lost load / production / MTBF from Duration×KA/4.85 and prior trip of the same plant part."""
+    hours = _duration_hours(obj)
+    ka = obj.ka_before_trip
+    if hours is not None and ka is not None:
+        try:
+            lost = round(float(hours) * float(ka) / 4.85, 4)
+            obj.lost_load = lost
+            obj.lost_production = round(lost * 1.112, 4)
+        except (TypeError, ValueError):
+            pass
+    # Auto-fill MTBF when empty (operator can still override with a typed value).
+    if obj.mtbf_days is None:
+        obj.mtbf_days = _mtbf_days(db, obj)
+
+
 def _enrich(obj: models.Shutdown) -> schemas.ShutdownRead:
     read = schemas.ShutdownRead.model_validate(obj)
-    if obj.shutdown_time and obj.startup_time:
-        # Keep minute precision (hours rounded to 2 decimals loses odd minutes).
-        seconds = (obj.startup_time - obj.shutdown_time).total_seconds()
-        read.duration_hours = round(max(seconds, 0) / 3600, 4) if seconds >= 0 else 0.0
-    else:
-        read.duration_hours = None
+    read.duration_hours = _duration_hours(obj)
     return read
 
 
@@ -132,6 +171,8 @@ def create_shutdown(payload: schemas.ShutdownBase, db: Session = Depends(get_db)
     obj = models.Shutdown(**payload.model_dump())
     _sync_lookups(db, obj)
     db.add(obj)
+    db.flush()
+    _apply_trip_metrics(db, obj)
     db.commit()
     db.refresh(obj)
     return _enrich(obj)
@@ -145,6 +186,7 @@ def update_shutdown(nr: int, payload: schemas.ShutdownBase, db: Session = Depend
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
     _sync_lookups(db, obj)
+    _apply_trip_metrics(db, obj)
     db.commit()
     db.refresh(obj)
     return _enrich(obj)

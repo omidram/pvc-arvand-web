@@ -909,7 +909,11 @@ class ShutdownBase(ORMModel):
     remarks: str | None = None
     code: str | None = None
     category: str | None = None
-    cause: str | None = None
+    cause: str | None = None  # Trip Cause
+    ka_before_trip: float | None = None
+    lost_load: float | None = None
+    lost_production: float | None = None
+    mtbf_days: float | None = None
 
 
 class ShutdownRead(ShutdownBase):

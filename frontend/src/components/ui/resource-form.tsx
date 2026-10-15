@@ -14,6 +14,8 @@ export interface FieldDef {
   placeholder?: string;
   step?: string;
   span?: 1 | 2;
+  /** When true this field cannot be edited (still submitted). */
+  fieldReadOnly?: boolean;
 }
 
 export function ResourceForm<TValues extends object>({
@@ -24,6 +26,7 @@ export function ResourceForm<TValues extends object>({
   submitLabel,
   submitting,
   readOnly,
+  onValuesChange,
 }: {
   fields: FieldDef[];
   initialValues?: Partial<TValues>;
@@ -32,6 +35,8 @@ export function ResourceForm<TValues extends object>({
   submitLabel?: string;
   submitting?: boolean;
   readOnly?: boolean;
+  /** Return a patch (or full next values) after a field change — e.g. Access t An from t Ka. */
+  onValuesChange?: (name: string, value: unknown, values: Record<string, unknown>) => Record<string, unknown> | void;
 }) {
   const { t } = useI18n();
   const [values, setValues] = useState<Record<string, unknown>>(() => valuesFromRecord(fields, initialValues ?? null));
@@ -46,7 +51,13 @@ export function ResourceForm<TValues extends object>({
       <AccessFields
         fields={fields}
         values={values}
-        onChange={(name, value) => setValues((v) => ({ ...v, [name]: value }))}
+        onChange={(name, value) =>
+          setValues((v) => {
+            const next = { ...v, [name]: value };
+            const patch = onValuesChange?.(name, value, next);
+            return patch ? { ...next, ...patch } : next;
+          })
+        }
         readOnly={readOnly}
       />
       <div className="flex justify-end gap-2 border-t-2 border-[var(--win-face-dark)] pt-3">

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CircleAlert, Copy, Grid3x3, Layers, RefreshCw, Zap } from "lucide-react";
+import { Copy, Grid3x3, Layers, RefreshCw, Zap } from "lucide-react";
 import { elementDashboardApi } from "@/lib/endpoints";
 import type { CellSlot, CellStatus, CellsOverview } from "@/lib/types";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
@@ -70,7 +70,6 @@ export function ElementCellsTab({ initialTrain }: { initialTrain?: string }) {
         <DashKpi label={t("elDash.cells.occupied")} value={formatNumber(s.occupied_cells, 0)} hint={t("elDash.inst.capacity", { cap: s.capacity })} icon={Layers} tone="info" />
         <DashKpi label={t("elDash.cells.empty")} value={formatNumber(s.empty_cells, 0)} icon={Grid3x3} tone="neutral" />
         <DashKpi label={t("elDash.cells.conflict")} value={formatNumber(s.conflict_cells, 0)} hint={t("elDash.cells.conflictHint")} icon={Copy} tone={s.conflict_cells ? "danger" : "ok"} />
-        <DashKpi label={t("elDash.cells.stale")} value={formatNumber(s.stale_cells, 0)} hint={t("elDash.cells.staleHint")} icon={CircleAlert} tone={s.stale_cells ? "warning" : "ok"} />
         <DashKpi label={t("elDash.cells.multi")} value={formatNumber(s.multi_cell_elements, 0)} hint={t("elDash.cells.multiHint")} icon={Copy} tone={s.multi_cell_elements ? "danger" : "ok"} />
         <DashKpi label={t("elDash.cells.unplaced")} value={formatNumber(s.unplaced + s.out_of_range, 0)} hint={t("elDash.cells.unplacedHint")} icon={Zap} tone={s.unplaced + s.out_of_range ? "warning" : "ok"} />
       </div>
@@ -149,7 +148,6 @@ export function ElementCellsTab({ initialTrain }: { initialTrain?: string }) {
                     <th>{t("elDash.inst.fill")}</th>
                     <th>{t("elDash.cells.empty")}</th>
                     <th>{t("elDash.cells.conflict")}</th>
-                    <th>{t("elDash.cells.stale")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -179,7 +177,6 @@ export function ElementCellsTab({ initialTrain }: { initialTrain?: string }) {
                       </td>
                       <td className="ed-num">{r.empty}</td>
                       <td className={cn("ed-num", r.conflict && "cl-bad")}>{r.conflict}</td>
-                      <td className={cn("ed-num", r.stale && "cl-warn")}>{r.stale}</td>
                     </tr>
                   ))}
                 </tbody>
