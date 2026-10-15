@@ -6198,6 +6198,32 @@ html[data-theme="dark"] .tk-bell-btn.is-classic { background: #1e293b; border-co
 .wf-groups { display: inline-flex; gap: 0.3rem; flex-wrap: wrap; }
 .wf-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.6rem; }
 .wf-two textarea { font-family: ui-monospace, Consolas, monospace; }
+.wf-picker { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.wf-picker-label { font-size: 11px; font-weight: 700; color: var(--win-muted); }
+.wf-picker-box { position: relative; }
+.wf-picker-box input { width: 100%; font-family: ui-monospace, Consolas, monospace; }
+.wf-picker-list {
+  position: absolute; inset-inline: 0; top: calc(100% + 2px); z-index: 40; margin: 0; padding: 0.2rem; list-style: none;
+  max-height: 260px; overflow-y: auto; background: #fff; border: 1px solid var(--win-face-dark); border-radius: 0.45rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+.wf-picker-list li { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.3rem 0.45rem; border-radius: 0.35rem; cursor: pointer; font-size: 12px; }
+.wf-picker-list li strong { font-family: ui-monospace, Consolas, monospace; }
+.wf-picker-list li.is-active { background: #e0f2fe; }
+.wf-picker-list li.is-busy { cursor: not-allowed; opacity: 0.55; }
+.wf-picker-list li.is-empty { cursor: default; color: #991b1b; }
+.wf-picker-meta { font-size: 11px; color: var(--win-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wf-chips { display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0; padding: 0; list-style: none; max-height: 140px; overflow-y: auto; }
+.wf-chips li {
+  display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.1rem 0.25rem 0.1rem 0.5rem; border-radius: 999px;
+  background: #e0f2fe; border: 1px solid #7dd3fc; font-size: 12px; font-family: ui-monospace, Consolas, monospace;
+}
+.wf-chips button { display: inline-flex; border: 0; background: transparent; cursor: pointer; color: #0369a1; padding: 0.1rem; border-radius: 999px; }
+.wf-chips button:hover { background: #bae6fd; }
+html[data-theme="dark"] .wf-picker-list { background: #0f172a; }
+html[data-theme="dark"] .wf-picker-list li.is-active { background: #1e3a8a; }
+html[data-theme="dark"] .wf-chips li { background: #172554; border-color: #1e40af; }
+html[data-theme="dark"] .wf-chips button { color: #93c5fd; }
 .wf-inline-plain { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.45rem; }
 .wf-inline-plain label { min-width: 150px; flex: 1 1 150px; }
 .wf-actions .wf-inline-plain label,

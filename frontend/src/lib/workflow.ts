@@ -299,6 +299,18 @@ async function saveBlob(url: string, filename: string, params?: Record<string, u
   window.URL.revokeObjectURL(href);
 }
 
+/** One anode / cathode from the TAFKIK segregation form (its latest record). */
+export interface WfCoatingCandidate {
+  serial: string;
+  kind: "anode" | "cathode";
+  decision: string | null;
+  problem: string | null;
+  outcome: string;
+  pallet: string | null;
+  date: string | null;
+  busy: boolean;
+}
+
 export const workflowApi = {
   meta: async (): Promise<WfMeta> => (await apiClient.get("/workflow/meta")).data,
   summary: async (): Promise<{ cartable: number; unread: number; late?: number; items: WfNotice[] }> => (await apiClient.get("/workflow/summary")).data,
@@ -309,6 +321,7 @@ export const workflowApi = {
   list: async (flow: WfFlow, params?: { status?: string; open_only?: boolean }): Promise<WfSummary[]> =>
     (await apiClient.get(`/workflow/${flow}`, { params })).data,
   get: async (flow: WfFlow, id: number): Promise<WfDetail> => (await apiClient.get(`/workflow/${flow}/${id}`)).data,
+  coatingCandidates: async (): Promise<WfCoatingCandidate[]> => (await apiClient.get("/workflow/coating-candidates")).data,
   createCoating: async (body: {
     anodes: { serial: string; problem?: string | null }[];
     cathodes: { serial: string; problem?: string | null }[];

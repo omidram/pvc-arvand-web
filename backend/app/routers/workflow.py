@@ -24,6 +24,7 @@ from ..auth import LEVEL_RANK, get_current_user, user_permission_map
 from ..database import get_db
 from ..paths import data_root
 from ..plant_topology import format_electrolyzer_name
+from ..segregation_flow import classify_row
 from ..warehouse import compact_nr, ensure_indexed, load_compact_index
 from ..warehouse_lifecycle import _stamp, log_event, upsert_state
 from ..workflow_excel import build_workbook, parse_report
@@ -684,6 +685,44 @@ def _fill_problems(db: Session, items: list) -> None:
         p = found.get((i.element_kind, compact_nr(i.serial)))
         if p:
             i.problem = p
+
+
+@router.get("/coating-candidates")
+def coating_candidates(db: Session = Depends(get_db)):
+    """Every anode / cathode of the TAFKIK segregation form (latest record per serial) for the C-90 picker."""
+    S = models.ElectrodeSegregation
+    rows = (
+        db.query(S)
+        .filter(S.serial_nr.isnot(None), S.serial_nr != "", S.electrode_kind.in_(("anode", "cathode")))
+        .order_by(func.coalesce(S.inspection_date, S.disassemble_date, S.decommission_date), S.id)
+        .all()
+    )
+    busy = {
+        (k, compact_nr(s))
+        for s, k in db.query(WfCoatingItem.serial, WfCoatingItem.element_kind)
+        .join(WfCoatingBatch, WfCoatingBatch.id == WfCoatingItem.batch_id)
+        .filter(WfCoatingBatch.status.notin_(CLOSED))
+        .all()
+    }
+    latest: dict[tuple[str, str], Any] = {}
+    for r in rows:
+        latest[(r.electrode_kind, compact_nr(r.serial_nr))] = r
+    out = []
+    for (kind, key), r in latest.items():
+        out.append(
+            {
+                "serial": r.serial_nr.strip(),
+                "kind": kind,
+                "decision": r.decision,
+                "problem": _meaningful(r.problems),
+                "outcome": classify_row(r)["outcome"],
+                "pallet": r.pallet,
+                "date": (r.inspection_date or r.disassemble_date or r.decommission_date),
+                "busy": (kind, key) in busy,
+            }
+        )
+    out.sort(key=lambda x: x["serial"])
+    return out
 
 
 @router.post("/coating")

@@ -376,7 +376,11 @@ export const extraEn: Tree = {
     coating: {
       newTitle: "New recoating request (C-90)",
       newHint:
-        "One anode/cathode number per line. Problems are taken automatically from the segregation records (or the element's decommission reason). Every pallet (default 20 pieces) gets its own code CO-date-number and Excel sheet.",
+        "Anodes and cathodes are picked only from the TAFKIK segregation form: type the number and choose a suggestion (Enter or click). A pasted list works too. Problems are taken automatically from the segregation records. Every pallet (default 20 pieces) gets its own code CO-date-number and Excel sheet.",
+      pickPlaceholder: "Type a number…",
+      notInTafkik: "Not in the segregation form",
+      inOpenRequest: "Already in an open recoating request",
+      pasteMissing: "Not in the segregation form or already requested:",
       anodes: "Anodes ({n})",
       cathodes: "Cathodes ({n})",
       palletSize: "Pieces per pallet",
@@ -1112,7 +1116,11 @@ export const extraFa: Tree = {
     coating: {
       newTitle: "درخواست جدید پوشش‌دهی مجدد (C-90)",
       newHint:
-        "در هر سطر یک شماره آند/کاتد. مشکلات به‌صورت خودکار از سوابق تفکیک (یا علت خروج المنت) خوانده می‌شود. هر پالت (پیش‌فرض ۲۰ عدد) کد جداگانه CO-تاریخ-شماره و شیت اکسل خودش را می‌گیرد.",
+        "آندها و کاتدها فقط از فرم تفکیک (TAFKIK) انتخاب می‌شوند: شماره را تایپ کنید و از پیشنهادها انتخاب کنید (Enter یا کلیک). می‌توانید فهرستی را هم paste کنید. مشکلات به‌صورت خودکار از سوابق تفکیک خوانده می‌شود. هر پالت (پیش‌فرض ۲۰ عدد) کد جداگانه CO-تاریخ-شماره و شیت اکسل خودش را می‌گیرد.",
+      pickPlaceholder: "شماره را تایپ کنید…",
+      notInTafkik: "در فرم تفکیک پیدا نشد",
+      inOpenRequest: "در یک درخواست باز پوشش‌دهی است",
+      pasteMissing: "در فرم تفکیک پیدا نشد یا در درخواست باز است:",
       anodes: "آندها ({n})",
       cathodes: "کاتدها ({n})",
       palletSize: "تعداد در هر پالت",

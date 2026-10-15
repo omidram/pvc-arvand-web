@@ -32,7 +32,9 @@ import {
   type WfGroup,
   type WfHistoryRow,
   type WfSummary,
+  type WfCoatingCandidate,
 } from "@/lib/workflow";
+import { CoatingSerialPicker } from "@/components/domain/coating-serial-picker";
 
 type T = (k: string, vars?: Record<string, string | number | null | undefined>) => string;
 
@@ -195,15 +197,23 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
   const canRequest = (meta.data?.groups ?? []).includes("c90");
   const [openOnly, setOpenOnly] = useState(true);
   const list = useQuery({ queryKey: ["wf", "list", "coating", openOnly], queryFn: () => workflowApi.list("coating", { open_only: openOnly }), refetchInterval: LIVE_MS });
-  const [anodes, setAnodes] = useState("");
-  const [cathodes, setCathodes] = useState("");
+  const candidates = useQuery({
+    queryKey: ["wf", "coating-candidates"],
+    queryFn: workflowApi.coatingCandidates,
+    enabled: canRequest,
+    staleTime: 30_000,
+  });
+  const anodeOptions = useMemo(() => (candidates.data ?? []).filter((c) => c.kind === "anode"), [candidates.data]);
+  const cathodeOptions = useMemo(() => (candidates.data ?? []).filter((c) => c.kind === "cathode"), [candidates.data]);
+  const [aPicked, setAPicked] = useState<WfCoatingCandidate[]>([]);
+  const [kPicked, setKPicked] = useState<WfCoatingCandidate[]>([]);
   const [palletSize, setPalletSize] = useState(20);
   const [separate, setSeparate] = useState(true);
   const [remarks, setRemarks] = useState("");
   const [unknown, setUnknown] = useState<string[]>([]);
   const [allowUnknown, setAllowUnknown] = useState(false);
-  const aLines = useMemo(() => parseSerialLines(anodes), [anodes]);
-  const kLines = useMemo(() => parseSerialLines(cathodes), [cathodes]);
+  const aLines = useMemo(() => aPicked.map((c) => ({ serial: c.serial, problem: c.problem })), [aPicked]);
+  const kLines = useMemo(() => kPicked.map((c) => ({ serial: c.serial, problem: c.problem })), [kPicked]);
   const pallets = separate
     ? Math.ceil(aLines.length / palletSize) + Math.ceil(kLines.length / palletSize)
     : Math.ceil((aLines.length + kLines.length) / palletSize);
@@ -218,8 +228,8 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
         allow_unknown: allowUnknown,
       }),
     onSuccess: (d) => {
-      setAnodes("");
-      setCathodes("");
+      setAPicked([]);
+      setKPicked([]);
       setRemarks("");
       setUnknown([]);
       setAllowUnknown(false);
@@ -251,14 +261,22 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
           <h3>{t("wf.coating.newTitle")}</h3>
           <p className="wh-subdesc">{t("wf.coating.newHint")}</p>
           <div className="wf-two">
-            <label>
-              {t("wf.coating.anodes", { n: aLines.length })}
-              <textarea value={anodes} onChange={(e) => setAnodes(e.target.value)} rows={5} placeholder={"A-1001\nA-1002 ; dent on flange"} />
-            </label>
-            <label>
-              {t("wf.coating.cathodes", { n: kLines.length })}
-              <textarea value={cathodes} onChange={(e) => setCathodes(e.target.value)} rows={5} placeholder={"K-2001\nK-2002 ; mesh damage"} />
-            </label>
+            <CoatingSerialPicker
+              label={t("wf.coating.anodes", { n: aPicked.length })}
+              candidates={anodeOptions}
+              picked={aPicked}
+              onChange={setAPicked}
+              loading={candidates.isLoading}
+              t={t}
+            />
+            <CoatingSerialPicker
+              label={t("wf.coating.cathodes", { n: kPicked.length })}
+              candidates={cathodeOptions}
+              picked={kPicked}
+              onChange={setKPicked}
+              loading={candidates.isLoading}
+              t={t}
+            />
           </div>
           <div className="wh-form-inline wf-inline-plain">
             <label>
