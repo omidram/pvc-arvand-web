@@ -127,22 +127,16 @@ function PlantInfoTab() {
           onCancel={() => settingsQuery.refetch()}
           submitting={updateMutation.isPending}
           readOnly={!editable}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             const idle = Number(values.session_idle_minutes);
-            updateMutation.mutate(
-              {
-                ...values,
-                session_idle_minutes: Number.isFinite(idle) ? Math.max(0, Math.min(24 * 60, Math.round(idle))) : 30,
-              } as Partial<PlantSettings>,
-              {
-                onSuccess: () => {
-                  setSaved(true);
-                  settingsQuery.refetch();
-                  void refresh();
-                  setTimeout(() => setSaved(false), 2000);
-                },
-              }
-            );
+            await updateMutation.mutateAsync({
+              ...values,
+              session_idle_minutes: Number.isFinite(idle) ? Math.max(0, Math.min(24 * 60, Math.round(idle))) : 30,
+            } as Partial<PlantSettings>);
+            setSaved(true);
+            settingsQuery.refetch();
+            void refresh();
+            setTimeout(() => setSaved(false), 2000);
           }}
         />
         <p className="mt-2 text-[11px] text-[var(--win-muted)]">{t("settings.sessionIdleHint")}</p>

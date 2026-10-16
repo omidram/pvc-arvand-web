@@ -2,6 +2,11 @@ import { apiClient } from "./api-client";
 import type * as T from "./types";
 
 /** Generic REST helpers matching backend/app/crud.py's build_crud_router shape. */
+/** Keys with / # ? % cannot live in a URL path; the API reads those from ?item_id=. */
+function awkwardKey(id: string | number): boolean {
+  return /[/?#%\\]/.test(String(id));
+}
+
 function resource<TRead, TWrite = Partial<TRead>>(prefix: string) {
   return {
     list: async (params?: Record<string, unknown>): Promise<TRead[]> => {
@@ -9,7 +14,9 @@ function resource<TRead, TWrite = Partial<TRead>>(prefix: string) {
       return data;
     },
     get: async (id: string | number): Promise<TRead> => {
-      const { data } = await apiClient.get(`${prefix}/${encodeURIComponent(String(id))}`);
+      const { data } = awkwardKey(id)
+        ? await apiClient.get(`${prefix}/by-key`, { params: { item_id: String(id) } })
+        : await apiClient.get(`${prefix}/${encodeURIComponent(String(id))}`);
       return data;
     },
     create: async (payload: TWrite): Promise<TRead> => {
@@ -17,11 +24,14 @@ function resource<TRead, TWrite = Partial<TRead>>(prefix: string) {
       return data;
     },
     update: async (id: string | number, payload: TWrite): Promise<TRead> => {
-      const { data } = await apiClient.put(`${prefix}/${encodeURIComponent(String(id))}`, payload);
+      const { data } = awkwardKey(id)
+        ? await apiClient.put(`${prefix}/by-key`, payload, { params: { item_id: String(id) } })
+        : await apiClient.put(`${prefix}/${encodeURIComponent(String(id))}`, payload);
       return data;
     },
     remove: async (id: string | number): Promise<void> => {
-      await apiClient.delete(`${prefix}/${encodeURIComponent(String(id))}`);
+      if (awkwardKey(id)) await apiClient.delete(`${prefix}/by-key`, { params: { item_id: String(id) } });
+      else await apiClient.delete(`${prefix}/${encodeURIComponent(String(id))}`);
     },
   };
 }

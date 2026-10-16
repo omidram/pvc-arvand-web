@@ -58,8 +58,8 @@ function MembranesDetails() {
       columns={columns}
       idField="membrane_nr"
       canEdit={canEdit("membranes")}
-      onSave={(id, values) => updateMutation.mutate({ id, payload: values })}
-      onCreate={(values) => createMutation.mutate(values as never)}
+      onSave={(id, values) => updateMutation.mutateAsync({ id, payload: values })}
+      onCreate={(values) => createMutation.mutateAsync(values as never)}
       onDelete={(id) => removeMutation.mutate(id)}
       confirmDelete={(row) => t("membranes.confirmDelete", { nr: row.membrane_nr })}
       submitting={createMutation.isPending || updateMutation.isPending}
@@ -101,8 +101,8 @@ function MembraneMaintenanceTab() {
       columns={columns}
       idField="id"
       canEdit={canEdit("membranes")}
-      onSave={(id, values) => updateMutation.mutate({ id, payload: values })}
-      onCreate={(values) => createMutation.mutate(values as never)}
+      onSave={(id, values) => updateMutation.mutateAsync({ id, payload: values })}
+      onCreate={(values) => createMutation.mutateAsync(values as never)}
       onDelete={(id) => removeMutation.mutate(id)}
       confirmDelete={() => t("common.confirmDeleteGeneric")}
       submitting={createMutation.isPending || updateMutation.isPending}

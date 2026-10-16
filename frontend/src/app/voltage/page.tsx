@@ -164,7 +164,7 @@ function CeEntryForm({
   submitting,
 }: {
   initial?: CurrentEfficiencyEntry | null;
-  onSubmit: (values: Record<string, unknown>) => void;
+  onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
   onCancel: () => void;
   submitting?: boolean;
 }) {
@@ -173,6 +173,7 @@ function CeEntryForm({
   const [values, setValues] = useState<Record<string, unknown>>(() =>
     valuesFromRecord(ceFields(t, { name: "scope_ref", label: t("fields.scopeReference"), type: "text" }), initial ?? null)
   );
+  const [error, setError] = useState("");
 
   const fields = useMemo((): FieldDef[] => {
     const scopeRef: FieldDef =
@@ -191,11 +192,17 @@ function CeEntryForm({
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        onSubmit(accessPayload(fields, values));
+        setError("");
+        void Promise.resolve(onSubmit(accessPayload(fields, values))).catch((err: unknown) => {
+          setError(err instanceof Error ? err.message : String(err));
+        });
       }}
       className="space-y-3"
     >
       <AccessFields fields={fields} values={values} onChange={(name, value) => setValues((v) => ({ ...v, [name]: value }))} />
+      {error ? (
+        <p className="border-2 border-[#b54a4a] bg-[#fde8e8] px-2 py-1 text-[11px] font-semibold text-[#8a1f1f]">{error}</p>
+      ) : null}
       <div className="flex justify-end gap-2 border-t-2 border-[var(--win-face-dark)] pt-3">
         <Button type="button" variant="secondary" onClick={onCancel}>
           {t("common.cancel")}
@@ -300,12 +307,10 @@ function NormalizationsTab() {
         <ResourceForm<ElectrolyzerNormalization>
           fields={normFields}
           initialValues={editing ?? undefined}
-          onSubmit={(values) => {
-            if (editing) {
-              updateMutation.mutate({ id: editing.id, payload: values }, { onSuccess: () => setShowForm(false) });
-            } else {
-              createMutation.mutate(values as never, { onSuccess: () => setShowForm(false) });
-            }
+          onSubmit={async (values) => {
+            if (editing) await updateMutation.mutateAsync({ id: editing.id, payload: values });
+            else await createMutation.mutateAsync(values as never);
+            setShowForm(false);
           }}
           onCancel={() => setShowForm(false)}
           submitting={createMutation.isPending || updateMutation.isPending}
@@ -498,12 +503,10 @@ function ReadingsTab() {
         <ResourceForm<VoltageReading>
           fields={readingFormFields}
           initialValues={editing ?? undefined}
-          onSubmit={(values) => {
-            if (editing) {
-              updateMutation.mutate({ id: editing.id, payload: values }, { onSuccess: () => setShowForm(false) });
-            } else {
-              createMutation.mutate(values as never, { onSuccess: () => setShowForm(false) });
-            }
+          onSubmit={async (values) => {
+            if (editing) await updateMutation.mutateAsync({ id: editing.id, payload: values });
+            else await createMutation.mutateAsync(values as never);
+            setShowForm(false);
           }}
           onCancel={() => setShowForm(false)}
           submitting={createMutation.isPending || updateMutation.isPending}
@@ -936,12 +939,10 @@ function CurrentEfficiencyTab() {
       <Modal open={showForm} onClose={() => setShowForm(false)} title={editing ? t("voltage.editEntry") : t("voltage.newEntryTitle")}>
         <CeEntryForm
           initial={editing}
-          onSubmit={(values) => {
-            if (editing) {
-              updateMutation.mutate({ id: editing.id, payload: values }, { onSuccess: () => setShowForm(false) });
-            } else {
-              createMutation.mutate(values as never, { onSuccess: () => setShowForm(false) });
-            }
+          onSubmit={async (values) => {
+            if (editing) await updateMutation.mutateAsync({ id: editing.id, payload: values });
+            else await createMutation.mutateAsync(values as never);
+            setShowForm(false);
           }}
           onCancel={() => setShowForm(false)}
           submitting={createMutation.isPending || updateMutation.isPending}

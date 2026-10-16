@@ -95,8 +95,8 @@ function CathodesDetails() {
       validate={(values, { isNew }) => (isNew ? requiredError(values, fields, CATHODE_REQUIRED, t) : null)}
       idField="cathode_nr"
       canEdit={canEdit("cathodes")}
-      onSave={(id, values) => updateMutation.mutate({ id, payload: values })}
-      onCreate={(values) => createMutation.mutate(values as never)}
+      onSave={(id, values) => updateMutation.mutateAsync({ id, payload: values })}
+      onCreate={(values) => createMutation.mutateAsync(values as never)}
       onDelete={(id) => removeMutation.mutate(id)}
       confirmDelete={(row) => t("cathodes.confirmDelete", { nr: row.cathode_nr })}
       submitting={createMutation.isPending || updateMutation.isPending}
@@ -135,8 +135,8 @@ function CathodeMaintenanceTab() {
       nrKey="cathode_nr"
       exportPrefix="/cathode-maintenance"
       reportHref="/maintenance-reports?kind=cathode"
-      onCreate={(payload) => createMutation.mutate(payload)}
-      onUpdate={(row, payload) => updateMutation.mutate({ id: row.id, payload })}
+      onCreate={(payload) => createMutation.mutateAsync(payload)}
+      onUpdate={(row, payload) => updateMutation.mutateAsync({ id: row.id, payload })}
     />
   );
 }
@@ -166,8 +166,8 @@ function CathodeRecoatingTab() {
       canEdit={canEdit("cathodes")}
       nrKey="cathode_nr"
       exportPrefix="/cathode-recoating"
-      onCreate={(payload) => createMutation.mutate(payload)}
-      onUpdate={(row, payload) => updateMutation.mutate({ id: row.id, payload })}
+      onCreate={(payload) => createMutation.mutateAsync(payload)}
+      onUpdate={(row, payload) => updateMutation.mutateAsync({ id: row.id, payload })}
     />
   );
 }
@@ -198,8 +198,8 @@ function CathodeCoatingTab() {
       canEdit={canEdit("cathodes")}
       nrKey="cathode_nr"
       exportPrefix="/cathode-coating-checks"
-      onCreate={(payload) => createMutation.mutate(payload)}
-      onUpdate={(row, payload) => updateMutation.mutate({ id: row.id, payload })}
+      onCreate={(payload) => createMutation.mutateAsync(payload)}
+      onUpdate={(row, payload) => updateMutation.mutateAsync({ id: row.id, payload })}
     />
   );
 }

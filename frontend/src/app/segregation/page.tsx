@@ -99,8 +99,8 @@ export default function SegregationPage() {
         idField="id"
         recordParam="serial_nr"
         canEdit={editable}
-        onSave={(id, values) => updateMutation.mutate({ id, payload: values })}
-        onCreate={(values) => createMutation.mutate(values as never)}
+        onSave={(id, values) => updateMutation.mutateAsync({ id, payload: values })}
+        onCreate={(values) => createMutation.mutateAsync(values as never)}
         onDelete={(id) => removeMutation.mutate(id)}
         confirmDelete={(row) => t("segregation.confirmDelete", { nr: row.serial_nr })}
         submitting={createMutation.isPending || updateMutation.isPending}

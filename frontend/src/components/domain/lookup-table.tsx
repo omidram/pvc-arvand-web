@@ -110,16 +110,14 @@ export function LookupTable<T extends object>({
         <ResourceForm<T>
           fields={fields}
           initialValues={editing ?? undefined}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             if (editing) {
               const id = (editing as Record<string, unknown>)[keyField] as string | number;
-              updateMutation.mutate(
-                { id, payload: values as Partial<T> },
-                { onSuccess: () => setShowForm(false) }
-              );
+              await updateMutation.mutateAsync({ id, payload: values as Partial<T> });
             } else {
-              createMutation.mutate(values as Partial<T>, { onSuccess: () => setShowForm(false) });
+              await createMutation.mutateAsync(values as Partial<T>);
             }
+            setShowForm(false);
           }}
           onCancel={() => setShowForm(false)}
           submitting={createMutation.isPending || updateMutation.isPending}

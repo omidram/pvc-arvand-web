@@ -681,6 +681,15 @@ def natural_key(value) -> list:
     return [(0, int(p), "") if p.isdigit() else (1, 0, p.lower()) for p in re.split(r"(\d+)", text) if p != ""]
 
 
+def _rename_group(db: Session, old: str, new: str) -> None:
+    db.query(models.Element).filter(models.Element.group_nr == old).update(
+        {models.Element.group_nr: new}, synchronize_session=False
+    )
+    db.query(models.AssemblyInspectionReport).filter(models.AssemblyInspectionReport.group_nr == old).update(
+        {models.AssemblyInspectionReport.group_nr: new}, synchronize_session=False
+    )
+
+
 group_definitions_router = build_crud_router(
     model=models.GroupDefinition,
     read_schema=schemas.GroupDefinitionBase,
@@ -691,6 +700,7 @@ group_definitions_router = build_crud_router(
     required_fields=["group_nr"],
     unique_compact=True,
     sort_key=lambda row: natural_key(row.group_nr),
+    on_rename=_rename_group,
 )
 
 

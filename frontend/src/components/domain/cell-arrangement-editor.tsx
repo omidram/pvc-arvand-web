@@ -563,7 +563,8 @@ export function CellArrangementEditor({
               await refresh();
             }}
             onUpdate={async (payload) => {
-              await anodesApi.update(anodeNr, { ...payload, anode_nr: anodeNr });
+              const stored = (dossier.anode as { anode_nr?: string } | null)?.anode_nr || anodeNr;
+              await anodesApi.update(stored, payload);
               await refresh();
             }}
           />
@@ -657,7 +658,8 @@ export function CellArrangementEditor({
               await refresh();
             }}
             onUpdate={async (payload) => {
-              await cathodesApi.update(cathodeNr, { ...payload, cathode_nr: cathodeNr });
+              const stored = (dossier.cathode as { cathode_nr?: string } | null)?.cathode_nr || cathodeNr;
+              await cathodesApi.update(stored, payload);
               await refresh();
             }}
           />
@@ -751,7 +753,8 @@ export function CellArrangementEditor({
               await refresh();
             }}
             onUpdate={async (payload) => {
-              await membranesApi.update(membraneNr, { ...payload, membrane_nr: membraneNr });
+              const stored = (dossier.membrane as { membrane_nr?: string } | null)?.membrane_nr || membraneNr;
+              await membranesApi.update(stored, payload);
               await refresh();
             }}
           />

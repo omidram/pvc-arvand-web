@@ -54,14 +54,15 @@ export function ElectrodeSheet<T extends { id: number }>({
   nrKey: keyof T & string;
   exportPrefix: string;
   reportHref?: string;
-  onCreate: (payload: Partial<T>) => void;
-  onUpdate: (row: T, payload: Partial<T>) => void;
+  onCreate: (payload: Partial<T>) => void | Promise<unknown>;
+  onUpdate: (row: T, payload: Partial<T>) => void | Promise<unknown>;
 }) {
   const { t } = useI18n();
   useCalendar();
   const [active, setActive] = useState<number | "new" | null>(null);
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [newKey, setNewKey] = useState(0);
+  const [sheetError, setSheetError] = useState("");
   const today = new Date().toISOString().slice(0, 10);
   const lookups = [...new Set(columns.map((col) => col.lookup).filter(Boolean))] as string[];
   const lookupQuery = useQuery({
@@ -75,25 +76,30 @@ export function ElectrodeSheet<T extends { id: number }>({
     enabled: lookups.length > 0,
   });
 
-  function save(row: T, key: string, next: unknown, kind?: SheetColumn<T>["kind"]) {
+  async function save(row: T, key: string, next: unknown, kind?: SheetColumn<T>["kind"]) {
     if (!canEdit) return;
     const current = (row as Record<string, unknown>)[key];
+    let payload: Partial<T> | null = null;
     if (kind === "date") {
       if (day(current) === day(next)) return;
-      onUpdate(row, { [key]: next || null } as Partial<T>);
-      return;
-    }
-    if (kind === "number") {
+      payload = { [key]: next || null } as Partial<T>;
+    } else if (kind === "number") {
       const parsed = next === "" || next == null ? null : Number(next);
       if (parsed === current || (parsed == null && (current == null || current === ""))) return;
-      onUpdate(row, { [key]: Number.isFinite(parsed as number) ? parsed : null } as Partial<T>);
-      return;
+      payload = { [key]: Number.isFinite(parsed as number) ? parsed : null } as Partial<T>;
+    } else {
+      if (showText(current) === showText(next)) return;
+      payload = { [key]: next === "" ? null : next } as Partial<T>;
     }
-    if (showText(current) === showText(next)) return;
-    onUpdate(row, { [key]: next === "" ? null : next } as Partial<T>);
+    setSheetError("");
+    try {
+      await onUpdate(row, payload);
+    } catch (err) {
+      setSheetError(err instanceof Error ? err.message : String(err));
+    }
   }
 
-  function commitDraft(key: string, next: unknown, kind?: SheetColumn<T>["kind"]) {
+  async function commitDraft(key: string, next: unknown, kind?: SheetColumn<T>["kind"]) {
     const text = next == null ? "" : String(next);
     const nextDraft = { ...draft, [key]: text };
     setDraft(nextDraft);
@@ -108,9 +114,14 @@ export function ElectrodeSheet<T extends { id: number }>({
       }
       else payload[col.key] = raw;
     }
-    onCreate(payload as Partial<T>);
-    setDraft({});
-    setNewKey((n) => n + 1);
+    setSheetError("");
+    try {
+      await onCreate(payload as Partial<T>);
+      setDraft({});
+      setNewKey((n) => n + 1);
+    } catch (err) {
+      setSheetError(err instanceof Error ? err.message : String(err));
+    }
   }
 
   return (
@@ -137,6 +148,11 @@ export function ElectrodeSheet<T extends { id: number }>({
       ) : null}
       {isLoading ? <LoadingState /> : null}
       {error ? <ErrorState message={error.message} /> : null}
+      {sheetError ? (
+        <p className="mb-2 border-2 border-[#b54a4a] bg-[#fde8e8] px-2 py-1 text-[11px] font-semibold text-[#8a1f1f]">
+          {sheetError}
+        </p>
+      ) : null}
       {rows ? (
         <div className="sheet-scroll overflow-auto border border-black bg-white">
           {lookups.map((name) => (

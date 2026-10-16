@@ -374,7 +374,7 @@ function CeScopeInput({ mode }: { mode: CeInputMode }) {
           }
           submitting={createMutation.isPending || updateMutation.isPending}
           onCancel={() => setShowForm(false)}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             const payload: Partial<CurrentEfficiencyEntry> = {
               scope,
               date: (values.date as string) || null,
@@ -383,11 +383,9 @@ function CeScopeInput({ mode }: { mode: CeInputMode }) {
               scope_ref: mode === "plant" ? null : ((values.scope_ref as string) || null),
               position: mode === "element" ? ((values.position as string) || null) : null,
             };
-            if (editing) {
-              updateMutation.mutate({ id: editing.id, payload }, { onSuccess: () => setShowForm(false) });
-            } else {
-              createMutation.mutate(payload as never, { onSuccess: () => setShowForm(false) });
-            }
+            if (editing) await updateMutation.mutateAsync({ id: editing.id, payload });
+            else await createMutation.mutateAsync(payload as never);
+            setShowForm(false);
           }}
         />
       </Modal>

@@ -56,14 +56,15 @@ export function SubResourcePanel<TRow extends object>({
 
   const rows = (listQuery.data || []).filter((r) => (r as Record<string, unknown>)[parentField] === parentValue);
 
-  function handleSubmit(values: Record<string, unknown>) {
+  async function handleSubmit(values: Record<string, unknown>) {
     const payload = { ...values, [parentField]: parentValue } as Partial<TRow>;
     if (editing) {
       const id = (editing as Record<string, unknown>)[keyField as string] as string | number;
-      updateMutation.mutate({ id, payload }, { onSuccess: () => setShowForm(false) });
+      await updateMutation.mutateAsync({ id, payload });
     } else {
-      createMutation.mutate(payload, { onSuccess: () => setShowForm(false) });
+      await createMutation.mutateAsync(payload);
     }
+    setShowForm(false);
   }
 
   function handleDelete(row: TRow) {

@@ -30,7 +30,7 @@ export function ResourceForm<TValues extends object>({
 }: {
   fields: FieldDef[];
   initialValues?: Partial<TValues>;
-  onSubmit: (values: Record<string, unknown>) => void;
+  onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
   onCancel: () => void;
   submitLabel?: string;
   submitting?: boolean;
@@ -40,10 +40,16 @@ export function ResourceForm<TValues extends object>({
 }) {
   const { t } = useI18n();
   const [values, setValues] = useState<Record<string, unknown>>(() => valuesFromRecord(fields, initialValues ?? null));
+  const [error, setError] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit(accessPayload(fields, values));
+    setError("");
+    try {
+      await onSubmit(accessPayload(fields, values));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   }
 
   return (
@@ -60,6 +66,9 @@ export function ResourceForm<TValues extends object>({
         }
         readOnly={readOnly}
       />
+      {error ? (
+        <p className="border-2 border-[#b54a4a] bg-[#fde8e8] px-2 py-1 text-[11px] font-semibold text-[#8a1f1f]">{error}</p>
+      ) : null}
       <div className="flex justify-end gap-2 border-t-2 border-[var(--win-face-dark)] pt-3">
         <Button type="button" variant="secondary" onClick={onCancel}>
           {readOnly ? t("common.close") : t("common.cancel")}

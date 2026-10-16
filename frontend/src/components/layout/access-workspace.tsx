@@ -16,6 +16,64 @@ import { useDefaultView, type RecordView } from "@/lib/default-view";
 
 const HIDDEN_SHEET_KEYS = new Set(["sign_insp_image", "sign_maint_image", "sign_proc_image", "signature"]);
 
+function SheetEdit({
+  field,
+  value,
+  onChange,
+}: {
+  field: FieldDef;
+  value: unknown;
+  onChange: (name: string, value: unknown) => void;
+}) {
+  const stop = (event: React.SyntheticEvent) => event.stopPropagation();
+  if (field.type === "checkbox") {
+    return (
+      <input
+        type="checkbox"
+        checked={Boolean(value)}
+        className="sheet-cell-input"
+        onClick={stop}
+        onDoubleClick={stop}
+        onMouseDown={stop}
+        onChange={(event) => onChange(field.name, event.target.checked)}
+      />
+    );
+  }
+  if (field.type === "select") {
+    return (
+      <select
+        value={String(value ?? "")}
+        className="sheet-cell-input"
+        onClick={stop}
+        onDoubleClick={stop}
+        onMouseDown={stop}
+        onChange={(event) => onChange(field.name, event.target.value)}
+      >
+        <option value="">—</option>
+        {field.options?.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    );
+  }
+  const inputType =
+    field.type === "date" || field.type === "datetime-local" || field.type === "number" ? field.type : "text";
+  return (
+    <input
+      type={inputType}
+      list={field.type === "combo" ? `sheet-combo-${field.name}` : undefined}
+      value={String(value ?? "")}
+      className="sheet-cell-input"
+      onClick={stop}
+      onDoubleClick={stop}
+      onMouseDown={stop}
+      onChange={(event) => onChange(field.name, event.target.value)}
+    />
+  );
+}
+
 function fieldPlain(field: FieldDef, row: object, yes: string, no: string): string {
   const raw = (row as Record<string, unknown>)[field.name];
   if (raw == null || raw === "") return "";
@@ -73,8 +131,8 @@ export function AccessWorkspace<T extends object>({
   getId?: (row: T) => string | number;
   recordParam?: string;
   canEdit: boolean;
-  onSave: (id: string | number, values: Record<string, unknown>) => void | Promise<void>;
-  onCreate: (values: Record<string, unknown>) => void | Promise<void>;
+  onSave: (id: string | number, values: Record<string, unknown>) => void | Promise<unknown>;
+  onCreate: (values: Record<string, unknown>) => void | Promise<unknown>;
   onDelete: (id: string | number) => void;
   related?: (row: T) => React.ReactNode;
   /** Shown under the datasheet when a row is selected (single click). Double-click still opens form view. */
@@ -145,6 +203,9 @@ export function AccessWorkspace<T extends object>({
   const [isNew, setIsNew] = useState(startNew);
   const [findValue, setFindValue] = useState("");
   const [saveError, setSaveError] = useState("");
+  const [saveNotice, setSaveNotice] = useState("");
+  const pinnedId = useRef("");
+  const keepNotice = useRef(false);
   const [values, setValues] = useState<Record<string, unknown>>(() => valuesFromRecord(fields, null));
   const [sheetPeek, setSheetPeek] = useState(false);
   const sheetRelatedRef = useRef<HTMLDivElement>(null);
@@ -188,6 +249,19 @@ export function AccessWorkspace<T extends object>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, paramName]);
 
+  useEffect(() => {
+    const wanted = pinnedId.current;
+    if (!wanted || rows.length === 0) return;
+    const found = rows.findIndex((row) => {
+      const id = String(readId(row));
+      return id === wanted || sameNr(id, wanted);
+    });
+    if (found < 0) return;
+    pinnedId.current = "";
+    setIsNew(false);
+    setIndex(found);
+  }, [rows, readId]);
+
   const currentId = current ? String(readId(current)) : isNew ? "__new__" : "";
   const showSheetRelated = view === "datasheet" && Boolean(sheetRelated) && sheetPeek && Boolean(current) && !isNew;
 
@@ -219,6 +293,8 @@ export function AccessWorkspace<T extends object>({
       setValues(valuesFromRecord(fields, current));
     }
     setSaveError("");
+    if (keepNotice.current) keepNotice.current = false;
+    else setSaveNotice("");
     // Reset draft only when the record changes, not when field defs are rebuilt.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentId, isNew]);
@@ -303,17 +379,51 @@ export function AccessWorkspace<T extends object>({
     }
   }
 
+  function savedIdentity(result: unknown, fallback: unknown): string {
+    if (result && typeof result === "object") {
+      const row = result as Record<string, unknown>;
+      const fromRow = row[String(idField)];
+      if (fromRow != null && fromRow !== "") return String(fromRow);
+    }
+    if (fallback != null && fallback !== "") return String(fallback);
+    return "";
+  }
+
   async function handleSave() {
     const payload = formBody ? values : accessPayload(fields, values);
     const message = validate?.(payload, { isNew: isNew || !current });
     if (message) {
       setSaveError(message);
+      setSaveNotice("");
       return;
     }
     setSaveError("");
+    setSaveNotice("");
     try {
-      if (isNew || !current) await onCreate(payload);
-      else await onSave(readId(current), payload);
+      if (isNew || !current) {
+        const created = await onCreate(payload);
+        const createdId = savedIdentity(created, payload[String(idField)]);
+        if (createdId) {
+          pinnedId.current = createdId;
+          keepNotice.current = true;
+          setIsNew(false);
+        }
+      } else {
+        const oldId = readId(current);
+        const saved = await onSave(oldId, payload);
+        if (!formBody && saved && typeof saved === "object") setValues(valuesFromRecord(fields, saved));
+        const nextId = savedIdentity(saved, payload[String(idField)] ?? oldId);
+        if (nextId) pinnedId.current = nextId;
+        if (nextId && nextId !== String(oldId)) {
+          keepNotice.current = true;
+          const url = new URL(window.location.href);
+          url.searchParams.set(paramName, nextId);
+          if (paramName !== String(idField)) url.searchParams.set(String(idField), nextId);
+          skipUrlSync.current = true;
+          router.replace(`${url.pathname}?${url.searchParams.toString()}`, { scroll: false });
+        }
+      }
+      setSaveNotice(t("common.saved"));
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : String(err));
     }
@@ -339,7 +449,16 @@ export function AccessWorkspace<T extends object>({
           key: field.name,
           header: field.label,
           className: field.type === "textarea" ? "max-w-[18rem] whitespace-normal" : undefined,
-          render: summary?.render ?? ((row) => fieldPlain(field, row, yes, no) || "—"),
+          render: (row) => {
+            const editing =
+              canEdit &&
+              !isNew &&
+              currentId !== "" &&
+              String(readId(row)) === currentId &&
+              !HIDDEN_SHEET_KEYS.has(field.name);
+            if (editing) return <SheetEdit field={field} value={values[field.name]} onChange={(name, value) => setValues((v) => ({ ...v, [name]: value }))} />;
+            return summary?.render ? summary.render(row) : fieldPlain(field, row, yes, no) || "—";
+          },
           filterText: (row) => {
             const shown = fieldPlain(field, row, yes, no);
             const raw = (row as Record<string, unknown>)[field.name];
@@ -369,7 +488,7 @@ export function AccessWorkspace<T extends object>({
       }
     }
     return out;
-  }, [fields, columns, rows, yes, no, sheetMode]);
+  }, [fields, columns, rows, yes, no, sheetMode, canEdit, isNew, currentId, readId, values]);
 
   function locate(row: T) {
     return rows.findIndex((item) => String(readId(item)) === String(readId(row)));
@@ -393,9 +512,34 @@ export function AccessWorkspace<T extends object>({
     setView("form");
   }
 
+  const alerts = (
+    <>
+      {saveError ? (
+        <p className="mb-2 border-2 border-[#b54a4a] bg-[#fde8e8] px-2 py-1 text-[11px] font-semibold text-[#8a1f1f]">
+          {saveError}
+        </p>
+      ) : null}
+      {saveNotice ? (
+        <p className="mb-2 border-2 border-[#2f7d32] bg-[#e7f6e7] px-2 py-1 text-[11px] font-semibold text-[#0d5c0d]">
+          {saveNotice}
+        </p>
+      ) : null}
+    </>
+  );
+
   const body =
     view === "datasheet" ? (
       <div className={showSheetRelated ? "access-sheet-with-related" : undefined}>
+        {alerts}
+        {fields
+          .filter((field) => field.type === "combo")
+          .map((field) => (
+            <datalist id={`sheet-combo-${field.name}`} key={field.name}>
+              {field.options?.map((opt) => (
+                <option key={opt.value} value={opt.value} />
+              ))}
+            </datalist>
+          ))}
         <DatasheetPane
           columns={sheetColumns}
           rows={rows}
@@ -423,6 +567,7 @@ export function AccessWorkspace<T extends object>({
       </div>
       ) : (
         <>
+          {alerts}
           {formBody ? (
             formBody({
               values,
@@ -441,11 +586,6 @@ export function AccessWorkspace<T extends object>({
               readOnly={!canEdit}
             />
           )}
-          {saveError ? (
-            <p className="mt-2 border-2 border-[#b54a4a] bg-[#fde8e8] px-2 py-1 text-[11px] font-semibold text-[#8a1f1f]">
-              {saveError}
-            </p>
-          ) : null}
           {current && related ? related(current) : null}
         </>
       );

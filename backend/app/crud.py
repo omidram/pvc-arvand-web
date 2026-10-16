@@ -28,6 +28,7 @@ def build_crud_router(
     required_fields: list[str] | None = None,
     sort_key: Callable[[Any], Any] | None = None,
     after_save: Callable[[Session, Any], None] | None = None,
+    on_rename: Callable[[Session, Any, Any], None] | None = None,
     unique_compact: bool = False,
 ) -> APIRouter:
     router = APIRouter(prefix=prefix, tags=tags)
@@ -57,6 +58,17 @@ def build_crud_router(
 
     def _blank(value: Any) -> bool:
         return value is None or (isinstance(value, str) and not value.strip())
+
+    def _resolve(item_id: Any, db: Session):
+        obj = db.query(model).filter(pk_column == item_id).first()
+        if obj is not None or not unique_compact:
+            return obj
+        from sqlalchemy import func
+
+        key = "".join(str(item_id or "").split()).upper()
+        if not key:
+            return None
+        return db.query(model).filter(func.replace(func.upper(pk_column), " ", "") == key).first()
 
     def _check_required(data: dict[str, Any], existing: Any = None) -> None:
         """New records need every required field; saved records may not lose a value they already have."""
@@ -123,9 +135,22 @@ def build_crud_router(
 
         return spawn_import(work)
 
+    @router.get("/by-key", response_model=read_schema)
+    def get_by_key(item_id: str = Query(...), db: Session = Depends(get_db)):
+        """Same as GET /{id}. Used when the key contains / or other path characters."""
+        return get_item(item_id, db)
+
+    @router.put("/by-key", response_model=read_schema)
+    def update_by_key(payload: write_schema, item_id: str = Query(...), db: Session = Depends(get_db)):
+        return update_item(item_id, payload, db)
+
+    @router.delete("/by-key", status_code=204)
+    def delete_by_key(item_id: str = Query(...), db: Session = Depends(get_db)):
+        return delete_item(item_id, db)
+
     @router.get("/{item_id}", response_model=read_schema)
     def get_item(item_id: Any, db: Session = Depends(get_db)):
-        obj = db.query(model).filter(pk_column == item_id).first()
+        obj = _resolve(item_id, db)
         if not obj:
             raise HTTPException(status_code=404, detail="Not found")
         return _read(obj)
@@ -158,11 +183,36 @@ def build_crud_router(
 
     @router.put("/{item_id}", response_model=read_schema)
     def update_item(item_id: Any, payload: write_schema, db: Session = Depends(get_db)):
-        obj = db.query(model).filter(pk_column == item_id).first()
+        obj = _resolve(item_id, db)
         if not obj:
             raise HTTPException(status_code=404, detail="Not found")
-        _check_required(payload.model_dump(exclude_unset=True), obj)
-        for key, value in payload.model_dump(exclude_unset=True).items():
+        data = payload.model_dump(exclude_unset=True)
+        _check_required(data, obj)
+        old_pk = getattr(obj, pk_field)
+        new_pk = None
+        if pk_field in data:
+            candidate = data.get(pk_field)
+            if candidate not in (None, "") and str(candidate) != str(old_pk):
+                if unique_compact:
+                    from sqlalchemy import func
+
+                    key = "".join(str(candidate).split()).upper()
+                    clash = (
+                        db.query(model)
+                        .filter(func.replace(func.upper(pk_column), " ", "") == key)
+                        .first()
+                        if key
+                        else None
+                    )
+                else:
+                    clash = db.query(model).filter(pk_column == candidate).first()
+                if clash is not None and getattr(clash, pk_field) != old_pk:
+                    raise HTTPException(
+                        status_code=409,
+                        detail=f"'{getattr(clash, pk_field)}' already exists ({pk_field}).",
+                    )
+                new_pk = candidate
+        for key, value in data.items():
             if key == pk_field:
                 continue
             setattr(obj, key, value)
@@ -170,13 +220,22 @@ def build_crud_router(
             prepare(obj)
         if after_save:
             after_save(db, obj)
+        if new_pk is not None and on_rename:
+            on_rename(db, old_pk, new_pk)
+        db.flush()
+        if new_pk is not None:
+            # Assigning a primary key on the instance often does not emit UPDATE.
+            db.query(model).filter(pk_column == old_pk).update({pk_column: new_pk}, synchronize_session=False)
         db.commit()
-        db.refresh(obj)
-        return _read(obj)
+        db.expire_all()
+        saved = db.query(model).filter(pk_column == (new_pk if new_pk is not None else old_pk)).first()
+        if saved is None:
+            raise HTTPException(status_code=500, detail="Save failed")
+        return _read(saved)
 
     @router.delete("/{item_id}", status_code=204)
     def delete_item(item_id: Any, db: Session = Depends(get_db)):
-        obj = db.query(model).filter(pk_column == item_id).first()
+        obj = _resolve(item_id, db)
         if not obj:
             raise HTTPException(status_code=404, detail="Not found")
         db.delete(obj)

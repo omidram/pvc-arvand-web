@@ -500,6 +500,17 @@ body {
   border: 2px outset var(--win-face);
 }
 
+.sheet-cell-input {
+  width: 100%;
+  min-width: 4.5rem;
+  height: 20px;
+  border: 1px solid #7a9cc6;
+  background: #fff;
+  color: #111;
+  padding: 0 4px;
+  font-size: 11px;
+}
+
 .datasheet-search {
   height: 24px;
   min-width: 220px;

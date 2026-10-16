@@ -295,13 +295,11 @@ function ElectrolyzersInput() {
           submitting={createMutation.isPending || updateMutation.isPending}
           onCancel={() => setShowForm(false)}
           onValuesChange={deriveAnolyteTemp}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             const p = withCcPayload(values as Record<string, unknown>);
-            if (editing) {
-              updateMutation.mutate({ id: editing.id, payload: p }, { onSuccess: () => setShowForm(false) });
-            } else {
-              createMutation.mutate(p as never, { onSuccess: () => setShowForm(false) });
-            }
+            if (editing) await updateMutation.mutateAsync({ id: editing.id, payload: p });
+            else await createMutation.mutateAsync(p as never);
+            setShowForm(false);
           }}
         />
       </Modal>
@@ -529,17 +527,15 @@ function AllElementsInput() {
           submitting={masters.createMutation.isPending || masters.updateMutation.isPending}
           onCancel={() => setShowMaster(false)}
           onValuesChange={deriveAnolyteTemp}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             const p = withCcPayload(values as Record<string, unknown>);
             if (editingMaster) {
-              masters.updateMutation.mutate({ id: editingMaster.id, payload: p }, { onSuccess: () => setShowMaster(false) });
+              await masters.updateMutation.mutateAsync({ id: editingMaster.id, payload: p });
+              setShowMaster(false);
             } else {
-              masters.createMutation.mutate(p as never, {
-                onSuccess: (row) => {
-                  setShowMaster(false);
-                  setSelected(row as ElectrolyzerNormalization);
-                },
-              });
+              const row = await masters.createMutation.mutateAsync(p as never);
+              setShowMaster(false);
+              setSelected(row as ElectrolyzerNormalization);
             }
           }}
         />
@@ -551,7 +547,7 @@ function AllElementsInput() {
           initialValues={editingReading ?? undefined}
           submitting={false}
           onCancel={() => setShowReading(false)}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             if (!selected) return;
             const base: Partial<VoltageReading> = {
               ...(values as Partial<VoltageReading>),
@@ -560,15 +556,10 @@ function AllElementsInput() {
               time: selected.time,
               normalization_nr: selected.normalization_nr,
             };
-            const done = () => {
-              setShowReading(false);
-              void readingsQuery.refetch();
-            };
-            if (editingReading) {
-              void voltageReadingsApi.update(editingReading.id, base).then(done);
-            } else {
-              void voltageReadingsApi.create(base).then(done);
-            }
+            if (editingReading) await voltageReadingsApi.update(editingReading.id, base);
+            else await voltageReadingsApi.create(base);
+            setShowReading(false);
+            void readingsQuery.refetch();
           }}
         />
       </Modal>
@@ -672,10 +663,11 @@ function GroupInput() {
           submitting={crud.createMutation.isPending || crud.updateMutation.isPending}
           onCancel={() => setShowForm(false)}
           onValuesChange={deriveAnolyteTemp}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             const p = values as Partial<VoltageUnGroupInput>;
-            if (editing) crud.updateMutation.mutate({ id: editing.id, payload: p }, { onSuccess: () => setShowForm(false) });
-            else crud.createMutation.mutate(p as never, { onSuccess: () => setShowForm(false) });
+            if (editing) await crud.updateMutation.mutateAsync({ id: editing.id, payload: p });
+            else await crud.createMutation.mutateAsync(p as never);
+            setShowForm(false);
           }}
         />
       </Modal>
@@ -771,10 +763,11 @@ function SingleElementInput() {
           submitting={crud.createMutation.isPending || crud.updateMutation.isPending}
           onCancel={() => setShowForm(false)}
           onValuesChange={deriveAnolyteTemp}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             const p = values as Partial<VoltageUnElementInput>;
-            if (editing) crud.updateMutation.mutate({ id: editing.id, payload: p }, { onSuccess: () => setShowForm(false) });
-            else crud.createMutation.mutate(p as never, { onSuccess: () => setShowForm(false) });
+            if (editing) await crud.updateMutation.mutateAsync({ id: editing.id, payload: p });
+            else await crud.createMutation.mutateAsync(p as never);
+            setShowForm(false);
           }}
         />
       </Modal>
