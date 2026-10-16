@@ -140,7 +140,7 @@ export function ElementCellsTab({ initialTrain }: { initialTrain?: string }) {
           <section className="mon-panel">
             <h3 className="mon-panel-title">{t("elDash.cells.perElectrolyzer", { n: train })}</h3>
             <div className="ed-table-wrap">
-              <table className="ed-table">
+              <table className="ed-table ed-cells-summary">
                 <thead>
                   <tr>
                     <th>{t("elDash.col.electrolyzer")}</th>

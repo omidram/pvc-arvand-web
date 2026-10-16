@@ -154,6 +154,7 @@ export function DataTable<T extends object>({
                   key={String(raw[keyField as string])}
                   onClick={() => onRowClick?.(row)}
                   onDoubleClick={() => onRowDoubleClick?.(row)}
+                  data-sheet-key={String(raw[keyField as string])}
                   data-selected={selected ? "true" : undefined}
                   className={cn(
                     selected

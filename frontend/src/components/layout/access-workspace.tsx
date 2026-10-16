@@ -130,10 +130,17 @@ export function AccessWorkspace<T extends object>({
   const paramName = recordParam ?? String(idField);
   const defaultView = useDefaultView();
   // A link that points at one record (…?nr=12) opens that record's form.
-  const [viewChoice, setView] = useState<RecordView | null>(() =>
-    startNew || (typeof window !== "undefined" && new URLSearchParams(window.location.search).has(paramName)) ? "form" : null
-  );
+  const [viewChoice, setView] = useState<RecordView | null>(startNew ? "form" : null);
   const view = viewChoice ?? defaultView;
+  // A link such as /anodes?anode_nr=UA29686 must show that record. The choice is
+  // applied after mount because the server render has no query string.
+  const [linkSerial, setLinkSerial] = useState("");
+  useEffect(() => {
+    const serial = new URLSearchParams(window.location.search).get(paramName) ?? "";
+    if (!serial) return;
+    setLinkSerial(serial);
+    setView("datasheet");
+  }, [paramName]);
   const [index, setIndex] = useState(0);
   const [isNew, setIsNew] = useState(startNew);
   const [findValue, setFindValue] = useState("");
@@ -394,6 +401,7 @@ export function AccessWorkspace<T extends object>({
           rows={rows}
           keyField={idField}
           selectedKey={current ? readId(current) : null}
+          revealQuery={linkSerial}
           canEdit={canEdit}
           emptyTitle={t("common.noRecordsFound")}
           onSelect={selectSheetRow}

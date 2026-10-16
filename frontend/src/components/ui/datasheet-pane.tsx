@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { uniqueColumnValues } from "@/components/ui/column-value-filter";
 import { useI18n } from "@/lib/i18n/context";
+import { sameNr } from "@/lib/utils";
 
 const PAGE_SIZE = 250;
 
@@ -20,6 +21,7 @@ export function DatasheetPane<T extends object>({
   rows,
   keyField,
   selectedKey,
+  revealQuery,
   canEdit,
   onSelect,
   onOpen,
@@ -30,6 +32,8 @@ export function DatasheetPane<T extends object>({
   rows: T[];
   keyField: keyof T;
   selectedKey?: string | number | null;
+  /** When a link opens one serial, filter the sheet to that value so the row is on screen. */
+  revealQuery?: string;
   canEdit?: boolean;
   onSelect?: (row: T) => void;
   onOpen?: (row: T) => void;
@@ -38,6 +42,13 @@ export function DatasheetPane<T extends object>({
 }) {
   const { t } = useI18n();
   const [query, setQuery] = useState("");
+  const revealed = useRef("");
+  useEffect(() => {
+    const next = (revealQuery || "").trim();
+    if (!next || revealed.current === next) return;
+    revealed.current = next;
+    setQuery(next);
+  }, [revealQuery]);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [valueFilters, setValueFilters] = useState<Record<string, string[] | null>>({});
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -50,7 +61,10 @@ export function DatasheetPane<T extends object>({
 
   const shown = useMemo(() => {
     const needle = query.trim().toLowerCase();
+    const reveal = (revealQuery || "").trim();
+    const exactOnly = Boolean(reveal) && needle === reveal.toLowerCase();
     let next = rows.filter((row) => {
+      if (exactOnly && !sameNr((row as Record<string, unknown>)[keyField as string] as string, reveal)) return false;
       if (needle && !columns.some((column) => cellText(column, row).toLowerCase().includes(needle))) return false;
       return columns.every((column) => {
         const text = cellText(column, row);
@@ -73,11 +87,18 @@ export function DatasheetPane<T extends object>({
       }
     }
     return next;
-  }, [rows, columns, query, filters, valueFilters, sortKey, sortDir]);
+  }, [rows, columns, query, filters, valueFilters, sortKey, sortDir, revealQuery, keyField]);
 
   useEffect(() => {
-    setPage(0);
-  }, [query, filters, valueFilters, sortKey, sortDir, columns, rows]);
+    if (selectedKey == null) {
+      setPage(0);
+      return;
+    }
+    const idx = shown.findIndex(
+      (row) => String((row as Record<string, unknown>)[keyField as string]) === String(selectedKey)
+    );
+    setPage(idx < 0 ? 0 : Math.floor(idx / PAGE_SIZE));
+  }, [shown, selectedKey, keyField]);
 
   const pageCount = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
@@ -85,6 +106,15 @@ export function DatasheetPane<T extends object>({
     () => shown.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE),
     [shown, safePage]
   );
+
+  useEffect(() => {
+    if (selectedKey == null) return;
+    const row = document.querySelector(`tr[data-sheet-key="${CSS.escape(String(selectedKey))}"]`);
+    if (!row) return;
+    const rect = row.getBoundingClientRect();
+    if (rect.top >= 0 && rect.bottom <= window.innerHeight) return;
+    row.scrollIntoView({ block: "center" });
+  }, [selectedKey, safePage, pageRows]);
 
   const selected = shown.find((row) => String((row as Record<string, unknown>)[keyField as string]) === String(selectedKey)) ?? null;
 
