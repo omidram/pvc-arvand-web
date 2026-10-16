@@ -422,6 +422,9 @@ export interface AnodeRecoating {
   manufacturer: string | null;
   recoating_number: string | null;
   remarks: string | null;
+  warranty_months: number | null;
+  warranty_start: string | null;
+  prior_service_days: number | null;
 }
 
 export interface CathodeRecoating {
@@ -431,6 +434,9 @@ export interface CathodeRecoating {
   return_date: string | null;
   manufacturer: string | null;
   remarks: string | null;
+  warranty_months: number | null;
+  warranty_start: string | null;
+  prior_service_days: number | null;
 }
 
 export interface AnodeCoatingCheck {

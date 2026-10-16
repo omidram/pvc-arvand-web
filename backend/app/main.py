@@ -374,6 +374,9 @@ with SessionLocal() as _db:
         from . import arialims_sync as _arialims_sync
 
         _arialims_sync.get_or_create_settings(_db)  # default URL + bundled sample points
+        from .plant_import import apply_bundled_membrane_use
+
+        apply_bundled_membrane_use(_db)
     except Exception:  # noqa: BLE001
         _db.rollback()
 

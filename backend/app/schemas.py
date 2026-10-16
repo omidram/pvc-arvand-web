@@ -835,6 +835,9 @@ class AnodeRecoatingBase(ORMModel):
     manufacturer: str | None = None
     recoating_number: str | None = None
     remarks: str | None = None
+    warranty_months: int | None = None
+    warranty_start: date | None = None
+    prior_service_days: int | None = None
 
 
 class AnodeRecoatingRead(AnodeRecoatingBase):
@@ -847,6 +850,9 @@ class CathodeRecoatingBase(ORMModel):
     return_date: datetime | None = None
     manufacturer: str | None = None
     remarks: str | None = None
+    warranty_months: int | None = None
+    warranty_start: date | None = None
+    prior_service_days: int | None = None
 
 
 class CathodeRecoatingRead(CathodeRecoatingBase):

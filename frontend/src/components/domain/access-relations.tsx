@@ -199,6 +199,19 @@ export function ElementRelations({ row }: { row: Element }) {
   );
 }
 
+function warrantyText(
+  row: { warranty_months?: number | null; warranty_start?: string | null; prior_service_days?: number | null },
+  t: (k: string, vars?: Record<string, string | number | null | undefined>) => string,
+): string {
+  const months = row.warranty_months;
+  const start = row.warranty_start ? new Date(row.warranty_start) : null;
+  if (!months || !start || Number.isNaN(start.getTime())) return t("fields.noWarranty");
+  const end = new Date(start);
+  end.setMonth(end.getMonth() + months);
+  const under = Date.now() <= end.getTime();
+  return `${under ? t("fields.underWarranty") : t("fields.outOfWarranty")} · ${months}`;
+}
+
 export function AnodeRelations({ anodeNr }: { anodeNr: string }) {
   const { t } = useI18n();
   const elementsQuery = useQuery({
@@ -238,12 +251,17 @@ export function AnodeRelations({ anodeNr }: { anodeNr: string }) {
             { name: "manufacturer", label: t("fields.manufacturer") },
             { name: "dispatch_date", label: t("fields.dispatchDate"), type: "date" },
             { name: "return_date", label: t("fields.returnDate"), type: "date" },
+            { name: "warranty_months", label: t("wf.coating.warrantyMonths"), type: "number" },
+            { name: "warranty_start", label: t("wf.coating.warrantyStart"), type: "date" },
+            { name: "prior_service_days", label: t("fields.priorServiceDays"), type: "number", fieldReadOnly: true },
           ]}
           formKey="anodes"
           columns={[
             { key: "coating_nr", header: t("fields.coatingNr") },
             { key: "manufacturer", header: t("fields.manufacturer") },
-            { key: "dispatch_date", header: t("fields.dispatched"), render: (r) => formatDate(r.dispatch_date) },
+            { key: "return_date", header: t("fields.returnDate"), render: (r) => formatDate(r.return_date) },
+            { key: "warranty_months", header: t("fields.warrantyState"), render: (r) => warrantyText(r, t) },
+            { key: "prior_service_days", header: t("fields.priorServiceDays"), render: (r) => (r.prior_service_days == null ? "—" : String(r.prior_service_days)) },
           ]}
         />
       </AccessSubform>
@@ -329,11 +347,16 @@ export function CathodeRelations({ cathodeNr }: { cathodeNr: string }) {
             { name: "manufacturer", label: t("fields.manufacturer") },
             { name: "dispatch_date", label: t("fields.dispatchDate"), type: "date" },
             { name: "return_date", label: t("fields.returnDate"), type: "date" },
+            { name: "warranty_months", label: t("wf.coating.warrantyMonths"), type: "number" },
+            { name: "warranty_start", label: t("wf.coating.warrantyStart"), type: "date" },
+            { name: "prior_service_days", label: t("fields.priorServiceDays"), type: "number", fieldReadOnly: true },
           ]}
           formKey="cathodes"
           columns={[
             { key: "manufacturer", header: t("fields.manufacturer") },
-            { key: "dispatch_date", header: t("fields.dispatched"), render: (r) => formatDate(r.dispatch_date) },
+            { key: "return_date", header: t("fields.returnDate"), render: (r) => formatDate(r.return_date) },
+            { key: "warranty_months", header: t("fields.warrantyState"), render: (r) => warrantyText(r, t) },
+            { key: "prior_service_days", header: t("fields.priorServiceDays"), render: (r) => (r.prior_service_days == null ? "—" : String(r.prior_service_days)) },
           ]}
         />
       </AccessSubform>

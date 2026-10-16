@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime, timedelta
 from io import BytesIO
+from pathlib import Path
 from typing import Any
 
 from openpyxl import load_workbook
@@ -915,6 +916,19 @@ def _assembly_columns(header: list[Any], sub: list[Any] | None) -> dict[str, Any
     return columns
 
 
+def normalize_membrane_use(value: Any) -> str | None:
+    """Assembly sheet codes: N = new membrane, N2 = reused / repaired."""
+    text = _clean_code(value)
+    if not text:
+        return None
+    key = text.upper().replace(" ", "")
+    if key == "N":
+        return "New"
+    if key == "N2":
+        return "Reused"
+    return text
+
+
 def _cell(row: list[Any], index: int | None) -> Any:
     if index is None or index >= len(row):
         return None
@@ -949,7 +963,7 @@ def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSE
             if c90_year is None or c90_year < from_year:
                 continue
         membrane_type = _clean_code(_cell(row, columns["membrane_type"]))
-        membrane_use = _clean_code(_cell(row, columns["membrane_use"]))
+        membrane_use = normalize_membrane_use(_clean_code(_cell(row, columns["membrane_use"])))
         membrane_nr = _clean_code(_cell(row, columns["membrane_nr"]))
         electrolyzer = _clean_code(_cell(row, columns["electrolyzer"]))
         if electrolyzer:
@@ -1029,6 +1043,72 @@ def parse_assembly_excel(content: bytes, *, from_year: int | None = ASSEMBLY_FRO
             "error": "No assembly rows found. هیچ ردیف مونتاژ یا دمونتاژ در فایل پیدا نشد.",
         }
     return {"elements": elements, "recognized": True, "imported": len(elements), "sheet": "assembly"}
+
+
+BUNDLED_ASSEMBLY_XLSX = Path(__file__).resolve().parent / "data" / "assembly_membrane_use.xlsx"
+
+
+def _install_key(electrolyzer, position, assembly_date, anode_nr, cathode_nr) -> tuple:
+    day = ""
+    if assembly_date is not None:
+        day = str(assembly_date)[:10]
+    pos = str(position or "").strip()
+    if pos.isdigit():
+        pos = str(int(pos))
+    def part(value) -> str:
+        return re.sub(r"\s+", " ", str(value or "")).strip().upper()
+
+    def serial(value) -> str:
+        return re.sub(r"\s+", "", str(value or "")).strip().upper()
+
+    return (part(electrolyzer), pos, day, serial(anode_nr), serial(cathode_nr))
+
+
+def apply_bundled_membrane_use(db) -> dict[str, int]:
+    """Update only Assembly Data «membrane use» from the bundled workbook (N→New, N2→Reused)."""
+    import hashlib
+
+    from . import models
+    from .paths import data_root
+
+    path = BUNDLED_ASSEMBLY_XLSX
+    if not path.is_file():
+        return {"updated": 0, "matched": 0, "missing_file": 1}
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    marker = data_root() / ".membrane_use.sha"
+    if marker.is_file() and marker.read_text(encoding="utf-8").strip() == digest:
+        return {"updated": 0, "matched": 0, "skipped": 1}
+    parsed = parse_assembly_excel(path.read_bytes(), from_year=None)
+    wanted: dict[tuple, str] = {}
+    by_parts: dict[tuple, str] = {}
+    for item in parsed.get("elements") or []:
+        use = item.get("membrane_remark")
+        if not use:
+            continue
+        key = _install_key(item.get("electrolyzer"), item.get("position"), item.get("assembly_date"), item.get("anode_nr"), item.get("cathode_nr"))
+        wanted[key] = use
+        by_parts[(key[0], key[1], key[3], key[4])] = use
+    updated = matched = 0
+    for el in db.query(models.Element).all():
+        key = _install_key(el.electrolyzer, el.position, el.assembly_date, el.anode_nr, el.cathode_nr)
+        use = wanted.get(key)
+        if use is None:
+            use = by_parts.get((key[0], key[1], key[3], key[4]))
+        if use is None:
+            # Rows already stored as the raw sheet codes.
+            current = normalize_membrane_use(el.membrane_remark)
+            if current and current != (el.membrane_remark or "").strip():
+                el.membrane_remark = current
+                updated += 1
+            continue
+        matched += 1
+        if (el.membrane_remark or "").strip() != use:
+            el.membrane_remark = use
+            updated += 1
+    if updated:
+        db.commit()
+    marker.write_text(digest, encoding="utf-8")
+    return {"updated": updated, "matched": matched, "sheet_rows": len(wanted)}
 
 
 # ---------------------------------------------------------------------------
