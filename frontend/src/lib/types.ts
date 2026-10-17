@@ -1240,7 +1240,7 @@ export interface PipelineItem {
 }
 
 export interface ShopList {
-  counts: Record<ElementStage | "total", number>;
+  counts: Record<ElementStage | "total" | "assembled", number>;
   items: PipelineItem[];
   truncated: boolean;
 }

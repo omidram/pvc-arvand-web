@@ -398,39 +398,69 @@ DEFAULT_ROLES: list[dict] = [
     },
     {
         "name": "C-90",
-        "description": "C-90 — درخواست پوشش‌دهی مجدد، تأیید نهایی و ثبت المنت‌های خرید جدید",
+        "description": "C-90 — المنت خراب را در کارگاه باز می‌کند (دمونتاژ / Rate off) و کارتابل پوشش‌دهی مجدد دارد",
         "is_system": True,
-        "permissions": {"anodes": "view", "cathodes": "view", "storage": "view", "wf_c90": "edit"},
+        "permissions": {
+            "elements": "view",
+            "anodes": "view",
+            "cathodes": "view",
+            "membranes": "view",
+            "inspections": "view",
+            "storage": "view",
+            "wf_c90": "edit",
+        },
     },
     {
         "name": "Procurement",
-        "description": "تدارکات — انتخاب شرکت، ارسال/دریافت از شرکت پوشش‌دهنده و خرید جدید",
+        "description": "تدارکات — کارتابل انتخاب شرکت، ارسال و دریافت از شرکت پوشش‌دهنده و خرید",
         "is_system": True,
-        "permissions": {"storage": "view", "wf_procurement": "edit"},
+        "permissions": {"anodes": "view", "cathodes": "view", "storage": "view", "wf_procurement": "edit"},
     },
     {
         "name": "Warehouse",
-        "description": "انبار — ثبت شماره ایندنت و تاریخ ورود به انبار",
+        "description": "انبار — کارتابل شماره ایندنت و تاریخ ورود به انبار",
         "is_system": True,
-        "permissions": {"storage": "view", "wf_warehouse": "edit"},
+        "permissions": {"anodes": "view", "cathodes": "view", "storage": "view", "wf_warehouse": "edit"},
     },
     {
         "name": "Inspection",
-        "description": "بازرسی — بررسی گزارش نهایی شرکت پوشش‌دهنده پیش از تأیید نهایی C-90",
+        "description": "بازرسی — کارتابل بررسی آند و کاتد جداشده (پوشش خوب، پوشش متوسط، Rate off یا پوشش‌دهی مجدد)",
         "is_system": True,
-        "permissions": {"anodes": "view", "cathodes": "view", "storage": "view", "wf_inspection": "edit"},
+        "permissions": {
+            "elements": "view",
+            "anodes": "view",
+            "cathodes": "view",
+            "membranes": "view",
+            "inspections": "edit",
+            "storage": "view",
+            "wf_inspection": "edit",
+        },
     },
     {
         "name": "Operation",
-        "description": "بهره‌برداری — درخواست خروج المنت معیوب از سل، ثبت تاریخ خاموشی و اطلاع به کارگاه",
+        "description": "بهره‌بردار — کارتابل دلیل خروج از مدار: سالم یا بالانس فقط پوزیشن جدید، خراب ارسال به C90",
         "is_system": True,
-        "permissions": {"elements": "view", "voltage": "view", "monitoring": "view", "wf_operation": "edit"},
+        "permissions": {
+            "dashboard": "view",
+            "elements": "view",
+            "monitoring": "view",
+            "shutdowns": "view",
+            "voltage": "view",
+            "wf_operation": "edit",
+        },
     },
     {
         "name": "Cell shop",
-        "description": "کارگاه سل — دریافت المنت از سالن، تصمیم (نگهداری سالم / دمونتاژ / جابجایی) و چرخه کارگاه",
+        "description": "کارگاه سل — کارتابل المنت‌های جدیدی که در کارگاه اسمبل می‌شوند",
         "is_system": True,
-        "permissions": {"elements": "view", "anodes": "view", "cathodes": "view", "membranes": "view", "wf_cellshop": "edit"},
+        "permissions": {
+            "elements": "view",
+            "anodes": "view",
+            "cathodes": "view",
+            "membranes": "view",
+            "inspections": "view",
+            "wf_cellshop": "edit",
+        },
     },
 ]
 
@@ -446,19 +476,48 @@ def _set_role_permissions(db: Session, role: models.AppRole, permissions: dict[s
 
 
 def seed_default_roles(db: Session) -> None:
+    """Create the built-in roles and fill any cartable access they are still missing.
+
+    An existing system role keeps extra permissions an admin added. A missing
+    default (for example the workflow cartable) is added so nobody has to
+    recreate the role by hand.
+    """
+    changed = False
     for spec in DEFAULT_ROLES:
-        existing = db.query(models.AppRole).filter(models.AppRole.name == spec["name"]).first()
-        if existing:
+        role = db.query(models.AppRole).filter(models.AppRole.name == spec["name"]).first()
+        if role is None:
+            role = models.AppRole(
+                name=spec["name"],
+                description=spec.get("description"),
+                is_system=bool(spec.get("is_system")),
+            )
+            db.add(role)
+            db.flush()
+            _set_role_permissions(db, role, spec.get("permissions") or {})
+            changed = True
             continue
-        role = models.AppRole(
-            name=spec["name"],
-            description=spec.get("description"),
-            is_system=bool(spec.get("is_system")),
-        )
-        db.add(role)
-        db.flush()
-        _set_role_permissions(db, role, spec.get("permissions") or {})
-    db.commit()
+        if spec.get("is_system") and not role.is_system:
+            role.is_system = True
+            changed = True
+        if spec.get("description") and role.description != spec["description"]:
+            role.description = spec["description"]
+            changed = True
+        have = {
+            row.form_key: row
+            for row in db.query(models.RolePermission).filter(models.RolePermission.role_id == role.id).all()
+        }
+        for form_key, level in (spec.get("permissions") or {}).items():
+            if not is_valid_permission_key(form_key) or level not in ("view", "edit"):
+                continue
+            row = have.get(form_key)
+            if row is None:
+                db.add(models.RolePermission(role_id=role.id, form_key=form_key, level=level))
+                changed = True
+            elif LEVEL_RANK.get(row.level, 0) < LEVEL_RANK[level]:
+                row.level = level
+                changed = True
+    if changed:
+        db.commit()
 
 
 def ensure_inspection_collaboration(db: Session) -> None:

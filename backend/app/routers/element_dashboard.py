@@ -40,11 +40,17 @@ def list_shop(
 ):
     items = list(svc.build_pipeline(db))
     counts = svc.pipeline_counts(items)
+    # Fresh workshop assemblies: a new element that already has an assembly date
+    # and has not gone into service. Waiting-for-assembly is not this list.
+    fresh = [i for i in items if i.get("assembly_date") and i["state"] in ("assembling", "awaiting_qc", "ready", "installed")]
+    counts["assembled"] = len(fresh)
     if element_nr:
         key = compact_nr(element_nr)
         items = [i for i in items if i["key"] == key]
     if state == "shop":  # everything that needs a decision: not in service, not already-archived dismantled cells
         items = [i for i in items if i["state"] not in ("in_service", "disassembled")]
+    elif state == "assembled":
+        items = [i for i in items if i.get("assembly_date") and i["state"] in ("assembling", "awaiting_qc", "ready", "installed")]
     elif state and state != "all":
         items = [i for i in items if i["state"] == state]
     if q:
@@ -69,10 +75,24 @@ class ShopMove(BaseModel):
     note: str | None = None
 
 
+def _require_role(db: Session, user: models.User, *groups: str) -> None:
+    """Admin belongs to every workflow group. A step is refused when the user's role is not the one that owns it."""
+    from .workflow import _groups
+
+    if not _groups(db, user) & set(groups):
+        raise HTTPException(status_code=403, detail="This step belongs to: " + ", ".join(groups))
+
+
 @router.post("/shop/move")
 def move_shop(body: ShopMove, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     from .workflow import close_cell_requests
 
+    if body.stage in ("awaiting_assembly", "assembling", "awaiting_qc", "ready"):
+        _require_role(db, user, "cellshop")
+    elif body.stage == "awaiting_disassembly":
+        _require_role(db, user, "operation")
+    elif body.stage == "clear":
+        _require_role(db, user, "operation", "cellshop", "c90")
     svc.clear_cache()
     moved: list[str] = []
     errors: list[dict[str, str]] = []
@@ -107,6 +127,12 @@ def advance_shop(body: ShopAdvance, db: Session = Depends(get_db), user: models.
     from .workflow import close_cell_requests, inspection_on_element_dismantled
 
     svc.clear_cache()
+    key = compact_nr(body.element_nr.strip())
+    current = next((i for i in svc.build_pipeline(db) if i["key"] == key), None)
+    if current is not None and current["state"] == "awaiting_disassembly":
+        _require_role(db, user, "c90")
+    elif current is not None:
+        _require_role(db, user, "cellshop")
     try:
         result = svc.advance_stage(db, body.element_nr.strip(), (body.note or "").strip() or None, user.full_name or user.username, body.date)
     except ValueError as exc:
@@ -128,9 +154,10 @@ class ShopDecide(BaseModel):
 
 @router.post("/shop/decide")
 def decide_shop(body: ShopDecide, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    """After the Decommission Date: healthy cell stays in the cell shop, or goes to disassembly."""
+    """Operator, after the decommissioning date: broken cell goes to C90. A healthy cell is relocated, not reassembled."""
     from .workflow import close_cell_requests
 
+    _require_role(db, user, "operation")
     svc.clear_cache()
     try:
         result = svc.decide_decommissioned(db, body.element_nr.strip(), body.choice, (body.note or "").strip() or None, user.full_name or user.username)
@@ -159,6 +186,7 @@ def relocate_shop(body: ShopRelocate, db: Session = Depends(get_db), user: model
     """
     from .workflow import close_cell_requests
 
+    _require_role(db, user, "operation")
     result = relocate_element(db, body, user)
     close_cell_requests(db, result["element_nr"], "relocated", user, body.note, cell=f"{result['electrolyzer']}-{result['position']}")
     db.commit()

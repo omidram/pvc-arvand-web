@@ -8,6 +8,7 @@ import type { ElementStage, PipelineItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
 import { useI18n } from "@/lib/i18n/context";
+import { useAuth } from "@/lib/auth/context";
 import { todayIsoLocal } from "@/lib/date-range";
 import { formatDate, formatNumber } from "@/lib/utils";
 import { StageBadge, STAGE_TONE } from "./element-dashboard-ui";
@@ -15,7 +16,6 @@ import { DecommissionActions, isHealthyKept, isShutdownDecision } from "./elemen
 
 const NEXT: Partial<Record<ElementStage, ElementStage>> = {
   awaiting_disassembly: "disassembled",
-  disassembled: "awaiting_assembly",
   awaiting_assembly: "assembling",
   assembling: "awaiting_qc",
   awaiting_qc: "ready",
@@ -26,8 +26,12 @@ const TODO: ElementStage[] = ["decommissioned", "awaiting_disassembly", "awaitin
 const squeeze = (s: string) => s.replace(/[\s\-_/.]/g, "").toUpperCase();
 
 /** Cell-shop cartable: pick or scan an element tag and confirm its next step in one click. */
-export function ElementShopCartable({ editable, onPickStage }: { editable: boolean; onPickStage: (stage: string) => void }) {
+export function ElementShopCartable({ onPickStage }: { editable?: boolean; onPickStage: (stage: string) => void }) {
   const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const operator = canEdit("wf_operation");
+  const c90 = canEdit("wf_c90");
+  const cellshop = canEdit("wf_cellshop");
   const qc = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [tag, setTag] = useState("");
@@ -80,6 +84,7 @@ export function ElementShopCartable({ editable, onPickStage }: { editable: boole
   });
 
   const next = found ? NEXT[found.state] : undefined;
+  const mayConfirm = next === "disassembled" ? c90 : cellshop;
 
   return (
     <section className="mon-panel ed-cartable">
@@ -105,7 +110,7 @@ export function ElementShopCartable({ editable, onPickStage }: { editable: boole
         ))}
       </div>
 
-      {editable ? (
+      {operator || c90 || cellshop ? (
         <div className="ed-cartable-body">
           <label className="ed-cartable-scan">
             <ScanLine className="h-4 w-4 shrink-0" />
@@ -124,7 +129,7 @@ export function ElementShopCartable({ editable, onPickStage }: { editable: boole
               onKeyDown={(e) => {
                 if (e.key !== "Enter") return;
                 e.preventDefault();
-                if (found && next && squeeze(found.element_nr) === squeeze(tag)) advance.mutate(found);
+                if (found && next && mayConfirm && squeeze(found.element_nr) === squeeze(tag)) advance.mutate(found);
                 else void lookup(tag);
               }}
               onBlur={() => void lookup(tag)}
@@ -159,7 +164,7 @@ export function ElementShopCartable({ editable, onPickStage }: { editable: boole
               {isShutdownDecision(found) || isHealthyKept(found) ? (
                 <DecommissionActions
                   item={found}
-                  editable={editable}
+                  editable={operator}
                   note={note}
                   onNote={setNote}
                   onMessage={setMessage}
@@ -169,7 +174,7 @@ export function ElementShopCartable({ editable, onPickStage }: { editable: boole
                     inputRef.current?.focus();
                   }}
                 />
-              ) : next ? (
+              ) : next && mayConfirm ? (
                 <div className="ed-cartable-actions">
                   {next === "disassembled" ? (
                     <label className="ed-filters">
@@ -192,7 +197,7 @@ export function ElementShopCartable({ editable, onPickStage }: { editable: boole
               {found.state === "awaiting_disassembly" ? (
                 <DecommissionActions
                   item={found}
-                  editable={editable}
+                  editable={operator}
                   note={note}
                   onNote={setNote}
                   onMessage={setMessage}

@@ -511,6 +511,17 @@ body {
   font-size: 11px;
 }
 
+.sheet-date {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+}
+
+.sheet-date .sheet-cell-input {
+  width: 6.6rem;
+  min-width: 0;
+}
+
 .datasheet-search {
   height: 24px;
   min-width: 220px;
@@ -6451,6 +6462,7 @@ html[data-theme="dark"] .sd-total-row td { background: #1e293b; }
 .ew-search { max-width: 14rem; padding: 0.2rem 0.45rem; }
 .ew-actions { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.4rem; }
 .ew-actions-lead { margin: 0; font-size: 0.78rem; font-weight: 600; color: #1e3a8a; }
+.ew-role { margin: 0; font-size: 0.72rem; font-weight: 700; color: #7a4b00; }
 .ew-action-btns { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .ew-relocate { display: flex; flex-direction: column; align-items: flex-start; gap: 0.35rem; }
 .ew-relocate-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.45rem; padding: 0.45rem; border: 1px dashed #93c5fd; border-radius: 6px; background: #eff6ff; }

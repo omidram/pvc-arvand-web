@@ -1,12 +1,15 @@
 """Element Workflow: where every element and electrode is in the plant's flowchart, and what does not fit.
 
-Flowchart (Element Workflow.pdf):
+Flowchart:
 
-    In Service --(operator enters Decommission Date)--> healthy cell -> kept in cell shop | moved straight to a new position
-                                                    -> Disassembly Data -> separation, inspection, decision
-        reusable (coating good / medium) -> re-assembly with a NEW element code -> new position -> In Service
-        not reusable -> rate off | coating problem | mechanical problem
-                        (under warranty -> vendor list | no warranty) -> Warehouse
+    In Service --(operator records the decommissioning date and the failure reason)-->
+        healthy, or only a balance --> same element, new position only
+        broken --> C90, waiting for disassembly
+    C90 dismantles it --> the element is rate off and ceases; anode, cathode and membrane are separate
+    Inspection examines the anode and the cathode:
+        usable, good coating / usable, medium coating (separate counts) --> ready for a NEW element
+        holed or unusable, irreparable --> that piece is rate off
+        holed or unusable, but recoatable --> recoating, then the coating steps continue
 
 Nothing is stored here: every number is read from Assembly Data, Segregation, the warehouse board and the recoating jobs.
 """

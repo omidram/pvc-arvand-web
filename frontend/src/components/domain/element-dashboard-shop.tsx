@@ -69,10 +69,13 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
   const { canEdit } = useAuth();
   const qc = useQueryClient();
   const editable = canEdit("elements");
+  const operator = canEdit("wf_operation");
+  const cellshop = canEdit("wf_cellshop");
+  const moveTargets = MANUAL.filter((s) => (s === "awaiting_disassembly" ? operator : cellshop));
   const [stage, setStage] = useState<string>(initialStage || "shop");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [target, setTarget] = useState<ManualElementStage>("awaiting_assembly");
+  const [target, setTarget] = useState<ManualElementStage>("awaiting_disassembly");
   const [note, setNote] = useState("");
   const [typed, setTyped] = useState("");
   const [history, setHistory] = useState<string | null>(null);
@@ -142,12 +145,12 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
         />
       </div>
 
-      {editable ? (
+      {moveTargets.length ? (
         <div className="ed-actionbar">
           <label className="ed-filters">
             <span className="text-xs font-bold">{t("elDash.moveTo")}</span>
-            <select className="mon-select" value={target} onChange={(e) => setTarget(e.target.value as ManualElementStage)}>
-              {MANUAL.map((s) => (
+            <select className="mon-select" value={moveTargets.includes(target) ? target : moveTargets[0]} onChange={(e) => setTarget(e.target.value as ManualElementStage)}>
+              {moveTargets.map((s) => (
                 <option key={s} value={s}>
                   {t(`elDash.stage.${s}`)}
                 </option>
@@ -158,7 +161,7 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
             <span className="text-xs font-bold">{t("elDash.note")}</span>
             <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("elDash.noteHint")} />
           </label>
-          <Button type="button" disabled={!selected.size || move.isPending} onClick={() => move.mutate({ nrs: [...selected], stage: target })}>
+          <Button type="button" disabled={!selected.size || move.isPending} onClick={() => move.mutate({ nrs: [...selected], stage: moveTargets.includes(target) ? target : moveTargets[0] })}>
             <ArrowRightLeft className="h-4 w-4" />
             {t("elDash.moveSelected", { count: selected.size })}
           </Button>
@@ -170,7 +173,7 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
             <span className="text-xs font-bold">{t("elDash.byNumbers")}</span>
             <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={t("elDash.byNumbersHint")} style={{ minWidth: "16rem" }} />
           </label>
-          <Button type="button" variant="secondary" disabled={!typedNrs.length || move.isPending} onClick={() => move.mutate({ nrs: typedNrs, stage: target })}>
+          <Button type="button" variant="secondary" disabled={!typedNrs.length || move.isPending} onClick={() => move.mutate({ nrs: typedNrs, stage: moveTargets.includes(target) ? target : moveTargets[0] })}>
             {t("elDash.moveTyped", { count: typedNrs.length })}
           </Button>
         </div>
@@ -189,7 +192,7 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
             <table className="ed-table">
               <thead>
                 <tr>
-                  {editable ? (
+                  {moveTargets.length ? (
                     <th>
                       <input type="checkbox" checked={selected.size === rows.length && rows.length > 0} onChange={toggleAll} aria-label={t("elDash.selectAll")} />
                     </th>
@@ -210,7 +213,7 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
               <tbody>
                 {rows.map((r: PipelineItem) => (
                   <tr key={r.key} className={selected.has(r.element_nr) ? "is-selected" : undefined}>
-                    {editable ? (
+                    {moveTargets.length ? (
                       <td>
                         <input type="checkbox" checked={selected.has(r.element_nr)} onChange={() => toggle(r.element_nr)} aria-label={r.element_nr} />
                       </td>

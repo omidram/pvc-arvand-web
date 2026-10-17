@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, CheckCircle2, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
+import { ArrowRight, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { elementDashboardApi } from "@/lib/endpoints";
 import type { Element, ElementStage, PipelineItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -13,27 +13,27 @@ import { cn, formatDate, formatNumber } from "@/lib/utils";
 import { STAGE_TONE } from "./element-dashboard-ui";
 import { DecommissionActions, isHealthyKept, isShutdownDecision } from "./element-flow-actions";
 import { ElementCellRequest } from "./cell-request";
+import { useAuth } from "@/lib/auth/context";
+import Link from "next/link";
 
-/** One life of an element, in the order it really happens; after "disassembled" it starts again. */
-export const LIFE_CYCLE: ElementStage[] = [
-  "awaiting_assembly",
-  "assembling",
-  "awaiting_qc",
-  "ready",
-  "installed",
-  "in_service",
-  "decommissioned",
-  "awaiting_disassembly",
-  "disassembled",
-];
+/** A running element. Disassembly ends it (rate off); it is not assembled again under the same number. */
+export const SERVICE_LIFE: ElementStage[] = ["in_service", "decommissioned", "awaiting_disassembly", "disassembled"];
+
+/** A new element, built from inspected parts. This track does not continue a dismantled element. */
+export const BUILD_LIFE: ElementStage[] = ["awaiting_assembly", "assembling", "awaiting_qc", "ready", "installed"];
+
+export const LIFE_CYCLE: ElementStage[] = [...SERVICE_LIFE, ...BUILD_LIFE];
 
 const NEXT: Partial<Record<ElementStage, ElementStage>> = {
   awaiting_disassembly: "disassembled",
-  disassembled: "awaiting_assembly",
   awaiting_assembly: "assembling",
   assembling: "awaiting_qc",
   awaiting_qc: "ready",
 };
+
+function trackOf(stage: ElementStage): ElementStage[] {
+  return BUILD_LIFE.includes(stage) ? BUILD_LIFE : SERVICE_LIFE;
+}
 
 type LifeDateKey = "assembly_date" | "commissioning_date" | "decommissioning_date" | "disassembly_date";
 const DATE_OF: Partial<Record<ElementStage, LifeDateKey>> = {
@@ -59,7 +59,7 @@ function useCounts() {
 export function AssemblyLifecycleStrip({ onOpen }: { onOpen: OpenRecord }) {
   const { t } = useI18n();
   const counts = useCounts().data?.counts;
-  const [picked, setPicked] = useState<ElementStage | null>(null);
+  const [picked, setPicked] = useState<ElementStage | "assembled" | null>(null);
   const list = useQuery({
     queryKey: ["element-dashboard", "shop", picked, ""],
     queryFn: () => elementDashboardApi.shop({ state: picked!, limit: 300 }),
@@ -73,7 +73,7 @@ export function AssemblyLifecycleStrip({ onOpen }: { onOpen: OpenRecord }) {
         <span className="asm-flow-help">{t("asmFlow.help")}</span>
       </div>
       <div className="asm-flow-line">
-        {LIFE_CYCLE.map((stage, i) => (
+        {SERVICE_LIFE.map((stage, i) => (
           <Fragment key={stage}>
             {i > 0 ? <ArrowRight className="asm-flow-arrow" aria-hidden /> : null}
             <button
@@ -87,14 +87,25 @@ export function AssemblyLifecycleStrip({ onOpen }: { onOpen: OpenRecord }) {
             </button>
           </Fragment>
         ))}
-        <RotateCcw className="asm-flow-arrow" aria-label={t("asmFlow.loop")} />
+      </div>
+      <p className="asm-flow-help">{t("asmFlow.buildTitle")}</p>
+      <div className="asm-flow-line">
+        <button
+          type="button"
+          title={t("asmFlow.what.assembled")}
+          className={cn("asm-flow-step", "ed-tone-ready", picked === "assembled" && "is-picked", counts && !counts.assembled && "is-zero")}
+          onClick={() => setPicked(picked === "assembled" ? null : "assembled")}
+        >
+          <span className="asm-flow-n">{counts ? formatNumber(counts.assembled ?? 0, 0) : "…"}</span>
+          <span className="asm-flow-label">{t("elDash.flow.assembled")}</span>
+        </button>
       </div>
 
       {picked ? (
         <div className="asm-flow-list">
           <div className="asm-flow-list-head">
             <span>
-              <strong>{t(`elDash.stage.${picked}`)}</strong> — {t(`asmFlow.what.${picked}`)}
+              <strong>{picked === "assembled" ? t("elDash.flow.assembled") : t(`elDash.stage.${picked}`)}</strong> — {t(`asmFlow.what.${picked}`)}
             </span>
             <button type="button" className="asm-link" onClick={() => setPicked(null)}>
               <ChevronUp className="inline h-3.5 w-3.5" /> {t("asmFlow.close")}
@@ -130,6 +141,9 @@ export function AssemblyLifecycleStrip({ onOpen }: { onOpen: OpenRecord }) {
 /** The open Assembly Data record: where this element is in its life and the one next step. */
 export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; editable: boolean; onOpen: OpenRecord }) {
   const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const c90 = canEdit("wf_c90");
+  const cellshop = canEdit("wf_cellshop");
   const qc = useQueryClient();
   const nr = String(row.element_nr ?? "").trim();
   const [open, setOpen] = useState(true);
@@ -164,8 +178,11 @@ export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; 
   if (!item) return null;
 
   const older = item.row_id != null && row.id != null && Number(item.row_id) !== Number(row.id);
-  const at = LIFE_CYCLE.indexOf(item.state);
+  const fresh = Boolean(item.assembly_date) && ["assembling", "awaiting_qc", "ready", "installed"].includes(item.state);
+  const steps = fresh ? [] : trackOf(item.state);
+  const at = steps.indexOf(item.state);
   const next = NEXT[item.state];
+  const nextRole = next === "disassembled" ? c90 : cellshop;
 
   return (
     <section className="asm-card">
@@ -188,7 +205,14 @@ export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; 
           ) : null}
 
           <ol className="asm-steps">
-            {LIFE_CYCLE.map((stage, i) => {
+            {fresh ? (
+              <li className="asm-step is-now ed-tone-ready">
+                <span className="asm-dot">1</span>
+                <span className="asm-step-label">{t("elDash.flow.assembled")}</span>
+                {item.assembly_date ? <span className="asm-step-date">{formatDate(String(item.assembly_date))}</span> : null}
+              </li>
+            ) : null}
+            {steps.map((stage, i) => {
               const dateKey = DATE_OF[stage];
               const recorded = older
                 ? (dateKey ? row[dateKey] : null)
@@ -213,11 +237,35 @@ export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; 
 
           {!older ? <ElementCellRequest item={item} /> : null}
 
-          {editable && !older && (isShutdownDecision(item) || isHealthyKept(item) || item.state === "awaiting_disassembly") ? (
-            <DecommissionActions item={item} editable={editable} note={note} onNote={setNote} onMessage={setMessage} />
+          {!older && (isShutdownDecision(item) || isHealthyKept(item)) ? (
+            <DecommissionActions item={item} editable={canEdit("wf_operation")} note={note} onNote={setNote} onMessage={setMessage} />
           ) : null}
 
-          {editable && next && !older ? (
+          {item.state === "disassembled" && !older ? (
+            <div className="asm-next">
+              <p className="ew-role">{t("asmFlow.roles.inspection")}</p>
+              <p>{t("asmFlow.rateoff")}</p>
+              <p>
+                {item.anode_nr ? (
+                  <Link className="asm-link" href={`/anodes?anode_nr=${encodeURIComponent(item.anode_nr)}`}>
+                    {t("elDash.col.anode")} {item.anode_nr}
+                  </Link>
+                ) : null}{" "}
+                {item.cathode_nr ? (
+                  <Link className="asm-link" href={`/cathodes?cathode_nr=${encodeURIComponent(item.cathode_nr)}`}>
+                    {t("elDash.col.cathode")} {item.cathode_nr}
+                  </Link>
+                ) : null}{" "}
+                {item.membrane_nr ? (
+                  <Link className="asm-link" href={`/membranes?membrane_nr=${encodeURIComponent(item.membrane_nr)}`}>
+                    {t("elDash.col.membrane")} {item.membrane_nr}
+                  </Link>
+                ) : null}
+              </p>
+            </div>
+          ) : null}
+
+          {editable && next && nextRole && !older ? (
             <div className="asm-actions">
               {next === "disassembled" ? (
                 <label className="ed-filters">
@@ -229,6 +277,7 @@ export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; 
                 <span className="text-xs font-bold">{t("elDash.note")}</span>
                 <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("elDash.noteHint")} />
               </label>
+              {next === "disassembled" ? <p className="ew-role">{t("asmFlow.roles.c90")}</p> : null}
               <Button type="button" size="sm" disabled={advance.isPending} onClick={() => advance.mutate(item)}>
                 <CheckCircle2 className="h-4 w-4" />
                 {t("elDash.cartable.confirm", { stage: t(`elDash.stage.${next}`) })}

@@ -61,13 +61,14 @@ CELLS_PER_ELECTROLYZER = 168
 PLANT_CAPACITY = len(all_electrolyzers()) * CELLS_PER_ELECTROLYZER
 
 # Stages a person can set (the rest come from Assembly Data).
+# A dismantled element is retired (rate off). It is not put back in the assembly queue.
 MANUAL_STAGES = ("awaiting_disassembly", "awaiting_assembly", "assembling", "awaiting_qc", "ready")
 STAGE_RANK = {"awaiting_assembly": 1, "assembling": 2, "awaiting_qc": 3, "ready": 4}
 ALLOWED_BY_BASE = {
-    # Element Workflow: switched off -> the shop decides. Healthy cell = kept in the shop ("ready", waits for a new
-    # position); otherwise it goes to disassembly.
+    # Operator, after the decommissioning date: healthy/balance is a position change (relocate),
+    # broken goes to C90 (awaiting_disassembly). "ready" remains only so an older "kept" mark still loads.
     "decommissioned": {"awaiting_disassembly", "ready"},
-    "disassembled": {"awaiting_assembly", "assembling", "awaiting_qc", "ready"},
+    "disassembled": set(),
     "new": {"awaiting_assembly", "assembling", "awaiting_qc", "ready"},
 }
 ALL_STATES = (
@@ -94,9 +95,9 @@ DEFAULT_SETTINGS = {
 
 # One confirmation moves an element to the next step of the cell-shop cycle.
 NEXT_STAGE = {
-    # decommissioned is the flowchart decision (keep / relocate / disassemble) — not a single next step
+    # decommissioned is the operator's decision (relocate or send to C90) — not a single next step.
+    # disassembled is the end of this element: it is rate off and does not return to assembly.
     "awaiting_disassembly": "disassembled",
-    "disassembled": "awaiting_assembly",
     "new": "awaiting_assembly",
     "awaiting_assembly": "assembling",
     "assembling": "awaiting_qc",
@@ -237,7 +238,6 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
     # shop-only elements (never installed yet)
     keys = set(latest) | set(manual)
     today = date.today()
-    queue_days = settings_dict(get_settings(db))["shop_queue_days"]
     out: list[dict[str, Any]] = []
     for key in keys:
         el = latest.get(key)
@@ -254,7 +254,7 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
             stamp = st.updated_at or datetime.min
             if event is None or stamp.date() >= event:
                 candidates.append((stamp, st.stage, "manual"))
-        if base in ("disassembled", "new"):
+        if base == "new":
             for rep in reports.get(key, []):
                 rep_day = _as_date(rep.assembly_date) or (rep.created_at.date() if rep.created_at else None)
                 if event is not None and rep_day is not None and rep_day < event:
@@ -268,8 +268,6 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
             since = stamp.date()
             if source == "manual" and st is not None:
                 note, updated_by = st.note, st.updated_by
-        elif base == "disassembled" and queue_days and event is not None and (today - event).days <= queue_days:
-            stage, source = "awaiting_assembly", "auto"
 
         dol = None
         if el is not None and base in ("in_service", "installed", "decommissioned"):

@@ -10,6 +10,7 @@ import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { AccessFormWindow, AccessNav } from "@/components/layout/access-form";
 import { useI18n } from "@/lib/i18n/context";
 import { ExportButtons } from "@/components/domain/export-buttons";
+import { DateInput } from "@/components/ui/date-input";
 import { formatDate, humanizeKey, sameNr } from "@/lib/utils";
 import { appAlert, appConfirm } from "@/lib/dialog";
 import { useDefaultView, type RecordView } from "@/lib/default-view";
@@ -58,8 +59,20 @@ function SheetEdit({
       </select>
     );
   }
-  const inputType =
-    field.type === "date" || field.type === "datetime-local" || field.type === "number" ? field.type : "text";
+  if (field.type === "date" || field.type === "datetime-local") {
+    const raw = String(value ?? "");
+    return (
+      <span className="sheet-date" onClick={stop} onDoubleClick={stop} onMouseDown={stop}>
+        <DateInput
+          type={field.type}
+          value={raw}
+          className="sheet-cell-input"
+          onChange={(event) => onChange(field.name, event.target.value)}
+        />
+      </span>
+    );
+  }
+  const inputType = field.type === "number" ? "number" : "text";
   return (
     <input
       type={inputType}

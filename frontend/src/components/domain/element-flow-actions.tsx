@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowRightLeft, CheckCircle2, Hammer, Warehouse } from "lucide-react";
+import { ArrowRightLeft, CheckCircle2, Hammer } from "lucide-react";
 import { elementDashboardApi } from "@/lib/endpoints";
 import type { PipelineItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { useI18n } from "@/lib/i18n/context";
+import { useAuth } from "@/lib/auth/context";
 import { todayIsoLocal } from "@/lib/date-range";
 
 type ApiErr = Error & { response?: { data?: { detail?: string } } };
@@ -42,6 +43,8 @@ export function DecommissionActions({
   onDone?: () => void;
 }) {
   const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const operator = canEdit("wf_operation");
   const qc = useQueryClient();
   const decide = useMutation({
     mutationFn: (choice: "keep" | "disassemble") => elementDashboardApi.decide({ element_nr: item.element_nr, choice, note: note.trim() || null }),
@@ -58,22 +61,20 @@ export function DecommissionActions({
     onError: (err: ApiErr) => onMessage({ ok: false, text: errText(err) }),
   });
 
-  if (!editable) return null;
+  if (!editable || !operator) return null;
 
   if (isShutdownDecision(item)) {
+    const reason = note.trim() || (item.decommission_reason || "").trim();
     return (
       <div className="ew-actions">
+        <p className="ew-role">{t("asmFlow.roles.operation")}</p>
         <p className="ew-actions-lead">{t("asmFlow.next.decommissioned")}</p>
         <label className="ed-filters">
-          <span className="text-xs font-bold">{t("elDash.note")}</span>
-          <input value={note} onChange={(e) => onNote(e.target.value)} placeholder={t("elDash.noteHint")} />
+          <span className="text-xs font-bold">{t("asmFlow.failureReason")}</span>
+          <input value={note} onChange={(e) => onNote(e.target.value)} placeholder={item.decommission_reason || t("asmFlow.failureReasonHint")} />
         </label>
         <div className="ew-action-btns">
-          <Button type="button" size="sm" disabled={decide.isPending} onClick={() => decide.mutate("keep")}>
-            <Warehouse className="h-4 w-4" />
-            {t("elDash.cartable.keep")}
-          </Button>
-          <Button type="button" size="sm" variant="danger" disabled={decide.isPending} onClick={() => decide.mutate("disassemble")}>
+          <Button type="button" size="sm" variant="danger" disabled={decide.isPending || !reason} onClick={() => decide.mutate("disassemble")}>
             <Hammer className="h-4 w-4" />
             {t("elDash.cartable.disassemble")}
           </Button>
@@ -86,19 +87,9 @@ export function DecommissionActions({
   if (isHealthyKept(item)) {
     return (
       <div className="ew-actions">
+        <p className="ew-role">{t("asmFlow.roles.operation")}</p>
         <p className="ew-actions-lead">{t("elDash.cartable.readyKeepHint")}</p>
         <RelocateForm item={item} note={note} onNote={onNote} onMessage={onMessage} onDone={onDone} />
-      </div>
-    );
-  }
-
-  if (item.base_state === "decommissioned" && item.state === "awaiting_disassembly") {
-    return (
-      <div className="ew-action-btns">
-        <Button type="button" size="sm" variant="secondary" disabled={decide.isPending} onClick={() => decide.mutate("keep")}>
-          <Warehouse className="h-4 w-4" />
-          {t("elDash.cartable.keep")}
-        </Button>
       </div>
     );
   }
