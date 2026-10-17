@@ -35,7 +35,7 @@ def list_shop(
     state: str | None = Query(None, description="one of the pipeline states, or 'all'"),
     q: str | None = None,
     element_nr: str | None = Query(None, description="exact element number (spacing ignored)"),
-    limit: int = Query(600, ge=1, le=5000),
+    limit: int = Query(600, ge=1, le=20000),
     db: Session = Depends(get_db),
 ):
     items = list(svc.build_pipeline(db))
@@ -297,6 +297,18 @@ def shop_events(element_nr: str | None = None, limit: int = Query(100, ge=1, le=
 
 
 # ---------------------------------------------------------------- electrodes / membranes with DOL and life
+
+
+@router.get("/parts-now")
+def parts_now(
+    anode_nr: str | None = None,
+    cathode_nr: str | None = None,
+    membrane_nr: str | None = None,
+    element_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    """Where the anode, cathode and membrane of a dismantled element are now."""
+    return {"parts": svc.parts_now(db, anode_nr=anode_nr, cathode_nr=cathode_nr, membrane_nr=membrane_nr, skip_id=element_id)}
 
 
 @router.get("/parts")

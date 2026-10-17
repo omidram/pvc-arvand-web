@@ -3,19 +3,13 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { DashboardVoltageStats } from "@/lib/types";
+import { TRAIN_LETTERS, electrolyzerName, formatElectrolyzer, type TrainId } from "@/lib/plant-topology";
 import { VoltageGauge } from "@/components/domain/voltage-gauge";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatNumber } from "@/lib/utils";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const TOOLTIP_STYLE = { background: "#ffffff", border: "1px solid #808080", borderRadius: 0, fontSize: 12, color: "#000" };
-
-function healthTone(pct: number | null | undefined): "ok" | "warning" | "danger" | "info" {
-  if (pct == null) return "info";
-  if (pct >= 95) return "ok";
-  if (pct >= 80) return "warning";
-  return "danger";
-}
 
 function maxVTone(v: number | null | undefined, limit: number): "ok" | "warning" | "danger" | "info" {
   if (v == null) return "info";
@@ -32,6 +26,19 @@ function hasLiveTotals(voltage?: DashboardVoltageStats | null): boolean {
     (voltage.plant_energy_kwh_24h != null && voltage.plant_energy_kwh_24h > 0) ||
     (voltage.online_count != null && voltage.online_count > 0)
   );
+}
+
+function trainLine(live: DashboardVoltageStats, train: TrainId) {
+  const names = new Set(TRAIN_LETTERS.map((letter) => electrolyzerName(train, letter)));
+  const present = live.electrolyzers.filter((row) => names.has(formatElectrolyzer(row.electrolyzer)));
+  const online = present.filter((row) => row.online !== false && ((row.cell_count || 0) > 0 || Boolean(row.current_ka))).length;
+  return {
+    train,
+    online,
+    cells: present.reduce((sum, row) => sum + (row.cell_count || 0), 0),
+    danger: present.reduce((sum, row) => sum + (row.danger_count || 0), 0),
+    warning: present.reduce((sum, row) => sum + (row.warning_count || 0), 0),
+  };
 }
 
 /** Always-visible load / energy strip for Main Menu / Overview. */
@@ -143,14 +150,24 @@ export function VoltageReportPanel({
       </div>
 
       <div className="dash-gauge-row">
-        <VoltageGauge
-          value={live.health_pct}
-          max={100}
-          label={t("dashboard.healthGauge")}
-          unit="%"
-          tone={healthTone(live.health_pct)}
-          digits={1}
-        />
+        <div className="dash-train-card">
+          {(["1", "2"] as const).map((train) => {
+            const line = trainLine(live, train);
+            return (
+              <div key={train} className="dash-train-line">
+                <span className="dash-train-name">{t(train === "1" ? "monitoring.train1" : "monitoring.train2")}</span>
+                <span className="dash-train-sum">
+                  {t("monitoring.trainSummary", {
+                    online: line.online,
+                    cells: formatNumber(line.cells, 0),
+                    danger: formatNumber(line.danger, 0),
+                    warning: formatNumber(line.warning, 0),
+                  })}
+                </span>
+              </div>
+            );
+          })}
+        </div>
         <VoltageGauge
           value={live.max_voltage}
           max={live.cell_gauge_max}

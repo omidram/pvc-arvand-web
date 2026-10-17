@@ -449,12 +449,12 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("lost_load") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={row.lost_load ?? ""} readOnly tabIndex={-1} title="Duration × KA / 4.85" />
+                    <input className="w-24 text-center tabular-nums" value={row.lost_load ?? ""} readOnly tabIndex={-1} title="Chlorine lost = duration × KA / 4.85" />
                   </td>
                 ) : null}
                 {fieldVisible("lost_production") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={row.lost_production ?? ""} readOnly tabIndex={-1} title="Lost load × 1.112" />
+                    <input className="w-24 text-center tabular-nums" value={row.lost_production ?? ""} readOnly tabIndex={-1} title="NaOH lost = chlorine lost × 1.112" />
                   </td>
                 ) : null}
                 {fieldVisible("mtbf_days") ? (
@@ -587,7 +587,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("lost_production") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value="" readOnly tabIndex={-1} title="Lost load × 1.112" />
+                    <input className="w-24 text-center tabular-nums" value="" readOnly tabIndex={-1} title="NaOH lost = chlorine lost × 1.112" />
                   </td>
                 ) : null}
                 {fieldVisible("mtbf_days") ? (

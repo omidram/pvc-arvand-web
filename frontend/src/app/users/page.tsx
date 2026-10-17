@@ -16,6 +16,7 @@ import { ErrorState, Spinner } from "@/components/ui/spinner";
 import { Tabs } from "@/components/ui/tabs";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
+import { OnlineUsersPanel } from "@/components/domain/online-users";
 import { isPasswordStrong } from "@/lib/password-policy";
 import { formatDate } from "@/lib/utils";
 import { appAlert, appConfirm } from "@/lib/dialog";
@@ -249,6 +250,7 @@ function UsersTab({ formKeys, formFields }: { formKeys: string[]; formFields: Re
 
   return (
     <div className="space-y-3">
+      <OnlineUsersPanel />
       <div className="flex justify-end">
         <Button
           onClick={() => {

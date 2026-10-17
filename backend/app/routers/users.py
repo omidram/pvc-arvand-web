@@ -1,4 +1,6 @@
 """User & per-form permission management. Admin-only."""
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -67,6 +69,29 @@ def list_form_fields():
 @router.get("", response_model=list[schemas.UserWithPermissions])
 def list_users(db: Session = Depends(get_db)):
     return [_with_permissions(db, u) for u in db.query(models.User).order_by(models.User.id).all()]
+
+
+@router.get("/online")
+def online_users(db: Session = Depends(get_db)):
+    """Accounts that have used the program in the last few minutes."""
+    cutoff = datetime.now() - timedelta(minutes=3)
+    rows = (
+        db.query(models.User)
+        .filter(models.User.is_active.is_(True), models.User.last_seen_at.isnot(None), models.User.last_seen_at >= cutoff)
+        .order_by(models.User.last_seen_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": u.id,
+            "username": u.username,
+            "full_name": u.full_name,
+            "role": u.role,
+            "role_name": _role_name(db, u.role_id),
+            "last_seen_at": u.last_seen_at.isoformat(timespec="seconds") if u.last_seen_at else None,
+        }
+        for u in rows
+    ]
 
 
 @router.post("", response_model=schemas.UserWithPermissions, status_code=201)

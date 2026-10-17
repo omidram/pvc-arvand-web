@@ -175,6 +175,20 @@ def _ensure_plant_settings_session_idle() -> None:
 _ensure_plant_settings_session_idle()
 
 
+def _ensure_user_last_seen() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("users")}
+    except Exception:
+        return
+    if "last_seen_at" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE users ADD COLUMN last_seen_at DATETIME"))
+
+
+_ensure_user_last_seen()
+
+
 def _ensure_element_dashboard_queue_days() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("element_dashboard_settings")}

@@ -866,6 +866,22 @@ def coating_from_board(db: Session, kind: str, serial: str, user: models.User, n
     return {"wf_id": b.id, "wf_code": pkg.code, "wf_status": b.status, "added": not created}
 
 
+def _can_cancel(user: models.User, status: str, created_by_id: int | None, first_status: str, also: bool = False) -> bool:
+    """The requester may drop a new request on its first step. An admin may cancel any open step."""
+    if status in CLOSED:
+        return False
+    if user.role == "admin":
+        return True
+    if status == first_status and created_by_id is not None and created_by_id == user.id:
+        return True
+    return also
+
+
+def _admin_cancel_note(user: models.User, note: str | None) -> None:
+    if user.role == "admin" and not (note or "").strip():
+        raise HTTPException(400, "Write why this request is cancelled")
+
+
 def _coating_actions(db: Session, b: WfCoatingBatch, user: models.User) -> list[str]:
     groups = _groups(db, user)
     stage = set(COATING_STAGES.get(b.status, []))
@@ -885,8 +901,11 @@ def _coating_actions(db: Session, b: WfCoatingBatch, user: models.User) -> list[
         acts += ["inspect_ok", "inspect_reject"]
     if b.status == "await_approval" and mine:
         acts += ["approve", "reject"]
-    if b.status in ("await_company", "await_indent", "await_dispatch") and ("c90" in groups or user.role == "admin"):
-        acts += ["cancel", "request_inspections"]
+    early = b.status in ("await_company", "await_indent", "await_dispatch")
+    if early and ("c90" in groups or user.role == "admin"):
+        acts.append("request_inspections")
+    if _can_cancel(user, b.status, b.created_by_id, "await_company", also=early and "c90" in groups):
+        acts.append("cancel")
     if b.status not in CLOSED and groups:
         acts.append("attach")
     return acts
@@ -1304,10 +1323,10 @@ def coating_reject(batch_id: int, body: NoteIn, db: Session = Depends(get_db), u
 @router.post("/coating/{batch_id}/cancel")
 def coating_cancel(batch_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     b = _load_batch(db, batch_id)
-    if b.status not in ("await_company", "await_indent", "await_dispatch"):
-        raise HTTPException(409, "Only requests that were not sent yet can be cancelled")
-    if user.role != "admin":
-        _require_group(db, user, "c90")
+    early = b.status in ("await_company", "await_indent", "await_dispatch") and "c90" in _groups(db, user)
+    if not _can_cancel(user, b.status, b.created_by_id, "await_company", also=early):
+        raise HTTPException(409, "Only the requester can cancel a new request, or an admin at any open step")
+    _admin_cancel_note(user, body.note)
     day = date.today()
     for it in _batch_items(db, b):
         upsert_state(db, it.element_kind, it.serial, lifecycle_status="in_plant", company_id=None)
@@ -1425,7 +1444,8 @@ def _purchase_actions(db: Session, p: WfPurchase, user: models.User) -> list[str
     acts: list[str] = []
     if mine:
         acts.append({"await_indent": "indent", "await_order": "order", "ordered": "deliver", "await_registration": "register"}[p.status])
-    if p.status in ("await_indent", "await_order") and ("procurement" in groups or user.role == "admin"):
+    early = p.status in ("await_indent", "await_order") and "procurement" in groups
+    if _can_cancel(user, p.status, p.created_by_id, "await_indent", also=early):
         acts.append("cancel")
     if p.status not in CLOSED and groups:
         acts.append("attach")
@@ -1638,10 +1658,10 @@ def purchase_register(purchase_id: int, body: RegisterIn, db: Session = Depends(
 @router.post("/purchase/{purchase_id}/cancel")
 def purchase_cancel(purchase_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     p = _load_purchase(db, purchase_id)
-    if p.status not in ("await_indent", "await_order"):
-        raise HTTPException(409, "Only purchases that were not ordered yet can be cancelled")
-    if user.role != "admin":
-        _require_group(db, user, "procurement")
+    early = p.status in ("await_indent", "await_order") and "procurement" in _groups(db, user)
+    if not _can_cancel(user, p.status, p.created_by_id, "await_indent", also=early):
+        raise HTTPException(409, "Only the requester can cancel a new purchase, or an admin at any open step")
+    _admin_cancel_note(user, body.note)
     _move(db, "purchase", p, "cancelled", "cancel", user, body.note, notify_creator=True)
     db.commit()
     return _purchase_detail(db, p, user)
@@ -1702,7 +1722,7 @@ def _cell_actions(db: Session, r: WfCellRequest, user: models.User) -> list[str]
         acts.append("receive")
     if r.status in ("await_shop", "in_shop") and "cellshop" in groups:
         acts.append("decide")
-    if r.status == "await_shutdown" and (user.role == "admin" or "operation" in groups or r.created_by_id == user.id):
+    if _can_cancel(user, r.status, r.created_by_id, "await_shutdown", also=r.status == "await_shutdown" and "operation" in groups):
         acts.append("cancel")
     if r.status not in CLOSED and (groups or r.created_by_id == user.id):
         acts.extend(["comment", "attach"])
@@ -1976,7 +1996,8 @@ def cell_comment(request_id: int, body: CellCommentIn, db: Session = Depends(get
 def cell_cancel(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     r = _load_cell(db, request_id)
     if "cancel" not in _cell_actions(db, r, user):
-        raise HTTPException(409, "Only a request whose cell is still running can be cancelled (by the requester or operation)")
+        raise HTTPException(409, "Only the requester can cancel a new cell request, or an admin at any open step")
+    _admin_cancel_note(user, body.note)
     _cell_move(db, r, "cancelled", "cancel", user, body.note, also=("cellshop",))
     db.commit()
     return _cell_detail(db, r, user)
@@ -2155,10 +2176,11 @@ def _insp_actions(db: Session, r: WfInspectionRequest, user: models.User) -> lis
     groups = _groups(db, user)
     acts: list[str] = []
     if r.status == "await_request" and "c90" in groups:
-        acts += ["send", "cancel"]
+        acts.append("send")
     if r.status == "await_inspection" and "inspection" in groups:
         acts += ["fill", "link"]
-    if r.status == "await_inspection" and ("c90" in groups or r.created_by_id == user.id):
+    early = (r.status == "await_request" and "c90" in groups) or (r.status == "await_inspection" and ("c90" in groups or r.created_by_id == user.id))
+    if _can_cancel(user, r.status, r.created_by_id, "await_request", also=early):
         acts.append("cancel")
     if r.status not in CLOSED and (groups or r.created_by_id == user.id):
         acts += ["comment", "attach"]
@@ -2379,8 +2401,10 @@ def inspection_comment(request_id: int, body: CellCommentIn, db: Session = Depen
 def inspection_cancel(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     r = _load_insp(db, request_id)
     if "cancel" not in _insp_actions(db, r, user):
-        raise HTTPException(409, "This request cannot be cancelled")
-    if not (body.note or "").strip():
+        raise HTTPException(409, "Only the requester can cancel a new inspection request, or an admin at any open step")
+    if user.role == "admin" and not (body.note or "").strip():
+        raise HTTPException(400, "Write why this request is cancelled")
+    if user.role != "admin" and not (body.note or "").strip():
         raise HTTPException(400, "Write why the inspection is not needed")
     _insp_move(db, r, "cancelled", "cancel", user, body.note)
     db.commit()

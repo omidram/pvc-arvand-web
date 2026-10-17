@@ -10,6 +10,7 @@ import { DateInput } from "@/components/ui/date-input";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
+import { useAuth } from "@/lib/auth/context";
 import { relationsApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { todayIsoLocal } from "@/lib/date-range";
@@ -366,6 +367,7 @@ function CellDetailBody({ d, t }: { d: CellRequestDetail; t: T }) {
 
 function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
   const qc = useQueryClient();
+  const { isAdmin } = useAuth();
   const acts = d.actions;
   const [note, setNote] = useState("");
   const [day, setDay] = useState(todayIsoLocal());
@@ -459,8 +461,8 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
             </div>
           ) : null}
           <label className="ed-filters">
-            <span className="text-xs font-bold">{t("elDash.note")}</span>
-            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("elDash.noteHint")} />
+            <span className="text-xs font-bold">{isAdmin && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.note")}</span>
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={isAdmin && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.noteHint")} />
           </label>
         </section>
       ) : d.status !== "completed" && d.status !== "cancelled" ? (
@@ -486,7 +488,7 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
               </>
             ) : null}
             {acts.includes("cancel") ? (
-              <button type="button" className="wf-btn is-bad" disabled={run.isPending} onClick={() => go("cancel")}>
+              <button type="button" className="wf-btn is-bad" disabled={run.isPending || (isAdmin && !note.trim())} title={isAdmin ? t("wf.cancelReason") : undefined} onClick={() => go("cancel")}>
                 <Ban size={14} /> {t("cellReq.cancelBtn")}
               </button>
             ) : null}

@@ -60,6 +60,7 @@ class User(Base):
     role_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("app_roles.id"), nullable=True, index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     auth_source: Mapped[str] = mapped_column(String(20), default="local")  # local | ad
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

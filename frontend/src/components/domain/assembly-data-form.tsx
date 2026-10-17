@@ -4,13 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Upload } from "lucide-react";
-import { elementsApi, relationsApi, type ImportProgress } from "@/lib/endpoints";
+import { elementDashboardApi, elementsApi, relationsApi, type ImportProgress } from "@/lib/endpoints";
 import { ImportProgressBar } from "@/components/domain/import-progress";
 import { useCrudResource } from "@/lib/use-resource";
 import type { Element } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
 import { ElementRelations } from "@/components/domain/access-relations";
-import { AssemblyLifecycleStrip, ElementLifecycleCard } from "@/components/domain/assembly-lifecycle";
+import { AssemblyLifecycleStrip, ElementLifecycleCard, type LifePick } from "@/components/domain/assembly-lifecycle";
+import { STAGE_TONE } from "@/components/domain/element-dashboard-ui";
 import type { FieldDef } from "@/components/ui/resource-form";
 import type { Column } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,12 @@ export function AssemblyDataForm() {
   const [showImport, setShowImport] = useState<"assembly" | "disassembly" | null>(null);
   const [showRelations, setShowRelations] = useState(false);
   const [jump, setJump] = useState(0);
+  const [stage, setStage] = useState<LifePick | null>(null);
+  const stageQuery = useQuery({
+    queryKey: ["element-dashboard", "shop", stage, "sheet"],
+    queryFn: () => elementDashboardApi.shop({ state: stage!, limit: 20000 }),
+    enabled: Boolean(stage),
+  });
 
   function openRecord(elementNr: string, rowId: number | null) {
     const url = new URL(window.location.href);
@@ -51,6 +58,22 @@ export function AssemblyDataForm() {
     elementsApi,
     { limit: 20000 }
   );
+  const sheetRecords = useMemo(() => {
+    const all = listQuery.data;
+    if (!stage) return all;
+    const items = stageQuery.data?.items;
+    if (!items) return [];
+    const ids = new Set(items.map((item) => item.row_id).filter((id): id is number => id != null));
+    const keys = new Set(
+      items.filter((item) => item.row_id == null).map((item) => String(item.element_nr || "").replace(/[\s\-_/.]/g, "").toUpperCase())
+    );
+    return (all || []).filter((row) => {
+      if (ids.has(row.id)) return true;
+      if (!keys.size) return false;
+      return keys.has(String(row.element_nr || "").replace(/[\s\-_/.]/g, "").toUpperCase());
+    });
+  }, [listQuery.data, stage, stageQuery.data]);
+  const stageTone = !stage ? "" : stage === "assembled" ? "ink" : STAGE_TONE[stage];
   const nextNrQuery = useQuery({
     queryKey: ["elements", "next-number"],
     queryFn: () => elementsApi.nextNumber(),
@@ -191,15 +214,16 @@ export function AssemblyDataForm() {
 
   return (
     <>
-      <AssemblyLifecycleStrip onOpen={openRecord} />
+      <AssemblyLifecycleStrip picked={stage} onPick={setStage} />
+      <div className={stageTone ? `asm-filtered is-${stageTone}` : undefined}>
       <AccessWorkspace<Element>
         key={jump}
         caption={t("menus.assemblyData")}
         helpKey="elements"
         backHref="/elements"
         backLabel={t("elements.title")}
-        records={listQuery.data}
-        isLoading={listQuery.isLoading}
+        records={sheetRecords}
+        isLoading={listQuery.isLoading || Boolean(stage && stageQuery.isLoading)}
         error={listQuery.error as Error | null}
         fields={fields}
         columns={columns}
@@ -270,6 +294,7 @@ export function AssemblyDataForm() {
           ) : null
         }
       />
+      </div>
       {editable && isAdmin && showImport ? (
         <ImportAssemblyModal mode={showImport} onClose={() => setShowImport(null)} />
       ) : null}

@@ -47,6 +47,8 @@ const squeeze = (s: string) => s.replace(/[\s\-_/.]/g, "").toUpperCase();
 
 type OpenRecord = (elementNr: string, rowId: number | null) => void;
 
+export type LifePick = ElementStage | "assembled";
+
 function useCounts() {
   return useQuery({
     queryKey: ["element-dashboard", "shop", "counts"],
@@ -55,16 +57,10 @@ function useCounts() {
   });
 }
 
-/** "Where are the elements?" for Assembly Data: the life cycle with a count per step; a step lists its elements. */
-export function AssemblyLifecycleStrip({ onOpen }: { onOpen: OpenRecord }) {
+/** "Where are the elements?" for Assembly Data. Picking a step filters the sheet underneath. */
+export function AssemblyLifecycleStrip({ picked, onPick }: { picked: LifePick | null; onPick: (stage: LifePick | null) => void }) {
   const { t } = useI18n();
   const counts = useCounts().data?.counts;
-  const [picked, setPicked] = useState<ElementStage | "assembled" | null>(null);
-  const list = useQuery({
-    queryKey: ["element-dashboard", "shop", picked, ""],
-    queryFn: () => elementDashboardApi.shop({ state: picked!, limit: 300 }),
-    enabled: Boolean(picked),
-  });
 
   return (
     <section className="asm-flow">
@@ -80,7 +76,7 @@ export function AssemblyLifecycleStrip({ onOpen }: { onOpen: OpenRecord }) {
               type="button"
               title={t(`asmFlow.what.${stage}`)}
               className={cn("asm-flow-step", `ed-tone-${STAGE_TONE[stage]}`, picked === stage && "is-picked", counts && !counts[stage] && "is-zero")}
-              onClick={() => setPicked(picked === stage ? null : stage)}
+              onClick={() => onPick(picked === stage ? null : stage)}
             >
               <span className="asm-flow-n">{counts ? formatNumber(counts[stage], 0) : "…"}</span>
               <span className="asm-flow-label">{t(`elDash.stage.${stage}`)}</span>
@@ -94,47 +90,86 @@ export function AssemblyLifecycleStrip({ onOpen }: { onOpen: OpenRecord }) {
           type="button"
           title={t("asmFlow.what.assembled")}
           className={cn("asm-flow-step", "ed-tone-ready", picked === "assembled" && "is-picked", counts && !counts.assembled && "is-zero")}
-          onClick={() => setPicked(picked === "assembled" ? null : "assembled")}
+          onClick={() => onPick(picked === "assembled" ? null : "assembled")}
         >
           <span className="asm-flow-n">{counts ? formatNumber(counts.assembled ?? 0, 0) : "…"}</span>
           <span className="asm-flow-label">{t("elDash.flow.assembled")}</span>
         </button>
       </div>
-
-      {picked ? (
-        <div className="asm-flow-list">
-          <div className="asm-flow-list-head">
-            <span>
-              <strong>{picked === "assembled" ? t("elDash.flow.assembled") : t(`elDash.stage.${picked}`)}</strong> — {t(`asmFlow.what.${picked}`)}
-            </span>
-            <button type="button" className="asm-link" onClick={() => setPicked(null)}>
-              <ChevronUp className="inline h-3.5 w-3.5" /> {t("asmFlow.close")}
-            </button>
-          </div>
-          {list.isLoading ? (
-            <p className="asm-mute">…</p>
-          ) : !list.data?.items.length ? (
-            <p className="asm-mute">{t("asmFlow.empty")}</p>
-          ) : (
-            <div className="asm-chips">
-              {list.data.items.map((item) => (
-                <button
-                  key={item.key}
-                  type="button"
-                  className="asm-chip"
-                  title={item.electrolyzer ? `${item.electrolyzer}-${item.position ?? ""}` : undefined}
-                  onClick={() => onOpen(item.element_nr, item.row_id)}
-                >
-                  {item.element_nr}
-                  {item.days_in_state != null ? <small>{t("asmFlow.days", { n: item.days_in_state })}</small> : null}
-                </button>
-              ))}
-              {list.data.truncated ? <span className="asm-mute">{t("asmFlow.more")}</span> : null}
-            </div>
-          )}
-        </div>
-      ) : null}
     </section>
+  );
+}
+
+function DismantledParts({ row }: { row: Element }) {
+  const { t } = useI18n();
+  const query = useQuery({
+    queryKey: ["element-dashboard", "parts-now", row.id, row.anode_nr, row.cathode_nr, row.membrane_nr],
+    queryFn: () =>
+      elementDashboardApi.partsNow({
+        anode_nr: row.anode_nr,
+        cathode_nr: row.cathode_nr,
+        membrane_nr: row.membrane_nr,
+        element_id: row.id,
+      }),
+    enabled: Boolean(row.disassembly_date),
+  });
+  if (!row.disassembly_date) return null;
+  const parts = query.data?.parts || [];
+
+  function whereOf(part: (typeof parts)[number]) {
+    if (part.place === "element") {
+      const cell = [part.electrolyzer, part.position].filter(Boolean).join("-");
+      return [part.element_nr, cell].filter(Boolean).join(" · ") || t("asmFlow.notMounted");
+    }
+    if (part.company) return part.company;
+    return t("asmFlow.notMounted");
+  }
+
+  function statusOf(part: (typeof parts)[number]) {
+    const known = t(`asmFlow.partStatus.${part.status}`);
+    if (known !== `asmFlow.partStatus.${part.status}`) return known;
+    const stage = t(`wf.status.${part.status}`);
+    if (stage !== `wf.status.${part.status}`) return stage;
+    return part.note || part.status;
+  }
+
+  return (
+    <div className="asm-parts">
+      <p className="ew-role">{t("asmFlow.roles.inspection")}</p>
+      <p>{t("asmFlow.rateoff")}</p>
+      <strong className="asm-parts-title">{t("asmFlow.partsTitle")}</strong>
+      {query.isLoading ? <p className="asm-mute">…</p> : null}
+      {!query.isLoading && !parts.length ? <p className="asm-mute">{t("asmFlow.empty")}</p> : null}
+      {parts.length ? (
+        <table className="asm-parts-table">
+          <thead>
+            <tr>
+              <th>{t("asmFlow.part")}</th>
+              <th>{t("wh.col.serial")}</th>
+              <th>{t("asmFlow.where")}</th>
+              <th>{t("asmFlow.partStatusTitle")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {parts.map((part) => (
+              <tr key={`${part.kind}-${part.serial}`}>
+                <td>{t(`elDash.col.${part.kind}`)}</td>
+                <td>
+                  <Link className="asm-link" href={`/${part.kind}s?${part.kind}_nr=${encodeURIComponent(part.serial)}`}>
+                    {part.serial}
+                  </Link>
+                </td>
+                <td>{whereOf(part)}</td>
+                <td>
+                  {statusOf(part)}
+                  {part.place === "inspection" && part.note ? ` — ${part.note}` : ""}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null}
+    </div>
   );
 }
 
@@ -241,28 +276,8 @@ export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; 
             <DecommissionActions item={item} editable={canEdit("wf_operation")} note={note} onNote={setNote} onMessage={setMessage} />
           ) : null}
 
-          {item.state === "disassembled" && !older ? (
-            <div className="asm-next">
-              <p className="ew-role">{t("asmFlow.roles.inspection")}</p>
-              <p>{t("asmFlow.rateoff")}</p>
-              <p>
-                {item.anode_nr ? (
-                  <Link className="asm-link" href={`/anodes?anode_nr=${encodeURIComponent(item.anode_nr)}`}>
-                    {t("elDash.col.anode")} {item.anode_nr}
-                  </Link>
-                ) : null}{" "}
-                {item.cathode_nr ? (
-                  <Link className="asm-link" href={`/cathodes?cathode_nr=${encodeURIComponent(item.cathode_nr)}`}>
-                    {t("elDash.col.cathode")} {item.cathode_nr}
-                  </Link>
-                ) : null}{" "}
-                {item.membrane_nr ? (
-                  <Link className="asm-link" href={`/membranes?membrane_nr=${encodeURIComponent(item.membrane_nr)}`}>
-                    {t("elDash.col.membrane")} {item.membrane_nr}
-                  </Link>
-                ) : null}
-              </p>
-            </div>
+          {(item.state === "disassembled" || row.disassembly_date) ? (
+            <DismantledParts row={row} />
           ) : null}
 
           {editable && next && nextRole && !older ? (

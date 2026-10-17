@@ -5,6 +5,7 @@ import { useState } from "react";
 import { I18nProvider } from "@/lib/i18n/context";
 import { AuthProvider } from "@/lib/auth/context";
 import { IdleSessionGuard } from "@/lib/auth/idle-session";
+import { OnlinePresence } from "@/components/domain/online-users";
 import { ThemeProvider } from "@/lib/theme/context";
 import { UiStyleProvider } from "@/lib/ui-style/context";
 import { CalendarProvider } from "@/lib/calendar/context";
@@ -33,6 +34,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
               <DialogProvider>
                 <AuthProvider>
                   <IdleSessionGuard />
+                  <OnlinePresence />
                   {children}
                 </AuthProvider>
               </DialogProvider>

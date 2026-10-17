@@ -1,3 +1,6 @@
+import time
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
@@ -15,6 +18,18 @@ from ..auth import (
 from ..database import get_db
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+_last_seen_touch: dict[int, float] = {}
+
+
+def mark_seen(db: Session, user: models.User) -> None:
+    """Remember that this account is using the program. Writes at most twice a minute."""
+    now = time.monotonic()
+    if now - _last_seen_touch.get(user.id, 0) < 30:
+        return
+    _last_seen_touch[user.id] = now
+    user.last_seen_at = datetime.now()
+    db.commit()
 
 
 def _local_login(db: Session, username: str, password: str) -> models.User | None:
@@ -151,6 +166,7 @@ def me(user: models.User = Depends(get_current_user), db: Session = Depends(get_
             idle = max(0, int(getattr(plant, "session_idle_minutes", 30) or 0))
         except (TypeError, ValueError):
             idle = 30
+    mark_seen(db, user)
     return schemas.MeResponse(
         id=user.id,
         username=user.username,
@@ -164,6 +180,12 @@ def me(user: models.User = Depends(get_current_user), db: Session = Depends(get_
         permissions=user_permission_map(db, user),
         session_idle_minutes=idle,
     )
+
+
+@router.post("/ping")
+def ping(user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    mark_seen(db, user)
+    return {"ok": True}
 
 
 @router.post("/change-password")

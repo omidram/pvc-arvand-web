@@ -2587,6 +2587,26 @@ button.mon-history-link {
 .asm-flow-step:hover { filter: brightness(0.96); }
 .asm-flow-step.is-picked { outline: 2px solid currentColor; outline-offset: 1px; }
 .asm-flow-step.is-zero { opacity: 0.5; }
+.asm-filtered.is-green .ui-table thead th { background: #dcfce7; color: #14532d; }
+.asm-filtered.is-green .ui-table tbody td { background: #f0fdf4; color: #14532d; }
+.asm-filtered.is-green .ui-table tbody tr[data-selected="true"],
+.asm-filtered.is-green .ui-table tbody tr[data-selected="true"] td { background: #16a34a; color: #fff; }
+.asm-filtered.is-red .ui-table thead th { background: #fee2e2; color: #991b1b; }
+.asm-filtered.is-red .ui-table tbody td { background: #fff1f2; color: #991b1b; }
+.asm-filtered.is-red .ui-table tbody tr[data-selected="true"],
+.asm-filtered.is-red .ui-table tbody tr[data-selected="true"] td { background: #dc2626; color: #fff; }
+.asm-filtered.is-amber .ui-table thead th { background: #fef3c7; color: #92400e; }
+.asm-filtered.is-amber .ui-table tbody td { background: #fffbeb; color: #92400e; }
+.asm-filtered.is-amber .ui-table tbody tr[data-selected="true"],
+.asm-filtered.is-amber .ui-table tbody tr[data-selected="true"] td { background: #d97706; color: #fff; }
+.asm-filtered.is-slate .ui-table thead th { background: #e2e8f0; color: #334155; }
+.asm-filtered.is-slate .ui-table tbody td { background: #f8fafc; color: #334155; }
+.asm-filtered.is-slate .ui-table tbody tr[data-selected="true"],
+.asm-filtered.is-slate .ui-table tbody tr[data-selected="true"] td { background: #475569; color: #fff; }
+.asm-filtered.is-ink .ui-table thead th { background: #e5e7eb; color: #111827; }
+.asm-filtered.is-ink .ui-table tbody td { background: #f9fafb; color: #111827; }
+.asm-filtered.is-ink .ui-table tbody tr[data-selected="true"],
+.asm-filtered.is-ink .ui-table tbody tr[data-selected="true"] td { background: #111827; color: #fff; }
 .asm-flow-n { font-size: 1rem; font-weight: 800; }
 .asm-flow-label { font-size: 0.68rem; font-weight: 600; text-align: center; color: #334155; }
 .asm-flow-list { margin-top: 0.5rem; padding-top: 0.45rem; border-top: 1px dashed #cbd5e1; }
@@ -2608,6 +2628,11 @@ button.mon-history-link {
 .asm-step-label { font-size: 0.68rem; line-height: 1.2; color: #334155; }
 .asm-step:not(.is-done):not(.is-now) .asm-step-label { color: #94a3b8; }
 .asm-step-date { font-size: 0.64rem; color: #475569; }
+.asm-parts { margin-top: 0.45rem; display: grid; gap: 0.3rem; }
+.asm-parts-title { font-size: 0.82rem; }
+.asm-parts-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+.asm-parts-table th, .asm-parts-table td { border: 1px solid var(--border, #e2e8f0); padding: 0.28rem 0.45rem; text-align: start; }
+.asm-parts-table th { background: #f8fafc; font-weight: 700; }
 .asm-next { display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0.35rem 0.5rem; border-radius: 6px; background: #eff6ff; }
 .asm-next-title { font-weight: 800; color: #1e3a8a; }
 .asm-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem; margin-top: 0.45rem; }
@@ -3098,6 +3123,79 @@ button.mon-history-link {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
   margin-bottom: 0.85rem;
+}
+
+.dash-train-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 0.85rem;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.dash-train-line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.dash-train-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+}
+
+.dash-train-sum {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.online-users-pop {
+  position: absolute;
+  top: 26px;
+  inset-inline-end: 0;
+  z-index: 40;
+  width: 220px;
+  padding: 8px;
+  background: #fff;
+  color: #111;
+  border: 2px solid #808080;
+  box-shadow: 2px 2px 0 #808080;
+  font-size: 12px;
+}
+
+.online-users-pop ul,
+.online-users-panel ul {
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.online-users-pop li,
+.online-users-panel li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.online-users-panel {
+  padding: 8px 10px;
+  background: #fff;
+  border: 2px inset #fff;
+  font-size: 12px;
+}
+
+.online-users-panel ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
 }
 
 @media (min-width: 900px) {

@@ -480,6 +480,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     readings = _live_voltage_rows(db)
 
     by_el: dict[str, list[float]] = {}
+    by_sev: dict[str, dict[str, int]] = {}
     ok = warn = danger = 0
     max_v: float | None = None
     for row in readings:
@@ -494,12 +495,16 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
             rank = {"ok": 0, "warning": 1, "danger": 2, "unknown": -1}
             if rank.get(sev2, 0) > rank.get(sev, 0):
                 sev = sev2
+        bucket = by_sev.setdefault(el, {"ok": 0, "warning": 0, "danger": 0})
         if sev == "danger":
             danger += 1
+            bucket["danger"] += 1
         elif sev == "warning":
             warn += 1
+            bucket["warning"] += 1
         elif sev == "ok":
             ok += 1
+            bucket["ok"] += 1
         if max_v is None or v > max_v:
             max_v = v
 
@@ -523,6 +528,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         total = sum(vals)
         plant_total += total
         load = live_loads.get(el)
+        sev = by_sev.get(el, {})
         electrolyzers.append(
             {
                 "electrolyzer": el,
@@ -533,6 +539,8 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
                 "current_ka": round(float(load["current_ka"]), 3) if load and load.get("current_ka") else None,
                 "energy_kwh_24h": round(float((e24.get(el) or {}).get("energy_kwh") or 0), 1) if load else None,
                 "online": True,
+                "danger_count": sev.get("danger", 0),
+                "warning_count": sev.get("warning", 0),
             }
         )
 

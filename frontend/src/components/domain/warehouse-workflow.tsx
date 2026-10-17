@@ -10,6 +10,7 @@ import { DateInput } from "@/components/ui/date-input";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import type { WhCompany } from "@/lib/endpoints";
+import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { defaultDateRange } from "@/lib/date-range";
@@ -696,6 +697,7 @@ function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; 
 
 function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; t: T }) {
   const qc = useQueryClient();
+  const { isAdmin } = useAuth();
   const acts = d.actions;
   const [note, setNote] = useState("");
   const [companyId, setCompanyId] = useState<number | "">(d.company_id ?? "");
@@ -985,8 +987,8 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
 
       <div className="wh-form-inline wf-inline-plain">
         <label className="wh-grow">
-          {main.includes("reject") || main.includes("inspect_reject") ? t("wf.noteReject") : t("wf.note")}
-          <input value={note} onChange={(e) => setNote(e.target.value)} />
+          {main.includes("reject") || main.includes("inspect_reject") ? t("wf.noteReject") : isAdmin && acts.includes("cancel") ? t("wf.cancelReason") : t("wf.note")}
+          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={isAdmin && acts.includes("cancel") ? t("wf.cancelReason") : undefined} />
         </label>
         {main.includes("submit") ? (
           <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("submit")}>
@@ -1017,8 +1019,10 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
           <button
             type="button"
             className="wf-btn is-bad"
-            disabled={run.isPending}
+            disabled={run.isPending || (isAdmin && !note.trim())}
+            title={isAdmin ? t("wf.cancelReason") : undefined}
             onClick={() => {
+              if (isAdmin && !note.trim()) return;
               if (window.confirm(t("wf.confirmCancel"))) go("cancel");
             }}
           >

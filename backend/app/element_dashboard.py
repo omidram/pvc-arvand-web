@@ -18,7 +18,7 @@ from . import models
 from .calculations import installation_dol
 from .plant_topology import all_electrolyzers, format_electrolyzer_name, is_valid_electrolyzer_name, norm_pos
 from .relations_sync import is_junk_serial
-from .warehouse import BUCKETS, _as_date, _grouped, _iso, _life_key, build_board, compact_nr
+from .warehouse import BUCKETS, _as_date, _grouped, _iso, _life_key, build_board, compact_eq, compact_nr
 
 CACHE_SECONDS = 30  # the heavy per-part computations are reused for a short time; "Refresh" clears them
 _CACHE: dict[Any, tuple[float, Any]] = {}
@@ -677,6 +677,132 @@ def part_rows(db: Session, kind: str, settings: dict[str, Any] | None = None) ->
     if kind == "membrane":
         return membrane_rows(db, settings)
     return electrode_rows(db, kind, settings)[0]
+
+
+def _current_mount(db: Session, field: str, serial: str, skip_id: int | None) -> models.Element | None:
+    """The live installation of this part, ignoring the dismantled element it came from."""
+    column = getattr(models.Element, field)
+    match = compact_eq(column, serial)
+    if match is None:
+        return None
+    rows = [row for row in db.query(models.Element).filter(match).all() if row.id != skip_id and row.disassembly_date is None]
+    if not rows:
+        return None
+    return max(rows, key=_life_key)
+
+
+def _segregation_of(db: Session, kind: str, serial: str):
+    from .segregation_flow import classify_row
+
+    match = compact_eq(models.ElectrodeSegregation.serial_nr, serial)
+    if match is None:
+        return None
+    rows = db.query(models.ElectrodeSegregation).filter(match).all()
+    rows = [row for row in rows if not row.electrode_kind or row.electrode_kind == kind]
+    if not rows:
+        return None
+    row = max(rows, key=lambda item: item.id or 0)
+    info = classify_row(row)
+    quality = info.get("quality")
+    outcome = info.get("outcome")
+    if outcome == "reusable" and quality == "good":
+        status = "reusable_good"
+    elif outcome == "reusable" and quality == "medium":
+        status = "reusable_medium"
+    elif outcome == "reusable":
+        status = "reusable"
+    elif outcome == "rate_off":
+        status = "rate_off"
+    elif outcome == "coating_problem":
+        status = "recoating"
+    elif outcome == "mechanical_problem":
+        status = "mechanical"
+    else:
+        status = "undecided"
+    return {"status": status, "note": (row.segregation or row.decision or "").strip() or None}
+
+
+def _open_coating(db: Session, kind: str, serial: str) -> dict[str, Any] | None:
+    from .workflow_models import WfCoatingBatch, WfCoatingItem
+
+    match = compact_eq(WfCoatingItem.serial, serial)
+    if match is None:
+        return None
+    rows = (
+        db.query(WfCoatingItem, WfCoatingBatch)
+        .join(WfCoatingBatch, WfCoatingBatch.id == WfCoatingItem.batch_id)
+        .filter(match, WfCoatingItem.element_kind == kind, WfCoatingBatch.status.notin_(("completed", "cancelled")))
+        .all()
+    )
+    if not rows:
+        return None
+    _item, batch = max(rows, key=lambda pair: pair[1].id or 0)
+    company = db.get(models.WhCompany, batch.company_id) if batch.company_id else None
+    return {"status": batch.status, "company": company.name if company else None, "code": None}
+
+
+def _wh_one(db: Session, kind: str, serial: str) -> dict[str, Any] | None:
+    match = compact_eq(models.WhElementState.serial, serial)
+    if match is None:
+        return None
+    state = db.query(models.WhElementState).filter(match, models.WhElementState.element_kind == kind).first()
+    if state is None:
+        return None
+    company = db.get(models.WhCompany, state.company_id) if state.company_id else None
+    return {"status": state.lifecycle_status, "company": company.name if company else None}
+
+
+def part_now(db: Session, kind: str, serial: str, skip_id: int | None) -> dict[str, Any]:
+    """Where one anode, cathode or membrane is after its element was taken apart."""
+    shown = str(serial).strip()
+    base = {"kind": kind, "serial": shown, "place": "idle", "status": "taken_off", "element_nr": None, "electrolyzer": None, "position": None, "company": None, "note": None}
+    if not compact_nr(shown):
+        return base
+    field = {"anode": "anode_nr", "cathode": "cathode_nr", "membrane": "membrane_nr"}[kind]
+    mounted = _current_mount(db, field, shown, skip_id)
+    if mounted is not None:
+        if mounted.commissioning_date and not mounted.decommissioning_date:
+            status = "in_service"
+        elif mounted.assembly_date or mounted.electrolyzer:
+            status = "assembled"
+        else:
+            status = "waiting"
+        base.update(
+            {
+                "place": "element",
+                "status": status,
+                "element_nr": mounted.element_nr,
+                "electrolyzer": mounted.electrolyzer,
+                "position": mounted.position,
+            }
+        )
+        return base
+    if kind != "membrane":
+        coating = _open_coating(db, kind, shown)
+        if coating:
+            base.update({"place": "recoating", "status": coating["status"] or "recoating", "company": coating["company"]})
+            return base
+        warehouse = _wh_one(db, kind, shown)
+        if warehouse and warehouse["status"] in ("at_coater", "ready_dispatch", "pending_receive"):
+            base.update({"place": "warehouse", "status": warehouse["status"], "company": warehouse["company"]})
+            return base
+        decision = _segregation_of(db, kind, shown)
+        if decision:
+            base.update({"place": "inspection", "status": decision["status"], "note": decision["note"]})
+            return base
+        return base
+    master = db.query(models.Membrane).filter(compact_eq(models.Membrane.membrane_nr, shown)).first()
+    if master is not None and master.decommission_date:
+        base.update({"place": "inspection", "status": "rate_off"})
+    return base
+
+
+def parts_now(db: Session, *, anode_nr: str | None, cathode_nr: str | None, membrane_nr: str | None, skip_id: int | None) -> list[dict[str, Any]]:
+    rows = []
+    for kind, serial in (("anode", anode_nr), ("cathode", cathode_nr), ("membrane", membrane_nr)):
+        if compact_nr(serial):
+            rows.append(part_now(db, kind, serial or "", skip_id))
+    return rows
 
 
 def life_histogram(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:

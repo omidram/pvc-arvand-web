@@ -608,12 +608,17 @@ export const authApi = {
   changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
     await apiClient.post("/auth/change-password", { current_password: currentPassword, new_password: newPassword });
   },
+  ping: async (): Promise<void> => {
+    await apiClient.post("/auth/ping");
+  },
 };
 
 export const usersApi = {
   formKeys: async (): Promise<string[]> => (await apiClient.get("/users/form-keys")).data,
   formFields: async (): Promise<Record<string, string[]>> => (await apiClient.get("/users/form-fields")).data,
   list: async (): Promise<T.UserAccount[]> => (await apiClient.get("/users")).data,
+  online: async (): Promise<{ id: number; username: string; full_name: string | null; role: string; role_name: string | null; last_seen_at: string | null }[]> =>
+    (await apiClient.get("/users/online")).data,
   create: async (payload: {
     username: string;
     full_name?: string;
@@ -1768,6 +1773,9 @@ export const fieldOptionsApi = {
 export const elementDashboardApi = {
   overview: async (refresh = false): Promise<T.ElementDashOverview> =>
     (await apiClient.get("/element-dashboard/overview", { params: refresh ? { refresh: true } : undefined })).data,
+  partsNow: async (params: { anode_nr?: string | null; cathode_nr?: string | null; membrane_nr?: string | null; element_id?: number | null }): Promise<{
+    parts: { kind: string; serial: string; place: string; status: string; element_nr: string | null; electrolyzer: string | null; position: string | null; company: string | null; note: string | null }[];
+  }> => (await apiClient.get("/element-dashboard/parts-now", { params })).data,
   shop: async (params: { state?: string; q?: string; element_nr?: string; limit?: number; refresh?: boolean }): Promise<T.ShopList> =>
     (await apiClient.get("/element-dashboard/shop", { params })).data,
   move: async (payload: {

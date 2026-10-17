@@ -630,6 +630,8 @@ export interface DashboardVoltageStats {
     current_ka?: number | null;
     energy_kwh_24h?: number | null;
     online?: boolean;
+    danger_count?: number;
+    warning_count?: number;
   }[];
 }
 
