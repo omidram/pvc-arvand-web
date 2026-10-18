@@ -6,14 +6,15 @@ export type WfFlow = "coating" | "purchase" | "cell" | "inspection";
 export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "operation" | "cellshop";
 export type WfKind = "anode" | "cathode";
 
-export const COATING_STEPS = ["await_company", "await_indent", "await_dispatch", "at_coater", "await_report", "await_inspection", "await_approval", "completed"] as const;
-export const PURCHASE_STEPS = ["await_indent", "await_order", "ordered", "await_registration", "completed"] as const;
+export const COATING_STEPS = ["c90_select", "code_generate", "await_company", "await_indent", "await_dispatch", "await_return", "await_inspection", "await_approval", "completed"] as const;
+export const PURCHASE_STEPS = ["purchase_request", "await_indent", "await_order", "await_registration", "completed"] as const;
 export const CELL_STEPS = ["await_shutdown", "await_shop", "in_shop", "completed"] as const;
 export const INSPECTION_STEPS = ["await_request", "await_inspection", "completed"] as const;
 /** Stages that carry a deadline, per flow (the order of the settings table). */
+const VIRTUAL_STEPS = new Set(["c90_select", "code_generate", "purchase_request"]);
 export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
-  coating: COATING_STEPS.filter((s) => s !== "completed"),
-  purchase: PURCHASE_STEPS.filter((s) => s !== "completed"),
+  coating: COATING_STEPS.filter((s) => s !== "completed" && !VIRTUAL_STEPS.has(s)),
+  purchase: PURCHASE_STEPS.filter((s) => s !== "completed" && !VIRTUAL_STEPS.has(s)),
   cell: CELL_STEPS.filter((s) => s !== "completed"),
   inspection: INSPECTION_STEPS.filter((s) => s !== "completed"),
 };
@@ -133,7 +134,7 @@ export interface WfDetail extends WfSummary {
   inspections_done?: number;
   inspections_total?: number;
   pallet_size?: number;
-  packages?: { id: number; code: string; pallet_no: number; has_report: boolean; items: WfCoatingItem[] }[];
+  packages?: { id: number; code: string; pallet_no: number; has_report: boolean; dispatch_date?: string | null; expected_return_date?: string | null; items: WfCoatingItem[] }[];
   items?: { id: number; element_kind: WfKind; serial: string; coating: string | null; manufacturer: string | null }[];
   files: WfFile[];
   events: WfEvent[];

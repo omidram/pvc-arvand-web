@@ -4,7 +4,7 @@
 
 const en = {
   app: {
-    name: "Arvand Electrolyzer Management Software",
+    name: "Arvand Cell Management",
     subtitle: "Arvand Petrochemical Company",
     footer: "Data migrated from Uhde Administrator",
   },
@@ -1100,7 +1100,7 @@ type DeepPartialStrings<T> = { [K in keyof T]: T[K] extends string ? string : De
 
 const fa: DeepPartialStrings<typeof en> = {
   app: {
-    name: "Arvand Electrolyzer Management Software",
+    name: "Arvand Cell Management",
     subtitle: "شرکت پتروشیمی اروند",
     footer: "داده‌ها از نرم‌افزار Uhde Administrator منتقل شده‌اند",
   },

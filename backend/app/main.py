@@ -47,6 +47,7 @@ from .routers import (
     storage as storage_router_module,
     tickets as tickets_router_module,
     un_ce as un_ce_router_module,
+    cathodic_ce as cathodic_ce_router_module,
     warehouse_lifecycle as warehouse_lifecycle_router_module,
     workflow as workflow_router_module,
     users as users_router_module,
@@ -134,9 +135,72 @@ def _ensure_inspection_sheet_columns() -> None:
             conn.execute(text(f"ALTER TABLE inspection_reports ADD COLUMN {name} {_INSPECTION_SHEET_COLUMNS[name]}"))
 
 
+def _ensure_cathodic_ce_columns() -> None:
+    """create_all does not add columns to a table that already exists."""
+    columns = {
+        "sign_insp_name": "VARCHAR(150)",
+        "sign_insp_image": "TEXT",
+        "sign_insp_at": "VARCHAR(40)",
+        "sign_proc_name": "VARCHAR(150)",
+        "sign_proc_image": "TEXT",
+        "sign_proc_at": "VARCHAR(40)",
+    }
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("cathodic_ce_sheets")}
+    except Exception:
+        return
+    missing = [name for name in columns if name not in present]
+    if not missing:
+        return
+    with engine.begin() as conn:
+        for name in missing:
+            conn.execute(text(f"ALTER TABLE cathodic_ce_sheets ADD COLUMN {name} {columns[name]}"))
+
+
+def _ensure_workflow_redesign() -> None:
+    """Coating/purchase steps from the warehouse flow charts, plus columns create_all will not add."""
+    alters = {
+        "wf_coating_batches": {"excel_emailed_at": "DATETIME"},
+        "wf_coating_packages": {"dispatch_date": "DATE", "expected_return_date": "DATE"},
+    }
+    try:
+        tables = set(inspect(engine).get_table_names())
+    except Exception:
+        return
+    with engine.begin() as conn:
+        for table, columns in alters.items():
+            if table not in tables:
+                continue
+            present = {col["name"] for col in inspect(engine).get_columns(table)}
+            for name, ddl in columns.items():
+                if name not in present:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+        if "wf_coating_batches" in tables:
+            conn.execute(text("UPDATE wf_coating_batches SET status = 'await_return' WHERE status IN ('at_coater', 'await_report')"))
+            conn.execute(
+                text(
+                    "UPDATE wf_coating_packages SET dispatch_date = ("
+                    "SELECT dispatch_date FROM wf_coating_batches b WHERE b.id = wf_coating_packages.batch_id"
+                    ") WHERE dispatch_date IS NULL"
+                )
+            )
+            conn.execute(
+                text(
+                    "UPDATE wf_coating_packages SET expected_return_date = ("
+                    "SELECT expected_return_date FROM wf_coating_batches b WHERE b.id = wf_coating_packages.batch_id"
+                    ") WHERE expected_return_date IS NULL"
+                )
+            )
+        if "wf_purchases" in tables:
+            conn.execute(text("UPDATE wf_purchases SET status = 'await_registration' WHERE status = 'ordered' AND delivery_date IS NOT NULL"))
+            conn.execute(text("UPDATE wf_purchases SET status = 'await_order' WHERE status = 'ordered' AND delivery_date IS NULL"))
+
+
 _ensure_user_auth_source()
 _ensure_user_role_id()
 _ensure_inspection_sheet_columns()
+_ensure_cathodic_ce_columns()
+_ensure_workflow_redesign()
 
 
 def _ensure_element_remark_columns() -> None:
@@ -394,7 +458,7 @@ with SessionLocal() as _db:
     except Exception:  # noqa: BLE001
         _db.rollback()
 
-app = FastAPI(title="Arvand Electrolyzer Management Software", version="1.10")
+app = FastAPI(title="Arvand Cell Management", version="1.10")
 
 # Register SQLAlchemy audit listeners (imported for side effects).
 _ = audit
@@ -596,6 +660,7 @@ _api(voltage.calc_router, dependencies=_perm("voltage"))
 _api(voltage.current_efficiency_router, dependencies=_perm("voltage"))
 _api(voltage.ce_calc_router, dependencies=_perm("voltage"))
 _api(un_ce_router_module.router, dependencies=_perm("voltage"))
+_api(cathodic_ce_router_module.router, dependencies=_perm("voltage"))
 
 # --- Lagerbestand (Access: frmLagerbestandAnoden/Kathoden/Membranen) ---
 _api(storage_router_module.router)

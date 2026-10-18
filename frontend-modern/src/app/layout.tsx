@@ -5,7 +5,7 @@ import { Providers } from "@/components/providers";
 import { AppShell } from "@/components/layout/app-shell";
 
 export const metadata: Metadata = {
-  title: "Arvand Electrolyzer Management Software",
+  title: "Arvand Cell Management",
   description: "Plant configuration, element administration, and data analysis for the Arvand electrolysis plant",
   icons: {
     icon: "/favicon.png",

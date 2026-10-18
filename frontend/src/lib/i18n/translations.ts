@@ -6,7 +6,7 @@ import { deepMerge, extraEn, extraFa, type Tree } from "./translations-extra";
 
 const en = {
   app: {
-    name: "Arvand Electrolyzer Management Software",
+    name: "Arvand Cell Management",
     subtitle: "Arvand Petrochemical Company",
     footer: "Data migrated from Uhde Administrator",
   },
@@ -160,7 +160,7 @@ const en = {
     databaseTables: "All tables",
   },
   mainMenu: {
-    programTitle: "Arvand Electrolyzer Management Software",
+    programTitle: "Arvand Cell Management",
     client: "Client",
     typeOfPlant: "Type of Plant",
     uan: "UAN",
@@ -275,6 +275,7 @@ const en = {
     shutdownList: "Shut Down List",
     shutdownReasons: "Shut Down Reasons",
     shutdownCategories: "Shut Down Categories",
+    tripCause: "Trip Cause",
     category: "Category",
     timePeriod: "Time Period",
     displayResults: "Display Results",
@@ -2846,7 +2847,7 @@ type DeepPartialStrings<T> = { [K in keyof T]: T[K] extends string ? string : De
 
 const fa: DeepPartialStrings<typeof en> = {
   app: {
-    name: "Arvand Electrolyzer Management Software",
+    name: "Arvand Cell Management",
     subtitle: "شرکت پتروشیمی اروند",
     footer: "داده‌ها از نرم‌افزار Uhde Administrator منتقل شده‌اند",
   },
@@ -3000,7 +3001,7 @@ const fa: DeepPartialStrings<typeof en> = {
     databaseTables: "همه جدول‌ها",
   },
   mainMenu: {
-    programTitle: "Arvand Electrolyzer Management Software",
+    programTitle: "Arvand Cell Management",
     client: "کارفرما",
     typeOfPlant: "نوع واحد",
     uan: "UAN",
@@ -3114,6 +3115,7 @@ const fa: DeepPartialStrings<typeof en> = {
     shutdownList: "فهرست توقف‌ها",
     shutdownReasons: "دلایل توقف",
     shutdownCategories: "دسته‌های توقف",
+    tripCause: "علت تریپ",
     category: "دسته",
     timePeriod: "بازه زمانی",
     displayResults: "نمایش نتایج",

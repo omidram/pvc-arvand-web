@@ -294,8 +294,8 @@ def _classify(kind: str, latest, maintenance, recoating, checks, segs, catalog) 
 
 
 WF_OPEN_BUCKET = {
-    "at_coater": "out_repair",
-    "await_report": "pending",
+    "await_dispatch": "out_repair",
+    "await_return": "out_repair",
     "await_inspection": "pending",
     "await_approval": "pending",
 }
@@ -354,7 +354,8 @@ def build_board(db: Session, kind: str, bucket: str | None = None, q: str | None
         )
         wf = wf_open.get(key)
         if wf and bucket_name != "on_rack" and wf["status"] in WF_OPEN_BUCKET:
-            bucket_name, reason, repair, coating = WF_OPEN_BUCKET[wf["status"]], "recoating", None, None
+            bucket_name = "pending" if wf["status"] == "await_return" and wf["return"] else WF_OPEN_BUCKET[wf["status"]]
+            reason, repair, coating = "recoating", None, None
         counts[bucket_name] += 1
         display = None
         if latest is not None:

@@ -58,19 +58,22 @@ GROUP_KEYS = {
 VIEW_KEYS = ("storage", "anodes", "cathodes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection")
 CELL_VIEW_KEYS = ("elements", "wf_operation", "wf_cellshop")
 
+# Coating hand-off (chart): C-90 selects the piece and the system makes the code, then
+# procurement plans the send, warehouse issues the indent, procurement ships and later
+# receives it, inspection/process accepts or sends it back, C-90 returns it to service.
 COATING_STAGES: dict[str, list[str]] = {
     "await_company": ["procurement"],
     "await_indent": ["warehouse"],
     "await_dispatch": ["procurement"],
-    "at_coater": ["warehouse", "procurement"],
-    "await_report": ["procurement"],
+    "await_return": ["procurement"],
     "await_inspection": ["inspection"],
     "await_approval": ["c90"],
 }
+# Purchase hand-off (chart): procurement requests, warehouse issues the indent,
+# procurement records the purchase dates, C-90 registers the new piece codes.
 PURCHASE_STAGES: dict[str, list[str]] = {
     "await_indent": ["warehouse"],
     "await_order": ["procurement"],
-    "ordered": ["procurement", "warehouse"],
     "await_registration": ["c90"],
 }
 CELL_STAGES: dict[str, list[str]] = {
@@ -87,8 +90,8 @@ INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections",)
 # Allowed time per stage in hours (editable in Settings -> Workflow deadlines). A stage that has its own
 # promised date (coater return, supplier delivery) is due on that date instead.
 DEFAULT_SLA: dict[str, dict[str, int]] = {
-    "coating": {"await_company": 72, "await_indent": 72, "await_dispatch": 120, "at_coater": 720, "await_report": 72, "await_inspection": 72, "await_approval": 48},
-    "purchase": {"await_indent": 72, "await_order": 168, "ordered": 720, "await_registration": 72},
+    "coating": {"await_company": 72, "await_indent": 72, "await_dispatch": 120, "await_return": 720, "await_inspection": 72, "await_approval": 48},
+    "purchase": {"await_indent": 72, "await_order": 720, "await_registration": 72},
     "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120},
     "inspection": {"await_request": 24, "await_inspection": 72},
 }
@@ -346,10 +349,10 @@ def _stage_since(db: Session, flow: str, record: Any) -> datetime:
 
 
 def _promised(flow: str, record: Any) -> date | None:
-    if flow == "coating" and record.status == "at_coater":
+    if flow == "coating" and record.status == "await_return":
         return record.expected_return_date
-    if flow == "purchase" and record.status == "ordered":
-        return record.expected_delivery_date
+    if flow == "purchase" and record.status == "await_order" and record.expected_delivery_date and record.request_date:
+        return None
     return None
 
 
@@ -893,14 +896,12 @@ def _coating_actions(db: Session, b: WfCoatingBatch, user: models.User) -> list[
         acts.append("indent")
     if b.status == "await_dispatch" and mine:
         acts.append("dispatch")
-    if b.status == "at_coater" and mine:
-        acts.append("receive")
-    if b.status == "await_report" and mine:
-        acts += ["report", "submit", "rework"]
+    if b.status == "await_return" and mine:
+        acts += ["receive", "report", "submit", "rework"]
     if b.status == "await_inspection" and mine:
         acts += ["inspect_ok", "inspect_reject"]
     if b.status == "await_approval" and mine:
-        acts += ["approve", "reject"]
+        acts.append("approve")
     early = b.status in ("await_company", "await_indent", "await_dispatch")
     if early and ("c90" in groups or user.role == "admin"):
         acts.append("request_inspections")
@@ -933,6 +934,8 @@ def _coating_detail(db: Session, b: WfCoatingBatch, user: models.User) -> dict:
                     "id": p.id,
                     "code": p.code,
                     "pallet_no": p.pallet_no,
+                    "dispatch_date": _iso(p.dispatch_date),
+                    "expected_return_date": _iso(p.expected_return_date),
                     "has_report": any(f["kind"] == "report" and f["package_id"] == p.id for f in files),
                     "items": [
                         {
@@ -1010,19 +1013,55 @@ def get_coating(batch_id: int, db: Session = Depends(get_db), user: models.User 
     return _coating_detail(db, _load_batch(db, batch_id), user)
 
 
+class PackagePlanIn(BaseModel):
+    package_id: int
+    dispatch_date: date
+    expected_return_date: date
+
+
 class CompanyPickIn(NoteIn):
     company_id: int
+    excel_emailed: bool = False
+    packages: list[PackagePlanIn] = Field(default_factory=list)
 
 
 @router.post("/coating/{batch_id}/company")
 def coating_company(batch_id: int, body: CompanyPickIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """Procurement: coating company, a send date and expected return for every code, and the Excel emailed."""
     b = _load_batch(db, batch_id)
     _require_stage(db, user, "coating", b.status, ("await_company",))
     co = _company(db, body.company_id)
     if not co or not co.is_coating:
         raise HTTPException(400, "Choose a coating company")
+    if not body.excel_emailed:
+        raise HTTPException(400, "Email the Excel report to the coating company before continuing")
+    stored = db.query(WfCoatingPackage).filter_by(batch_id=b.id).all()
+    if not stored:
+        raise HTTPException(400, "There is no code on this request")
+    plans = {p.package_id: p for p in body.packages}
+    if {p.id for p in stored} != set(plans):
+        raise HTTPException(400, "Enter the send date and the expected return date for every code")
+    for pkg in stored:
+        plan = plans[pkg.id]
+        if plan.expected_return_date < plan.dispatch_date:
+            raise HTTPException(400, f"Expected return of {pkg.code} is before its send date")
+        pkg.dispatch_date = plan.dispatch_date
+        pkg.expected_return_date = plan.expected_return_date
     b.company_id = co.id
-    _move(db, "coating", b, "await_indent", "company", user, body.note, {"company": co.name})
+    b.dispatch_date = min(p.dispatch_date for p in plans.values())
+    b.expected_return_date = max(p.expected_return_date for p in plans.values())
+    b.excel_emailed_at = _now()
+    _move(
+        db, "coating", b, "await_indent", "company", user, body.note,
+        {
+            "company": co.name,
+            "excel_emailed": True,
+            "codes": [
+                {"code": pkg.code, "dispatch_date": plans[pkg.id].dispatch_date.isoformat(), "expected_return_date": plans[pkg.id].expected_return_date.isoformat()}
+                for pkg in stored
+            ],
+        },
+    )
     db.commit()
     return _coating_detail(db, b, user)
 
@@ -1045,16 +1084,20 @@ def coating_indent(batch_id: int, body: IndentIn, db: Session = Depends(get_db),
 
 
 class DispatchIn(NoteIn):
-    dispatch_date: date
-    expected_return_date: date
+    dispatch_date: date | None = None
+    expected_return_date: date | None = None
 
 
 def _do_dispatch(db: Session, b: WfCoatingBatch, body: DispatchIn, user: models.User, action: str) -> None:
-    if body.expected_return_date < body.dispatch_date:
+    dispatch_date = body.dispatch_date or b.dispatch_date
+    expected = body.expected_return_date or b.expected_return_date
+    if dispatch_date is None or expected is None:
+        raise HTTPException(400, "Send date and expected return date are required")
+    if expected < dispatch_date:
         raise HTTPException(400, "Expected return date is before the send date")
     co = _company(db, b.company_id)
-    b.dispatch_date = body.dispatch_date
-    b.expected_return_date = body.expected_return_date
+    b.dispatch_date = dispatch_date
+    b.expected_return_date = expected
     b.return_date = None
     b.delay_days = None
     b.delay_party = None
@@ -1064,13 +1107,13 @@ def _do_dispatch(db: Session, b: WfCoatingBatch, body: DispatchIn, user: models.
         upsert_state(db, it.element_kind, it.serial, lifecycle_status="at_coater", company_id=b.company_id)
         label = "Rework sent" if action == "rework" else "Sent for recoating"
         log_event(
-            db, it.element_kind, it.serial, "dispatch", body.dispatch_date,
+            db, it.element_kind, it.serial, "dispatch", dispatch_date,
             f"{label} {codes.get(it.package_id, '')} → {co.name if co else ''}",
             ref_kind="wf_coating", ref_id=b.id, details={"code": codes.get(it.package_id), "indent_no": b.indent_no},
         )
     _move(
-        db, "coating", b, "at_coater", action, user, body.note,
-        {"dispatch_date": body.dispatch_date.isoformat(), "expected_return_date": body.expected_return_date.isoformat()},
+        db, "coating", b, "await_return", action, user, body.note,
+        {"dispatch_date": dispatch_date.isoformat(), "expected_return_date": expected.isoformat()},
     )
 
 
@@ -1103,7 +1146,7 @@ class ReceiveIn(NoteIn):
 @router.post("/coating/{batch_id}/receive")
 def coating_receive(batch_id: int, body: ReceiveIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     b = _load_batch(db, batch_id)
-    _require_stage(db, user, "coating", b.status, ("at_coater",))
+    _require_stage(db, user, "coating", b.status, ("await_return",))
     if b.dispatch_date and body.actual_date < b.dispatch_date:
         raise HTTPException(400, "Return date is before the send date")
     days = _delay(b.expected_return_date, body.actual_date)
@@ -1124,8 +1167,8 @@ def coating_receive(batch_id: int, body: ReceiveIn, db: Session = Depends(get_db
             f"Returned from coating {codes.get(it.package_id, '')}",
             ref_kind="wf_coating", ref_id=b.id, details={"code": codes.get(it.package_id), "delay_days": days},
         )
-    _move(
-        db, "coating", b, "await_report", "receive", user, body.note,
+    _event(
+        db, "coating", b, "receive", user, b.status, body.note,
         {
             "return_date": body.actual_date.isoformat(),
             "delay_days": days,
@@ -1172,7 +1215,7 @@ def coating_report(
     user: models.User = Depends(get_current_user),
 ):
     b = _load_batch(db, batch_id)
-    _require_stage(db, user, "coating", b.status, ("await_report",))
+    _require_stage(db, user, "coating", b.status, ("await_return",))
     if package_id is not None and not db.query(WfCoatingPackage).filter_by(id=package_id, batch_id=b.id).first():
         raise HTTPException(400, "Unknown pallet")
     filled = 0
@@ -1194,9 +1237,11 @@ def coating_report(
 @router.post("/coating/{batch_id}/submit")
 def coating_submit(batch_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     b = _load_batch(db, batch_id)
-    _require_stage(db, user, "coating", b.status, ("await_report",))
+    _require_stage(db, user, "coating", b.status, ("await_return",))
+    if b.return_date is None:
+        raise HTTPException(400, "Record the delivery date before sending this to inspection")
     if not db.query(WfFile).filter_by(flow="coating", record_id=b.id, kind="report").first():
-        raise HTTPException(400, "Upload the final report (Excel) from the coating company first")
+        raise HTTPException(400, "Attach the Excel report received from the coating company first")
     b.rejected = False
     _move(db, "coating", b, "await_inspection", "submit", user, body.note, notify_creator=True)
     db.commit()
@@ -1220,7 +1265,7 @@ def coating_inspect_reject(batch_id: int, body: NoteIn, db: Session = Depends(ge
     if not (body.note or "").strip():
         raise HTTPException(400, "Write why the result is not accepted")
     b.rejected = True
-    _move(db, "coating", b, "await_report", "inspect_reject", user, body.note)
+    _move(db, "coating", b, "await_return", "inspect_reject", user, body.note, notify_creator=True)
     db.commit()
     return _coating_detail(db, b, user)
 
@@ -1228,7 +1273,9 @@ def coating_inspect_reject(batch_id: int, body: NoteIn, db: Session = Depends(ge
 @router.post("/coating/{batch_id}/rework")
 def coating_rework(batch_id: int, body: DispatchIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     b = _load_batch(db, batch_id)
-    _require_stage(db, user, "coating", b.status, ("await_report",))
+    _require_stage(db, user, "coating", b.status, ("await_return",))
+    if body.dispatch_date is None or body.expected_return_date is None:
+        raise HTTPException(400, "Send date and expected return date are required")
     b.rework_count = (b.rework_count or 0) + 1
     b.rejected = False
     _do_dispatch(db, b, body, user, "rework")
@@ -1315,7 +1362,7 @@ def coating_reject(batch_id: int, body: NoteIn, db: Session = Depends(get_db), u
     if not (body.note or "").strip():
         raise HTTPException(400, "Write why the result is not accepted")
     b.rejected = True
-    _move(db, "coating", b, "await_report", "reject", user, body.note)
+    _move(db, "coating", b, "await_return", "reject", user, body.note, notify_creator=True)
     db.commit()
     return _coating_detail(db, b, user)
 
@@ -1442,8 +1489,8 @@ def _purchase_actions(db: Session, p: WfPurchase, user: models.User) -> list[str
     groups = _groups(db, user)
     mine = bool(groups & set(PURCHASE_STAGES.get(p.status, [])))
     acts: list[str] = []
-    if mine:
-        acts.append({"await_indent": "indent", "await_order": "order", "ordered": "deliver", "await_registration": "register"}[p.status])
+    if mine and p.status in ("await_indent", "await_order", "await_registration"):
+        acts.append({"await_indent": "indent", "await_order": "order", "await_registration": "register"}[p.status])
     early = p.status in ("await_indent", "await_order") and "procurement" in groups
     if _can_cancel(user, p.status, p.created_by_id, "await_indent", also=early):
         acts.append("cancel")
@@ -1535,6 +1582,8 @@ def purchase_indent(purchase_id: int, body: IndentIn, db: Session = Depends(get_
     indent = body.indent_no.strip()[:60]
     if not indent:
         raise HTTPException(400, "Indent number required")
+    if not db.query(WfFile).filter_by(flow="purchase", record_id=p.id).first():
+        raise HTTPException(400, "The purchase documents must be attached before the indent is issued")
     p.indent_no = indent
     _move(db, "purchase", p, "await_order", "indent", user, body.note, {"indent_no": indent})
     db.commit()
@@ -1544,19 +1593,38 @@ def purchase_indent(purchase_id: int, body: IndentIn, db: Session = Depends(get_
 class OrderIn(NoteIn):
     request_date: date
     expected_delivery_date: date
+    delivery_date: date
+    delay_party: str | None = None
+    delay_reason: str | None = None
 
 
 @router.post("/purchase/{purchase_id}/order")
 def purchase_order(purchase_id: int, body: OrderIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """Procurement records the request, the expected delivery, the actual delivery and any delay, then C-90 registers the pieces."""
     p = _load_purchase(db, purchase_id)
     _require_stage(db, user, "purchase", p.status, ("await_order",))
     if body.expected_delivery_date < body.request_date:
         raise HTTPException(400, "Expected delivery date is before the request date")
+    if body.delivery_date < body.request_date:
+        raise HTTPException(400, "Delivery date is before the request date")
+    days = _delay(body.expected_delivery_date, body.delivery_date)
+    _check_delay(days, body.delay_party, body.delay_reason)
+    late = days is not None and days > 0
     p.request_date = body.request_date
     p.expected_delivery_date = body.expected_delivery_date
+    p.delivery_date = body.delivery_date
+    p.delay_days = days
+    p.delay_party = body.delay_party if late else None
+    p.delay_reason = ((body.delay_reason or "").strip() or None) if late else None
     _move(
-        db, "purchase", p, "ordered", "order", user, body.note,
-        {"request_date": body.request_date.isoformat(), "expected_delivery_date": body.expected_delivery_date.isoformat()},
+        db, "purchase", p, "await_registration", "order", user, body.note,
+        {
+            "request_date": body.request_date.isoformat(),
+            "expected_delivery_date": body.expected_delivery_date.isoformat(),
+            "delivery_date": body.delivery_date.isoformat(),
+            "delay_days": days,
+            "delay_reason": p.delay_reason,
+        },
     )
     db.commit()
     return _purchase_detail(db, p, user)
@@ -2671,7 +2739,7 @@ def _company_stats(db: Session, company_id: int, date_from: date | None, date_to
         "coating_pieces": sum(b.anode_count + b.cathode_count for b in batches),
         "coating_anodes": sum(b.anode_count for b in batches),
         "coating_cathodes": sum(b.cathode_count for b in batches),
-        "at_company": sum(b.anode_count + b.cathode_count for b in batches if b.status == "at_coater"),
+        "at_company": sum(b.anode_count + b.cathode_count for b in batches if b.status == "await_return" and b.return_date is None),
         "reworks": sum(b.rework_count or 0 for b in batches),
         "purchases": len(purchases),
         "purchased_anodes": sum(p.anode_count for p in purchases),

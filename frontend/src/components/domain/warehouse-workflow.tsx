@@ -55,7 +55,7 @@ function statusColor(status: string): "emerald" | "rose" | "amber" | "cyan" | "v
   if (status === "completed") return "emerald";
   if (status === "cancelled") return "slate";
   if (status === "await_approval" || status === "await_inspection" || status === "await_registration") return "violet";
-  if (status === "at_coater" || status === "ordered") return "cyan";
+  if (status === "await_return" || status === "at_coater" || status === "ordered") return "cyan";
   return "amber";
 }
 
@@ -104,7 +104,8 @@ function StatusBadge({ row, t }: { row: Pick<WfSummary, "status" | "rejected">; 
 export function Stepper({ flow, status, t }: { flow: WfFlow; status: string; t: T }) {
   const steps: readonly string[] =
     flow === "coating" ? COATING_STEPS : flow === "cell" ? CELL_STEPS : flow === "inspection" ? INSPECTION_STEPS : PURCHASE_STEPS;
-  const at = steps.indexOf(status);
+  const shown = status === "at_coater" || status === "await_report" ? "await_return" : status === "ordered" ? "await_order" : status;
+  const at = steps.indexOf(shown);
   return (
     <ol className="wf-stepper">
       {status === "cancelled" ? <li className="wf-step is-cancelled">{t("wf.status.cancelled")}</li> : null}
@@ -252,7 +253,7 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
 
   return (
     <div className="wh-panel-block">
-      <Stepper flow="coating" status="" t={t} />
+      <Stepper flow="coating" status="c90_select" t={t} />
       {canRequest ? (
         <form
           className="wh-form"
@@ -381,7 +382,7 @@ export function PurchaseWorkflowPanel({ companies, onOpen }: { companies: WhComp
   });
   return (
     <div className="wh-panel-block">
-      <Stepper flow="purchase" status="" t={t} />
+      <Stepper flow="purchase" status="purchase_request" t={t} />
       {canCreate ? (
         <form
           className="wh-form"
@@ -430,7 +431,7 @@ export function PurchaseWorkflowPanel({ companies, onOpen }: { companies: WhComp
           </div>
           {create.error ? <div className="wf-alert">{create.error.message}</div> : null}
           <div>
-            <button type="submit" className="wf-btn is-primary" disabled={create.isPending || !supplierId || anodeCount + cathodeCount <= 0}>
+            <button type="submit" className="wf-btn is-primary" disabled={create.isPending || !supplierId || anodeCount + cathodeCount <= 0 || files.length === 0}>
               <Plus size={14} /> {t("wf.purchase.create")}
             </button>
           </div>
@@ -701,9 +702,14 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
   const acts = d.actions;
   const [note, setNote] = useState("");
   const [companyId, setCompanyId] = useState<number | "">(d.company_id ?? "");
+  const [emailed, setEmailed] = useState(false);
+  const [plans, setPlans] = useState<Record<number, { send: string; back: string }>>(() =>
+    Object.fromEntries((d.packages ?? []).map((p) => [p.id, { send: p.dispatch_date?.slice(0, 10) || todayIso(), back: p.expected_return_date?.slice(0, 10) || "" }]))
+  );
   const [indent, setIndent] = useState("");
   const [date1, setDate1] = useState(todayIso());
   const [date2, setDate2] = useState("");
+  const [plansDelivery, setPlansDelivery] = useState(todayIso());
   const [party, setParty] = useState("");
   const [reason, setReason] = useState("");
   const [warrantyMonths, setWarrantyMonths] = useState(d.warranty_months != null ? String(d.warranty_months) : "");
@@ -784,20 +790,54 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
         </div>
       ) : null}
       {main.includes("company") ? (
-        <div className="wh-form-inline wf-inline-plain">
-          <label>
-            {t("wf.coatingCompany")}
-            <select value={companyId} onChange={(e) => setCompanyId(e.target.value ? Number(e.target.value) : "")}>
-              <option value="">—</option>
-              {coatingCos.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-            {coatingCos.length === 0 ? <small className="wf-muted">{t("wf.noCompanies")}</small> : null}
+        <div className="wf-receive">
+          <p className="wh-subdesc">{t("wf.coating.planHint")}</p>
+          <div className="wh-form-inline wf-inline-plain">
+            <label>
+              {t("wf.coatingCompany")}
+              <select value={companyId} onChange={(e) => setCompanyId(e.target.value ? Number(e.target.value) : "")}>
+                <option value="">—</option>
+                {coatingCos.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {coatingCos.length === 0 ? <small className="wf-muted">{t("wf.noCompanies")}</small> : null}
+            </label>
+            <button type="button" className="wf-btn" onClick={() => void workflowApi.downloadExcel(d.id, d.title || `recoating-${d.id}`)}>
+              <FileSpreadsheet size={14} /> {t("wf.coating.excelAll")}
+            </button>
+          </div>
+          {(d.packages ?? []).map((p) => (
+            <div key={p.id} className="wh-form-inline wf-inline-plain">
+              <strong className="wf-code">{p.code}</strong>
+              <label>
+                {t("wf.coating.sendDate")}
+                <DateInput type="date" value={plans[p.id]?.send || ""} onChange={(e) => setPlans((prev) => ({ ...prev, [p.id]: { send: e.target.value, back: prev[p.id]?.back || "" } }))} />
+              </label>
+              <label>
+                {t("wf.coating.expectedReturn")}
+                <DateInput type="date" value={plans[p.id]?.back || ""} onChange={(e) => setPlans((prev) => ({ ...prev, [p.id]: { send: prev[p.id]?.send || todayIso(), back: e.target.value } }))} />
+              </label>
+            </div>
+          ))}
+          <label className="wh-check">
+            <input type="checkbox" checked={emailed} onChange={(e) => setEmailed(e.target.checked)} />
+            {t("wf.coating.emailExcel")}
           </label>
-          <button type="button" className="wf-btn is-primary" disabled={!companyId || run.isPending} onClick={() => go("company", { company_id: companyId })}>
+          <button
+            type="button"
+            className="wf-btn is-primary"
+            disabled={!companyId || !emailed || run.isPending || (d.packages ?? []).some((p) => !plans[p.id]?.send || !plans[p.id]?.back)}
+            onClick={() =>
+              go("company", {
+                company_id: companyId,
+                excel_emailed: true,
+                packages: (d.packages ?? []).map((p) => ({ package_id: p.id, dispatch_date: plans[p.id].send, expected_return_date: plans[p.id].back })),
+              })
+            }
+          >
             <Send size={14} /> {t("wf.action.company")}
           </button>
         </div>
@@ -815,37 +855,89 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
         </div>
       ) : null}
 
-      {main.includes("dispatch") || main.includes("rework") || main.includes("order") ? (
+      {main.includes("dispatch") ? (
+        <div className="wh-form-inline wf-inline-plain">
+          <p className="wh-subdesc">{t("wf.coating.dispatchHint", { sent: formatDate(d.dispatch_date), back: formatDate(d.expected_date) })}</p>
+          <button
+            type="button"
+            className="wf-btn is-primary"
+            disabled={run.isPending || formsMissing > 0}
+            title={formsMissing > 0 ? t("wf.insp.missingAlert", { n: formsMissing, total: d.inspections_total ?? 0 }) : undefined}
+            onClick={() => go("dispatch")}
+          >
+            <Send size={14} /> {t("wf.action.dispatch")}
+          </button>
+        </div>
+      ) : null}
+
+      {main.includes("order") ? (
+        <div className="wf-receive">
+          <p className="wh-subdesc">{t("wf.purchase.buyHint")}</p>
+          <div className="wh-form-inline wf-inline-plain">
+            <label>
+              {t("wf.col.requestDate")}
+              <DateInput type="date" value={date1} onChange={(e) => setDate1(e.target.value)} />
+            </label>
+            <label>
+              {t("wf.col.expected")}
+              <DateInput type="date" value={date2} onChange={(e) => setDate2(e.target.value)} />
+            </label>
+            <label>
+              {t("wf.col.delivered")}
+              <DateInput type="date" value={plansDelivery} onChange={(e) => setPlansDelivery(e.target.value)} />
+            </label>
+          </div>
+          {daysBetween(date2, plansDelivery) != null && (daysBetween(date2, plansDelivery) as number) > 0 ? (
+            <div className="wh-form-inline wf-inline-plain">
+              <label>
+                {t("wf.delayParty")}
+                <select value={party} onChange={(e) => setParty(e.target.value)}>
+                  <option value="">—</option>
+                  {DELAY_PARTIES.map((p) => (
+                    <option key={p} value={p}>
+                      {t(`wf.party.${p}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="wh-grow">
+                {t("wf.delayReason")}
+                <input value={reason} onChange={(e) => setReason(e.target.value)} />
+              </label>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            className="wf-btn is-primary"
+            disabled={!date2 || !plansDelivery || run.isPending || ((daysBetween(date2, plansDelivery) ?? 0) > 0 && (!party || !reason.trim()))}
+            onClick={() =>
+              go("order", {
+                request_date: date1,
+                expected_delivery_date: date2,
+                delivery_date: plansDelivery,
+                delay_party: (daysBetween(date2, plansDelivery) ?? 0) > 0 ? party : undefined,
+                delay_reason: (daysBetween(date2, plansDelivery) ?? 0) > 0 ? reason : undefined,
+              })
+            }
+          >
+            <Send size={14} /> {t("wf.action.order")}
+          </button>
+        </div>
+      ) : null}
+
+      {main.includes("rework") ? (
         <div className="wh-form-inline wf-inline-plain">
           <label>
-            {main.includes("order") ? t("wf.col.requestDate") : t("wf.col.sent")}
+            {t("wf.col.sent")}
             <DateInput type="date" value={date1} onChange={(e) => setDate1(e.target.value)} />
           </label>
           <label>
             {t("wf.col.expected")}
             <DateInput type="date" value={date2} onChange={(e) => setDate2(e.target.value)} />
           </label>
-          {main.includes("dispatch") ? (
-            <button
-              type="button"
-              className="wf-btn is-primary"
-              disabled={!date2 || run.isPending || formsMissing > 0}
-              title={formsMissing > 0 ? t("wf.insp.missingAlert", { n: formsMissing, total: d.inspections_total ?? 0 }) : undefined}
-              onClick={() => go("dispatch", { dispatch_date: date1, expected_return_date: date2 })}
-            >
-              <Send size={14} /> {t("wf.action.dispatch")}
-            </button>
-          ) : null}
-          {main.includes("order") ? (
-            <button type="button" className="wf-btn is-primary" disabled={!date2 || run.isPending} onClick={() => go("order", { request_date: date1, expected_delivery_date: date2 })}>
-              <Send size={14} /> {t("wf.action.order")}
-            </button>
-          ) : null}
-          {main.includes("rework") ? (
-            <button type="button" className="wf-btn" disabled={!date2 || run.isPending} onClick={() => go("rework", { dispatch_date: date1, expected_return_date: date2 })}>
-              <RotateCcw size={14} /> {t("wf.action.rework")}
-            </button>
-          ) : null}
+          <button type="button" className="wf-btn" disabled={!date2 || run.isPending} onClick={() => go("rework", { dispatch_date: date1, expected_return_date: date2 })}>
+            <RotateCcw size={14} /> {t("wf.action.rework")}
+          </button>
         </div>
       ) : null}
 

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AccessBtn, AccessHub, AccessPeriod } from "@/components/layout/access-hub";
 import { ReportColumn, useColumnState } from "@/components/layout/access-report";
+import { CathodicCeSheet } from "@/components/domain/cathodic-ce-sheet";
 import { CurrentEfficiencyDataInput, type CeInputMode } from "@/components/domain/current-efficiency-data-input";
 import { CeFormulaGuide } from "@/components/domain/ce-formula-guide";
 import { UnCeResultsPane, UnCeSettingsPanel } from "@/components/domain/un-ce-board";
@@ -113,6 +114,12 @@ function CeBoard() {
             </AccessBtn>
             <AccessBtn className="!w-auto" href="/current-efficiency?form=input-element">
               {t("menus.elements")}
+            </AccessBtn>
+            <AccessBtn className="!w-auto" href="/current-efficiency?form=cathodic-1">
+              {t("cathodicCe.open", { train: 1 })}
+            </AccessBtn>
+            <AccessBtn className="!w-auto" href="/current-efficiency?form=cathodic-2">
+              {t("cathodicCe.open", { train: 2 })}
             </AccessBtn>
           </div>
         </div>
@@ -344,6 +351,8 @@ const INPUT_FORMS: Record<string, CeInputMode> = {
 function CurrentEfficiencyPageInner() {
   const searchParams = useSearchParams();
   const form = searchParams.get("form") || undefined;
+  if (form === "cathodic-1") return <CathodicCeSheet key="cathodic-1" train={1} />;
+  if (form === "cathodic-2") return <CathodicCeSheet key="cathodic-2" train={2} />;
   const mode = form ? INPUT_FORMS[form] : undefined;
   if (mode) return <CurrentEfficiencyDataInput mode={mode} />;
   return <CeBoard />;

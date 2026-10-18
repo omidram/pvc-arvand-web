@@ -35,6 +35,7 @@ class WfCoatingBatch(Base):
     # Procurement fills these after return from the coater (applies to every piece on approve).
     warranty_months: Mapped[int | None] = mapped_column(Integer)
     warranty_start: Mapped[date | None] = mapped_column(Date)
+    excel_emailed_at: Mapped[datetime | None] = mapped_column(DateTime)
     created_by_id: Mapped[int | None] = mapped_column(Integer)
     created_by_name: Mapped[str | None] = mapped_column(String(150))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
@@ -51,6 +52,8 @@ class WfCoatingPackage(Base):
     code: Mapped[str] = mapped_column(String(40), unique=True, index=True)
     seq: Mapped[int] = mapped_column(Integer, unique=True, index=True)
     pallet_no: Mapped[int] = mapped_column(Integer, default=1)
+    dispatch_date: Mapped[date | None] = mapped_column(Date)
+    expected_return_date: Mapped[date | None] = mapped_column(Date)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 
 

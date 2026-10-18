@@ -100,6 +100,60 @@ def _definitions(db: Session) -> dict[str, models.GroupDefinition]:
     return {_text(d.group_nr): d for d in db.query(models.GroupDefinition).all()}
 
 
+def _spec_score(definition: models.GroupDefinition, el: models.Element) -> int | None:
+    """How many specified fields of this definition fit the element.
+
+    A blank or "All" field is a wildcard. A filled field that differs from the
+    element rules the definition out. Zero means the definition says nothing.
+    """
+    score = 0
+    for name in SPEC_FIELDS:
+        wanted = getattr(definition, name)
+        if not _text(wanted) or _text(wanted).casefold() == "all":
+            continue
+        actual = getattr(el, name)
+        if not _text(actual) or not _same(wanted, actual):
+            return None
+        score += 1
+    return score
+
+
+def _best_definition(el: models.Element, definitions: dict[str, models.GroupDefinition]) -> tuple[str, models.GroupDefinition | None]:
+    """The element's own group number, or the one definition its coatings match."""
+    key = _text(el.group_nr)
+    if key:
+        return key, definitions.get(key)
+    best_score = 0
+    best: list[tuple[str, models.GroupDefinition]] = []
+    for gkey, definition in definitions.items():
+        score = _spec_score(definition, el)
+        if score is None or score <= 0:
+            continue
+        if score > best_score:
+            best_score = score
+            best = [(gkey, definition)]
+        elif score == best_score:
+            best.append((gkey, definition))
+    if len(best) == 1:
+        return best[0]
+    return "", None
+
+
+def _passes_spec(el: models.Element, definition: models.GroupDefinition | None, wanted: dict[str, Any]) -> bool:
+    """A set filter matches the element's own value, or the group's definition when the element is blank."""
+    for name, value in wanted.items():
+        if not _text(value):
+            continue
+        actual = getattr(el, name, None)
+        if _text(actual):
+            if not _same(actual, value):
+                return False
+            continue
+        if definition is None or not _spec_ok(getattr(definition, name), value):
+            return False
+    return True
+
+
 @router.get("/summary")
 def summary(
     anode_coating: str | None = None,
@@ -111,10 +165,11 @@ def summary(
     """One line per group (defined, or used by an element): its spec and how many elements run in it."""
     definitions = _definitions(db)
     wanted = {"anode_coating": anode_coating, "cathode_coating": cathode_coating, "membrane_type": membrane_type, "gap_mm": gap_mm}
+    spec_filter = any(_text(v) for v in wanted.values())
     stats: dict[str, dict[str, Any]] = {}
     for el in db.query(models.Element).all():
-        key = _text(el.group_nr)
-        if not key:
+        key, definition = _best_definition(el, definitions)
+        if not key or not _passes_spec(el, definition, wanted):
             continue
         row = stats.setdefault(key, {"active": 0, "total": 0, "off": 0, "mismatch": 0, "electrolyzers": set()})
         row["total"] += 1
@@ -122,7 +177,7 @@ def summary(
             row["active"] += 1
             if el.electrolyzer:
                 row["electrolyzers"].add(_text(el.electrolyzer))
-            if _mismatches(el, definitions.get(key)):
+            if _mismatches(el, definition):
                 row["mismatch"] += 1
         else:
             row["off"] += 1
@@ -130,7 +185,12 @@ def summary(
     out = []
     for key in sorted(set(definitions) | set(stats), key=natural_key):
         definition = definitions.get(key)
-        if any(_text(v) and (definition is None or not _spec_ok(getattr(definition, n), v)) for n, v in wanted.items()):
+        defined_hit = definition is not None and all(
+            not _text(v) or _spec_ok(getattr(definition, n), v) for n, v in wanted.items()
+        )
+        if spec_filter and not defined_hit and key not in stats:
+            continue
+        if not spec_filter and definition is None and key not in stats:
             continue
         counts = stats.get(key, {})
         out.append(
@@ -171,15 +231,14 @@ def _rows(
 
     rows: list[dict[str, Any]] = []
     for el in db.query(models.Element).all():
-        key = _text(el.group_nr)
-        if not key:
-            continue
+        key, definition = _best_definition(el, definitions)
         if _text(group) and not _same(key, group):
             continue
-        definition = definitions.get(key)
-        if spec_filter and (
-            definition is None or any(_text(v) and not _spec_ok(getattr(definition, n), v) for n, v in wanted.items())
-        ):
+        if not _passes_spec(el, definition, wanted):
+            continue
+        # Without a filter, only elements that belong to a group. A filter also lists
+        # elements that match it even when no group definition fits them.
+        if not key and not spec_filter:
             continue
         state = _status(el)
         if status == "active" and not _is_live(state):

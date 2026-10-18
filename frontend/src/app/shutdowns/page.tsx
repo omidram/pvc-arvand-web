@@ -101,7 +101,6 @@ function PlantBar() {
     <div className="access-plant-bar shutdown-plant-bar">
       <span>{s?.customer || "PVC Arvand"}</span>
       <span>{t("menus.naclElectrolysis")}</span>
-      <span>{s?.uan || "03-3039"}</span>
       <span>{headerDate === "—" || headerDate === "d" ? formatDate(new Date().toISOString().slice(0, 10)) : headerDate}</span>
     </div>
   );
@@ -118,6 +117,7 @@ function ShutdownMenu() {
             <AccessBtn href="/shutdowns?form=list">{t("menus.shutdownList")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=reasons">{t("menus.shutdownReasons")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=categories">{t("menus.shutdownCategories")}</AccessBtn>
+            <AccessBtn href="/shutdowns?form=trip-causes">{t("menus.tripCause")}</AccessBtn>
           </div>
         </div>
         <div>
@@ -742,6 +742,80 @@ function ReasonsForm() {
   );
 }
 
+function TripCausesForm() {
+  const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const editable = canEdit("shutdowns");
+  const [active, setActive] = useState<number | "new" | null>(null);
+  const { listQuery, createMutation, updateMutation } = useCrudResource<ShutdownCause>(
+    "shutdown-causes",
+    shutdownCausesApi,
+    { limit: 500 }
+  );
+  const rows = useMemo(
+    () => [...(listQuery.data || [])].filter((row) => (row.cause || "").trim()).sort((a, b) => (a.cause || "").localeCompare(b.cause || "")),
+    [listQuery.data]
+  );
+
+  function save(row: ShutdownCause, cause: string) {
+    if (!editable) return;
+    updateMutation.mutate({ id: row.id, payload: { ...row, cause: cause || null } });
+  }
+
+  return (
+    <AccessHub
+      title={t("menus.tripCause")}
+      titleBlue
+      backHref="/shutdowns"
+      backLabel={t("mainMenu.shutDown")}
+      extraButtons={<ExportButtons prefix="/shutdown-causes" filenameBase="trip-causes" />}
+    >
+      <table className="access-cont-table max-w-xl">
+        <thead>
+          <tr>
+            <th className="w-4" />
+            <th>{t("menus.tripCause")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id} onClick={() => setActive(row.id)}>
+              <td className="access-selector">{active === row.id ? "►" : ""}</td>
+              <td>
+                <input
+                  className="w-full"
+                  value={row.cause || ""}
+                  onChange={(e) => save(row, e.target.value)}
+                  disabled={!editable}
+                />
+              </td>
+            </tr>
+          ))}
+          {editable ? (
+            <tr onClick={() => setActive("new")}>
+              <td className="access-selector">*</td>
+              <td>
+                <input
+                  className="w-full"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      const cause = (e.target as HTMLInputElement).value.trim();
+                      if (cause) {
+                        createMutation.mutate({ cause } as never);
+                        (e.target as HTMLInputElement).value = "";
+                      }
+                    }
+                  }}
+                />
+              </td>
+            </tr>
+          ) : null}
+        </tbody>
+      </table>
+    </AccessHub>
+  );
+}
+
 function CategoriesForm() {
   const { t } = useI18n();
   const { canEdit } = useAuth();
@@ -834,6 +908,7 @@ function ShutdownsInner() {
   const form = searchParams.get("form");
   if (!form) return <ShutdownMenu />;
   if (form === "reasons") return <ReasonsForm />;
+  if (form === "trip-causes") return <TripCausesForm />;
   if (form === "categories") return <CategoriesForm />;
   if (form === "period") return <ShutdownListForm showPeriodFilter />;
   if (form === "summary-reason") return <SummaryForm groupBy="reason" title={t("shutdowns.summaryReasonTitle")} />;

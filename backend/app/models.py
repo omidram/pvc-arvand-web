@@ -1114,3 +1114,32 @@ class ElementDashboardSettings(Base):
     warn_percent: Mapped[int | None] = mapped_column(Integer)  # warn from this % of the limit
     coating_thickness_min: Mapped[float | None] = mapped_column(Float)  # residual coating % that triggers recoating
     shop_queue_days: Mapped[int | None] = mapped_column(Integer)  # dismantled this recently = waiting for re-assembly
+
+
+class CathodicCeSheet(Base):
+    """One cathodic (NaOH) current-efficiency sheet for a train and a calendar day.
+
+    Yellow hour cells and the unformula'd header inputs are stored here.
+    Averages and CE are recalculated from the Excel formulas, not stored.
+    """
+
+    __tablename__ = "cathodic_ce_sheets"
+    __table_args__ = (UniqueConstraint("train", "sheet_date", name="uq_cathodic_ce_train_date"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    train: Mapped[int] = mapped_column(Integer, index=True)
+    sheet_date: Mapped[date] = mapped_column(Date, index=True)
+    date_label: Mapped[str | None] = mapped_column(String(120))
+    total_load: Mapped[str | None] = mapped_column(String(40))
+    initial_reading: Mapped[float | None] = mapped_column(Float)
+    final_reading: Mapped[float | None] = mapped_column(Float)
+    test_hours: Mapped[float | None] = mapped_column(Float)
+    readings: Mapped[dict | None] = mapped_column(JSON)
+    online: Mapped[dict | None] = mapped_column(JSON)
+    sign_insp_name: Mapped[str | None] = mapped_column(String(150))
+    sign_insp_image: Mapped[str | None] = mapped_column(Text)
+    sign_insp_at: Mapped[str | None] = mapped_column(String(40))
+    sign_proc_name: Mapped[str | None] = mapped_column(String(150))
+    sign_proc_image: Mapped[str | None] = mapped_column(Text)
+    sign_proc_at: Mapped[str | None] = mapped_column(String(40))
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime)
