@@ -24,6 +24,22 @@ function textOf(value: number | null | undefined): string {
   return value === null || value === undefined ? "" : String(value);
 }
 
+/** Digits and a single decimal point. Letters and extra separators are dropped. */
+function numericText(raw: string): string {
+  let value = "";
+  for (const ch of raw) {
+    const fa = "۰۱۲۳۴۵۶۷۸۹".indexOf(ch);
+    const ar = "٠١٢٣٤٥٦٧٨٩".indexOf(ch);
+    if (fa >= 0) value += String(fa);
+    else if (ar >= 0) value += String(ar);
+    else if (ch >= "0" && ch <= "9") value += ch;
+    else if (ch === "." || ch === "," || ch === "٫" || ch === "،") value += ".";
+  }
+  const dot = value.indexOf(".");
+  if (dot < 0) return value;
+  return `${value.slice(0, dot + 1)}${value.slice(dot + 1).replaceAll(".", "")}`;
+}
+
 function cellsFrom(sheet: CathodicSheet): Cells {
   const cells: Cells = {};
   for (const [code, hours] of Object.entries(sheet.inputs.readings || {})) {
@@ -74,7 +90,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
     const sheet = sheetQuery.data;
     if (!sheet || sheet.sheet_date !== day) return;
     setDateLabel(sheet.inputs.date_label || "");
-    setTotalLoad(sheet.inputs.total_load || "");
+    setTotalLoad(numericText(sheet.inputs.total_load || ""));
     setInitial(textOf(sheet.inputs.initial_reading));
     setFinalReading(textOf(sheet.inputs.final_reading));
     setTestHours(textOf(sheet.inputs.test_hours));
@@ -149,7 +165,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
   }
 
   function setCell(code: string, hour: string, value: string) {
-    setCells((prev) => ({ ...prev, [code]: { ...(prev[code] || {}), [hour]: value } }));
+    setCells((prev) => ({ ...prev, [code]: { ...(prev[code] || {}), [hour]: numericText(value) } }));
     clearChecks();
   }
 
@@ -181,7 +197,16 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
         </label>
         <label className="text-[12px] font-bold">
           {t("cathodicCe.totalLoad")}
-          <input className="access-inset-field mt-1 block w-28" value={totalLoad} onChange={(e) => { setTotalLoad(e.target.value); clearChecks(); }} placeholder="125KA" />
+          <span className="mt-1 flex items-center gap-1">
+            <input
+              className="access-inset-field block w-28"
+              value={totalLoad}
+              onChange={(e) => { setTotalLoad(numericText(e.target.value)); clearChecks(); }}
+              inputMode="decimal"
+              placeholder="125"
+            />
+            <span className="text-[11px] font-normal">KA</span>
+          </span>
         </label>
         <Button type="button" onClick={() => save.mutate()} disabled={save.isPending || !day}>
           {t("cathodicCe.save")}
@@ -238,8 +263,17 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
             </div>
           </div>
 
-          <div className="overflow-x-auto border border-neutral-400 bg-white">
-            <table className="border-collapse text-[11px]">
+          <div className="w-full max-w-full overflow-x-auto border border-neutral-400 bg-white">
+            <table className="w-full min-w-[36rem] border-collapse text-[11px] table-fixed sm:min-w-full">
+              <colgroup>
+                <col className="w-[4.25rem]" />
+                <col />
+                <col className="w-[14%]" />
+                {hours.map((hour) => (
+                  <col key={hour} className="w-[12%]" />
+                ))}
+                <col className="w-[3.5rem]" />
+              </colgroup>
               <thead>
                 <tr className="bg-[#fff59d]">
                   <th className="sticky left-0 z-10 border border-neutral-300 bg-[#fff59d] px-1 py-1">{t("cathodicCe.item")}</th>
@@ -257,8 +291,8 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
                 <HeaderInputs
                   initial={initial}
                   finalReading={finalReading}
-                  onInitial={(value) => { setInitial(value); clearChecks(); }}
-                  onFinal={(value) => { setFinalReading(value); clearChecks(); }}
+                  onInitial={(value) => { setInitial(numericText(value)); clearChecks(); }}
+                  onFinal={(value) => { setFinalReading(numericText(value)); clearChecks(); }}
                   span={hours.length}
                   production={sheet.production_tag}
                 />
@@ -283,7 +317,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
               <input
                 className="access-inset-field mt-1 block w-full bg-[#ffff00]"
                 value={testHours}
-                onChange={(e) => { setTestHours(e.target.value); clearChecks(); }}
+                onChange={(e) => { setTestHours(numericText(e.target.value)); clearChecks(); }}
                 inputMode="decimal"
               />
             </label>
@@ -391,7 +425,7 @@ function HeaderInputs({
   span: number;
   production: string;
 }) {
-  const field = "w-24 border border-neutral-300 bg-[#ffff00] px-1 py-0.5 text-center";
+  const field = "box-border w-full min-w-0 border border-neutral-300 bg-[#ffff00] px-1 py-0.5 text-center";
   return (
     <>
       <tr>
@@ -435,7 +469,7 @@ function DataRow({
   return (
     <tr>
       <td className="sticky left-0 border border-neutral-300 bg-white px-1 font-bold">{row.label}</td>
-      <td className="whitespace-nowrap border border-neutral-300 px-2">
+      <td className="border border-neutral-300 px-2 break-words">
         {row.description}
         {row.kind === "voltage" ? <span className="text-neutral-500">, {row.tag}</span> : null}
       </td>
@@ -443,7 +477,7 @@ function DataRow({
       {hours.map((hour) => (
         <td key={hour} className="border border-neutral-300 bg-[#ffff00] p-0">
           <input
-            className="w-16 bg-transparent px-0.5 py-0.5 text-center"
+            className="box-border w-full min-w-0 bg-transparent px-1 py-0.5 text-center"
             value={values[hour] || ""}
             onChange={(e) => onCell(hour, e.target.value)}
             inputMode="decimal"
