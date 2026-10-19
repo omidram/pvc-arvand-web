@@ -264,7 +264,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
           </div>
 
           <div className="w-full max-w-full overflow-x-auto border border-neutral-400 bg-white">
-            <table className="w-full min-w-[36rem] border-collapse text-[11px] table-fixed sm:min-w-full">
+            <table className="ce-data-table w-full min-w-[36rem] border-collapse text-center text-[11px] table-fixed sm:min-w-full">
               <colgroup>
                 <col className="w-[4.25rem]" />
                 <col />
@@ -277,7 +277,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
               <thead>
                 <tr className="bg-[#fff59d]">
                   <th className="sticky left-0 z-10 border border-neutral-300 bg-[#fff59d] px-1 py-1">{t("cathodicCe.item")}</th>
-                  <th className="border border-neutral-300 px-2 py-1 text-left">{t("cathodicCe.description")}</th>
+                  <th className="border border-neutral-300 px-2 py-1 text-center">{t("cathodicCe.description")}</th>
                   <th className="border border-neutral-300 px-1 py-1">{t("cathodicCe.average")}</th>
                   {hours.map((hour) => (
                     <th key={hour} className="border border-neutral-300 bg-[#ffff00] px-1 py-1">
@@ -536,7 +536,7 @@ function Displays({ displays, title }: { displays: { tag: string; how_often: str
         {title}
       </button>
       {open ? (
-        <table className="mt-1 border-collapse text-[11px]">
+        <table className="ce-data-table mt-1 border-collapse text-center text-[11px]">
           <tbody>
             {displays.map((row) => (
               <tr key={`${row.what}-${row.tag}`}>
@@ -582,7 +582,7 @@ function History({
       )}
       {rows.length ? (
         <div className="mt-2 overflow-x-auto">
-          <table className="border-collapse text-[11px]">
+          <table className="ce-data-table border-collapse text-center text-[11px]">
             <thead>
               <tr className="bg-[#fff59d]">
                 <th className="border border-neutral-300 px-2 py-1">{t("cathodicCe.day")}</th>

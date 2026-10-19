@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { arrangementBoardApi } from "@/lib/endpoints";
 import { CellArrangementEditor } from "@/components/domain/cell-arrangement-editor";
+import { ArrangementOperatorPanel } from "@/components/domain/cell-request";
 import { AccessFormWindow } from "@/components/layout/access-form";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/input";
@@ -197,6 +198,9 @@ export default function ArrangementBoardPage() {
           </aside>
         </div>
       )}
+      {selected && currentEz ? (
+        <ArrangementOperatorPanel electrolyzer={currentEz} position={selected.position} elementNr={selected.element_nr} />
+      ) : null}
       {selected && currentEz ? (
         <CellArrangementEditor
           key={`${currentEz}-${selected.position}`}

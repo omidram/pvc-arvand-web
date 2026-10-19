@@ -10,13 +10,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ImportProgressBar } from "@/components/domain/import-progress";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
+import { archiveTableLabel } from "@/lib/archive-names";
 import { useI18n } from "@/lib/i18n/context";
 import { appConfirm } from "@/lib/dialog";
 import { formatDateTime } from "@/lib/utils";
 
-function tableLabel(row: TableFileRow, t: (path: string) => string): string {
+function tableLabel(row: TableFileRow, t: (path: string) => string, locale: string): string {
   const named = t(`tableFiles.names.${row.key}`);
-  return named.startsWith("tableFiles.names.") ? row.label : named;
+  if (!named.startsWith("tableFiles.names.")) return named;
+  return row.section === "archive" ? archiveTableLabel(row.label, locale) : row.label;
 }
 
 function exactBytes(value: number | null): string {
@@ -25,7 +27,7 @@ function exactBytes(value: number | null): string {
 }
 
 export function TableFilesTab() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [target, setTarget] = useState<TableFileRow | null>(null);
@@ -52,13 +54,13 @@ export function TableFilesTab() {
     return (query.data || []).filter((row) => {
       if (section !== "all" && row.section !== section) return false;
       if (!needle) return true;
-      const label = tableLabel(row, t).toLowerCase();
+      const label = tableLabel(row, t, locale).toLowerCase();
       return label.includes(needle) || row.key.toLowerCase().includes(needle) || (row.file_name || "").toLowerCase().includes(needle);
     });
-  }, [query.data, section, term, t]);
+  }, [query.data, section, term, t, locale]);
 
   async function onDelete(row: TableFileRow) {
-    const ok = await appConfirm(t("tableFiles.confirmDelete", { name: tableLabel(row, t) }));
+    const ok = await appConfirm(t("tableFiles.confirmDelete", { name: tableLabel(row, t, locale) }));
     if (!ok) return;
     setNote("");
     remove.mutate(row);
@@ -67,7 +69,7 @@ export function TableFilesTab() {
   async function onPick(file: File | undefined) {
     const row = target;
     if (!file || !row) return;
-    const ok = await appConfirm(t("tableFiles.confirmUpload", { name: tableLabel(row, t) }));
+    const ok = await appConfirm(t("tableFiles.confirmUpload", { name: tableLabel(row, t, locale) }));
     if (!ok) {
       if (fileRef.current) fileRef.current.value = "";
       return;
@@ -91,7 +93,7 @@ export function TableFilesTab() {
     {
       key: "label",
       header: t("tableFiles.table"),
-      render: (row) => tableLabel(row, t),
+      render: (row) => tableLabel(row, t, locale),
     },
     {
       key: "section",

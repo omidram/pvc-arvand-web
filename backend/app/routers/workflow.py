@@ -56,7 +56,7 @@ GROUP_KEYS = {
     "cellshop": "wf_cellshop",
 }
 VIEW_KEYS = ("storage", "anodes", "cathodes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection")
-CELL_VIEW_KEYS = ("elements", "wf_operation", "wf_cellshop")
+CELL_VIEW_KEYS = ("elements", "wf_operation", "wf_cellshop", "wf_c90")
 
 # Coating hand-off (chart): C-90 selects the piece and the system makes the code, then
 # procurement plans the send, warehouse issues the indent, procurement ships and later
@@ -80,6 +80,7 @@ CELL_STAGES: dict[str, list[str]] = {
     "await_shutdown": ["operation"],
     "await_shop": ["cellshop"],
     "in_shop": ["cellshop"],
+    "await_numbering": ["c90"],
 }
 INSPECTION_STAGES: dict[str, list[str]] = {
     "await_request": ["c90"],
@@ -92,7 +93,7 @@ INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections",)
 DEFAULT_SLA: dict[str, dict[str, int]] = {
     "coating": {"await_company": 72, "await_indent": 72, "await_dispatch": 120, "await_return": 720, "await_inspection": 72, "await_approval": 48},
     "purchase": {"await_indent": 72, "await_order": 720, "await_registration": 72},
-    "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120},
+    "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120, "await_numbering": 72},
     "inspection": {"await_request": 24, "await_inspection": 72},
 }
 DEFAULT_WARN_PERCENT = 25
@@ -171,7 +172,8 @@ def _title(flow: str, record: Any, db: Session) -> str:
         return record.code
     if flow == "cell":
         cell = f" ({record.electrolyzer}-{record.position})" if record.electrolyzer else ""
-        return f"{'⚠ ' if record.urgent else ''}{record.element_nr}{cell}"
+        kind = "Numbering · " if getattr(record, "request_kind", "removal") == "numbering" else ""
+        return f"{kind}{'⚠ ' if record.urgent else ''}{record.element_nr}{cell}"
     if flow == "inspection":
         return f"{record.code} · {record.element_nr or record.anode_nr or record.cathode_nr or ''}".strip(" ·")
     codes = [p.code for p in db.query(WfCoatingPackage).filter_by(batch_id=record.id).order_by(WfCoatingPackage.seq)]
@@ -1752,6 +1754,7 @@ def _cell_summary(db: Session, r: WfCellRequest, conf: dict | None = None) -> di
         "code": r.code,
         "codes": [r.code],
         "status": r.status,
+        "request_kind": getattr(r, "request_kind", None) or "removal",
         "groups": CELL_STAGES.get(r.status, []),
         "element_nr": r.element_nr,
         "element_id": r.element_id,
@@ -1784,6 +1787,14 @@ def _cell_summary(db: Session, r: WfCellRequest, conf: dict | None = None) -> di
 def _cell_actions(db: Session, r: WfCellRequest, user: models.User) -> list[str]:
     groups = _groups(db, user)
     acts: list[str] = []
+    if (getattr(r, "request_kind", None) or "removal") == "numbering":
+        if r.status == "await_numbering" and "c90" in groups:
+            acts.append("review")
+        if _can_cancel(user, r.status, r.created_by_id, "await_numbering"):
+            acts.append("cancel")
+        if r.status not in CLOSED and (groups or r.created_by_id == user.id):
+            acts.extend(["comment", "attach"])
+        return acts
     if r.status == "await_shutdown" and "operation" in groups:
         acts.append("shutdown")
     if r.status == "await_shop" and "cellshop" in groups:
@@ -1829,7 +1840,9 @@ def _load_cell(db: Session, request_id: int) -> WfCellRequest:
 def _open_cell_requests(db: Session, element_nr: str) -> list[WfCellRequest]:
     key = compact_nr(element_nr)
     rows = db.query(WfCellRequest).filter(WfCellRequest.status.notin_(CLOSED)).all()
-    return [r for r in rows if compact_nr(r.element_nr) == key] if key else []
+    if not key:
+        return []
+    return [r for r in rows if compact_nr(r.element_nr) == key and (getattr(r, "request_kind", None) or "removal") != "numbering"]
 
 
 def _cell_move(
@@ -1963,6 +1976,57 @@ def create_cell_request(body: CellCreateIn, db: Session = Depends(get_db), user:
     return _cell_detail(db, r, user)
 
 
+class NumberingCreateIn(BaseModel):
+    electrolyzer: str = Field(min_length=1, max_length=50)
+    position: str = Field(min_length=1, max_length=20)
+    element_nr: str | None = None
+    note: str | None = None
+
+
+@router.post("/cell/numbering")
+def create_numbering_review(body: NumberingCreateIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """Operation asks C-90 to check that element numbers still match the cell positions."""
+    if not _can_request_cell(db, user):
+        raise HTTPException(403, "Only operation or Assembly Data editors can ask C-90 to review the numbering")
+    ez = body.electrolyzer.strip()
+    pos = body.position.strip()
+    if not ez or not pos:
+        raise HTTPException(400, "Choose the electrolyzer and the cell")
+    open_rows = (
+        db.query(WfCellRequest)
+        .filter(WfCellRequest.status.notin_(CLOSED), WfCellRequest.request_kind == "numbering", WfCellRequest.electrolyzer == ez)
+        .all()
+    )
+    if any(str(r.position or "").strip() == pos for r in open_rows):
+        raise HTTPException(409, f"A numbering review for {ez}-{pos} is already open")
+    shown = (body.element_nr or "").strip()
+    item = _cell_item(db, shown) if shown else None
+    seq = _next_seq(db, WfCellRequest.seq)
+    note = (body.note or "").strip() or None
+    r = WfCellRequest(
+        code=_code("NR", date.today(), seq),
+        seq=seq,
+        status="await_numbering",
+        request_kind="numbering",
+        element_nr=(shown or f"{ez}-{pos}")[:50],
+        element_id=item["row_id"] if item else None,
+        electrolyzer=ez[:50],
+        position=pos[:20],
+        reason="Numbering mismatch",
+        problem=note,
+        created_by_id=user.id,
+        created_by_name=_display(user),
+        created_at=_now(),
+        updated_at=_now(),
+    )
+    db.add(r)
+    db.flush()
+    _event(db, "cell", r, "created", user, None, note, {"kind": "numbering", "cell": f"{ez}-{pos}"})
+    _notify(db, "cell", r, user)
+    db.commit()
+    return _cell_detail(db, r, user)
+
+
 class CellShutdownIn(NoteIn):
     date: date_type
     reason: str | None = None
@@ -2039,6 +2103,22 @@ def cell_decide(request_id: int, body: CellDecideIn, db: Session = Depends(get_d
     return _cell_detail(db, r, user)
 
 
+class CellReviewIn(BaseModel):
+    note: str = Field(min_length=1, max_length=2000)
+
+
+@router.post("/cell/{request_id}/review")
+def cell_numbering_review(request_id: int, body: CellReviewIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_cell(db, request_id)
+    if "review" not in _cell_actions(db, r, user):
+        raise HTTPException(403, "C-90 reviews a numbering request")
+    note = body.note.strip()
+    r.last_note = note
+    _cell_move(db, r, "completed", "review", user, note, {"kind": "numbering"}, also=("operation",))
+    db.commit()
+    return _cell_detail(db, r, user)
+
+
 class CellCommentIn(BaseModel):
     note: str = Field(min_length=1, max_length=2000)
 
@@ -2052,7 +2132,8 @@ def cell_comment(request_id: int, body: CellCommentIn, db: Session = Depends(get
     if not text:
         raise HTTPException(400, "Write a message")
     _event(db, "cell", r, "comment", user, r.status, text)
-    extra = _members(db, ["operation", "cellshop"])
+    hear = ["operation", "c90"] if (getattr(r, "request_kind", None) or "removal") == "numbering" else ["operation", "cellshop"]
+    extra = _members(db, hear)
     if r.created_by_id:
         extra.add(r.created_by_id)
     _notify(db, "cell", r, user, extra)

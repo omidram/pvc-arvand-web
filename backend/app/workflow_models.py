@@ -119,6 +119,7 @@ class WfCellRequest(Base):
     code: Mapped[str] = mapped_column(String(40), unique=True, index=True)
     seq: Mapped[int] = mapped_column(Integer, unique=True, index=True)
     status: Mapped[str] = mapped_column(String(20), index=True)
+    request_kind: Mapped[str] = mapped_column(String(20), default="removal", server_default="removal")  # removal | numbering
     element_nr: Mapped[str] = mapped_column(String(50), index=True)
     element_id: Mapped[int | None] = mapped_column(Integer, index=True)  # Assembly Data row of the life being ended
     electrolyzer: Mapped[str | None] = mapped_column(String(50))

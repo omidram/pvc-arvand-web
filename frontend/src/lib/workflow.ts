@@ -9,13 +9,14 @@ export type WfKind = "anode" | "cathode";
 export const COATING_STEPS = ["c90_select", "code_generate", "await_company", "await_indent", "await_dispatch", "await_return", "await_inspection", "await_approval", "completed"] as const;
 export const PURCHASE_STEPS = ["purchase_request", "await_indent", "await_order", "await_registration", "completed"] as const;
 export const CELL_STEPS = ["await_shutdown", "await_shop", "in_shop", "completed"] as const;
+export const NUMBERING_STEPS = ["await_numbering", "completed"] as const;
 export const INSPECTION_STEPS = ["await_request", "await_inspection", "completed"] as const;
 /** Stages that carry a deadline, per flow (the order of the settings table). */
 const VIRTUAL_STEPS = new Set(["c90_select", "code_generate", "purchase_request"]);
 export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
   coating: COATING_STEPS.filter((s) => s !== "completed" && !VIRTUAL_STEPS.has(s)),
   purchase: PURCHASE_STEPS.filter((s) => s !== "completed" && !VIRTUAL_STEPS.has(s)),
-  cell: CELL_STEPS.filter((s) => s !== "completed"),
+  cell: [...CELL_STEPS.filter((s) => s !== "completed"), "await_numbering"],
   inspection: INSPECTION_STEPS.filter((s) => s !== "completed"),
 };
 
@@ -255,6 +256,7 @@ export interface CellRequest extends WfDeadline {
   title: string;
   code: string;
   status: string;
+  request_kind?: "removal" | "numbering";
   groups: WfGroup[];
   element_nr: string;
   element_id: number | null;
@@ -360,6 +362,8 @@ export const workflowApi = {
     planned_date?: string | null;
     decommission_date?: string | null;
   }): Promise<CellRequestDetail> => (await apiClient.post("/workflow/cell", body)).data,
+  cellNumbering: async (body: { electrolyzer: string; position: string; element_nr?: string | null; note?: string | null }): Promise<CellRequestDetail> =>
+    (await apiClient.post("/workflow/cell/numbering", body)).data,
   cellStep: async (id: number, action: string, body: Record<string, unknown>): Promise<CellRequestDetail> =>
     (await apiClient.post(`/workflow/cell/${id}/${action}`, body)).data,
   inspectionList: async (params: { open_only?: boolean; serial?: string; status?: string } = {}): Promise<InspectionRequest[]> =>

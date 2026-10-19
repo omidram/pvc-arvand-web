@@ -8,9 +8,10 @@ import { Input, Select, Label } from "@/components/ui/input";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { dbTablesApi } from "@/lib/endpoints";
+import { archiveTableLabel } from "@/lib/archive-names";
 
 export default function DatabaseTablesPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [tableQuery, setTableQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [dataFilter, setDataFilter] = useState<"all" | "withData" | "empty">("all");
@@ -30,11 +31,12 @@ export default function DatabaseTablesPage() {
       if (!needle) return true;
       return (
         table.name.toLowerCase().includes(needle) ||
+        archiveTableLabel(table.name, locale).toLowerCase().includes(needle) ||
         table.slug.includes(needle) ||
         table.columns.some((col) => col.toLowerCase().includes(needle))
       );
     });
-  }, [archiveQuery.data?.tables, tableQuery, category, dataFilter]);
+  }, [archiveQuery.data?.tables, tableQuery, category, dataFilter, locale]);
 
   const total = archiveQuery.data?.total ?? 0;
 

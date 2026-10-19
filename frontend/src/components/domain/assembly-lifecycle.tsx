@@ -1,15 +1,16 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { ElementWorkflowChart } from "@/components/domain/element-workflow-chart";
 import { elementDashboardApi } from "@/lib/endpoints";
 import type { Element, ElementStage, PipelineItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
 import { useI18n } from "@/lib/i18n/context";
 import { todayIsoLocal } from "@/lib/date-range";
-import { cn, formatDate, formatNumber } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { STAGE_TONE } from "./element-dashboard-ui";
 import { DecommissionActions, isHealthyKept, isShutdownDecision } from "./element-flow-actions";
 import { ElementCellRequest } from "./cell-request";
@@ -57,47 +58,11 @@ function useCounts() {
   });
 }
 
-/** "Where are the elements?" for Assembly Data. Picking a step filters the sheet underneath. */
+/** The element workflow chart on Assembly Data. Picking a counted step filters the sheet underneath. */
 export function AssemblyLifecycleStrip({ picked, onPick }: { picked: LifePick | null; onPick: (stage: LifePick | null) => void }) {
   const { t } = useI18n();
   const counts = useCounts().data?.counts;
-
-  return (
-    <section className="asm-flow">
-      <div className="asm-flow-head">
-        <strong>{t("elDash.pipelineTitle")}</strong>
-        <span className="asm-flow-help">{t("asmFlow.help")}</span>
-      </div>
-      <div className="asm-flow-line">
-        {SERVICE_LIFE.map((stage, i) => (
-          <Fragment key={stage}>
-            {i > 0 ? <ArrowRight className="asm-flow-arrow" aria-hidden /> : null}
-            <button
-              type="button"
-              title={t(`asmFlow.what.${stage}`)}
-              className={cn("asm-flow-step", `ed-tone-${STAGE_TONE[stage]}`, picked === stage && "is-picked", counts && !counts[stage] && "is-zero")}
-              onClick={() => onPick(picked === stage ? null : stage)}
-            >
-              <span className="asm-flow-n">{counts ? formatNumber(counts[stage], 0) : "…"}</span>
-              <span className="asm-flow-label">{t(`elDash.stage.${stage}`)}</span>
-            </button>
-          </Fragment>
-        ))}
-      </div>
-      <p className="asm-flow-help">{t("asmFlow.buildTitle")}</p>
-      <div className="asm-flow-line">
-        <button
-          type="button"
-          title={t("asmFlow.what.assembled")}
-          className={cn("asm-flow-step", "ed-tone-ready", picked === "assembled" && "is-picked", counts && !counts.assembled && "is-zero")}
-          onClick={() => onPick(picked === "assembled" ? null : "assembled")}
-        >
-          <span className="asm-flow-n">{counts ? formatNumber(counts.assembled ?? 0, 0) : "…"}</span>
-          <span className="asm-flow-label">{t("elDash.flow.assembled")}</span>
-        </button>
-      </div>
-    </section>
-  );
+  return <ElementWorkflowChart t={t} picked={picked} onPick={onPick} counts={counts} />;
 }
 
 function DismantledParts({ row }: { row: Element }) {

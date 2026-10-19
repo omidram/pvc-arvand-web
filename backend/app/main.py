@@ -196,6 +196,10 @@ def _ensure_workflow_redesign() -> None:
                     ") WHERE expected_return_date IS NULL"
                 )
             )
+        if "wf_cell_requests" in tables:
+            present = {col["name"] for col in inspect(engine).get_columns("wf_cell_requests")}
+            if "request_kind" not in present:
+                conn.execute(text("ALTER TABLE wf_cell_requests ADD COLUMN request_kind VARCHAR(20) DEFAULT 'removal'"))
         if "wf_purchases" in tables:
             conn.execute(text("UPDATE wf_purchases SET status = 'await_registration' WHERE status = 'ordered' AND delivery_date IS NOT NULL"))
             conn.execute(text("UPDATE wf_purchases SET status = 'await_order' WHERE status = 'ordered' AND delivery_date IS NULL"))

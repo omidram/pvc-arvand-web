@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRightLeft, Ban, Hammer, Inbox, MessageSquare, Paperclip, Power, Send, Truck, Warehouse } from "lucide-react";
+import { ArrowRightLeft, Ban, ClipboardList, Hammer, Inbox, MessageSquare, Paperclip, Power, Send, Truck, Warehouse } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { DateInput } from "@/components/ui/date-input";
@@ -16,7 +16,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { todayIsoLocal } from "@/lib/date-range";
 import type { PipelineItem } from "@/lib/types";
 import { cn, formatDate, formatDateTime } from "@/lib/utils";
-import { CARTABLE_MS, CELL_STEPS, workflowApi, workflowHref, type CellRequest, type CellRequestDetail, type WfGroup } from "@/lib/workflow";
+import { CARTABLE_MS, CELL_STEPS, NUMBERING_STEPS, workflowApi, workflowHref, type CellRequest, type CellRequestDetail, type WfGroup } from "@/lib/workflow";
 import { StageBadge } from "./element-dashboard-ui";
 import { DeadlineBadge } from "./warehouse-workflow";
 
@@ -43,12 +43,13 @@ function invalidateAll(qc: ReturnType<typeof useQueryClient>) {
   void qc.invalidateQueries({ queryKey: ["elements"] });
 }
 
-function CellStepper({ status, t }: { status: string; t: T }) {
-  const at = CELL_STEPS.indexOf(status as (typeof CELL_STEPS)[number]);
+function CellStepper({ status, kind, t }: { status: string; kind?: string; t: T }) {
+  const steps: readonly string[] = kind === "numbering" ? NUMBERING_STEPS : CELL_STEPS;
+  const at = steps.indexOf(status);
   return (
     <ol className="wf-stepper">
       {status === "cancelled" ? <li className="wf-step is-cancelled">{t("wf.status.cancelled")}</li> : null}
-      {CELL_STEPS.map((s, i) => (
+      {steps.map((s, i) => (
         <li key={s} className={`wf-step${i < at || status === "completed" ? " is-done" : ""}${i === at && status !== "completed" ? " is-current" : ""}`}>
           <span className="wf-step-dot">{i + 1}</span>
           <span className="wf-step-label">{t(`wf.status.${s}`)}</span>
@@ -157,7 +158,7 @@ export function ElementCellRequest({ item }: { item: PipelineItem }) {
     enabled: canSee,
   });
   if (!canSee) return null;
-  const current = list.data?.[0];
+  const current = (list.data ?? []).find((row) => row.request_kind !== "numbering");
   if (current) {
     return (
       <div className={cn("cr-box", current.urgent && "is-urgent")}>
@@ -190,6 +191,113 @@ export function ElementCellRequest({ item }: { item: PipelineItem }) {
       ) : null}
       {sent ? <p className="asm-note is-ok">{sent}</p> : null}
     </div>
+  );
+}
+
+/** Cell Arrangement: the same removal request, plus a C-90 check when element numbers do not match positions. */
+export function ArrangementOperatorPanel({
+  electrolyzer,
+  position,
+  elementNr,
+}: {
+  electrolyzer: string;
+  position: number;
+  elementNr: string | null;
+}) {
+  const { t } = useI18n();
+  const qc = useQueryClient();
+  const meta = useMeta();
+  const [note, setNote] = useState("");
+  const [sent, setSent] = useState<string | null>(null);
+  const [removalSent, setRemovalSent] = useState<string | null>(null);
+  const canAsk = meta.data?.can_request_cell ?? false;
+  const canSee = meta.data?.can_view_cell ?? false;
+  const pos = String(position);
+  const list = useQuery({
+    queryKey: ["wf", "cell", "arrangement", electrolyzer, pos, elementNr],
+    queryFn: () => workflowApi.cellList({ open_only: true, element_nr: elementNr || undefined }),
+    enabled: canSee && Boolean(elementNr),
+  });
+  const removal = (list.data ?? []).find((row) => row.request_kind !== "numbering" && elementNr && row.element_nr === elementNr);
+  const numbering = useQuery({
+    queryKey: ["wf", "cell", "numbering-open"],
+    queryFn: () => workflowApi.cellList({ open_only: true }),
+    enabled: canSee,
+    select: (rows) => rows.find((row) => row.request_kind === "numbering" && row.electrolyzer === electrolyzer && String(row.position ?? "") === pos),
+  });
+  const send = useMutation({
+    mutationFn: () => workflowApi.cellNumbering({ electrolyzer, position: pos, element_nr: elementNr, note: note.trim() || null }),
+    onSuccess: (res) => {
+      setSent(t("arrangement.numberingSent", { code: res.code }));
+      setNote("");
+      invalidateAll(qc);
+    },
+  });
+  const openNumbering = numbering.data;
+
+  return (
+    <section className="arr-requests">
+      <h3>{t("arrangement.operatorTitle")}</h3>
+      <p className="mon-sub">
+        {t("arrangement.operatorCell", { cell: `${electrolyzer}-${pos}`, element: elementNr || "—" })}
+      </p>
+      {!canAsk ? <p className="asm-note">{t("arrangement.needRight")}</p> : null}
+
+      <div className="arr-request-grid">
+        <div>
+          <strong>{t("cellReq.newTitle")}</strong>
+          {!elementNr ? <p className="asm-note">{t("arrangement.noElement")}</p> : null}
+          {removal ? (
+            <div className={cn("cr-box", removal.urgent && "is-urgent")}>
+              <Truck className="h-4 w-4 shrink-0" />
+              <span>{t("cellReq.open", { code: removal.code, status: t(`wf.status.${removal.status}`) })}</span>
+              <Link className="wf-btn wf-btn-sm" href={workflowHref("cell", removal.id)}>
+                {t("cellReq.openBtn")}
+              </Link>
+            </div>
+          ) : elementNr && canAsk ? (
+            <>
+              <CellRequestForm
+                elementNr={elementNr}
+                onSent={(r) => {
+                  setRemovalSent(t("cellReq.sent", { code: r.code }));
+                  void list.refetch();
+                }}
+              />
+              {removalSent ? <p className="asm-note is-ok">{removalSent}</p> : null}
+            </>
+          ) : null}
+        </div>
+
+        <div>
+          <strong>{t("arrangement.numberingTitle")}</strong>
+          <p className="mon-sub">{t("arrangement.numberingHint")}</p>
+          {openNumbering ? (
+            <div className="cr-box">
+              <ClipboardList className="h-4 w-4 shrink-0" />
+              <span>{t("cellReq.open", { code: openNumbering.code, status: t(`wf.status.${openNumbering.status}`) })}</span>
+              <Link className="wf-btn wf-btn-sm" href={workflowHref("cell", openNumbering.id)}>
+                {t("cellReq.openBtn")}
+              </Link>
+            </div>
+          ) : canAsk ? (
+            <>
+              <label className="ed-filters cr-wide">
+                <span className="text-xs font-bold">{t("arrangement.numberingNote")}</span>
+                <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("arrangement.numberingNoteHint")} />
+              </label>
+              <div className="ew-action-btns">
+                <button type="button" className="wf-btn is-primary" disabled={send.isPending} onClick={() => send.mutate()}>
+                  <ClipboardList size={14} /> {t("arrangement.numberingSend")}
+                </button>
+              </div>
+              {sent ? <p className="asm-note is-ok">{sent}</p> : null}
+              {send.isError ? <p className="asm-note is-danger">{errText(send.error)}</p> : null}
+            </>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -300,7 +408,7 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 function CellDetailBody({ d, t }: { d: CellRequestDetail; t: T }) {
   return (
     <div className="wf-detail">
-      <CellStepper status={d.status} t={t} />
+      <CellStepper status={d.status} kind={d.request_kind} t={t} />
       <div className="wh-facts wf-facts">
         <Fact label={t("cellReq.col.status")}>
           <StatusBadge r={d} t={t} />
@@ -308,7 +416,7 @@ function CellDetailBody({ d, t }: { d: CellRequestDetail; t: T }) {
         <Fact label={t("cellReq.col.element")}>
           {d.element_nr} {d.electrolyzer ? `· ${d.electrolyzer}-${d.position ?? ""}` : ""}
         </Fact>
-        <Fact label={t("cellReq.col.reason")}>{d.reason}</Fact>
+        <Fact label={t("cellReq.col.reason")}>{d.request_kind === "numbering" ? t("cellReq.numberingReason") : d.reason}</Fact>
         <Fact label={t("cellReq.facts.requested")}>
           {d.created_by || "—"} · {formatDateTime(d.created_at)}
         </Fact>
@@ -395,7 +503,7 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
   });
   const go = (action: string, body: Record<string, unknown> = {}) => run.mutate({ action, body: { note: note.trim() || undefined, ...body } });
 
-  const stepActs = acts.filter((a) => a === "shutdown" || a === "receive" || a === "decide");
+  const stepActs = acts.filter((a) => a === "shutdown" || a === "receive" || a === "decide" || a === "review");
   const error = run.error || attach.error;
 
   return (
@@ -458,6 +566,16 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
                   </button>
                 </div>
               ) : null}
+            </div>
+          ) : null}
+          {acts.includes("review") ? (
+            <div className="cr-decide">
+              <strong>{t("cellReq.reviewTitle")}</strong>
+              <p className="mon-sub">{t("cellReq.reviewHint")}</p>
+              <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("cellReq.reviewHint")} />
+              <button type="button" className="wf-btn is-primary" disabled={!note.trim() || run.isPending} onClick={() => go("review", { note: note.trim() })}>
+                <ClipboardList size={14} /> {t("cellReq.reviewBtn")}
+              </button>
             </div>
           ) : null}
           <label className="ed-filters">

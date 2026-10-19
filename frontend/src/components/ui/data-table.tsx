@@ -77,14 +77,14 @@ export function DataTable<T extends object>({
       className="ui-table-wrap max-w-full overflow-auto border-2 border-[var(--win-border-shadow)] [border-style:inset] bg-[var(--win-input)]"
       style={{ maxHeight }}
     >
-      <table className="ui-table w-max min-w-full border-collapse text-start text-xs">
+      <table className="ui-table w-max min-w-full border-collapse text-center text-xs">
         <thead>
           <tr className="bg-[var(--win-face)]">
             {columns.map((col) => (
               <th
                 key={col.key}
                 className={cn(
-                  "sticky top-0 z-[2] whitespace-nowrap border border-[var(--win-border-shadow)] bg-[var(--win-face)] px-2 py-1.5 text-start font-bold text-[var(--win-text)]",
+                  "sticky top-0 z-[2] whitespace-nowrap border border-[var(--win-border-shadow)] bg-[var(--win-face)] px-2 py-1.5 text-center font-bold text-[var(--win-text)]",
                   onSort && "cursor-pointer select-none",
                   col.className
                 )}
@@ -95,7 +95,7 @@ export function DataTable<T extends object>({
               </th>
             ))}
             {actions && (
-              <th className="sticky top-0 z-[2] whitespace-nowrap border border-[var(--win-border-shadow)] bg-[var(--win-face)] px-2 py-1.5 text-end font-bold text-[var(--win-text)]">
+              <th className="sticky top-0 z-[2] whitespace-nowrap border border-[var(--win-border-shadow)] bg-[var(--win-face)] px-2 py-1.5 text-center font-bold text-[var(--win-text)]">
                 {t("common.actions")}
               </th>
             )}
@@ -184,8 +184,8 @@ export function DataTable<T extends object>({
                     );
                   })}
                   {actions && (
-                    <td className="border border-[var(--win-face-dark)] px-2 py-1 text-end" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end gap-1">{actions(row)}</div>
+                    <td className="border border-[var(--win-face-dark)] px-2 py-1 text-center" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-center gap-1">{actions(row)}</div>
                     </td>
                   )}
                 </tr>

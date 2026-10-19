@@ -14,6 +14,7 @@ import { ResourceForm, type FieldDef } from "@/components/ui/resource-form";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { humanizeKey } from "@/lib/utils";
+import { archiveTableLabel } from "@/lib/archive-names";
 import { appAlert, appConfirm } from "@/lib/dialog";
 
 type Row = Record<string, unknown> & { _id: number };
@@ -26,7 +27,8 @@ function rowId(row: Record<string, unknown> | undefined): number | null {
 }
 
 export function ArchiveTableSection({ table }: { table: DbArchiveTable }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const tableTitle = archiveTableLabel(table.name, locale);
   const { canEdit } = useAuth();
   const queryClient = useQueryClient();
   const editable = canEdit(table.form_key);
@@ -153,7 +155,7 @@ export function ArchiveTableSection({ table }: { table: DbArchiveTable }) {
         className="flex w-full items-center gap-2 px-3 py-2 text-start text-sm hover:bg-[var(--win-face-hi)]"
       >
         {open ? <ChevronDown size={15} className="shrink-0" /> : <ChevronRight size={15} className="shrink-0" />}
-        <span className="min-w-0 flex-1 truncate font-bold text-[var(--win-navy)]">{table.name}</span>
+        <span className="min-w-0 flex-1 truncate font-bold text-[var(--win-navy)]">{tableTitle}</span>
         <span className="hidden shrink-0 text-[10px] font-semibold uppercase tracking-wide text-[var(--win-muted)] sm:inline">
           {categoryText}
         </span>
@@ -252,7 +254,7 @@ export function ArchiveTableSection({ table }: { table: DbArchiveTable }) {
       <Modal
         open={formMode !== null}
         onClose={() => setFormMode(null)}
-        title={`${t(formMode === "edit" ? "allTables.editRecord" : "allTables.addRecord")} — ${table.name}`}
+        title={`${t(formMode === "edit" ? "allTables.editRecord" : "allTables.addRecord")} — ${tableTitle}`}
         wide
       >
         <ResourceForm

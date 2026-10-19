@@ -6582,3 +6582,58 @@ html[data-theme="dark"] .cr-form { background: #1c1917; border-color: #9a3412; }
 html[data-theme="dark"] .cr-box { background: #0f172a; border-color: #1e40af; color: #bfdbfe; }
 html[data-theme="dark"] .cr-box.is-urgent { background: #450a0a; border-color: #7f1d1d; color: #fecaca; }
 .ew-path-banner { margin: 0 0 0.5rem; padding: 0.4rem 0.55rem; border: 1px solid #93c5fd; border-radius: 6px; background: #eff6ff; font-size: 0.78rem; }
+
+/* Values sit in the middle of the column, under the header. */
+.access-form-body table :is(th, td),
+.access-hub table :is(th, td),
+.access-subform table :is(th, td),
+.ui-table :is(th, td),
+.ce-data-table :is(th, td),
+.asm-parts-table :is(th, td),
+.ed-table :is(th, td),
+.ch-table :is(th, td),
+.wf-table :is(th, td),
+.stats-hier-table :is(th, td) {
+  text-align: center !important;
+  vertical-align: middle;
+}
+.access-form-body table :is(input, select),
+.access-hub table :is(input, select),
+.ce-data-table :is(input, select),
+.ui-table :is(input, select) {
+  text-align: center;
+}
+
+.arr-requests { margin-top: 0.75rem; padding: 0.7rem 0.8rem; border: 1px solid #fdba74; border-radius: 8px; background: #fff7ed; }
+.arr-requests h3 { margin: 0 0 0.2rem; font-size: 0.95rem; color: #9a3412; }
+.arr-request-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.8rem; margin-top: 0.45rem; }
+.arr-request-grid > div { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.55rem; border: 1px solid #fed7aa; border-radius: 6px; background: #fff; }
+
+.ewc { margin: 0 0 0.7rem; padding: 0.55rem 0.7rem; border: 1px solid #93c5fd; border-radius: 8px; background: #fff; }
+.ewc-head { display: flex; flex-wrap: wrap; gap: 0.35rem 0.8rem; align-items: baseline; margin-bottom: 0.45rem; font-size: 0.78rem; color: #334155; }
+.ewc-head strong { color: #1e3a8a; font-size: 0.9rem; }
+.ewc-board { overflow-x: auto; padding-bottom: 0.3rem; }
+.ewc-row { display: grid; grid-template-columns: 148px 28px 148px 28px 168px 28px 168px 28px 168px; gap: 6px; align-items: center; justify-items: center; min-width: 980px; }
+.ewc-split-row { grid-template-columns: 168px 1fr; justify-items: stretch; align-items: start; }
+.ewc-fork { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.ewc-fork .ewc-box { width: 220px; }
+.ewc-box { width: 100%; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 6px 8px; border: 1.5px solid #60a5fa; background: #fff; color: #1e3a8a; text-align: center; font-size: 11px; line-height: 1.25; }
+.ewc-box.is-service { background: #bfdbfe; font-weight: 700; }
+.ewc-box.is-warehouse { min-width: 120px; min-height: 88px; font-weight: 700; font-size: 13px; }
+.ewc-box.is-pick { cursor: pointer; }
+.ewc-box.is-picked { background: #1d4ed8; color: #fff; border-color: #1e3a8a; }
+.ewc-n { font-weight: 800; font-size: 13px; }
+.ewc-sub { font-size: 10px; opacity: 0.85; }
+.ewc-arrow { color: #2563eb; font-size: 16px; line-height: 1; }
+.ewc-arrow.is-down { display: block; text-align: center; }
+.ewc-join { min-height: 18px; }
+.ewc-gap { width: 100%; }
+.ewc-problems { display: grid; grid-template-columns: 1fr 140px 1fr; gap: 12px; align-items: start; margin-top: 10px; min-width: 980px; }
+.ewc-problem { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.ewc-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+.ewc-companies { display: flex; flex-direction: column; border: 1.5px solid #60a5fa; background: #fff; color: #1e3a8a; font-size: 11px; }
+.ewc-companies span { padding: 3px 6px; text-align: center; border-top: 1px solid #bfdbfe; }
+.ewc-companies span:first-child { border-top: 0; }
+.ewc-note { margin: 8px 0 0; min-width: 980px; text-align: center; font-size: 11px; color: #475569; }
+html[data-theme="dark"] .ewc, html[data-theme="dark"] .arr-requests { background: #0f172a; }
+html[data-theme="dark"] .ewc-box, html[data-theme="dark"] .ewc-companies { background: #0f172a; color: #dbeafe; }
