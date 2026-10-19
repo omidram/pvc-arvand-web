@@ -45,6 +45,7 @@ from .routers import (
     shutdowns,
     statistics,
     storage as storage_router_module,
+    table_files as table_files_router_module,
     tickets as tickets_router_module,
     un_ce as un_ce_router_module,
     cathodic_ce as cathodic_ce_router_module,
@@ -57,6 +58,10 @@ from .routers import (
 )
 
 Base.metadata.create_all(bind=engine)
+
+from .table_files import register_builtin
+
+register_builtin()
 
 
 def _ensure_user_auth_source() -> None:
@@ -682,6 +687,7 @@ _api(reports.router, dependencies=_perm("reports"))
 
 # --- Import / export ---
 _api(data_transfer.router)
+_api(table_files_router_module.router)
 
 # --- All 126 Access database tables (read-only archive) ---
 _api(db_tables.router)

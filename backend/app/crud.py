@@ -124,13 +124,35 @@ def build_crud_router(
         rows, fields = filters.apply(rows, export_fields)
         return export_pdf(rows, fields, prefix.strip("/"))
 
+    from .table_files import register_table
+
+    register_table(
+        key=prefix.strip("/"),
+        label=prefix.strip("/").replace("-", " ").replace("_", " ").title(),
+        model=model,
+        write_schema=write_schema,
+        pk_field=pk_field,
+        prepare=prepare,
+    )
+
     @router.post("/import.xlsx", include_in_schema=False)
     async def import_items(_admin=Depends(require_admin), file: UploadFile = File(...)):
         content = await read_xlsx(file)
+        filename = file.filename
+        who = _admin.username
+        file_key = prefix.strip("/")
 
         def work(db: Session, progress):
             return import_excel_bytes(
-                db, model, write_schema, content, pk_field=pk_field, progress=progress
+                db,
+                model,
+                write_schema,
+                content,
+                pk_field=pk_field,
+                progress=progress,
+                file_key=file_key,
+                file_name=filename,
+                uploaded_by=who,
             )
 
         return spawn_import(work)

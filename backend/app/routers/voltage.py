@@ -612,6 +612,16 @@ async def import_voltage_excel(
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         db.commit()
+        from ..table_files import remember_workbook
+
+        remember_workbook(
+            db,
+            "voltage-readings",
+            filename,
+            content,
+            db.query(models.VoltageReading).count(),
+            _admin.username,
+        )
         return {
             "imported_rows": info.get("rows_upserted"),
             "electrolyzer": info.get("electrolyzer"),

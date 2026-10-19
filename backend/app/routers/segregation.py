@@ -174,6 +174,8 @@ def export_pdf_route(
 @router.post("/import.xlsx", include_in_schema=False)
 async def import_segregations(_admin=Depends(require_admin), file: UploadFile = File(...)):
     content = await read_xlsx(file)
+    filename = file.filename
+    who = _admin.username
     return spawn_import(
         lambda db, progress: import_excel_bytes(
             db,
@@ -182,6 +184,9 @@ async def import_segregations(_admin=Depends(require_admin), file: UploadFile = 
             content,
             pk_field="id",
             progress=progress,
+            file_key="electrode-segregations",
+            file_name=filename,
+            uploaded_by=who,
         )
     )
 

@@ -1251,6 +1251,43 @@ export type DatabaseSwitchPayload = {
   copy_data?: boolean;
 };
 
+export type TableFileRow = {
+  key: string;
+  label: string;
+  section: "application" | "archive" | string;
+  records: number;
+  file_name: string | null;
+  size_bytes: number | null;
+  uploaded_at: string | null;
+  uploaded_by: string | null;
+  has_file: boolean;
+};
+
+export const tableFilesApi = {
+  list: async (): Promise<TableFileRow[]> => (await apiClient.get("/table-files")).data.tables,
+  remove: async (key: string): Promise<{ ok: boolean; records: number }> =>
+    (await apiClient.delete(`/table-files/${encodeURIComponent(key)}`)).data,
+  upload: async (key: string, file: File, onProgress?: (progress: ImportProgress) => void) => {
+    const form = new FormData();
+    form.append("file", file);
+    const { data } = await apiClient.post(`/table-files/${encodeURIComponent(key)}`, form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return followImport<{ records?: number; size_bytes?: number; created?: number }>(data, onProgress);
+  },
+  download: async (key: string, filename: string): Promise<void> => {
+    const { data } = await apiClient.get(`/table-files/${encodeURIComponent(key)}/download`, { responseType: "blob" });
+    const url = window.URL.createObjectURL(new Blob([data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename || "table.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
+};
+
 export const databaseApi = {
   status: async (): Promise<DatabaseStatus> => (await apiClient.get("/database/status")).data,
   test: async (payload: DatabaseSwitchPayload): Promise<{ ok: boolean; dialect: string; url_display: string }> =>

@@ -413,17 +413,39 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
     }
 
 
+def replace_elements_workbook(db: Session, content: bytes, progress) -> dict:
+    """Drop every assembly row, then load the new workbook."""
+    db.query(models.Element).delete(synchronize_session=False)
+    db.commit()
+    parsed = parse_assembly_excel(content)
+    if parsed.get("recognized"):
+        result = _apply_assembly_import(db, parsed, "upsert", progress)
+        result["contractor_repairs"] = import_contractor_repairs(db, content)
+        return result
+    return import_excel_bytes(db, models.Element, schemas.ElementBase, content, pk_field="id", mode="merge", progress=progress)
+
+
+def _remember_elements(db: Session, filename: str | None, content: bytes, uploaded_by: str | None) -> None:
+    from ..table_files import remember_workbook
+
+    remember_workbook(db, "elements", filename, content, db.query(models.Element).count(), uploaded_by)
+
+
 @router.post("/import.xlsx", include_in_schema=False)
 async def import_elements(_admin=Depends(require_admin), file: UploadFile = File(...)):
     content = await read_xlsx(file)
     parsed = parse_assembly_excel(content)
+    filename = file.filename
+    who = _admin.username
 
     def work(db: Session, progress):
         if parsed.get("recognized"):
             result = _apply_assembly_import(db, parsed, "upsert", progress)
             result["contractor_repairs"] = import_contractor_repairs(db, content)
-            return result
-        return import_excel_bytes(db, models.Element, schemas.ElementBase, content, pk_field="id", progress=progress)
+        else:
+            result = import_excel_bytes(db, models.Element, schemas.ElementBase, content, pk_field="id", progress=progress)
+        _remember_elements(db, filename, content, who)
+        return result
 
     return spawn_import(work)
 
@@ -453,9 +475,13 @@ async def import_assembly_excel(
     mode = (mode or "assembly").strip().lower()
     if mode == "assembly":
         mode = "upsert"
+    filename = file.filename
+    who = _admin.username
+
     def work(db: Session, progress):
         result = _apply_assembly_import(db, parsed, mode, progress)
         result["contractor_repairs"] = import_contractor_repairs(db, content)
+        _remember_elements(db, filename, content, who)
         return result
 
     return spawn_import(work)
@@ -804,6 +830,8 @@ def export_cell_components_pdf(filters: ExportFilters = Depends(), db: Session =
 @cell_components_router.post("/import.xlsx", include_in_schema=False)
 async def import_cell_components(_admin=Depends(require_admin), file: UploadFile = File(...)):
     content = await read_xlsx(file)
+    filename = file.filename
+    who = _admin.username
     return spawn_import(
         lambda db, progress: import_excel_bytes(
             db,
@@ -812,6 +840,9 @@ async def import_cell_components(_admin=Depends(require_admin), file: UploadFile
             content,
             pk_field="id",
             prepare=_prepare_cell,
+            file_key="cell-components",
+            file_name=filename,
+            uploaded_by=who,
             progress=progress,
         )
     )

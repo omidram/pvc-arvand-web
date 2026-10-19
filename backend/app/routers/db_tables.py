@@ -3,6 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .. import models
@@ -12,10 +13,11 @@ from ..access_archive import (
     insert_archive_row,
     list_archive_tables,
     query_archive_rows,
+    quote_ident,
     update_archive_row,
 )
 from ..auth import LEVEL_RANK, get_current_user, user_permission_map
-from ..database import get_db
+from ..database import engine, get_db
 from ..excel_import import parse_sheet, read_xlsx
 from ..import_jobs import spawn_import
 from ..auth import require_admin
@@ -185,6 +187,8 @@ async def import_table_xlsx(
     meta = _require_table(slug, user, db, write=True)
     content = await read_xlsx(file)
     columns = [col for col in meta["columns"] if col not in {"_id", "_rowid"}]
+    filename = file.filename
+    who = user.username
 
     def work(_db: Session, progress):
         mapping, data_rows, arranged, ignored = parse_sheet(content, columns)
@@ -205,6 +209,12 @@ async def import_table_xlsx(
                 progress(done, total)
         if created == 0:
             raise HTTPException(status_code=400, detail="No rows were imported.")
+        from ..table_files import remember_workbook
+
+        table = quote_ident(meta["sqlite_table"])
+        with engine.connect() as conn:
+            records = int(conn.execute(text(f"SELECT COUNT(*) FROM {table}")).scalar() or 0)
+        remember_workbook(_db, f"archive:{slug}", filename, content, records, who)
         return {"ok": True, "created": created, "updated": 0, "skipped": 0, "arranged": arranged, "ignored": ignored}
 
     return spawn_import(work)

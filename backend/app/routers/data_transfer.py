@@ -89,6 +89,13 @@ async def import_excel(
     model, write_schema = IMPORTABLE_RESOURCES[resource]
     content = await read_xlsx(file)
     pk_field = _RESOURCE_PK.get(resource, "id")
+    filename = file.filename
+    who = _admin.username
+    file_key = {
+        "voltage_readings": "voltage-readings",
+        "voltage_normalizations": "voltage-normalizations",
+        "current_efficiency_entries": "current-efficiency-entries",
+    }.get(resource, resource)
 
     def work(db: Session, progress):
         result = import_excel_bytes(
@@ -99,6 +106,9 @@ async def import_excel(
             pk_field=pk_field,
             mode=mode,
             progress=progress,
+            file_key=file_key,
+            file_name=filename,
+            uploaded_by=who,
         )
         result["imported"] = result["created"]
         return result

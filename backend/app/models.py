@@ -15,6 +15,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    BigInteger,
     Integer,
     JSON,
     String,
@@ -1143,3 +1144,16 @@ class CathodicCeSheet(Base):
     sign_proc_image: Mapped[str | None] = mapped_column(Text)
     sign_proc_at: Mapped[str | None] = mapped_column(String(40))
     updated_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class TableWorkbook(Base):
+    """The Excel file last loaded into one program table, kept so it can be seen, removed, or replaced."""
+
+    __tablename__ = "table_workbooks"
+    key: Mapped[str] = mapped_column(String(180), primary_key=True)
+    original_name: Mapped[str] = mapped_column(String(260))
+    size_bytes: Mapped[int] = mapped_column(BigInteger)
+    record_count: Mapped[int] = mapped_column(Integer, default=0)
+    stored_path: Mapped[str] = mapped_column(String(500))
+    uploaded_at: Mapped[datetime | None] = mapped_column(DateTime)
+    uploaded_by: Mapped[str | None] = mapped_column(String(150))

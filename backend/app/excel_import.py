@@ -360,6 +360,9 @@ def import_excel_bytes(
     mode: str = "merge",
     prepare: Any = None,
     progress: Any = None,
+    file_key: str | None = None,
+    file_name: str | None = None,
+    uploaded_by: str | None = None,
 ) -> dict[str, Any]:
     write_fields = list(write_schema.model_fields.keys())
     optional = [pk_field] if pk_field not in write_fields else []
@@ -436,6 +439,10 @@ def import_excel_bytes(
         raise HTTPException(status_code=400, detail=detail)
 
     db.commit()
+    if file_key:
+        from .table_files import remember_workbook
+
+        remember_workbook(db, file_key, file_name, content, db.query(model).count(), uploaded_by)
     return {
         "ok": True,
         "created": created,

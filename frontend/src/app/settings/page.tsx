@@ -47,6 +47,7 @@ import { AriaLimsSyncTab } from "@/components/domain/arialims-sync-tab";
 import { FieldListsTab } from "@/components/domain/field-lists-tab";
 import { GroupDefinitionTab } from "@/components/domain/group-definition-tab";
 import { DatabaseTab } from "@/components/domain/database-tab";
+import { TableFilesTab } from "@/components/domain/table-files-tab";
 import { DirectoryTab } from "@/components/domain/directory-tab";
 import { WorkflowSlaTab } from "@/components/domain/workflow-sla-tab";
 import { useI18n } from "@/lib/i18n/context";
@@ -651,6 +652,7 @@ function SettingsPageInner() {
           ...(canEdit("settings")
             ? [{ key: "arialims-sync", label: t("ariaLimsSync.title"), content: <AriaLimsSyncTab /> }]
             : []),
+          ...(isAdmin ? [{ key: "table-files", label: t("tableFiles.title"), content: <TableFilesTab /> }] : []),
           ...(isAdmin ? [{ key: "database", label: t("database.title"), content: <DatabaseTab /> }] : []),
           ...(isAdmin ? [{ key: "directory", label: t("directory.title"), content: <DirectoryTab /> }] : []),
         ]}

@@ -127,9 +127,19 @@ def export_shutdowns_pdf(
 @router.post("/import.xlsx", include_in_schema=False)
 async def import_shutdowns(_admin=Depends(require_admin), file: UploadFile = File(...)):
     content = await read_xlsx(file)
+    filename = file.filename
+    who = _admin.username
     return spawn_import(
         lambda db, progress: import_excel_bytes(
-            db, models.Shutdown, schemas.ShutdownBase, content, pk_field="nr", progress=progress
+            db,
+            models.Shutdown,
+            schemas.ShutdownBase,
+            content,
+            pk_field="nr",
+            progress=progress,
+            file_key="shutdowns",
+            file_name=filename,
+            uploaded_by=who,
         )
     )
 
