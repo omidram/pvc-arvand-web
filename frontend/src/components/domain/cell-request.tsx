@@ -16,7 +16,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { todayIsoLocal } from "@/lib/date-range";
 import type { PipelineItem } from "@/lib/types";
 import { cn, formatDate, formatDateTime } from "@/lib/utils";
-import { CARTABLE_MS, CELL_STEPS, NUMBERING_STEPS, workflowApi, workflowHref, type CellRequest, type CellRequestDetail, type WfGroup } from "@/lib/workflow";
+import { CARTABLE_MS, cellPath, workflowApi, workflowHref, type CellRequest, type CellRequestDetail, type WfGroup } from "@/lib/workflow";
 import { StageBadge } from "./element-dashboard-ui";
 import { DeadlineBadge } from "./warehouse-workflow";
 
@@ -43,8 +43,8 @@ function invalidateAll(qc: ReturnType<typeof useQueryClient>) {
   void qc.invalidateQueries({ queryKey: ["elements"] });
 }
 
-function CellStepper({ status, kind, t }: { status: string; kind?: string; t: T }) {
-  const steps: readonly string[] = kind === "numbering" ? NUMBERING_STEPS : CELL_STEPS;
+function CellStepper({ status, kind, decision, t }: { status: string; kind?: string; decision?: string | null; t: T }) {
+  const steps = cellPath(kind === "numbering" ? "await_numbering" : status, decision);
   const at = steps.indexOf(status);
   return (
     <ol className="wf-stepper">
@@ -408,7 +408,7 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 function CellDetailBody({ d, t }: { d: CellRequestDetail; t: T }) {
   return (
     <div className="wf-detail">
-      <CellStepper status={d.status} kind={d.request_kind} t={t} />
+      <CellStepper status={d.status} kind={d.request_kind} decision={d.decision} t={t} />
       <div className="wh-facts wf-facts">
         <Fact label={t("cellReq.col.status")}>
           <StatusBadge r={d} t={t} />
@@ -503,7 +503,7 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
   });
   const go = (action: string, body: Record<string, unknown> = {}) => run.mutate({ action, body: { note: note.trim() || undefined, ...body } });
 
-  const stepActs = acts.filter((a) => a === "shutdown" || a === "receive" || a === "decide" || a === "review");
+  const stepActs = acts.filter((a) => a === "shutdown" || a === "receive" || a === "decide" || a === "review" || a === "dismantle" || a === "install");
   const error = run.error || attach.error;
 
   return (
@@ -566,6 +566,49 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
                   </button>
                 </div>
               ) : null}
+            </div>
+          ) : null}
+          {acts.includes("dismantle") ? (
+            <div className="cr-decide">
+              <strong>{t("cellReq.dismantleTitle")}</strong>
+              <p className="mon-sub">{t("cellReq.dismantleHint")}</p>
+              <div className="wh-form-inline wf-inline-plain">
+                <label>
+                  {t("elDash.cartable.disassemblyDate")}
+                  <DateInput value={day} onChange={(e) => setDay(e.target.value)} />
+                </label>
+                <button type="button" className="wf-btn is-primary" disabled={!day || run.isPending} onClick={() => go("dismantle", { date: day })}>
+                  <Hammer size={14} /> {t("cellReq.dismantleBtn")}
+                </button>
+              </div>
+            </div>
+          ) : null}
+          {acts.includes("install") ? (
+            <div className="cr-decide">
+              <strong>{t("cellReq.returnTitle")}</strong>
+              <p className="mon-sub">{t("cellReq.returnHint")}</p>
+              <div className="wh-form-inline wf-inline-plain">
+                <label>
+                  {t("elDash.col.electrolyzer")}
+                  <ElectrolyzerCombo value={electrolyzer} onChange={setElectrolyzer} required />
+                </label>
+                <label>
+                  {t("elDash.cartable.position")}
+                  <input value={position} onChange={(e) => setPosition(e.target.value)} placeholder="001–168" inputMode="numeric" />
+                </label>
+                <label>
+                  {t("elDash.cartable.date")}
+                  <DateInput value={day} onChange={(e) => setDay(e.target.value)} />
+                </label>
+                <button
+                  type="button"
+                  className="wf-btn is-primary"
+                  disabled={!electrolyzer || !position || run.isPending}
+                  onClick={() => go("install", { electrolyzer, position, date: day || null })}
+                >
+                  <ArrowRightLeft size={14} /> {t("cellReq.returnBtn")}
+                </button>
+              </div>
             </div>
           ) : null}
           {acts.includes("review") ? (

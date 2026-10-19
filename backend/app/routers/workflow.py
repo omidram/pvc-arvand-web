@@ -80,6 +80,8 @@ CELL_STAGES: dict[str, list[str]] = {
     "await_shutdown": ["operation"],
     "await_shop": ["cellshop"],
     "in_shop": ["cellshop"],
+    "await_disassembly": ["c90"],
+    "await_reinstall": ["operation", "cellshop"],
     "await_numbering": ["c90"],
 }
 INSPECTION_STAGES: dict[str, list[str]] = {
@@ -93,7 +95,7 @@ INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections",)
 DEFAULT_SLA: dict[str, dict[str, int]] = {
     "coating": {"await_company": 72, "await_indent": 72, "await_dispatch": 120, "await_return": 720, "await_inspection": 72, "await_approval": 48},
     "purchase": {"await_indent": 72, "await_order": 720, "await_registration": 72},
-    "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120, "await_numbering": 72},
+    "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120, "await_disassembly": 72, "await_reinstall": 120, "await_numbering": 72},
     "inspection": {"await_request": 24, "await_inspection": 72},
 }
 DEFAULT_WARN_PERCENT = 25
@@ -492,8 +494,39 @@ def put_settings(body: SlaIn, db: Session = Depends(get_db), user: models.User =
     return {**sla_config(db), "defaults": DEFAULT_SLA}
 
 
+def _resume_parked_cell_requests(db: Session) -> None:
+    """A dismantle or a keep that was closed too early still has work: put it back in the cartable."""
+    rows = (
+        db.query(WfCellRequest)
+        .filter(WfCellRequest.status == "completed", WfCellRequest.decision.in_(("disassemble", "keep")))
+        .all()
+    )
+    if not rows:
+        return
+    pipeline = {item["key"]: item for item in svc.build_pipeline(db)}
+    changed = False
+    for r in rows:
+        item = pipeline.get(compact_nr(r.element_nr))
+        if item is None:
+            continue
+        if r.decision == "disassemble" and item["state"] == "awaiting_disassembly":
+            r.status = "await_disassembly"
+            r.completed_at = None
+            r.updated_at = _now()
+            changed = True
+        elif r.decision == "keep" and item["state"] == "ready" and item["base_state"] == "decommissioned":
+            r.status = "await_reinstall"
+            r.completed_at = None
+            r.updated_at = _now()
+            changed = True
+    if changed:
+        db.commit()
+        svc.clear_cache()
+
+
 def _cartable(db: Session, user: models.User) -> list[dict]:
-    groups = _groups(db, user)
+    _resume_parked_cell_requests(db)
+    groups = _groups(db, user, "view")
     if not groups:
         return []
     out: list[dict] = []
@@ -1795,6 +1828,10 @@ def _cell_actions(db: Session, r: WfCellRequest, user: models.User) -> list[str]
         if r.status not in CLOSED and (groups or r.created_by_id == user.id):
             acts.extend(["comment", "attach"])
         return acts
+    if r.status == "await_disassembly" and "c90" in groups:
+        acts.append("dismantle")
+    if r.status == "await_reinstall" and groups & {"operation", "cellshop"}:
+        acts.append("install")
     if r.status == "await_shutdown" and "operation" in groups:
         acts.append("shutdown")
     if r.status == "await_shop" and "cellshop" in groups:
@@ -1908,6 +1945,7 @@ def list_cell_requests(
     user: models.User = Depends(get_current_user),
 ):
     _require_view(db, user, CELL_VIEW_KEYS)
+    _resume_parked_cell_requests(db)
     q = db.query(WfCellRequest).order_by(WfCellRequest.created_at.desc())
     if status:
         q = q.filter(WfCellRequest.status == status)
@@ -1923,6 +1961,7 @@ def list_cell_requests(
 @router.get("/cell/{request_id}")
 def get_cell_request(request_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     _require_view(db, user, CELL_VIEW_KEYS)
+    _resume_parked_cell_requests(db)
     return _cell_detail(db, _load_cell(db, request_id), user)
 
 
@@ -2097,7 +2136,64 @@ def cell_decide(request_id: int, body: CellDecideIn, db: Session = Depends(get_d
         r.decision = body.choice
     if r.received_date is None:
         r.received_date = date.today()
-    _cell_move(db, r, "completed", "decide", user, note, data, also=("operation",))
+    if body.choice == "disassemble":
+        # C-90 still has to confirm the dismantling; the request stays in their cartable.
+        _cell_move(db, r, "await_disassembly", "decide", user, note, data, also=("c90",))
+    elif body.choice == "keep":
+        # A healthy cell in the shop is not finished until someone puts it back in a position.
+        _cell_move(db, r, "await_reinstall", "decide", user, note, data, also=("operation", "cellshop"))
+    else:
+        _cell_move(db, r, "completed", "decide", user, note, data, also=("operation",))
+    db.commit()
+    svc.clear_cache()
+    return _cell_detail(db, r, user)
+
+
+class CellDismantleIn(NoteIn):
+    date: date_type
+
+
+@router.post("/cell/{request_id}/dismantle")
+def cell_dismantle(request_id: int, body: CellDismantleIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """C-90 confirms the element is taken apart: the disassembly date is written and inspection is asked for."""
+    r = _load_cell(db, request_id)
+    if "dismantle" not in _cell_actions(db, r, user):
+        raise HTTPException(403, "C-90 confirms the dismantling")
+    svc.clear_cache()
+    try:
+        svc.advance_stage(db, r.element_nr, (body.note or "").strip() or None, _display(user), body.date)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    db.flush()
+    inspection_on_element_dismantled(db, r.element_nr, user)
+    _cell_move(db, r, "completed", "dismantle", user, body.note, {"date": body.date.isoformat()}, also=("operation", "cellshop", "inspection"))
+    db.commit()
+    svc.clear_cache()
+    return _cell_detail(db, r, user)
+
+
+class CellInstallIn(NoteIn):
+    electrolyzer: str = Field(min_length=1)
+    position: str = Field(min_length=1)
+    date: date_type | None = None
+
+
+@router.post("/cell/{request_id}/install")
+def cell_install(request_id: int, body: CellInstallIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """A healthy cell kept in the shop goes back into a position. Same element number, a new installation row."""
+    from .element_dashboard import ShopRelocate, relocate_element
+
+    r = _load_cell(db, request_id)
+    if "install" not in _cell_actions(db, r, user):
+        raise HTTPException(403, "Operation or the cell shop returns this cell to a position")
+    note = (body.note or "").strip() or None
+    svc.clear_cache()
+    moved = relocate_element(
+        db, ShopRelocate(element_nr=r.element_nr, electrolyzer=body.electrolyzer, position=body.position, date=body.date, note=note), user
+    )
+    cell = f"{moved['electrolyzer']}-{moved['position']}"
+    r.decision = "relocated"
+    _cell_move(db, r, "completed", "install", user, note, {"cell": cell}, also=("operation", "cellshop"))
     db.commit()
     svc.clear_cache()
     return _cell_detail(db, r, user)
@@ -2160,6 +2256,20 @@ def close_cell_requests(db: Session, element_nr: str, decision: str, actor: mode
             r.received_date = date.today()
         data = {"choice": r.decision, **({"cell": cell} if cell else {})}
         _cell_move(db, r, "completed", "decide", actor, (note or "").strip() or None, data, also=("operation",))
+
+
+def handoff_cell_requests(db: Session, element_nr: str, decision: str, actor: models.User, note: str | None = None) -> None:
+    """Keep and dismantle are not finished: C-90 still confirms dismantling, and a healthy cell still has to go back."""
+    status = "await_disassembly" if decision == "disassemble" else "await_reinstall" if decision == "keep" else None
+    if status is None:
+        close_cell_requests(db, element_nr, decision, actor, note)
+        return
+    also = ("c90",) if status == "await_disassembly" else ("operation", "cellshop")
+    for r in _open_cell_requests(db, element_nr):
+        r.decision = decision
+        if r.received_date is None:
+            r.received_date = date.today()
+        _cell_move(db, r, status, "decide", actor, (note or "").strip() or None, {"choice": decision}, also=also)
 
 
 def cell_on_element_saved(db: Session, el: models.Element, actor: models.User, had_decommission: bool, had_disassembly: bool) -> None:

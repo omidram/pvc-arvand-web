@@ -6,67 +6,40 @@ import { cn, formatNumber } from "@/lib/utils";
 
 type T = (path: string) => string;
 
-const COMPANIES = ["Ancan", "Denora", "Atiyeh Pardazan", "Sharif", "Saman Payesh", "……….."];
+type Tone = "green" | "red" | "amber" | "slate" | "blue" | "violet" | "teal";
 
-/** Boxes that filter the Assembly Data sheet. */
-const PICK: Partial<Record<string, LifePick>> = {
-  service: "in_service",
-  decommission: "decommissioned",
-  disassembly: "awaiting_disassembly",
-  rateoff: "disassembled",
-  newCode: "assembled",
-  assign: "installed",
-};
-
-function Box({
+function Step({
   id,
   label,
-  sub,
+  role,
   count,
+  tone,
   picked,
   onPick,
-  tone,
 }: {
-  id: string;
+  id: LifePick;
   label: string;
-  sub?: string;
+  role?: string;
   count?: number;
+  tone: Tone;
   picked: LifePick | null;
-  onPick?: (stage: LifePick | null) => void;
-  tone?: "service" | "warehouse";
+  onPick: (stage: LifePick | null) => void;
 }) {
-  const stage = PICK[id];
-  const active = stage != null && picked === stage;
-  const Tag = stage && onPick ? "button" : "div";
+  const on = picked === id;
   return (
-    <Tag
-      type={Tag === "button" ? "button" : undefined}
-      className={cn("ewc-box", tone === "service" && "is-service", tone === "warehouse" && "is-warehouse", active && "is-picked", stage && "is-pick")}
-      onClick={stage && onPick ? () => onPick(active ? null : stage) : undefined}
-    >
-      {count != null ? <span className="ewc-n">{formatNumber(count, 0)}</span> : null}
+    <button type="button" className={cn("ewc-step", `is-${tone}`, on && "is-on")} onClick={() => onPick(on ? null : id)}>
+      <strong>{count == null ? "…" : formatNumber(count, 0)}</strong>
       <span>{label}</span>
-      {sub ? <span className="ewc-sub">{sub}</span> : null}
-    </Tag>
+      {role ? <em>{role}</em> : null}
+    </button>
   );
 }
 
-function Arrow({ dir = "right" }: { dir?: "right" | "left" | "down" }) {
-  const mark = dir === "left" ? "←" : dir === "down" ? "↓" : "→";
-  return <span className={cn("ewc-arrow", dir === "down" && "is-down")} aria-hidden>{mark}</span>;
+function Join() {
+  return <span className="ewc-join" aria-hidden />;
 }
 
-function Companies() {
-  return (
-    <div className="ewc-companies">
-      {COMPANIES.map((name) => (
-        <span key={name}>{name}</span>
-      ))}
-    </div>
-  );
-}
-
-/** The element life from the workflow chart: in service, cell shop, disassembly, recoating and warehouse. */
+/** Assembly Data operations only: the dates and decisions that change an element row. */
 export function ElementWorkflowChart({
   t,
   picked,
@@ -79,8 +52,8 @@ export function ElementWorkflowChart({
   counts?: Partial<Record<ElementStage | "assembled", number>>;
 }) {
   const n = (key: ElementStage | "assembled") => (counts ? counts[key] ?? 0 : undefined);
-  const box = (id: string, label: string, extra?: { sub?: string; count?: number; tone?: "service" | "warehouse" }) => (
-    <Box id={id} label={label} sub={extra?.sub} count={extra?.count} picked={picked} onPick={onPick} tone={extra?.tone} />
+  const step = (id: LifePick, label: string, tone: Tone, role?: string) => (
+    <Step id={id} label={label} role={role} count={n(id)} tone={tone} picked={picked} onPick={onPick} />
   );
 
   return (
@@ -89,95 +62,44 @@ export function ElementWorkflowChart({
         <strong>{t("ewChart.title")}</strong>
         <span>{t("ewChart.help")}</span>
       </div>
-      <div className="ewc-board" dir="ltr">
-        <div className="ewc-row">
-          {box("assign", t("ewChart.assign"), { count: n("installed") })}
-          <Arrow dir="left" />
-          {box("keep", t("ewChart.keep"))}
-          <Arrow dir="left" />
-          {box("healthy", t("ewChart.healthy"))}
-          <span className="ewc-gap" />
-          {box("coatGood", t("ewChart.coatGood"))}
-          <Arrow />
-          {box("newCode", t("ewChart.newCode"), { count: n("assembled") })}
-        </div>
 
-        <div className="ewc-row ewc-join">
-          <Arrow dir="down" />
-          <span />
-          <Arrow dir="down" />
-          <span />
-          <span />
-          <span />
-          <span />
-          <Arrow dir="down" />
-        </div>
-
-        <div className="ewc-row">
-          {box("balance", t("ewChart.balance"))}
-          <Arrow dir="left" />
-          {box("service", t("ewChart.service"), { sub: t("ewChart.active"), count: n("in_service"), tone: "service" })}
-          <Arrow />
-          {box("decommission", t("ewChart.decommission"), { sub: t("ewChart.operator"), count: n("decommissioned") })}
-          <Arrow />
-          {box("disassembly", t("ewChart.disassembly"), { count: n("awaiting_disassembly") })}
-          <Arrow />
-          {box("split", t("ewChart.split"))}
-        </div>
-
-        <div className="ewc-row ewc-join">
-          <span />
-          <span />
-          <span />
-          <span />
-          <Arrow dir="down" />
-          <span />
-          <span />
-          <span />
-          <Arrow dir="down" />
-        </div>
-
-        <div className="ewc-row ewc-split-row">
-          {box("rateoff", t("ewChart.rateoff"), { count: n("disassembled") })}
+      <div className="ewc-track">
+        <h4>{t("ewChart.laneRun")}</h4>
+        <div className="ewc-line">
+          {step("in_service", t("ewChart.service"), "green", t("ewChart.roleCell"))}
+          <Join />
+          {step("decommissioned", t("ewChart.decommission"), "red", t("ewChart.roleOperator"))}
+          <Join />
           <div className="ewc-fork">
-            {box("reuse", t("ewChart.reuse"))}
-            {box("coat", t("ewChart.coat"))}
-            {box("notReuse", t("ewChart.notReuse"))}
-          </div>
-        </div>
-
-        <div className="ewc-problems">
-          <div className="ewc-problem">
-            {box("coating", t("ewChart.coating"))}
-            <div className="ewc-pair">
-              <div>
-                {box("warrantyC", t("ewChart.warranty"))}
-                <Companies />
-              </div>
-              <div>
-                {box("plainC", t("ewChart.noWarranty"))}
-                <Arrow dir="down" />
-              </div>
+            <div className="ewc-branch">
+              <span className="ewc-branch-name">{t("ewChart.healthy")}</span>
+              {step("installed", t("ewChart.assign"), "blue", t("ewChart.roleOperator"))}
             </div>
-          </div>
-
-          {box("warehouse", t("ewChart.warehouse"), { tone: "warehouse" })}
-
-          <div className="ewc-problem">
-            {box("mechanical", t("ewChart.mechanical"))}
-            <div className="ewc-pair">
-              <div>
-                {box("plainM", t("ewChart.noWarranty"))}
-                <Arrow dir="down" />
-              </div>
-              <div>
-                {box("warrantyM", t("ewChart.warranty"))}
-                <Companies />
-              </div>
+            <div className="ewc-branch">
+              <span className="ewc-branch-name">{t("ewChart.broken")}</span>
+              {step("awaiting_disassembly", t("ewChart.disassembly"), "amber", t("ewChart.roleC90"))}
+              <Join />
+              {step("disassembled", t("ewChart.rateoff"), "slate", t("ewChart.roleC90"))}
             </div>
           </div>
         </div>
-        <p className="ewc-note">{t("ewChart.warehouseNote")}</p>
+      </div>
+
+      <div className="ewc-track">
+        <h4>{t("ewChart.laneBuild")}</h4>
+        <div className="ewc-line">
+          {step("awaiting_assembly", t("ewChart.waitAsm"), "violet", t("ewChart.roleShop"))}
+          <Join />
+          {step("assembling", t("ewChart.assembling"), "blue", t("ewChart.roleShop"))}
+          <Join />
+          {step("awaiting_qc", t("ewChart.qc"), "amber", t("ewChart.roleShop"))}
+          <Join />
+          {step("ready", t("ewChart.ready"), "teal", t("ewChart.roleShop"))}
+          <Join />
+          {step("assembled", t("ewChart.newCode"), "violet", t("ewChart.roleShop"))}
+          <Join />
+          <span className="ewc-back">{t("ewChart.backToService")}</span>
+        </div>
       </div>
     </section>
   );

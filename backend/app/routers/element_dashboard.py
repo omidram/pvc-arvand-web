@@ -85,8 +85,6 @@ def _require_role(db: Session, user: models.User, *groups: str) -> None:
 
 @router.post("/shop/move")
 def move_shop(body: ShopMove, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    from .workflow import close_cell_requests
-
     if body.stage in ("awaiting_assembly", "assembling", "awaiting_qc", "ready"):
         _require_role(db, user, "cellshop")
     elif body.stage == "awaiting_disassembly":
@@ -107,7 +105,9 @@ def move_shop(body: ShopMove, db: Session = Depends(get_db), user: models.User =
             continue
         item = items.get(compact_nr(nr))
         if choice and item and item["base_state"] == "decommissioned":
-            close_cell_requests(db, nr, choice, user, body.note)
+            from .workflow import handoff_cell_requests
+
+            handoff_cell_requests(db, nr, choice, user, body.note)
     if not moved and errors:
         raise HTTPException(status_code=400, detail=errors[0]["error"])
     db.commit()
@@ -155,7 +155,7 @@ class ShopDecide(BaseModel):
 @router.post("/shop/decide")
 def decide_shop(body: ShopDecide, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     """Operator, after the decommissioning date: broken cell goes to C90. A healthy cell is relocated, not reassembled."""
-    from .workflow import close_cell_requests
+    from .workflow import handoff_cell_requests
 
     _require_role(db, user, "operation")
     svc.clear_cache()
@@ -163,7 +163,7 @@ def decide_shop(body: ShopDecide, db: Session = Depends(get_db), user: models.Us
         result = svc.decide_decommissioned(db, body.element_nr.strip(), body.choice, (body.note or "").strip() or None, user.full_name or user.username)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    close_cell_requests(db, result["element_nr"], body.choice, user, body.note)
+    handoff_cell_requests(db, result["element_nr"], body.choice, user, body.note)
     db.commit()
     svc.clear_cache()
     return result
@@ -186,7 +186,7 @@ def relocate_shop(body: ShopRelocate, db: Session = Depends(get_db), user: model
     """
     from .workflow import close_cell_requests
 
-    _require_role(db, user, "operation")
+    _require_role(db, user, "operation", "cellshop")
     result = relocate_element(db, body, user)
     close_cell_requests(db, result["element_nr"], "relocated", user, body.note, cell=f"{result['electrolyzer']}-{result['position']}")
     db.commit()

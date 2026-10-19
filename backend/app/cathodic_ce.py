@@ -172,9 +172,14 @@ def calculate(
     del online  # on/off is derived from the load readings
     rows = sheet_rows(train)
     readings = readings or {}
+    load_code = {row["letter"]: row["code"] for row in rows if row["kind"] == "load"}
     averages: dict[str, float | None] = {}
     for row in rows:
-        averages[row["code"]] = _avg(readings.get(row["code"]), HOURS)
+        values = readings.get(row["code"])
+        if row["kind"] == "voltage":
+            gate = readings.get(load_code.get(row["letter"], "")) or {}
+            values = {hour: value for hour, value in (values or {}).items() if _num(gate.get(hour)) is not None}
+        averages[row["code"]] = _avg(values, HOURS)
 
     on_letters = [
         row["letter"]

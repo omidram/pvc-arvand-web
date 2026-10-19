@@ -49,6 +49,23 @@ function cellsFrom(sheet: CathodicSheet): Cells {
   return cells;
 }
 
+function hourFilled(values: Record<string, string> | undefined, hour: string): boolean {
+  const raw = values?.[hour];
+  if (raw == null || String(raw).trim() === "") return false;
+  return Number.isFinite(Number(String(raw).replace(",", ".")));
+}
+
+/** Enter moves to the next open box on this sheet. */
+function enterNext(event: React.KeyboardEvent<HTMLInputElement>) {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  const root = event.currentTarget.closest(".ce-sheet") ?? document.body;
+  const fields = [...root.querySelectorAll<HTMLInputElement>("input:not([type=checkbox]):not(:disabled)")];
+  const next = fields[fields.indexOf(event.currentTarget) + 1];
+  next?.focus();
+  next?.select();
+}
+
 function hasNumber(values: Record<string, string> | undefined, hours: string[]): boolean {
   return hours.some((hour) => {
     const raw = values?.[hour];
@@ -114,9 +131,13 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
   const save = useMutation({
     mutationFn: () => {
       const readings: Record<string, Record<string, number>> = {};
-      for (const [code, hours] of Object.entries(cells)) {
+      const meta = new Map((sheetQuery.data?.rows || []).map((row) => [row.code, row]));
+      const loadCode = new Map((sheetQuery.data?.rows || []).filter((row) => row.kind === "load").map((row) => [row.letter, row.code]));
+      for (const [code, hourMap] of Object.entries(cells)) {
+        const row = meta.get(code);
         const cleaned: Record<string, number> = {};
-        for (const [hour, raw] of Object.entries(hours)) {
+        for (const [hour, raw] of Object.entries(hourMap)) {
+          if (row?.kind === "voltage" && !hourFilled(cells[loadCode.get(row.letter) || ""], hour)) continue;
           const n = Number(String(raw).replace(",", "."));
           if (raw !== "" && Number.isFinite(n)) cleaned[hour] = n;
         }
@@ -165,7 +186,20 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
   }
 
   function setCell(code: string, hour: string, value: string) {
-    setCells((prev) => ({ ...prev, [code]: { ...(prev[code] || {}), [hour]: numericText(value) } }));
+    const text = numericText(value);
+    setCells((prev) => {
+      const next: Cells = { ...prev, [code]: { ...(prev[code] || {}), [hour]: text } };
+      const row = sheet?.rows.find((item) => item.code === code);
+      if (row?.kind === "load" && text === "") {
+        const voltage = sheet?.rows.find((item) => item.kind === "voltage" && item.letter === row.letter);
+        if (voltage) {
+          const hoursLeft = { ...(next[voltage.code] || {}) };
+          delete hoursLeft[hour];
+          next[voltage.code] = hoursLeft;
+        }
+      }
+      return next;
+    });
     clearChecks();
   }
 
@@ -186,6 +220,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
 
   return (
     <AccessHub title={`${t("cathodicCe.title")} ${train}`} backHref="/current-efficiency">
+    <div className="ce-sheet">
       <div className="mb-3 flex flex-wrap items-end gap-2">
         <label className="text-[12px] font-bold">
           {t("cathodicCe.day")}
@@ -193,7 +228,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
         </label>
         <label className="text-[12px] font-bold">
           {t("cathodicCe.dateLabel")}
-          <input className="access-inset-field mt-1 block w-64" value={dateLabel} onChange={(e) => { setDateLabel(e.target.value); clearChecks(); }} />
+          <input className="access-inset-field mt-1 block w-64" value={dateLabel} onChange={(e) => { setDateLabel(e.target.value); clearChecks(); }} onKeyDown={enterNext} />
         </label>
         <label className="text-[12px] font-bold">
           {t("cathodicCe.totalLoad")}
@@ -202,6 +237,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
               className="access-inset-field block w-28"
               value={totalLoad}
               onChange={(e) => { setTotalLoad(numericText(e.target.value)); clearChecks(); }}
+              onKeyDown={enterNext}
               inputMode="decimal"
               placeholder="125"
             />
@@ -296,17 +332,22 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
                   span={hours.length}
                   production={sheet.production_tag}
                 />
-                {sheet.rows.map((row) => (
+                {sheet.rows.map((row) => {
+                  const load = row.kind === "voltage" ? sheet.rows.find((item) => item.kind === "load" && item.letter === row.letter) : undefined;
+                  return (
                   <DataRow
                     key={row.code}
                     row={row}
                     hours={hours}
                     values={cells[row.code] || {}}
+                    loadValues={load ? cells[load.code] : undefined}
                     average={computed.averages[row.code] ?? null}
                     online={row.kind === "load" && hasNumber(cells[row.code], hours)}
                     onCell={(hour, value) => setCell(row.code, hour, value)}
+                    lockedHint={t("cathodicCe.needLoad")}
                   />
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -318,16 +359,18 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
                 className="access-inset-field mt-1 block w-full bg-[#ffff00]"
                 value={testHours}
                 onChange={(e) => { setTestHours(numericText(e.target.value)); clearChecks(); }}
+                onKeyDown={enterNext}
                 inputMode="decimal"
               />
             </label>
             <ResultGrid computed={computed} t={t} />
           </div>
 
-          {started && (missingLabels.length || computed.on_count === 0) ? (
+          {started && (missingLabels.length || computed.on_count === 0 || computed.j37 === null || computed.j37 === 0) ? (
             <p className="mt-2 max-w-5xl text-[12px] leading-5 text-amber-800">
               {computed.on_count === 0 ? t("cathodicCe.needOnline") : null}{" "}
-              {missingLabels.length ? t("cathodicCe.needRows", { rows: missingLabels.join(", ") }) : null}
+              {missingLabels.length ? t("cathodicCe.needRows", { rows: missingLabels.join(", ") }) : null}{" "}
+              {computed.j37 === null || computed.j37 === 0 ? t("cathodicCe.needProduction") : null}
             </p>
           ) : null}
 
@@ -336,6 +379,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
       ) : null}
 
       <History train={train} rows={historyQuery.data?.rows || []} t={t} />
+    </div>
     </AccessHub>
   );
 }
@@ -432,7 +476,7 @@ function HeaderInputs({
         <td className="sticky left-0 border border-neutral-300 bg-white px-1 font-bold">I.R</td>
         <td className="border border-neutral-300 px-2">100% w/w NaOH Production at initial reading (Mton), {production}</td>
         <td className="border border-neutral-300 p-0.5">
-          <input className={field} value={initial} onChange={(e) => onInitial(e.target.value)} inputMode="decimal" />
+          <input className={field} value={initial} onChange={(e) => onInitial(e.target.value)} onKeyDown={enterNext} inputMode="decimal" />
         </td>
         <td className="border border-neutral-300 bg-[#fff59d] text-center font-bold" colSpan={span}>
           TIME
@@ -443,7 +487,7 @@ function HeaderInputs({
         <td className="sticky left-0 border border-neutral-300 bg-white px-1 font-bold">F.R</td>
         <td className="border border-neutral-300 px-2">100% w/w NaOH Production at Final reading (Mton), {production}</td>
         <td className="border border-neutral-300 p-0.5">
-          <input className={field} value={finalReading} onChange={(e) => onFinal(e.target.value)} inputMode="decimal" />
+          <input className={field} value={finalReading} onChange={(e) => onFinal(e.target.value)} onKeyDown={enterNext} inputMode="decimal" />
         </td>
         <td className="border border-neutral-300" colSpan={span + 1} />
       </tr>
@@ -455,16 +499,20 @@ function DataRow({
   row,
   hours,
   values,
+  loadValues,
   average,
   online,
   onCell,
+  lockedHint,
 }: {
   row: CathodicRow;
   hours: string[];
   values: Record<string, string>;
+  loadValues?: Record<string, string>;
   average: number | null;
   online: boolean;
   onCell: (hour: string, value: string) => void;
+  lockedHint: string;
 }) {
   return (
     <tr>
@@ -474,17 +522,23 @@ function DataRow({
         {row.kind === "voltage" ? <span className="text-neutral-500">, {row.tag}</span> : null}
       </td>
       <td className="border border-neutral-300 bg-[#e3f2fd] px-1 text-center font-bold">{formatCe(average)}</td>
-      {hours.map((hour) => (
-        <td key={hour} className="border border-neutral-300 bg-[#ffff00] p-0">
+      {hours.map((hour) => {
+        const locked = row.kind === "voltage" && !hourFilled(loadValues, hour);
+        return (
+        <td key={hour} className={`border border-neutral-300 p-0 ${locked ? "bg-neutral-200" : "bg-[#ffff00]"}`}>
           <input
-            className="box-border w-full min-w-0 bg-transparent px-1 py-0.5 text-center"
-            value={values[hour] || ""}
+            className="box-border w-full min-w-0 bg-transparent px-1 py-0.5 text-center disabled:cursor-not-allowed"
+            value={locked ? "" : (values[hour] || "")}
             onChange={(e) => onCell(hour, e.target.value)}
+            onKeyDown={enterNext}
             inputMode="decimal"
+            disabled={locked}
+            title={locked ? lockedHint : undefined}
             aria-label={`${row.label} ${hour}`}
           />
         </td>
-      ))}
+        );
+      })}
       <td className="border border-neutral-300 text-center">
         {row.kind === "load" ? (
           <input

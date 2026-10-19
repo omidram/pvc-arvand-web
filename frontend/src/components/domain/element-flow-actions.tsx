@@ -45,6 +45,7 @@ export function DecommissionActions({
   const { t } = useI18n();
   const { canEdit } = useAuth();
   const operator = canEdit("wf_operation");
+  const cellshop = canEdit("wf_cellshop");
   const qc = useQueryClient();
   const decide = useMutation({
     mutationFn: (choice: "keep" | "disassemble") => elementDashboardApi.decide({ element_nr: item.element_nr, choice, note: note.trim() || null }),
@@ -60,6 +61,16 @@ export function DecommissionActions({
     },
     onError: (err: ApiErr) => onMessage({ ok: false, text: errText(err) }),
   });
+
+  if (isHealthyKept(item) && (operator || cellshop)) {
+    return (
+      <div className="ew-actions">
+        <p className="ew-role">{t("asmFlow.roles.operation")}</p>
+        <p className="ew-actions-lead">{t("elDash.cartable.readyKeepHint")}</p>
+        <RelocateForm item={item} note={note} onNote={onNote} onMessage={onMessage} onDone={onDone} />
+      </div>
+    );
+  }
 
   if (!editable || !operator) return null;
 
@@ -79,16 +90,6 @@ export function DecommissionActions({
             {t("elDash.cartable.disassemble")}
           </Button>
         </div>
-        <RelocateForm item={item} note={note} onNote={onNote} onMessage={onMessage} onDone={onDone} />
-      </div>
-    );
-  }
-
-  if (isHealthyKept(item)) {
-    return (
-      <div className="ew-actions">
-        <p className="ew-role">{t("asmFlow.roles.operation")}</p>
-        <p className="ew-actions-lead">{t("elDash.cartable.readyKeepHint")}</p>
         <RelocateForm item={item} note={note} onNote={onNote} onMessage={onMessage} onDone={onDone} />
       </div>
     );

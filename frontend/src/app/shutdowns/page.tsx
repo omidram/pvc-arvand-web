@@ -124,7 +124,6 @@ function ShutdownMenu() {
           <div className="mb-2 text-[12px] font-bold">{t("menus.results")}</div>
           <div className="access-sunken flex w-[220px] flex-col gap-2">
             <AccessBtn href="/shutdowns?form=summary-reason">{t("fields.reason")}</AccessBtn>
-            <AccessBtn href="/shutdowns?form=summary-trip">{t("shutdowns.tripCauses")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=summary-category">{t("menus.category")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=period">{t("menus.timePeriod")}</AccessBtn>
           </div>
@@ -770,7 +769,7 @@ function TripCausesForm() {
       backLabel={t("mainMenu.shutDown")}
       extraButtons={<ExportButtons prefix="/shutdown-causes" filenameBase="trip-causes" />}
     >
-      <table className="access-cont-table max-w-xl">
+      <table className="access-cont-table mb-4 max-w-xl">
         <thead>
           <tr>
             <th className="w-4" />
@@ -812,6 +811,8 @@ function TripCausesForm() {
           ) : null}
         </tbody>
       </table>
+      <h3 className="mb-2 text-[13px] font-bold">{t("shutdowns.summaryTripTitle")}</h3>
+      <ShutdownAnalysis initialGroupBy="cause" />
     </AccessHub>
   );
 }

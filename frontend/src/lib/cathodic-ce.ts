@@ -110,7 +110,14 @@ export function calcCathodic(
   testHours: string
 ): CathodicComputed {
   const averages: Record<string, number | null> = {};
-  for (const row of rows) averages[row.code] = avg(hours, cells[row.code]);
+  const loadCode = new Map(rows.filter((row) => row.kind === "load").map((row) => [row.letter, row.code]));
+  for (const row of rows) {
+    const gate = row.kind === "voltage" ? cells[loadCode.get(row.letter) || ""] : undefined;
+    averages[row.code] = avg(
+      hours.filter((hour) => gate === undefined || num(gate[hour]) !== null),
+      cells[row.code]
+    );
+  }
   const onLetters = rows.filter((row) => row.kind === "load" && averages[row.code] !== null).map((row) => row.letter);
   const onCount = onLetters.length;
   const count = onCount || null;
