@@ -1,0 +1,1680 @@
+# Native Imagegen Prompts
+
+Use the platform-native imagegen tool for each prompt below. Save selected outputs to the listed filenames.
+Do not display generated images in chat unless the user explicitly asks to review them.
+Before finalizing the response, delete temporary imagegen files created during the run unless the user explicitly requested those image files as deliverables.
+
+## Slide 01 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-01.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 1 as the visual system setter for the deck. Make it strong enough to guide later slides: clear blank title area, unlabeled visual thesis, and one memorable visual treatment.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 1st slide section after the intro paragraph, whose semantic concept is "A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 02 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-02.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 2 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 2nd slide section after the intro paragraph, whose semantic concept is "## Slide 1". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 03 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-03.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 3 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 3rd slide section after the intro paragraph, whose semantic concept is "## Slide 2". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 04 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-04.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 4 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 4th slide section after the intro paragraph, whose semantic concept is "## Slide 3". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 05 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-05.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 5 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 5th slide section after the intro paragraph, whose semantic concept is "## Slide 4". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 06 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-06.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 6 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 6th slide section after the intro paragraph, whose semantic concept is "## Slide 5". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 07 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-07.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 7 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 7th slide section after the intro paragraph, whose semantic concept is "## Slide 6". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 08 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-08.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 8 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 8th slide section after the intro paragraph, whose semantic concept is "## Slide 7". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 09 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-09.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 9 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 9th slide section after the intro paragraph, whose semantic concept is "## Slide 8". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 10 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-10.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 10 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 10th slide section after the intro paragraph, whose semantic concept is "## Slide 9". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 11 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-11.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 11 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 11th slide section after the intro paragraph, whose semantic concept is "## Slide 10". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 12 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-12.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 12 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 12th slide section after the intro paragraph, whose semantic concept is "## Slide 11". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 13 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-13.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 13 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 13th slide section after the intro paragraph, whose semantic concept is "## Slide 12". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 14 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-14.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 14 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 14th slide section after the intro paragraph, whose semantic concept is "## Slide 13". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 15 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-15.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 15 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 15th slide section after the intro paragraph, whose semantic concept is "## Slide 14". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 16 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-16.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 16 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 16th slide section after the intro paragraph, whose semantic concept is "## Slide 15". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 17 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-17.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 17 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 17th slide section after the intro paragraph, whose semantic concept is "## Slide 16". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+
+## Slide 18 -> C:\Users\Omid\Downloads\pvc_arvand_web\tmp\slides\pro-reference-images\slide-18.png
+
+```text
+Create one polished 16:9 text-free art-direction plate for the slide described below.
+
+Rules:
+- Make it creative, professional, and presentation-ready as visual direction, not as a finished slide screenshot.
+- Create a strictly text-free art plate: no readable titles, bullets, labels, numbers, dates, legends, table text, UI copy, logos, citations, or annotations.
+- Use the plate to establish or follow a visual system: palette, atmosphere, motif, image treatment, icon style, density, and broad composition mood.
+- Leave broad calm regions where deterministic editable PowerPoint objects can be authored later.
+- Be mindful of the intended slide composition, aspect ratio, placement, and crop. If the final slide will place editable text on one side, compose the subject or focal object on the opposite side with calm negative space for that text.
+- Use abstract placeholder strokes, unlabeled diagrams, soft panels, texture fields, collage areas, and broad hierarchy cues rather than exact text boxes that must be guessed later.
+- Do not create dense precise grids of cards, boxes, UI panels, tables, or chart frames unless the final builder will author matching editable geometry from a separate layout map.
+- Use at most one hero image or complex hero diagram per slide.
+- For slides after slide 1, only make the image suitable as a full-slide background if it has clear, low-detail calm regions where foreground cards, titles, charts, and labels can sit without visual clash. Otherwise compose it as a side panel, hero frame, texture strip, or decorative accent with generous negative space.
+- Include decorative or supporting visual material where useful: texture, atmosphere, motifs, contextual objects, cutaways, secondary details, and background depth. Do not make every slide depend on a single hero image.
+- If icons appear, make them simple Lucide/Heroicons-style glyphs, not invented branded symbols.
+- Vary layouts across slides; do not use left text / right image every time.
+- Do not reuse the exact visual content from earlier slides unless the prompt explicitly calls for a repeated background, texture, or branded motif.
+- Prefer lighter backgrounds unless the style guidance requests otherwise.
+- Do not use "key insight" or "takeaway" pop-up boxes.
+- Do not create a generic corporate blue slide unless the prompt specifically calls for it.
+- Keep a clear authored-deck target in mind: the final deck will place editable cards, charts, callouts, labels, and text with deterministic PowerPoint geometry over or alongside this art plate.
+- Hero/diagram/collage art should be easy to use as a full-slide background with fit: cover.
+
+Create slide 18 as a distinct slide that still belongs to the same deck visual system as slide 1. If the platform can use prior generated images as context, use slide 1 only as a style reference; do not reuse slide 1 content.
+Target canvas: 1280x720 16:9. If the image tool offers aspect controls, use a wide 16:9 composition.
+The outline begins with one intro paragraph, followed by exactly 18 slide sections. Each slide section has one title line and one explanatory paragraph. For this request, use only the 18th slide section after the intro paragraph, whose semantic concept is "## Slide 17". Use that concept only for composition and visual subject matter; never render the title or any section text as readable text in the image. Do not use neighboring sections' titles, facts, dates, or examples.
+
+Apply this style guidance to palette, typography feel, layout, icon treatment, density, and tone:
+Premium chlor-alkali monograph. Brine ink, membrane teal, warm paper, copper. Text-free. Calm regions for Persian cards.
+
+Full outline:
+# Arvand presentation art plates
+
+A premium industrial monograph for a chlor-alkali plant. Palette: deep brine ink #10242C, membrane teal #1C6B66, warm paper #F3EFE6, copper #C4A574, soft clay #E7D7C3. No generic corporate blue. No readable text, numbers, logos, or labels. Broad calm paper regions for later cards. 16:9.
+
+## Slide 1
+Full-bleed quiet cover. A vast chlor-alkali cell room seen from a high gallery, long rows of membrane electrolyzers receding, soft morning light, copper pipes, pale brine tanks at the edge. Large calm warm-paper area on the right third. No text.
+
+## Slide 2
+Side hero on the left: three abstract product vessels — pale brine, a soft green-gold gas glow, a clear caustic liquid — on a dark ink bench. Right two-thirds is calm warm paper with a faint grain. No labels.
+
+## Slide 3
+Aerial-like abstract of twenty-four long electrolyzer blocks arranged as two trains, seen as glowing teal bars on dark ink, generous empty paper margin at the bottom. No numbers or letters.
+
+## Slide 4
+Cutaway still life of one membrane cell: ribbed anode, fine cathode mesh, a translucent membrane sheet between them, copper busbar, on warm paper, object on the right, calm left. No labels.
+
+## Slide 5
+A designer’s desk from the 2000s photographed as atmosphere: closed laptop, paper process binder, brass ruler, soft window light, calm center. No readable pages.
+
+## Slide 6
+Abstract archive wall of many soft rectangular form panels in teal and paper, like a software menu without words, arranged as a calm grid with wide margins. No letters.
+
+## Slide 7
+Close texture of handwritten engineering traces turned into abstract copper linework over pale paper, a single voltage-like curve with no axes or numbers, large empty area below.
+
+## Slide 8
+Scattered islands: loose spreadsheet-like blank grids, a clipboard, a small isolated terminal glow, separated by wide paper sea. No characters.
+
+## Slide 9
+A single bridge of teal light connecting scattered paper islands into one path, dark ink edges, calm center for a title. No text.
+
+## Slide 10
+A calm data well: stacked translucent sheets pouring into one dark vessel, copper rim, warm paper background, subject on the left.
+
+## Slide 11
+Abstract browser-frame chrome only, empty warm screen area, thin teal bezel, no UI words, placed as a right-side frame with calm left paper.
+
+## Slide 12
+Two quiet columns of material: left an older bound ledger, right a luminous flat panel, both text-free, centered on warm paper with space above.
+
+## Slide 13
+A flowing path of rounded stones in teal, clay, and copper across warm paper, left to right, generous gaps, no words.
+
+## Slide 14
+Warehouse still life: coated metal plates, a membrane roll, a wooden crate, soft industrial light, objects clustered on the right, calm left.
+
+## Slide 15
+Abstract role tokens: simple circular seals in teal and copper on a paper field, arranged as a loose ring, no letters.
+
+## Slide 16
+A monitoring wall of soft unlabeled sparkline ribbons in teal and amber on a dark ink panel at the right, calm paper at the left.
+
+## Slide 17
+A quiet doorway into a lit control room, copper handle, teal reflection, large calm foreground.
+
+## Slide 18
+Closing plate: the cell room at dusk, long electrolyzer rows, one warm copper light, broad dark calm area on the left for a final sentence. No text.
+
+```
+

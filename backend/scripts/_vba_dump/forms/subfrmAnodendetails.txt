@@ -1,0 +1,611 @@
+Version =17
+VersionRequired =17
+Checksum =-122771775
+Begin Form
+    AutoCenter = NotDefault
+    DefaultView =0
+    ViewsAllowed =1
+    GridX =5
+    GridY =5
+    Width =11338
+    ItemSuffix =100
+    Left =675
+    Top =825
+    Right =12810
+    Bottom =7920
+    RecSrcDt = Begin
+        0x73637aba3db1e240
+    End
+    RecordSource ="qryAnodendetails"
+    Caption ="Anoden"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x890500008905000089050000890500000000000043340000211a000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204465736b4a6574203639304320536572696573205072696e7465720000 ,
+        0x000437039400060103ff800702000900000000006400010001002c0102000100 ,
+        0x2c01010000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x03000000010000000100000000000000000000004850204465736b4a65742036 ,
+        0x39304320536572696573205072696e7465720000000000000000000000000000 ,
+        0x00000000000000000000000000000000000000004c5054310000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000001000000000000000000b30d ,
+        0xb009000004000200010000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000002c012c01000000000000 ,
+        0x000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x27000800300001404850204465736b4a65742036393043205365726965732050 ,
+        0x72696e74657200485046444a433035004c5054313a0000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextAlign =3
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin CheckBox
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin TextBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin ListBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =1417
+            LabelX =-236
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =12632256
+            Name ="Formularkopf1"
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =5102
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7934
+                    Top =679
+                    Width =2280
+                    TabIndex =11
+                    Name ="Bauteil Nr"
+                    ControlSource ="Bauteil Nr"
+                    EventProcPrefix ="Bauteil_Nr"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6365
+                            Top =679
+                            Width =1452
+                            Height =240
+                            Name ="Text21"
+                            Caption ="Component no.:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7934
+                    Top =1019
+                    Width =2280
+                    TabIndex =12
+                    Name ="U Zeichnungs Nr"
+                    ControlSource ="U Zeichnungs Nr"
+                    EventProcPrefix ="U_Zeichnungs_Nr"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6006
+                            Top =1019
+                            Width =1807
+                            Height =240
+                            Name ="Text25"
+                            Caption ="U drawing no.:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2608
+                    Top =340
+                    Width =2835
+                    Height =480
+                    FontSize =14
+                    FontWeight =500
+                    Name ="Hersteller"
+                    ControlSource ="Hersteller"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1020
+                            Top =340
+                            Width =1347
+                            Height =225
+                            Name ="Text27"
+                            Caption ="Manufacturer:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2615
+                    Top =1707
+                    Width =2280
+                    TabIndex =2
+                    Name ="H Auftrags Nr"
+                    ControlSource ="H Auftrags Nr"
+                    EventProcPrefix ="H_Auftrags_Nr"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =226
+                            Top =1707
+                            Width =2271
+                            Height =240
+                            Name ="Text29"
+                            Caption ="Manufacturers order no.:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2608
+                    Top =2047
+                    Width =2280
+                    TabIndex =3
+                    Name ="H Zeichnungs Nr"
+                    ControlSource ="H Zeichnungs Nr"
+                    EventProcPrefix ="H_Zeichnungs_Nr"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =2047
+                            Width =2377
+                            Height =240
+                            Name ="Text31"
+                            Caption ="Manufacturers drawing no.:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7934
+                    Top =339
+                    Width =810
+                    TabIndex =10
+                    Name ="Feld36"
+                    ControlSource ="Baugruppe"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6470
+                            Top =339
+                            Width =1346
+                            Height =240
+                            Name ="Text37"
+                            Caption ="Design group"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2610
+                    Top =2721
+                    Width =2827
+                    Height =227
+                    TabIndex =4
+                    Name ="Feld38"
+                    ControlSource ="Wanne"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1703
+                            Top =2721
+                            Width =720
+                            Height =240
+                            Name ="Text39"
+                            Caption ="Pan"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2610
+                    Top =3402
+                    Width =2832
+                    Height =226
+                    TabIndex =6
+                    Name ="Feld40"
+                    ControlSource ="Kontaktstreifen"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1023
+                            Top =3402
+                            Width =1410
+                            Height =240
+                            Name ="Text41"
+                            Caption ="Contact strips"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2610
+                    Top =3742
+                    Width =2823
+                    Height =226
+                    TabIndex =7
+                    Name ="Feld42"
+                    ControlSource ="Elektrodenunterstützung"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =226
+                            Top =3742
+                            Width =2205
+                            Height =240
+                            Name ="Text43"
+                            Caption ="Electrode support"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7940
+                    Top =2721
+                    Width =2844
+                    Height =226
+                    TabIndex =14
+                    Name ="Feld44"
+                    ControlSource ="Elektrodenform"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6138
+                            Top =2727
+                            Width =1665
+                            Height =240
+                            Name ="Text45"
+                            Caption ="Electrode shape"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7940
+                    Top =3061
+                    Width =2844
+                    Height =226
+                    TabIndex =15
+                    Name ="Feld46"
+                    ControlSource ="Coating"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =7068
+                            Top =3057
+                            Width =720
+                            Height =240
+                            Name ="Text47"
+                            Caption ="Coating"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2610
+                    Top =4082
+                    Width =2832
+                    Height =226
+                    TabIndex =8
+                    Name ="Feld48"
+                    ControlSource ="Baffleplate"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1363
+                            Top =4082
+                            Width =1065
+                            Height =240
+                            Name ="Text49"
+                            Caption ="Baffleplate"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2610
+                    Top =4422
+                    Width =2832
+                    Height =236
+                    TabIndex =9
+                    Name ="Feld52"
+                    ControlSource ="Downcomer"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1363
+                            Top =4422
+                            Width =1065
+                            Height =240
+                            Name ="Text53"
+                            Caption ="Downcomer"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7939
+                    Top =4082
+                    Width =2841
+                    Height =236
+                    TabIndex =16
+                    Name ="Feld54"
+                    ControlSource ="Einlaufsystem"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6015
+                            Top =4082
+                            Width =1740
+                            Height =240
+                            Name ="Text55"
+                            Caption ="Feed pipe design"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2610
+                    Top =3061
+                    Width =2826
+                    Height =236
+                    TabIndex =5
+                    Name ="Feld56"
+                    ControlSource ="Flanschbreite"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1136
+                            Top =3061
+                            Width =1290
+                            Height =240
+                            Name ="Text57"
+                            Caption ="Flange width"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7939
+                    Top =4422
+                    Width =2844
+                    Height =236
+                    TabIndex =17
+                    Name ="Feld58"
+                    ControlSource ="Standrohr Di"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =5679
+                            Top =4422
+                            Width =2070
+                            Height =240
+                            Name ="Text59"
+                            Caption ="Standpipe diameter"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7940
+                    Top =1707
+                    Width =1143
+                    Height =226
+                    TabIndex =13
+                    Name ="Feld63"
+                    ControlSource ="H Datum"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =5790
+                            Top =1700
+                            Width =2025
+                            Height =240
+                            Name ="Text64"
+                            Caption ="Manufacturing date"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =2607
+                    Top =1133
+                    Width =2268
+                    Height =233
+                    TabIndex =1
+                    BackColor =16777164
+                    Name ="Text98"
+                    ControlSource ="Anodennummer"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1020
+                            Top =1133
+                            Width =1350
+                            Height =240
+                            Name ="Bezeichnungsfeld91"
+                            Caption ="Anode No.:"
+                        End
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text27.Caption = "Hersteller"
+        Bezeichnungsfeld91.Caption = "Anoden-Nr."
+        Text29.Caption = "Hersteller Auftragsnr."
+        Text31.Caption = "Hersteller Zeichnungsnr."
+        Text39.Caption = "Wanne"
+        Text57.Caption = "Flanschbreite"
+        Text41.Caption = "Kontaktstreifen"
+        Text43.Caption = "Elektrodenunterstützung"
+        Text49.Caption = "Baffle Plate"
+        Text53.Caption = "Downcomer"
+        Text37.Caption = "Baugruppe"
+        Text21.Caption = "Bauteil-Nr."
+        Text25.Caption = "Uhde Zeichnungsnr."
+        Text64.Caption = "Herstellungsdatum"
+        Text45.Caption = "Elektrodenform"
+        Text47.Caption = "Coating"
+        Text55.Caption = "Einlaufsystem"
+        Text59.Caption = "Standrohrdurchmesser"
+ 
+    Else
+        Text27.Caption = "Manufacturer"
+        Bezeichnungsfeld91.Caption = "Anode No."
+        Text29.Caption = "Manufacturer's Order No."
+        Text31.Caption = "Manfacturer's Drawing No."
+        Text39.Caption = "Pan"
+        Text57.Caption = "Flange Width"
+        Text41.Caption = "Contact Strips"
+        Text43.Caption = "Electrode Support"
+        Text49.Caption = "Baffle Plate"
+        Text53.Caption = "Downcomer"
+        Text37.Caption = "Design Group"
+        Text21.Caption = "Component No."
+        Text25.Caption = "Uhde Drawing No."
+        Text64.Caption = "Manufacturing Date"
+        Text45.Caption = "Electrode Shape"
+        Text47.Caption = "Coating"
+        Text55.Caption = "Feed Pipe Design"
+        Text59.Caption = "Standpipe Diameter"
+        
+    End If
+
+End Sub
+
+Private Sub Schaltfläche66_Click()
+On Error GoTo Err_Schaltfläche66_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "frmZellenverwaltung"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "frmAnodendetails"
+
+Exit_Schaltfläche66_Click:
+    Exit Sub
+
+Err_Schaltfläche66_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche66_Click
+    
+End Sub

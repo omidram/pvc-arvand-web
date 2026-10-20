@@ -54,6 +54,7 @@ GROUP_KEYS = {
     "inspection": "wf_inspection",
     "operation": "wf_operation",
     "cellshop": "wf_cellshop",
+    "process": "wf_process",
 }
 VIEW_KEYS = ("storage", "anodes", "cathodes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection")
 CELL_VIEW_KEYS = ("elements", "wf_operation", "wf_cellshop", "wf_c90")
@@ -81,15 +82,15 @@ CELL_STAGES: dict[str, list[str]] = {
     "await_shop": ["cellshop"],
     "in_shop": ["cellshop"],
     "await_disassembly": ["c90"],
-    "await_reinstall": ["operation", "cellshop"],
+    "await_reinstall": ["c90"],
     "await_numbering": ["c90"],
 }
 INSPECTION_STAGES: dict[str, list[str]] = {
     "await_request": ["c90"],
-    "await_inspection": ["inspection"],
+    "await_inspection": ["inspection", "process"],
 }
 STAGES = {"coating": COATING_STAGES, "purchase": PURCHASE_STAGES, "cell": CELL_STAGES, "inspection": INSPECTION_STAGES}
-INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections",)
+INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections", "wf_process")
 # Allowed time per stage in hours (editable in Settings -> Workflow deadlines). A stage that has its own
 # promised date (coater return, supplier delivery) is due on that date instead.
 DEFAULT_SLA: dict[str, dict[str, int]] = {
@@ -1830,7 +1831,7 @@ def _cell_actions(db: Session, r: WfCellRequest, user: models.User) -> list[str]
         return acts
     if r.status == "await_disassembly" and "c90" in groups:
         acts.append("dismantle")
-    if r.status == "await_reinstall" and groups & {"operation", "cellshop"}:
+    if r.status == "await_reinstall" and "c90" in groups:
         acts.append("install")
     if r.status == "await_shutdown" and "operation" in groups:
         acts.append("shutdown")
@@ -2141,7 +2142,7 @@ def cell_decide(request_id: int, body: CellDecideIn, db: Session = Depends(get_d
         _cell_move(db, r, "await_disassembly", "decide", user, note, data, also=("c90",))
     elif body.choice == "keep":
         # A healthy cell in the shop is not finished until someone puts it back in a position.
-        _cell_move(db, r, "await_reinstall", "decide", user, note, data, also=("operation", "cellshop"))
+        _cell_move(db, r, "await_reinstall", "decide", user, note, data, also=("c90",))
     else:
         _cell_move(db, r, "completed", "decide", user, note, data, also=("operation",))
     db.commit()
@@ -2431,13 +2432,73 @@ def _insp_summary(db: Session, r: WfInspectionRequest, conf: dict | None = None)
     }
 
 
+def _piece_kinds(r: WfInspectionRequest) -> list[str]:
+    kinds = [k for k, value in (("anode", r.anode_nr), ("cathode", r.cathode_nr)) if (value or "").strip()]
+    return kinds or ["anode", "cathode"]
+
+
+def _decision_map(r: WfInspectionRequest) -> dict:
+    raw = r.decisions if isinstance(r.decisions, dict) else {}
+    return raw
+
+
+def _side_ready(dec: dict, side: str, kinds: list[str]) -> bool:
+    block = dec.get(side) if isinstance(dec.get(side), dict) else {}
+    for kind in kinds:
+        item = block.get(kind) if isinstance(block.get(kind), dict) else {}
+        if not str(item.get("result") or "").strip():
+            return False
+    return True
+
+
+def _cell_card(db: Session, r: WfInspectionRequest) -> dict | None:
+    el = db.get(models.Element, r.element_id) if r.element_id else _life_of(db, element_nr=r.element_nr)
+    if el is None:
+        return None
+    return {
+        "assembly_date": _iso(el.assembly_date),
+        "commissioning_date": _iso(el.commissioning_date),
+        "disassembly_date": _iso(el.disassembly_date),
+        "membrane_type": el.membrane_type,
+        "gap_mm": el.gap_mm,
+        "anode_coating": el.anode_coating,
+        "cathode_coating": el.cathode_coating,
+        "anode_remark": el.anode_remark,
+        "cathode_remark": el.cathode_remark,
+        "decommission_reason": el.decommission_reason,
+        "dol_days": el.dol_days,
+    }
+
+
+def _finish_if_both(db: Session, r: WfInspectionRequest, actor: Any) -> bool:
+    """The request stays open until the inspector form is attached and both groups have judged anode and cathode."""
+    if r.status in CLOSED or not r.report_id:
+        return False
+    kinds = _piece_kinds(r)
+    dec = _decision_map(r)
+    if not (_side_ready(dec, "inspection", kinds) and _side_ready(dec, "process", kinds)):
+        return False
+    _insp_move(db, r, "completed", "both_confirmed", actor, None, {"report_id": r.report_id})
+    return True
+
+
+def _attach_report(db: Session, r: WfInspectionRequest, report_id: int, actor: Any, note: str | None = None) -> None:
+    r.report_id = report_id
+    r.updated_at = _now()
+    _event(db, "inspection", r, "report_filled", actor, r.status, note, {"report_id": report_id})
+    if not _finish_if_both(db, r, actor):
+        _notify(db, "inspection", r, actor)
+
+
 def _insp_actions(db: Session, r: WfInspectionRequest, user: models.User) -> list[str]:
     groups = _groups(db, user)
     acts: list[str] = []
     if r.status == "await_request" and "c90" in groups:
         acts.append("send")
     if r.status == "await_inspection" and "inspection" in groups:
-        acts += ["fill", "link"]
+        acts += ["fill", "link", "decide_inspection"]
+    if r.status == "await_inspection" and "process" in groups:
+        acts.append("decide_process")
     early = (r.status == "await_request" and "c90" in groups) or (r.status == "await_inspection" and ("c90" in groups or r.created_by_id == user.id))
     if _can_cancel(user, r.status, r.created_by_id, "await_request", also=early):
         acts.append("cancel")
@@ -2464,6 +2525,8 @@ def _insp_detail(db: Session, r: WfInspectionRequest, user: models.User) -> dict
             "completed_at": _iso(r.completed_at),
             "remarks": None,
             "report": _report_brief(db, r.report_id),
+            "decisions": _decision_map(r),
+            "cell": _cell_card(db, r),
             "candidates": _insp_candidates(db, r) if r.status not in CLOSED else [],
             "files": _files(db, "inspection", r.id),
             "events": _events(db, "inspection", r.id),
@@ -2547,8 +2610,7 @@ def _close_if_reported(db: Session, r: WfInspectionRequest, actor: Any) -> bool:
     found = _insp_candidates(db, r)
     if not found:
         return False
-    r.report_id = found[0]["id"]
-    _insp_move(db, r, "completed", "report_filled", actor, None, {"report_id": r.report_id})
+    _attach_report(db, r, found[0]["id"], actor)
     return True
 
 
@@ -2634,9 +2696,47 @@ def inspection_link(request_id: int, body: InspLinkIn, db: Session = Depends(get
     r = _load_insp(db, request_id)
     _require_stage(db, user, "inspection", r.status, ("await_inspection",))
     if body.report_id not in {c["id"] for c in _insp_candidates(db, r)}:
-        raise HTTPException(400, "This Element Inspection form is not for this element (or it is older than the dismantling)")
-    r.report_id = body.report_id
-    _insp_move(db, r, "completed", "report_filled", user, body.note, {"report_id": r.report_id})
+        raise HTTPException(400, "This Element Inspection form is not for this element (or it is older than the disassemble)")
+    if "link" not in _insp_actions(db, r, user):
+        raise HTTPException(403, "Only inspection can attach the Element Inspection form")
+    _attach_report(db, r, body.report_id, user, body.note)
+    db.commit()
+    return _insp_detail(db, r, user)
+
+
+class PieceCall(BaseModel):
+    healthy: bool = False
+    result: str = ""
+
+
+class InspDecideIn(NoteIn):
+    side: str
+    anode: PieceCall | None = None
+    cathode: PieceCall | None = None
+
+
+@router.post("/inspection/{request_id}/decide")
+def inspection_decide(request_id: int, body: InspDecideIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """Inspector and process each say, separately, whether the anode and the cathode are healthy and what the result is."""
+    r = _load_insp(db, request_id)
+    if r.status != "await_inspection":
+        raise HTTPException(409, "The anode and cathode decision is only open while inspection and process are both working")
+    if body.side not in ("inspection", "process"):
+        raise HTTPException(400, "Choose inspection or process")
+    if body.side not in _groups(db, user):
+        raise HTTPException(403, "This decision belongs to the other group")
+    kinds = _piece_kinds(r)
+    block: dict = {}
+    for kind in kinds:
+        piece = body.anode if kind == "anode" else body.cathode
+        if piece is None or not (piece.result or "").strip():
+            raise HTTPException(400, f"Write the result for the {kind}")
+        block[kind] = {"healthy": bool(piece.healthy), "result": piece.result.strip()[:300]}
+    r.decisions = {**_decision_map(r), body.side: block}
+    r.updated_at = _now()
+    _event(db, "inspection", r, "piece_decision", user, r.status, body.note, {"side": body.side, **block})
+    if not _finish_if_both(db, r, user):
+        _notify(db, "inspection", r, user)
     db.commit()
     return _insp_detail(db, r, user)
 
@@ -2745,8 +2845,7 @@ def inspection_report_saved(db: Session, report: models.InspectionReport) -> Non
             continue
         if r.disassembly_date and day and day < r.disassembly_date:
             continue
-        r.report_id = report.id
-        _insp_move(db, r, "completed", "report_filled", actor, None, {"report_id": report.id})
+        _attach_report(db, r, report.id, actor)
 
 
 # ------------------------------------------------------------------ files (all flows)

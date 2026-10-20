@@ -1,0 +1,360 @@
+Version =19
+VersionRequired =19
+Checksum =-122771775
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DataEntry = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    GridX =5
+    GridY =5
+    Width =12245
+    ItemSuffix =208
+    Left =3045
+    Right =15285
+    Bottom =7740
+    RecSrcDt = Begin
+        0x757b225d5488e140
+    End
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x4850204465736b4a6574203639304320536572696573205072696e7465720000 ,
+        0x000437039400060103ff800701000900000000006400010001002c0102000100 ,
+        0x2c01010000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x03000000010000000100000000000000000000004850204465736b4a65742036 ,
+        0x39304320536572696573205072696e7465720000000000000000000000000000 ,
+        0x00000000000000000000000000000000000000004c5054310000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000000001000000b30d ,
+        0xb009000004000200010000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000002c012c01000000000000
+    End
+    PrtDevNames = Begin
+        0x080011003000010077696e73706f6f6c004850204465736b4a65742036393043 ,
+        0x20536572696573205072696e746572004c5054313a0000000000000000000000 ,
+        0x00000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =10881
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =675
+                    Top =225
+                    Width =8190
+                    Height =690
+                    FontSize =22
+                    BackColor =12632256
+                    Name ="Text0"
+                    Caption ="Shut Down"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =6803
+                    Top =5442
+                    Width =2034
+                    Height =561
+                    Name ="Schaltfläche29"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =1025
+                    Top =2829
+                    Width =2507
+                    Height =3966
+                    Name ="Rechteck129"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1020
+                    Top =1927
+                    Width =2505
+                    Height =675
+                    FontSize =16
+                    BackColor =12632256
+                    Name ="Bezeichnungsfeld147"
+                    Caption ="Input"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =1247
+                    Top =3061
+                    Width =2031
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl184"
+                    Caption ="List of Shut Downs"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =4195
+                    Top =3061
+                    Width =2031
+                    Height =576
+                    TabIndex =2
+                    Name ="Befehl191"
+                    Caption ="Reason"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =1247
+                    Top =3855
+                    Width =2031
+                    Height =576
+                    TabIndex =3
+                    Name ="Befehl202"
+                    Caption ="Shut Down Reasons"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =1247
+                    Top =4648
+                    Width =2031
+                    Height =576
+                    TabIndex =4
+                    Name ="Befehl203"
+                    Caption ="Shut Down Categories"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3968
+                    Top =1927
+                    Width =2505
+                    Height =675
+                    FontSize =16
+                    BackColor =12632256
+                    Name ="Bezeichnungsfeld204"
+                    Caption ="Results"
+                    FontName ="Arial"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =223
+                    Left =3968
+                    Top =2834
+                    Width =2507
+                    Height =3966
+                    Name ="Rechteck205"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4195
+                    Top =4648
+                    Width =2031
+                    Height =576
+                    TabIndex =5
+                    Name ="Befehl206"
+                    Caption ="Time Period"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4195
+                    Top =3855
+                    Width =2031
+                    Height =576
+                    TabIndex =6
+                    Name ="Befehl207"
+                    Caption ="Category"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl191_Click()
+    DoCmd.OpenForm "frmAbschaltungszusammenfassung"
+    DoCmd.Close acForm, "frmMenuAbschaltungen"
+End Sub
+
+Private Sub Befehl202_Click()
+    Dim rst1 As DAO.Recordset
+    Dim dbs As Database
+    Dim tdf As TableDef
+    
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    
+    Set dbs = CurrentDb
+    Set tdf = dbs.TableDefs!tblAbschaltungsursachen
+    If GewSprache = 1 Then
+        tdf.Fields!IDSprache.DefaultValue = "1"
+    Else
+        tdf.Fields!IDSprache.DefaultValue = "2"
+    End If
+    
+    DoCmd.OpenForm "frmAbschaltungsursachen"
+    DoCmd.Close acForm, "frmMenuAbschaltungen"
+End Sub
+
+Private Sub Befehl203_Click()
+    DoCmd.OpenForm "frmAbschaltungskategorien"
+    DoCmd.Close acForm, "frmMenuAbschaltungskategorien"
+End Sub
+
+Private Sub Befehl206_Click()
+    DoCmd.OpenForm "frmAbschaltungenZeitraum"
+    DoCmd.Close acForm, "frmMenuAbschaltungskategorien"
+
+End Sub
+
+Private Sub Befehl207_Click()
+    DoCmd.OpenForm "frmAbschaltungszusammenfassungKategorie"
+    DoCmd.Close acForm, "frmMenuAbschaltungskategorien"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    'Dim dbs As Database
+    'Dim tdf As TableDef
+    
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    
+    'Set dbs = CurrentDb
+    'Set tdf = dbs.TableDefs!tblAbschaltungsursachen
+    'If GewSprache = 1 Then
+    '    tdf.Fields!IDSprache.DefaultValue = "1"
+    'Else
+    '    tdf.Fields!IDSprache.DefaultValue = "2"
+    'End If
+    
+    If GewSprache = 1 Then
+        Text0.Caption = "Abschaltungen"
+        Bezeichnungsfeld147.Caption = "Eingabe"
+        Befehl184.Caption = "Liste der Abschaltungen"
+        Befehl202.Caption = "Abschaltungs-ursachen"
+        Befehl203.Caption = "Abschaltungs-kategorien"
+        Bezeichnungsfeld204.Caption = "Auswertung"
+        Befehl191.Caption = "Abschaltungs-ursachen"
+        Befehl206.Caption = "Zeitraum"
+        Befehl207.Caption = "Kategorie"
+        Schaltfläche29.Caption = "Hauptmenu"
+        
+    Else
+        Text0.Caption = "Shut Down"
+        Bezeichnungsfeld147.Caption = "Input"
+        Befehl184.Caption = "Shut Down List"
+        Befehl202.Caption = "Shut Down Reasons"
+        Befehl203.Caption = "Shut Down Categories"
+        Bezeichnungsfeld204.Caption = "Results"
+        Befehl191.Caption = "Shut Down Reasons"
+        Befehl206.Caption = "Time Period"
+        Befehl207.Caption = "Category"
+        Schaltfläche29.Caption = "Main Menu"
+    End If
+
+End Sub
+
+Private Sub Befehl184_Click()
+    DoCmd.OpenForm "frmAbschaltungen"
+    DoCmd.Close acForm, "frmMenuAbschaltungen"
+End Sub
+
+Private Sub Schaltfläche29_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "frmMenuAbschaltungen"
+End Sub

@@ -15,6 +15,7 @@ export function VoltageGauge({
   max,
   label,
   unit = "V",
+  caption,
   tone = "info",
   digits = 2,
 }: {
@@ -22,6 +23,7 @@ export function VoltageGauge({
   max: number;
   label: string;
   unit?: string;
+  caption?: string;
   tone?: Tone;
   digits?: number;
 }) {
@@ -38,7 +40,7 @@ export function VoltageGauge({
           <div className="vg-value" style={{ color }}>
             {value == null ? "—" : Number(value).toFixed(digits)}
           </div>
-          <div className="vg-unit">{unit}</div>
+          <div className="vg-unit">{caption ? `${unit} (${caption})` : unit}</div>
         </div>
       </div>
       <div className="vg-label">{label}</div>

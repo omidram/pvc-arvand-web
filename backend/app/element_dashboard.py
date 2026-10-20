@@ -590,6 +590,7 @@ def electrode_rows(db: Session, kind: str, settings: dict[str, Any] | None = Non
                 "element_nr": item["element_nr"] if item["bucket"] == "on_rack" else None,
                 "last_element_nr": item["element_nr"],
                 "electrolyzer": item["electrolyzer"] if item["bucket"] == "on_rack" else None,
+                "last_electrolyzer": item.get("electrolyzer"),
                 "position": item["position"] if item["bucket"] == "on_rack" else None,
                 "commissioning_date": item["commissioning_date"],
                 "runs": runs,
@@ -1198,6 +1199,82 @@ def audit_report(db: Session) -> dict[str, Any]:
     return run_audit(db)
 
 
+def _piece_vendor(row: dict[str, Any]) -> str:
+    from .segregation_flow import vendor_of
+
+    return vendor_of(row.get("coating"), row.get("manufacturer")) or "Other"
+
+
+def _stock_block(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    spare = [r for r in rows if not r["installed"] and not r["at_coater"]]
+    usable = [r for r in spare if r["bucket"] == "ok"]
+    coated: Counter = Counter(_piece_vendor(r) for r in usable)
+    lm = sum(1 for r in usable if str(r.get("last_electrolyzer") or "").strip().upper()[:1] in {"L", "M"})
+    return {
+        "usable": len(usable),
+        "rate_off": sum(1 for r in spare if r["bucket"] == "not_ok"),
+        "awaiting_check": sum(1 for r in spare if r["bucket"] == "pending"),
+        "ready_dispatch": sum(1 for r in rows if r.get("wh_status") == "ready_dispatch"),
+        "train_lm": lm,
+        "coated": [{"vendor": name, "count": count} for name, count in coated.most_common() if name != "Other" or count],
+    }
+
+
+def _coating_by_company(db: Session) -> list[dict[str, Any]]:
+    merged: dict[str, dict[str, int]] = {}
+    for kind in ("anode", "cathode"):
+        for job in _coating_jobs(db, kind):
+            name = (job.get("coater") or "").strip() or "—"
+            row = merged.setdefault(name, {"anode_open": 0, "anode_returned": 0, "cathode_open": 0, "cathode_returned": 0})
+            if job.get("return"):
+                row[f"{kind}_returned"] += 1
+            elif job.get("dispatch"):
+                row[f"{kind}_open"] += 1
+    out = [{"company": name, **counts} for name, counts in merged.items()]
+    out.sort(key=lambda r: -(r["anode_returned"] + r["cathode_returned"] + r["anode_open"] + r["cathode_open"]))
+    return out
+
+
+def workshop_inventory(
+    db: Session,
+    pipeline: list[dict[str, Any]],
+    anode_rows: list[dict[str, Any]],
+    cathode_rows: list[dict[str, Any]],
+    membranes: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """The workshop sheet: assembled cells waiting to go on site, spare electrodes, coating, membranes."""
+    from .segregation_flow import vendor_of
+
+    ready = [
+        p
+        for p in pipeline
+        if p.get("assembly_date") and not p.get("disassembly_date") and not p.get("commissioning_date") and not p.get("electrolyzer")
+    ]
+    ids = [p["row_id"] for p in ready if p.get("row_id")]
+    elements = {e.id: e for e in db.query(models.Element).filter(models.Element.id.in_(ids)).all()} if ids else {}
+    pairs: Counter = Counter()
+    membrane_on_cell: Counter = Counter()
+    for item in ready:
+        el = elements.get(item.get("row_id"))
+        anode = vendor_of(el.anode_coating) if el is not None else None
+        cathode = vendor_of(el.cathode_coating) if el is not None else None
+        pairs[(anode or "Other", cathode or "Other")] += 1
+        membrane_on_cell[(item.get("membrane_type") or "").strip() or "—"] += 1
+    stock_mem = [r for r in membranes if not r["installed"] and r["bucket"] == "ok"]
+    by_type: Counter = Counter((r.get("membrane_type") or "").strip() or "—" for r in stock_mem)
+    return {
+        "assembled_total": len(ready),
+        "assembled_pairs": [{"anode": a, "cathode": c, "count": n} for (a, c), n in pairs.most_common()],
+        "assembled_membranes": [{"type": name, "count": n} for name, n in membrane_on_cell.most_common()],
+        "awaiting_disassembly": sum(1 for p in pipeline if p.get("base_state") == "decommissioned" or p.get("state") == "awaiting_disassembly"),
+        "anode": _stock_block(anode_rows),
+        "cathode": _stock_block(cathode_rows),
+        "coating_companies": _coating_by_company(db),
+        "membrane_stock": len(stock_mem),
+        "membrane_types": [{"type": name, "count": n} for name, n in by_type.most_common(12)],
+    }
+
+
 @_memo
 def overview(db: Session) -> dict[str, Any]:
     cfg = settings_dict(get_settings(db))
@@ -1216,8 +1293,10 @@ def overview(db: Session) -> dict[str, Any]:
 
     parts: dict[str, Any] = {}
     coating: dict[str, Any] = {}
+    prepared_rows: dict[str, list[dict[str, Any]]] = {}
     for kind in ("anode", "cathode"):
         prepared = electrode_rows(db, kind, cfg)
+        prepared_rows[kind] = prepared[0]
         parts[kind] = {"summary": life_summary(prepared[0]), "histogram": life_histogram(prepared[0])}
         coating[kind] = coating_overview(db, kind, cfg, prepared=prepared)["summary"]
     mem = membrane_rows(db, cfg)
@@ -1264,6 +1343,7 @@ def overview(db: Session) -> dict[str, Any]:
         ],
         "parts": parts,
         "coating": coating,
+        "workshop": workshop_inventory(db, pipeline, prepared_rows["anode"], prepared_rows["cathode"], mem),
         "alerts": {"danger": alerts.get("danger", 0), "warning": alerts.get("warning", 0), "info": alerts.get("info", 0)},
         "by_electrolyzer": [{"electrolyzer": name, "cells": by_electrolyzer.get(name, 0), "capacity": CELLS_PER_ELECTROLYZER} for name in all_electrolyzers()],
         "monthly_flow": _monthly_flow(db),

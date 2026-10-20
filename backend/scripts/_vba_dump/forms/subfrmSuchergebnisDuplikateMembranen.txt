@@ -1,0 +1,1666 @@
+Version =19
+VersionRequired =19
+Checksum =-122913161
+Begin Form
+    AutoCenter = NotDefault
+    OrderByOn = NotDefault
+    GridX =5
+    GridY =5
+    Width =30631
+    ItemSuffix =173
+    Top =375
+    Right =14400
+    Bottom =7050
+    RecSrcDt = Begin
+        0xfbad4efcbde8e240
+    End
+    RecordSource ="qryDuplikateMembranen"
+    Caption ="Montage"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0xc60100006e040000960200006e040000000000006f5a0000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a6574203420506c75732028436f70792032290000000000 ,
+        0x0004010494004000037700060200090000000000000001000901580201000100 ,
+        0x5802040000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000006010000020000000000000000000000010040004d5355444f034850 ,
+        0x204c617365724a6574203420506c75730000000000000000000000000000e401 ,
+        0x0000000000003c0100000000040064000a000000
+    End
+    PrtDevNames = Begin
+        0x080011002d00000057494e53504f4f4c004850204c617365724a657420342050 ,
+        0x6c75732028436f7079203229005c5c53686c6e61615c73686c30313900000000 ,
+        0x00000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="Tahoma"
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =470
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0x84c3d0b4eb118044bc7bbe1c7efdd310
+            End
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Width =570
+                    Height =465
+                    Name ="Text10"
+                    Caption ="Cell no."
+                    GUID = Begin
+                        0x3888d4cacb17bc40af16d1cd06ba0c1f
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =3174
+                    Top =5
+                    Width =795
+                    Height =450
+                    Name ="Text12"
+                    Caption ="Anode no."
+                    GUID = Begin
+                        0x205e1f77ae78c2428e26ea579c737255
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =3968
+                    Top =5
+                    Width =915
+                    Height =450
+                    Name ="Text14"
+                    Caption ="Cathode no."
+                    GUID = Begin
+                        0xc3416d8e4c3a764f85516e29fbc4513c
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6009
+                    Top =5
+                    Width =1011
+                    Height =465
+                    Name ="Text16"
+                    Caption ="Membrane type"
+                    GUID = Begin
+                        0x65c9d165cb2a214c8750fd09d83ecc15
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =4875
+                    Top =5
+                    Width =1125
+                    Height =465
+                    Name ="Text18"
+                    Caption ="Membrane no."
+                    GUID = Begin
+                        0xad562f7964e8a2498cd6803a0060ce22
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =7823
+                    Top =5
+                    Width =915
+                    Height =465
+                    Name ="Text22"
+                    Caption ="Assembly date"
+                    GUID = Begin
+                        0x6e910b242e642b40a93971bb7a95bb8b
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =566
+                    Top =5
+                    Width =780
+                    Height =465
+                    Name ="Text24"
+                    Caption ="Electro-lyser"
+                    GUID = Begin
+                        0xb3782a3bd39fc743ba89e2c301876aec
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =1360
+                    Top =5
+                    Width =465
+                    Height =465
+                    Name ="Text26"
+                    Caption ="Pos."
+                    GUID = Begin
+                        0xaf6a9c9151c3794a897e367b9e851238
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =8730
+                    Top =5
+                    Width =1140
+                    Height =465
+                    Name ="Text32"
+                    Caption ="Commis. date"
+                    GUID = Begin
+                        0x66958d0197b56f4390ea003c60bf11df
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =11452
+                    Width =570
+                    Height =465
+                    Name ="Text51"
+                    Caption ="tot. DOL"
+                    GUID = Begin
+                        0x7cee64f408010f499d59c40db135fc2f
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =2494
+                    Top =5
+                    Width =690
+                    Height =465
+                    Name ="Bezeichnungsfeld92"
+                    Caption ="Group"
+                    GUID = Begin
+                        0x32015442dfecfa48a03975d97fd8776a
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =10431
+                    Width =1020
+                    Height =465
+                    Name ="Bezeichnungsfeld95"
+                    Caption ="Decommis.date"
+                    GUID = Begin
+                        0xa3163a198a08c740b859c7bd90a06bfc
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =13040
+                    Width =2265
+                    Height =465
+                    Name ="Label123"
+                    Caption ="Reason for decommission/inspection"
+                    GUID = Begin
+                        0x16921590d9628841a3cc3f3c0cd0a971
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =22904
+                    Width =1020
+                    Height =465
+                    Name ="Label122"
+                    Caption ="Anode coating"
+                    GUID = Begin
+                        0xcdb08b101e640b4f8458128cb5dd951d
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =25972
+                    Top =5
+                    Width =1020
+                    Height =465
+                    Name ="Label121"
+                    Caption ="Cathode coating"
+                    GUID = Begin
+                        0x0a565ad2b68204498f89915a44ded3ea
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =29027
+                    Width =1590
+                    Height =465
+                    Name ="Label120"
+                    Caption ="Membrane"
+                    GUID = Begin
+                        0xf078588718530a4c97fbb41d84d30e5b
+                    End
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =23931
+                    Top =5
+                    Width =1035
+                    Height =465
+                    Name ="Label137"
+                    Caption ="Anode electrode"
+                    GUID = Begin
+                        0x805ecdf5553a2b4d8c67ae78e38a424e
+                    End
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =26986
+                    Width =1020
+                    Height =465
+                    Name ="Label134"
+                    Caption ="Cathode electrode"
+                    GUID = Begin
+                        0xe0b67c75c61e454fad48f6de1a95e5b8
+                    End
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =15299
+                    Width =7605
+                    Height =465
+                    Name ="Label143"
+                    Caption ="Remarks"
+                    GUID = Begin
+                        0xfb190abead54b74da46b20b99da47aab
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =24952
+                    Top =5
+                    Width =1005
+                    Height =465
+                    Name ="Label148"
+                    Caption ="Anode shell"
+                    GUID = Begin
+                        0x7697b10bd43df745b7ed531402a1c535
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =28013
+                    Top =5
+                    Width =1020
+                    Height =465
+                    Name ="Label150"
+                    Caption ="Cathode shell"
+                    GUID = Begin
+                        0xbf590d03eabc694282588af8b12216e6
+                    End
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =7029
+                    Top =5
+                    Width =795
+                    Height =465
+                    Name ="Bezeichnungsfeld157"
+                    Caption ="Gap\015\012[mm]"
+                    GUID = Begin
+                        0x4ee1a43fa346f64ab56d9ec7c95813fb
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =12019
+                    Width =1020
+                    Height =465
+                    Name ="Bezeichnungsfeld162"
+                    Caption ="Disassem-bly date"
+                    GUID = Begin
+                        0x9e3bbf2e44a41243932e2e7b31aea64c
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =1814
+                    Width =690
+                    Height =465
+                    Name ="Label167"
+                    Caption ="Gen."
+                    GUID = Begin
+                        0xa07752060b6d7e4a80866de028cd5958
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =9864
+                    Width =570
+                    Height =465
+                    Name ="Label171"
+                    Caption ="curr.DOL"
+                    GUID = Begin
+                        0x231bf552229d364a93e28348c6054ffb
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1031
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0xfaaeacc13c9639459f7c9ac935854f58
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    TextFontFamily =0
+                    Left =13947
+                    Top =113
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    BackColor =12632256
+                    Name ="Feld74"
+                    ControlSource ="=Date()"
+                    GUID = Begin
+                        0xb184a5fb611dc441ae5dbf21d5b5e100
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Top =566
+                    Width =555
+                    Height =465
+                    Name ="Text76"
+                    Caption ="Cell no."
+                    GUID = Begin
+                        0x783387ddf787a044ad6e46dc5ff35915
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =3181
+                    Top =566
+                    Width =780
+                    Height =450
+                    Name ="Text77"
+                    Caption ="Anode no. "
+                    GUID = Begin
+                        0x930393169db7514783cdeaf64605cfb7
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =3968
+                    Top =566
+                    Width =915
+                    Height =450
+                    Name ="Text78"
+                    Caption ="Cathode no. "
+                    GUID = Begin
+                        0x1d6edefef0bd914984447913ea808fed
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =6009
+                    Top =566
+                    Width =1026
+                    Height =465
+                    Name ="Text79"
+                    Caption ="Membrane type"
+                    GUID = Begin
+                        0x97301453b718ce4a9b9a42fad096098d
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =4875
+                    Top =566
+                    Width =1125
+                    Height =465
+                    Name ="Text80"
+                    Caption ="Membrane no."
+                    GUID = Begin
+                        0x1590cc2155bacb45b63549549215bc9a
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =7823
+                    Top =566
+                    Width =915
+                    Height =465
+                    Name ="Text82"
+                    Caption ="Assembly date"
+                    GUID = Begin
+                        0xeb117599e830fb49a2877fd60b242f82
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =566
+                    Top =566
+                    Width =780
+                    Height =465
+                    Name ="Text83"
+                    Caption ="Electro-lyser"
+                    GUID = Begin
+                        0xbc294b41fd16ae4aa13a19b628b16423
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =1360
+                    Top =566
+                    Width =465
+                    Height =450
+                    Name ="Text84"
+                    Caption ="Pos."
+                    GUID = Begin
+                        0x538bb309d0a6ac4297232357185af780
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =8730
+                    Top =566
+                    Width =1140
+                    Height =465
+                    Name ="Text85"
+                    Caption ="Commis. date"
+                    GUID = Begin
+                        0xfb37046235abc14d97850910fd85536f
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =10431
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Text86"
+                    Caption ="Decommis.date"
+                    GUID = Begin
+                        0xbd9561d4b6865e4c917d99ea842d6cbf
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =13040
+                    Top =566
+                    Width =2265
+                    Height =450
+                    Name ="Text88"
+                    Caption ="Reason for decommission/inspection"
+                    GUID = Begin
+                        0x7cfc91467cb33c4bab2a6bf9a5aa0e5a
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =11452
+                    Top =566
+                    Width =570
+                    Height =450
+                    Name ="Text89"
+                    Caption ="tot. DOL"
+                    GUID = Begin
+                        0x369afff0d8a1d442abc6f02bc87debe4
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =2494
+                    Top =566
+                    Width =690
+                    Height =450
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Group"
+                    GUID = Begin
+                        0x2427840990aba945a35f9dcf4fe9d85d
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =29027
+                    Top =566
+                    Width =1590
+                    Height =450
+                    Name ="Label119"
+                    Caption ="Membrane"
+                    GUID = Begin
+                        0x5b7c45551aa811439637cb0f566a73ef
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =15307
+                    Top =566
+                    Width =7605
+                    Height =450
+                    Name ="Label142"
+                    Caption ="Remarks"
+                    GUID = Begin
+                        0x3f8e96f2161cb943b7e300e5bb6bfc38
+                    End
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =22904
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Label144"
+                    Caption ="Anode coating"
+                    GUID = Begin
+                        0x41c0b4f0e34371409d5f004533b6dded
+                    End
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =23924
+                    Top =566
+                    Width =1035
+                    Height =465
+                    Name ="Label145"
+                    Caption ="Anode electrode"
+                    GUID = Begin
+                        0x14c9b01e1f6c3845a5733219531b3a29
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =25965
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Label146"
+                    Caption ="Cathode coating"
+                    GUID = Begin
+                        0x885ab9018f06ad41a62c88e0e5ea899c
+                    End
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =26986
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Label147"
+                    Caption ="Cathode electrode"
+                    GUID = Begin
+                        0xd501f7d3f95a1946845c4529dfc15111
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =24945
+                    Top =566
+                    Width =1005
+                    Height =465
+                    Name ="Label149"
+                    Caption ="Anode shell"
+                    GUID = Begin
+                        0x5b4c3b6409a364468226c9243c0f2372
+                    End
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =28006
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Label151"
+                    Caption ="Cathode shell"
+                    GUID = Begin
+                        0x0d3493f98ee46e45b4f6c8e93849a301
+                    End
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =7029
+                    Top =566
+                    Width =795
+                    Height =465
+                    Name ="Bezeichnungsfeld158"
+                    Caption ="Gap\015\012[mm]"
+                    GUID = Begin
+                        0xc75c6a69299cef4c8cbb107b12f6099d
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =12019
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Bezeichnungsfeld163"
+                    Caption ="Disassem-bly date"
+                    GUID = Begin
+                        0xb1b991d39c1d634eb2c74625e218bd46
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =1814
+                    Top =566
+                    Width =690
+                    Height =450
+                    Name ="Label168"
+                    Caption ="Gen."
+                    GUID = Begin
+                        0xf356d60a0207044eb74a5f40fb49f283
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =9864
+                    Top =566
+                    Width =570
+                    Height =450
+                    Name ="Label172"
+                    Caption ="curr.DOL"
+                    GUID = Begin
+                        0x22a69548114df845bfca757e892cb5fd
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x8a1388a67b43df4983ffa0758983f161
+            End
+            Begin
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =3181
+                    Width =787
+                    ColumnWidth =1005
+                    TabIndex =4
+                    Name ="Anode no."
+                    ControlSource ="Anoden Nr"
+                    EventProcPrefix ="Anode_no_"
+                    GUID = Begin
+                        0x2b7ae607a7b2cc46aee4fac4e36c1045
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =3969
+                    Width =907
+                    ColumnWidth =1170
+                    TabIndex =5
+                    Name ="Cathode no."
+                    ControlSource ="Kathoden Nr"
+                    EventProcPrefix ="Cathode_no_"
+                    GUID = Begin
+                        0x192e5c1a1f534a43bf5f67f8117353cb
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =6009
+                    Width =1021
+                    ColumnWidth =1080
+                    TabIndex =7
+                    Name ="Membrane type"
+                    ControlSource ="Membrantyp"
+                    EventProcPrefix ="Membrane_type"
+                    GUID = Begin
+                        0xec14cd0baa43cd49a9b066c5431126df
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =119
+                    TextAlign =2
+                    Left =4876
+                    Width =1134
+                    ColumnWidth =1164
+                    TabIndex =6
+                    BackColor =16777164
+                    Name ="Membrane no."
+                    ControlSource ="Membran Nr"
+                    EventProcPrefix ="Membrane_no_"
+                    GUID = Begin
+                        0x92c2025fd3001a49989694472f24589f
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =8730
+                    Width =1137
+                    ColumnWidth =1056
+                    TabIndex =10
+                    Name ="Commis."
+                    ControlSource ="Einschalt Datum"
+                    EventProcPrefix ="Commis_"
+                    GUID = Begin
+                        0x378cd9c139912742bbd8bd02cbe12d05
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =10431
+                    Width =1026
+                    ColumnWidth =1032
+                    TabIndex =11
+                    Name ="Decomis."
+                    ControlSource ="Ausschalt Datum"
+                    EventProcPrefix ="Decomis_"
+                    GUID = Begin
+                        0x2716304755ecf64c9be5c74b0427947a
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =93
+                    TextAlign =2
+                    Width =567
+                    ColumnWidth =756
+                    Name ="Cell no."
+                    ControlSource ="Element Nr"
+                    EventProcPrefix ="Cell_no_"
+                    GUID = Begin
+                        0x299507c8d2e75c4f9288b2c8f4e45d8d
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =13039
+                    Width =2265
+                    TabIndex =14
+                    Name ="Reason for decommis."
+                    ControlSource ="Abschaltgrund"
+                    EventProcPrefix ="Reason_for_decommis_"
+                    GUID = Begin
+                        0xdacd83e156ff8c43bc3b8e1bc0517961
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =11460
+                    Width =567
+                    TabIndex =12
+                    Name ="DOL"
+                    ControlSource ="=[Ausschalt Datum]-[Einschalt Datum]"
+                    GUID = Begin
+                        0x1bf72287d9c6674db4661a4f21a47d0d
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =567
+                    Width =794
+                    TabIndex =1
+                    Name ="Electrolyser"
+                    ControlSource ="Elektrolyseur"
+                    GUID = Begin
+                        0x4ec1e32c95b15e4d8e1cf460acf0fcf4
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =1360
+                    Width =454
+                    ColumnWidth =900
+                    TabIndex =2
+                    Name ="Position"
+                    ControlSource ="Position"
+                    GUID = Begin
+                        0xc80be3073e29fa4d9b80b5d32cddb07a
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =2494
+                    Width =681
+                    TabIndex =3
+                    Name ="Group"
+                    ControlSource ="Gruppe"
+                    GUID = Begin
+                        0xe82fb99dd295a949b737a3c9d23754bd
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =255
+                    TextAlign =2
+                    Left =7823
+                    Width =915
+                    TabIndex =9
+                    Name ="Assembly date"
+                    ControlSource ="Montage Datum"
+                    EventProcPrefix ="Assembly_date"
+                    GUID = Begin
+                        0x6a28c401552d174e8620964206b475f9
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =22903
+                    Width =1020
+                    TabIndex =16
+                    Name ="Anode coating"
+                    ControlSource ="Anode coating"
+                    EventProcPrefix ="Anode_coating"
+                    GUID = Begin
+                        0x831a84e620b23d44b7852c707c11b349
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =25965
+                    Width =1020
+                    TabIndex =19
+                    Name ="Cathode coating"
+                    ControlSource ="Cathode coating"
+                    EventProcPrefix ="Cathode_coating"
+                    GUID = Begin
+                        0xe3c14ce2a905ce48ab6bac6f00b9e61f
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =29026
+                    Width =1605
+                    TabIndex =22
+                    Name ="Info membrane"
+                    ControlSource ="Info membrane"
+                    EventProcPrefix ="Info_membrane"
+                    GUID = Begin
+                        0x3c4259732e79184b97dece4c64f63c46
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =23924
+                    Width =1005
+                    TabIndex =17
+                    Name ="Anode electrode"
+                    ControlSource ="Anode electrode"
+                    EventProcPrefix ="Anode_electrode"
+                    GUID = Begin
+                        0x5be2262f76c76941af76e94b056ef2e5
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =26985
+                    Width =1020
+                    TabIndex =20
+                    Name ="Cathode electrode"
+                    ControlSource ="Cathode electrode"
+                    EventProcPrefix ="Cathode_electrode"
+                    GUID = Begin
+                        0x8f0057b60ae9dd478dc1471a50c4c18a
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =24944
+                    Width =1005
+                    TabIndex =18
+                    Name ="Anode shell"
+                    ControlSource ="Anode shell"
+                    EventProcPrefix ="Anode_shell"
+                    GUID = Begin
+                        0x47d1180a2a5ba84eacb5ca1047cc55bc
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =28006
+                    Width =1020
+                    TabIndex =21
+                    Name ="Cathode shell"
+                    ControlSource ="Cathode shell"
+                    EventProcPrefix ="Cathode_shell"
+                    GUID = Begin
+                        0x2b66f25751b0824ea751efdc8aeb6dc6
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =15307
+                    Width =7605
+                    TabIndex =15
+                    Name ="Text141"
+                    ControlSource ="Remarks"
+                    GUID = Begin
+                        0x40d1f3641325c542bbd676c3a11a61f2
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =119
+                    TextAlign =2
+                    Left =7029
+                    Width =795
+                    TabIndex =8
+                    Name ="Text156"
+                    ControlSource ="Elektroden Abstand"
+                    GUID = Begin
+                        0x14c016bd5ae4524b9cceea0dca7a8f0e
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =247
+                    TextAlign =2
+                    Left =12018
+                    Width =1026
+                    TabIndex =13
+                    Name ="Text164"
+                    ControlSource ="Demontage Datum"
+                    GUID = Begin
+                        0x13090e0d2974b24f838b92c438812639
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =1814
+                    Width =681
+                    TabIndex =23
+                    Name ="Generation"
+                    ControlSource ="Generation"
+                    GUID = Begin
+                        0x5df5f97bdb3e5640b8bf84776443b8d4
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =9864
+                    Width =561
+                    TabIndex =24
+                    Name ="CurrentDOL"
+                    ControlSource ="AktuelleDOL"
+                    GUID = Begin
+                        0x051151ae8885ef46b97d091a78384fb9
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =566
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0x21c1d9d4d9611f4b87c66a5cadcfedfe
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12925
+                    Top =113
+                    Width =1597
+                    Height =227
+                    Name ="Feld80"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                    GUID = Begin
+                        0xa9cda8fbaee0894993280566396e6bb5
+                    End
+                End
+                Begin PageBreak
+                    OverlapFlags =85
+                    Name ="Seitenumbruch70"
+                    GUID = Begin
+                        0x44266a758da4ae4486f30d3103366ce8
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0xc4e8a6e865305c4cbd68ea1a17cf4c45
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Dim PosX As Long
+    
+    'Felder anordnen
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblMontagedatenFormat ORDER BY ElementNrAnzeigen")
+    rst1.MoveFirst
+    PosX = 0
+    Text10.Left = PosX
+    Text76.Left = PosX
+    [Cell no.].Left = PosX
+    Text10.Width = rst1!ElementNrBreite
+    Text76.Width = rst1!ElementNrBreite
+    [Cell no.].Width = rst1!ElementNrBreite
+    If rst1!ElementNrAnzeigen = 0 Then
+        Text10.Visible = False
+        Text76.Visible = False
+        [Cell no.].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!ElementNrBreite
+    End If
+    
+    Text24.Left = PosX
+    Text83.Left = PosX
+    Electrolyser.Left = PosX
+    Text24.Width = rst1!ElektrolyseurBreite
+    Text83.Width = rst1!ElektrolyseurBreite
+    Electrolyser.Width = rst1!ElektrolyseurBreite
+    If rst1!ElektrolyseurAnzeigen = 0 Then
+        Text24.Visible = False
+        Text83.Visible = False
+        Electrolyser.Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!ElektrolyseurBreite
+    End If
+    
+    Text26.Left = PosX
+    Text84.Left = PosX
+    Position.Left = PosX
+    Text26.Width = rst1!PosBreite
+    Text84.Width = rst1!PosBreite
+    Position.Width = rst1!PosBreite
+    If rst1!PosAnzeigen = 0 Then
+        Text26.Visible = False
+        Text84.Visible = False
+        Position.Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!PosBreite
+    End If
+        
+    Label167.Left = PosX
+    Label168.Left = PosX
+    Generation.Left = PosX
+    Label167.Width = rst1!GenerationBreite
+    Label168.Width = rst1!GenerationBreite
+    Generation.Width = rst1!GenerationBreite
+    If rst1!GenerationAnzeigen = 0 Then
+        Label167.Visible = False
+        Label168.Visible = False
+        Generation.Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!GenerationBreite
+    End If
+    
+    Bezeichnungsfeld92.Left = PosX
+    Bezeichnungsfeld93.Left = PosX
+    Group.Left = PosX
+    Bezeichnungsfeld92.Width = rst1!GruppeBreite
+    Bezeichnungsfeld93.Width = rst1!GruppeBreite
+    Group.Width = rst1!GruppeBreite
+    If rst1!GruppeAnzeigen = 0 Then
+        Bezeichnungsfeld92.Visible = False
+        Bezeichnungsfeld93.Visible = False
+        Group.Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!GruppeBreite
+    End If
+    
+    Text12.Left = PosX
+    Text77.Left = PosX
+    [Anode no.].Left = PosX
+    Text12.Width = rst1!AnodeNrBreite
+    Text77.Width = rst1!AnodeNrBreite
+    [Anode no.].Width = rst1!AnodeNrBreite
+    If rst1!AnodeNrAnzeigen = 0 Then
+        Text12.Visible = False
+        Text77.Visible = False
+        [Anode no.].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!AnodeNrBreite
+    End If
+    
+    Text14.Left = PosX
+    Text78.Left = PosX
+    [Cathode no.].Left = PosX
+    Text14.Width = rst1!KathodeNrBreite
+    Text78.Width = rst1!KathodeNrBreite
+    [Cathode no.].Width = rst1!KathodeNrBreite
+    If rst1!KathodeNrAnzeigen = 0 Then
+        Text14.Visible = False
+        Text78.Visible = False
+        [Cathode no.].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!KathodeNrBreite
+    End If
+    
+    Text18.Left = PosX
+    Text80.Left = PosX
+    [Membrane no.].Left = PosX
+    Text18.Width = rst1!MembranNrBreite
+    Text80.Width = rst1!MembranNrBreite
+    [Membrane no.].Width = rst1!MembranNrBreite
+    If rst1!MembranNrAnzeigen = 0 Then
+        Text18.Visible = False
+        Text80.Visible = False
+        [Membrane no.].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!MembranNrBreite
+    End If
+    
+    Text16.Left = PosX
+    Text79.Left = PosX
+    [Membrane type].Left = PosX
+    Text16.Width = rst1!MembrantypBreite
+    Text79.Width = rst1!MembrantypBreite
+    [Membrane type].Width = rst1!MembrantypBreite
+    If rst1!MembrantypAnzeigen = 0 Then
+        Text16.Visible = False
+        Text79.Visible = False
+        [Membrane type].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!MembrantypBreite
+    End If
+    
+    Bezeichnungsfeld157.Left = PosX
+    Bezeichnungsfeld158.Left = PosX
+    Text156.Left = PosX
+    Bezeichnungsfeld157.Width = rst1!ElektrodenAbstandBreite
+    Bezeichnungsfeld157.Width = rst1!ElektrodenAbstandBreite
+    Text156.Width = rst1!ElektrodenAbstandBreite
+    If rst1!ElektrodenAbstandAnzeigen = 0 Then
+        Bezeichnungsfeld157.Visible = False
+        Bezeichnungsfeld158.Visible = False
+        Text156.Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!ElektrodenAbstandBreite
+    End If
+    
+    Text22.Left = PosX
+    Text82.Left = PosX
+    [Assembly date].Left = PosX
+    Text22.Width = rst1!MontagedatumBreite
+    Text82.Width = rst1!MontagedatumBreite
+    [Assembly date].Width = rst1!MontagedatumBreite
+    If rst1!MontagedatumAnzeigen = 0 Then
+        Text22.Visible = False
+        Text82.Visible = False
+        [Assembly date].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!MontagedatumBreite
+    End If
+    
+    Text32.Left = PosX
+    Text85.Left = PosX
+    [Commis.].Left = PosX
+    Text32.Width = rst1!InbetriebnahmeDatumBreite
+    Text85.Width = rst1!InbetriebnahmeDatumBreite
+    [Commis.].Width = rst1!InbetriebnahmeDatumBreite
+    If rst1!InbetriebnahmeDatumAnzeigen = 0 Then
+        Text32.Visible = False
+        Text85.Visible = False
+        [Commis.].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!InbetriebnahmeDatumBreite
+    End If
+    
+    Label171.Left = PosX
+    Label172.Left = PosX
+    CurrentDOL.Left = PosX
+    Label171.Width = rst1!DOLBreite
+    Label172.Width = rst1!DOLBreite
+    CurrentDOL.Width = rst1!DOLBreite
+    If rst1!DOLAnzeigen = 0 Then
+        Label171.Visible = False
+        Label172.Visible = False
+        CurrentDOL.Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!DOLBreite
+    End If
+    
+    Bezeichnungsfeld95.Left = PosX
+    Text86.Left = PosX
+    [Decomis.].Left = PosX
+    Bezeichnungsfeld95.Width = rst1!AbschaltdatumBreite
+    Text86.Width = rst1!AbschaltdatumBreite
+    [Decomis.].Width = rst1!AbschaltdatumBreite
+    If rst1!AbschaltdatumAnzeigen = 0 Then
+        Bezeichnungsfeld95.Visible = False
+        Text86.Visible = False
+        [Decommis.].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!AbschaltdatumBreite
+    End If
+    
+    Text51.Left = PosX
+    Text89.Left = PosX
+    DOL.Left = PosX
+    Text51.Width = rst1!DOLBreite
+    Text89.Width = rst1!DOLBreite
+    DOL.Width = rst1!DOLBreite
+    If rst1!DOLAnzeigen = 0 Then
+        Text51.Visible = False
+        Text89.Visible = False
+        DOL.Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!DOLBreite
+    End If
+
+    Bezeichnungsfeld162.Left = PosX
+    Bezeichnungsfeld163.Left = PosX
+    Text164.Left = PosX
+    Bezeichnungsfeld162.Width = rst1!DemontagedatumBreite
+    Bezeichnungsfeld163.Width = rst1!DemontagedatumBreite
+    Text164.Width = rst1!DemontagedatumBreite
+    If rst1!DemontagedatumAnzeigen = 0 Then
+        Bezeichnungsfeld162.Visible = False
+        Bezeichnungsfeld163.Visible = False
+        Text164.Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!DemontagedatumBreite
+    End If
+    
+    Label123.Left = PosX
+    Text88.Left = PosX
+    [Reason for decommis.].Left = PosX
+    Label123.Width = rst1!AbschaltgrundBreite
+    Text88.Width = rst1!AbschaltgrundBreite
+    [Reason for decommis.].Width = rst1!AbschaltgrundBreite
+    If rst1!AbschaltgrundAnzeigen = 0 Then
+        Label123.Visible = False
+        Text88.Visible = False
+        [Reason for decommis.].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!AbschaltgrundBreite
+    End If
+    
+    Label143.Left = PosX
+    Label142.Left = PosX
+    Text141.Left = PosX
+    Label143.Width = rst1!BemerkungenBreite
+    Label142.Width = rst1!BemerkungenBreite
+    Text141.Width = rst1!BemerkungenBreite
+    If rst1!BemerkungenAnzeigen = 0 Then
+        Label143.Visible = False
+        Label142.Visible = False
+        Text141.Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!BemerkungenBreite
+    End If
+    
+    Label122.Left = PosX
+    Label144.Left = PosX
+    [Anode coating].Left = PosX
+    Label122.Width = rst1!AnodencoatingBreite
+    Label144.Width = rst1!AnodencoatingBreite
+    [Anode coating].Width = rst1!AnodencoatingBreite
+    If rst1!AnodencoatingAnzeigen = 0 Then
+        Label122.Visible = False
+        Label144.Visible = False
+        [Anode coating].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!AnodencoatingBreite
+    End If
+    
+    Label137.Left = PosX
+    Label145.Left = PosX
+    [Anode electrode].Left = PosX
+    Label137.Width = rst1!AnodenelektrodeBreite
+    Label145.Width = rst1!AnodenelektrodeBreite
+    [Anode electrode].Width = rst1!AnodenelektrodeBreite
+    If rst1!AnodenelektrodeAnzeigen = 0 Then
+        Label137.Visible = False
+        Label145.Visible = False
+        [Anode electrode].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!AnodenelektrodeBreite
+    End If
+    
+    Label148.Left = PosX
+    Label149.Left = PosX
+    [Anode shell].Left = PosX
+    Label148.Width = rst1!AnodenwanneBreite
+    Label149.Width = rst1!AnodenwanneBreite
+    [Anode shell].Width = rst1!AnodenwanneBreite
+    If rst1!AnodenwanneAnzeigen = 0 Then
+        Label148.Visible = False
+        Label149.Visible = False
+        [Anode shell].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!AnodenwanneBreite
+    End If
+    
+    Label121.Left = PosX
+    Label146.Left = PosX
+    [Cathode coating].Left = PosX
+    Label121.Width = rst1!KathodencoatingBreite
+    Label146.Width = rst1!KathodencoatingBreite
+    [Cathode coating].Width = rst1!KathodencoatingBreite
+    If rst1!KathodencoatingAnzeigen = 0 Then
+        Label121.Visible = False
+        Label146.Visible = False
+        [Cathode coating].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!KathodencoatingBreite
+    End If
+    
+    Label134.Left = PosX
+    Label147.Left = PosX
+    [Cathode electrode].Left = PosX
+    Label134.Width = rst1!KathodenelektrodeBreite
+    Label147.Width = rst1!KathodenelektrodeBreite
+    [Cathode electrode].Width = rst1!KathodenelektrodeBreite
+    If rst1!KathodenelektrodeAnzeigen = 0 Then
+        Label134.Visible = False
+        Label147.Visible = False
+        [Cathode electrode].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!KathodenelektrodeBreite
+    End If
+    
+    Label150.Left = PosX
+    Label151.Left = PosX
+    [Cathode shell].Left = PosX
+    Label150.Width = rst1!KathodenwanneBreite
+    Label151.Width = rst1!KathodenwanneBreite
+    [Cathode shell].Width = rst1!KathodenwanneBreite
+    If rst1!KathodenwanneAnzeigen = 0 Then
+        Label150.Visible = False
+        Label151.Visible = False
+        [Cathode shell].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!KathodenwanneBreite
+    End If
+    
+    Label120.Left = PosX
+    Label119.Left = PosX
+    [Info membrane].Left = PosX
+    Label120.Width = rst1!MembranBreite
+    Label119.Width = rst1!MembranBreite
+    [Info membrane].Width = rst1!MembranBreite
+    If rst1!MembranAnzeigen = 0 Then
+        Label120.Visible = False
+        Label119.Visible = False
+        [Info membrane].Visible = False
+    Else
+        PosX = PosX + rst1!Feldabstand + rst1!MembranBreite
+    End If
+    
+    Me.Width = PosX
+    rst1.Close
+    
+    'Felder beschriften
+    If GetIDGewSprache() = 1 Then
+        Text10.Caption = "Elem. Nr."
+        Text24.Caption = "Elektro-lyseur"
+        Text26.Caption = "Pos."
+        Label167.Caption = "Gen."
+        Bezeichnungsfeld92.Caption = "Grup-pe"
+        Text12.Caption = "Anode Nr."
+        Text14.Caption = "Kathode Nr."
+        Text18.Caption = "Membran Nr."
+        Text16.Caption = "Membran-typ"
+        Bezeichnungsfeld157.Caption = "Elektr. Abstd."
+        Text32.Caption = "Inbetriebn.-datum"
+        Bezeichnungsfeld95.Caption = "Abschalt-datum"
+        Text51.Caption = "tot. DOL"
+        Label171.Caption = "akt. DOL"
+        Label123.Caption = "Abschaltgrund/Inspektion"
+        Bezeichnungsfeld162.Caption = "Demont.-datum"
+        Label122.Caption = "Anoden-Coating"
+        Label137.Caption = "Anoden-Elektrode"
+        Label148.Caption = "Anoden-Wanne"
+        Label121.Caption = "Kathoden-Coating"
+        Label134.Caption = "Kathoden-Elektrode"
+        Label150.Caption = "Kathoden-Wanne"
+        Label120.Caption = "Membran"
+        Label143.Caption = "Bemerkungen"
+        Text22.Caption = "Montage-datum"
+        
+        Text76.Caption = "Elem. Nr."
+        Text83.Caption = "Elektro-lyseur"
+        Text84.Caption = "Pos."
+        Label168.Caption = "Gen."
+        Bezeichnungsfeld93.Caption = "Grup-pe"
+        Text77.Caption = "Anode Nr."
+        Text78.Caption = "Kathode Nr."
+        Text80.Caption = "Membran Nr."
+        Text79.Caption = "Membran-typ"
+        Bezeichnungsfeld158.Caption = "Elektr. Abstd."
+        Text85.Caption = "Inbetriebn.-datum"
+        Text86.Caption = "Abschalt-datum"
+        Text89.Caption = "tot. DOL"
+        Label171.Caption = "akt. DOL"
+        Text88.Caption = "Abschaltgrund/Inspektion"
+        Bezeichnungsfeld163.Caption = "Demont.-datum"
+        Label144.Caption = "Anoden-Coating"
+        Label145.Caption = "Anoden-Elektrode"
+        Label149.Caption = "Anoden-Wanne"
+        Label146.Caption = "Kathoden-Coating"
+        Label147.Caption = "Kathoden-Elektrode"
+        Label151.Caption = "Kathoden-Wanne"
+        Label119.Caption = "Membran"
+        Label142.Caption = "Bemerkungen"
+        Text22.Caption = "Montage-datum"
+    Else
+        
+        Text10.Caption = "Cell No."
+        Text24.Caption = "Electro-lyser"
+        Text26.Caption = "Pos."
+        Label167.Caption = "Gen."
+        Bezeichnungsfeld92.Caption = "Group"
+        Text12.Caption = "Anode No."
+        Text14.Caption = "Cathode No."
+        Text18.Caption = "Membrane No."
+        Text16.Caption = "Membrane type"
+        Bezeichnungsfeld157.Caption = "Gap [mm]"
+        Text32.Caption = "Commiss. date"
+        Bezeichnungsfeld95.Caption = "Decommiss. date"
+        Text51.Caption = "tot. DOL"
+        Label171.Caption = "curr. DOL"
+        Label123.Caption = "Reason for Decommissioning/Inspection"
+        Bezeichnungsfeld162.Caption = "Disassem-bly date"
+        Label122.Caption = "Anode Coating"
+        Label137.Caption = "Anode Electrode"
+        Label148.Caption = "Anode Shell"
+        Text22.Caption = "Assembly Date"
+        Label143.Caption = "Remarks"
+        Label120.Caption = "Membrane"
+        Label150.Caption = "Cathode Shell"
+        Label134.Caption = "Cathode Electrode"
+        Label121.Caption = "Cathode Coating"
+        Label148.Caption = "Anode Shell"
+        
+        Text76.Caption = "Cell No."
+        Text83.Caption = "Electro-lyser"
+        Text84.Caption = "Pos."
+        Label168.Caption = "Gen."
+        Bezeichnungsfeld93.Caption = "Group"
+        Text77.Caption = "Anode No."
+        Text78.Caption = "Cathode No."
+        Text80.Caption = "Membrane No."
+        Text79.Caption = "Membrane type"
+        Bezeichnungsfeld157.Caption = "Gap [mm]"
+        Text85.Caption = "Commiss. date"
+        Text86.Caption = "Decommiss. date"
+        Text89.Caption = "tot. DOL"
+        Label172.Caption = "curr. DOL"
+        Text88.Caption = "Reason for Decommissioning/Inspection"
+        Bezeichnungsfeld163.Caption = "Disassem-bly date"
+        Label144.Caption = "Anode Coating"
+        Label145.Caption = "Anode Electrode"
+        Label149.Caption = "Anode Shell"
+        Label142.Caption = "Remarks"
+        Label119.Caption = "Membrane"
+        Label151.Caption = "Cathode Shell"
+        Label147.Caption = "Cathode Electrode"
+        Label146.Caption = "Cathode Coating"
+        Text82.Caption = "Assembly Date"
+        
+    End If
+End Sub

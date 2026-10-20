@@ -1,0 +1,2 @@
+SELECT [AB PLS CEA Mittel].Datum, ([AB PLS EA Mittel]![EA Mittel]-7)*(90-([PLS]![Mittlere Katholyttemperatur]+[PLS]![Mittlere Anolyttemperatur])/2)-6*([AB PLS CEA Mittel]![Mittelwert von µNaOH]-[PLS]![Garantierter Stromverbrauch])-14*([PLS]![Mittlere NaOH Konzentration]-32) AS [EKA Mittel]
+FROM PLS, [AB PLS CEA Mittel] INNER JOIN [AB PLS EA Mittel] ON [AB PLS CEA Mittel].Datum = [AB PLS EA Mittel].Datum;

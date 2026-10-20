@@ -1,0 +1,262 @@
+Version =17
+VersionRequired =17
+Checksum =122846185
+Begin Form
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =12585
+    ItemSuffix =116
+    Top =30
+    Right =12870
+    Bottom =7980
+    RecSrcDt = Begin
+        0x3016e987d0cae240
+    End
+    RecordSource ="tblAbschaltungskategorien"
+    Caption ="Abschaltungen"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =2850
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =5670
+                    Height =570
+                    FontSize =14
+                    Name ="Text8"
+                    Caption ="Abschaltungskategorien"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10318
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld68"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2250
+                    Top =2610
+                    Width =4575
+                    Height =240
+                    Name ="Bezeichnungsfeld109"
+                    Caption ="Category"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1095
+                    Top =2610
+                    Width =855
+                    Height =240
+                    Name ="Bezeichnungsfeld110"
+                    Caption ="No."
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =6803
+                    Top =113
+                    Width =1716
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl115"
+                    Caption ="Shut Down"
+                    OnClick ="[Event Procedure]"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1147
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10318
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2250
+                    Top =900
+                    Width =4575
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Category"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1095
+                    Top =900
+                    Width =855
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="No."
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1133
+                    Width =780
+                    Name ="Datum"
+                    ControlSource ="ID"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2267
+                    Width =4545
+                    TabIndex =1
+                    Name ="t An"
+                    ControlSource ="Kategorie"
+                    Format ="Fixed"
+                    EventProcPrefix ="t_An"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =9637
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl115_Click()
+    DoCmd.OpenForm "frmMenuAbschaltungen"
+    DoCmd.Close acForm, "frmAbschaltungskategorien"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+
+    If GetIDGewSprache() = 1 Then
+        Text8.Caption = "Abschaltungskategorien"
+        Bezeichnungsfeld110.Caption = "Nr."
+        Bezeichnungsfeld93.Caption = "Nr."
+        Bezeichnungsfeld109.Caption = "Kategorie"
+        Bezeichnungsfeld68.Caption = "Kategorie"
+        
+        Befehl115.Caption = "Abschaltungen"
+        
+    Else
+        Text8.Caption = "Abschaltungskategorien"
+        Bezeichnungsfeld110.Caption = "No."
+        Bezeichnungsfeld93.Caption = "No."
+        Bezeichnungsfeld109.Caption = "Category"
+        Bezeichnungsfeld68.Caption = "Category"
+        
+        Befehl115.Caption = "Shut Down"
+    End If
+
+
+End Sub

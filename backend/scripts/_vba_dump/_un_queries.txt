@@ -1,0 +1,309 @@
+=== AnfügenNormierung
+INSERT INTO Normierung ( Elektrolyseur, Datum, Zeit, [I Gesamt], Cc, [t An], [t Ka], Uo, [U Gesamt], n )
+
+SELECT NormElek.Elektrolyseur, NormElek.Datum, NormElek.Zeit, NormElek.[I Gesamt], NormElek.Cc, NormElek.[t An], NormElek.[t Ka], NormElek.Uo, NormElek.[U Gesamt], NormElek.Elementzahl
+
+FROM NormElek
+
+WHERE (((NormElek.Datum)>#7/20/2004#));
+
+=== Norm _Um_
+SELECT DISTINCTROW [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, [Gesamt Normierung].[I Gesamt], ([Gesamt Normierung]![I Gesamt]/GetGewFlaeche()) AS i, [Gesamt Normierung].Cc, [Gesamt Normierung].[t An], [Gesamt Normierung].[t Ka], ([Gesamt Normierung]![t An]+[Gesamt Normierung]![t Ka])/2 AS tm, [Gesamt Normierung].Uo, [Gesamt Normierung].Position, [Gesamt Normierung].Ui, Um.[Mittelwert von Ui], [Gesamt Normierung].Un AS UnAlt, [tm]-([Mittelwert von Ui]-[Ui])*30 AS tiAlt, TempKorrElement([tm],[Mittelwert von Ui],[Ui]) AS ti, UnBer([Ui],[i],[ti],[Gesamt Normierung]![Cc]) AS Un
+
+FROM [Gesamt Normierung] INNER JOIN Um ON ([Gesamt Normierung].Datum = Um.Datum) AND ([Gesamt Normierung].Elektrolyseur = Um.Elektrolyseur)
+
+ORDER BY [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, [Gesamt Normierung].Position;
+
+=== Norm _Um__90
+SELECT DISTINCTROW [Norm (Um)].Elektrolyseur, [Norm (Um)].Datum, [Norm (Um)].Zeit, [Norm (Um)].[I Gesamt], [Norm (Um)].i, [Norm (Um)].Cc, [Norm (Um)].[t An], [Norm (Um)].[t Ka], [Norm (Um)].tm, [Norm (Um)].Uo, [Norm (Um)].Position, [Norm (Um)].Ui, [Norm (Um)].[Mittelwert von Ui], [Norm (Um)].Un, [Norm (Um)].ti
+
+FROM [Norm (Um)]
+
+WHERE ((([Norm (Um)].ti)>90))
+
+ORDER BY [Norm (Um)].Elektrolyseur, [Norm (Um)].Datum, [Norm (Um)].Zeit, [Norm (Um)].Position;
+
+=== Norm_Um_Alle
+SELECT DISTINCTROW [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, Montage.Membrantyp, Montage.[Element Nr], Montage.[Einschalt Datum], Montage.[Ausschalt Datum], [Gesamt Normierung].[I Gesamt], ([Gesamt Normierung]![I Gesamt]/GetGewFlaeche()) AS i, [Gesamt Normierung].Cc, [Gesamt Normierung].[t An], [Gesamt Normierung].[t Ka], ([Gesamt Normierung]![t An]+[Gesamt Normierung]![t Ka])/2 AS tm, [Gesamt Normierung].Uo, [Gesamt Normierung].Position, [Gesamt Normierung].Ui, Um.[Mittelwert von Ui], [Gesamt Normierung].Un, [tm]-([Mittelwert von Ui]-[Ui])*30 AS ti, Montage.Gruppe, Montage.[Anode coating], Montage.[Cathode coating], Montage.[Elektroden Abstand]
+
+FROM ([Gesamt Normierung] INNER JOIN Um ON ([Gesamt Normierung].Datum = Um.Datum) AND ([Gesamt Normierung].Elektrolyseur = Um.Elektrolyseur)) INNER JOIN Montage ON ([Gesamt Normierung].Position = Montage.Position) AND ([Gesamt Normierung].Elektrolyseur = Montage.Elektrolyseur)
+
+WHERE ((([Gesamt Normierung].Datum)>=[Montage]![Einschalt Datum]) AND ((Montage.[Ausschalt Datum]) Is Null))
+
+ORDER BY [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, [Gesamt Normierung].Position;
+
+=== Norm_Um_AlleDatum
+SELECT [Norm(Um)Alle].Gruppe, [Norm(Um)Alle].Elektrolyseur, [Norm(Um)Alle].Datum, Avg([Norm(Um)Alle].Un) AS [Mittelwert von Un1], [Norm(Um)Alle].Membrantyp, Avg([Norm(Um)Alle].[I Gesamt]) AS [Mittelwert von I Gesamt], [Gruppen aktiv].[Elektroden Abstand], Count([Gruppen aktiv].[Anzahl von Element Nr]) AS [Anzahl von Anzahl von Element Nr], [Gruppen aktiv].Anodencoating, [Gruppen aktiv].Kathodencoating
+
+FROM [Norm(Um)Alle] INNER JOIN [Gruppen aktiv] ON [Norm(Um)Alle].Gruppe = [Gruppen aktiv].Gruppe
+
+GROUP BY [Norm(Um)Alle].Gruppe, [Norm(Um)Alle].Elektrolyseur, [Norm(Um)Alle].Datum, [Norm(Um)Alle].Membrantyp, [Gruppen aktiv].[Elektroden Abstand], [Gruppen aktiv].Anodencoating, [Gruppen aktiv].Kathodencoating
+
+HAVING ((([Norm(Um)Alle].Datum)=[Select]![Date?]))
+
+ORDER BY [Norm(Um)Alle].Gruppe;
+
+=== Norm_Um_ELekDatum
+SELECT [Norm(Um)Alle].Gruppe, [Norm(Um)Alle].Elektrolyseur, [Norm(Um)Alle].Datum, Avg([Norm(Um)Alle].Un) AS [Mittelwert von Un1], [Norm(Um)Alle].Membrantyp, Avg([Norm(Um)Alle].[I Gesamt]) AS [Mittelwert von I Gesamt], [Gruppen aktiv].[Elektroden Abstand], Count([Gruppen aktiv].[Anzahl von Element Nr]) AS [Anzahl von Anzahl von Element Nr], [Gruppen aktiv].Anodencoating, [Gruppen aktiv].Kathodencoating
+
+FROM [Norm(Um)Alle] INNER JOIN [Gruppen aktiv] ON [Norm(Um)Alle].Gruppe = [Gruppen aktiv].Gruppe
+
+GROUP BY [Norm(Um)Alle].Gruppe, [Norm(Um)Alle].Elektrolyseur, [Norm(Um)Alle].Datum, [Norm(Um)Alle].Membrantyp, [Gruppen aktiv].[Elektroden Abstand], [Gruppen aktiv].Anodencoating, [Gruppen aktiv].Kathodencoating
+
+HAVING ((([Norm(Um)Alle].Elektrolyseur) Like [Electrolyser?]) AND (([Norm(Um)Alle].Datum)=[Date?]))
+
+ORDER BY [Norm(Um)Alle].Gruppe;
+
+=== Norm_Um_GR
+SELECT DISTINCTROW [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, Montage.Membrantyp, Montage.[Element Nr], Montage.[Einschalt Datum], Montage.[Ausschalt Datum], [Gesamt Normierung].[I Gesamt], ([Gesamt Normierung]![I Gesamt]/GetGewFlaeche()) AS i, [Gesamt Normierung].Cc, [Gesamt Normierung].[t An], [Gesamt Normierung].[t Ka], ([Gesamt Normierung]![t An]+[Gesamt Normierung]![t Ka])/2 AS tm, [Gesamt Normierung].Uo, [Gesamt Normierung].Position, [Gesamt Normierung].Ui, Um.[Mittelwert von Ui], [Gesamt Normierung].Un, [tm]-([Mittelwert von Ui]-[Ui])*30 AS ti, Montage.Gruppe
+
+FROM tblGewDaten, ([Gesamt Normierung] INNER JOIN Um ON ([Gesamt Normierung].Datum = Um.Datum) AND ([Gesamt Normierung].Elektrolyseur = Um.Elektrolyseur)) INNER JOIN Montage ON ([Gesamt Normierung].Position = Montage.Position) AND ([Gesamt Normierung].Elektrolyseur = Montage.Elektrolyseur)
+
+WHERE ((([Gesamt Normierung].Datum)>=[Montage]![Einschalt Datum] And ([Gesamt Normierung].Datum)>=[tblGewDaten].[Anfangsdatum] And ([Gesamt Normierung].Datum)<=[tblGewDaten].[Enddatum]) AND ((Montage.[Ausschalt Datum]) Is Null) AND ((Montage.Gruppe)=(SELECT IDGruppe FROM tblGewDaten)))
+
+ORDER BY [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, [Gesamt Normierung].Position;
+
+=== Norm_Um_GRalt
+SELECT DISTINCTROW [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, Montage.Membrantyp, Montage.[Element Nr], Montage.[Einschalt Datum], Montage.[Ausschalt Datum], [Gesamt Normierung].[I Gesamt], ([Gesamt Normierung]![I Gesamt]/GetGewFlaeche()) AS i, [Gesamt Normierung].Cc, [Gesamt Normierung].[t An], [Gesamt Normierung].[t Ka], ([Gesamt Normierung]![t An]+[Gesamt Normierung]![t Ka])/2 AS tm, [Gesamt Normierung].Uo, [Gesamt Normierung].Position, [Gesamt Normierung].Ui, Um.[Mittelwert von Ui], [Gesamt Normierung].Un, [tm]-([Mittelwert von Ui]-[Ui])*30 AS ti, Montage.Gruppe
+
+FROM ([Gesamt Normierung] INNER JOIN Um ON ([Gesamt Normierung].Datum = Um.Datum) AND ([Gesamt Normierung].Elektrolyseur = Um.Elektrolyseur)) INNER JOIN Montage ON ([Gesamt Normierung].Position = Montage.Position) AND ([Gesamt Normierung].Elektrolyseur = Montage.Elektrolyseur)
+
+WHERE ((([Gesamt Normierung].Datum)>=[Montage]![Einschalt Datum]) AND ((Montage.[Ausschalt Datum]) Is Null) AND ((Montage.Gruppe)=[Select]![Groupe]))
+
+ORDER BY [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, [Gesamt Normierung].Position;
+
+=== Norm_Um_MittelDat
+SELECT UnGruppenMitteldat.Datum AS Ausdr1, UnGruppenMitteldat.Gruppe AS Ausdr2, UnGruppenMitteldat.[Un Mittel] AS Ausdr3, [UnGruppenMitteldat].[Membrantyp] AS Ausdr4, UnGruppenMitteldat.[Anzahl von Element Nr] AS Ausdr5, UnGruppenMitteldat.[Elektroden Abstand] AS Ausdr6
+
+FROM UnGruppenMitteldat
+
+WHERE ((([UnGruppenMitteldat].[Datum])=[Datum?]));
+
+=== NormELGes
+SELECT DISTINCTROW NormElek.Elektrolyseur, NormElek.Datum, NormElek.Zeit, [NormElek]![Uo]+3/([NormElek]![I Gesamt]/2.72)*(([NormElek]![U Gesamt]/[NormElek]![Elementzahl])-[NormElek]![Uo])-(([NormElek]![I Gesamt]/2.72)/3)*((90-([NormElek]![t An]+[NormElek]![t Ka])/2))*0.01+(([NormElek]![I Gesamt]/2.72)/3)*(32-[NormElek]![Cc])*0.02 AS Un INTO ElekDia
+
+FROM NormElek
+
+WHERE ((NormElek.Datum>=[Auswertungsbeginn]![Datum] And NormElek.Datum<=[Auswertungsende]![Datum]))
+
+ORDER BY NormElek.Elektrolyseur, NormElek.Datum, NormElek.Zeit;
+
+=== NormF
+SELECT Normierung.Normierung, Normierung.Elektrolyseur, F6801.Position, Normierung.Datum, F6801.Membrantyp, *
+
+FROM Normierung INNER JOIN F6801 ON Normierung.Elektrolyseur = F6801.Elektrolyseur
+
+WHERE (((Normierung.Datum)>[F6801.Einschalt Datum]));
+
+=== NormMitDat1
+SELECT DISTINCTROW [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, Montage.Membrantyp, Montage.[Element Nr], Montage.[Einschalt Datum], Montage.[Ausschalt Datum], [Gesamt Normierung].[I Gesamt], ([Gesamt Normierung]![I Gesamt]/GetGewFlaeche()) AS i, [Gesamt Normierung].Cc, [Gesamt Normierung].[t An], [Gesamt Normierung].[t Ka], ([Gesamt Normierung]![t An]+[Gesamt Normierung]![t Ka])/2 AS tm, [Gesamt Normierung].Uo, [Gesamt Normierung].Position, [Gesamt Normierung].Ui, Um.[Mittelwert von Ui], [Gesamt Normierung].Un, [tm]-([Mittelwert von Ui]-[Ui])*30 AS ti, Montage.Gruppe
+
+FROM ([Gesamt Normierung] INNER JOIN Um ON ([Gesamt Normierung].Datum = Um.Datum) AND ([Gesamt Normierung].Elektrolyseur = Um.Elektrolyseur)) INNER JOIN Montage ON ([Gesamt Normierung].Position = Montage.Position) AND ([Gesamt Normierung].Elektrolyseur = Montage.Elektrolyseur)
+
+WHERE ((([Gesamt Normierung].Datum)=[Date?]) AND ((Montage.[Einschalt Datum])<=[Gesamt Normierung]![Datum]) AND ((Montage.[Ausschalt Datum]) Is Null))
+
+ORDER BY [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, [Gesamt Normierung].Position;
+
+=== NormMitDat2
+SELECT NormMitDat1.Datum, NormMitDat1.Gruppe, Avg(NormMitDat1.Un) AS [Mittelwert von Un], [Gruppen aktiv].Membrantyp, [Gruppen aktiv].[Elektroden Abstand], [Gruppen aktiv].Anodencoating, [Gruppen aktiv].Kathodencoating, [Gruppen aktiv].Bemerkungen
+
+FROM NormMitDat1 INNER JOIN [Gruppen aktiv] ON NormMitDat1.Gruppe = [Gruppen aktiv].Gruppe
+
+GROUP BY NormMitDat1.Datum, NormMitDat1.Gruppe, [Gruppen aktiv].Membrantyp, [Gruppen aktiv].[Elektroden Abstand], [Gruppen aktiv].Anodencoating, [Gruppen aktiv].Kathodencoating, [Gruppen aktiv].Bemerkungen
+
+HAVING (((NormMitDat1.Gruppe)>0));
+
+=== qryUnAlleElektrolyseure
+SELECT NormElek.Elektrolyseur, NormElek.Datum, NormElek.Zeit, NormElek.[I Gesamt], [I Gesamt]/GetGewFlaeche() AS i, NormElek.Cc, NormElek.[t An], NormElek.[t Ka], ([t An]+[t Ka])/2 AS tm, NormElek.Uo, [NormElek]![U Gesamt]/[NormElek]![Elementzahl] AS Um, UnBer([Um],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef, GetGewtKorrektur() AS tKorr, GetGewcKorrektur() AS cKorr
+
+FROM NormElek, tblGewDaten
+
+WHERE (((NormElek.Datum)>[tblGewDaten].[Anfangsdatum] And (NormElek.Datum)<[tblGewDaten].[Enddatum]) AND ((NormElek.[I Gesamt]) Is Not Null) AND ((NormElek.Cc) Is Not Null) AND ((NormElek.[t An]) Is Not Null) AND ((NormElek.[t Ka]) Is Not Null));
+
+=== qryUnAlleElektrolyseure2
+SELECT DISTINCTROW Normierung.Elektrolyseur, Normierung.Datum, Normierung.Zeit, Normierung.[I Gesamt], [Normierung]![I Gesamt]/GetGewFlaeche() AS i, Normierung.Cc, Normierung.[t An], Normierung.[t Ka], ([Normierung]![t An]+[Normierung]![t Ka])/2 AS tm, Normierung.Uo, qrySummeUElemente.[Mittelwert von Ui] AS Um, [Uo]+(([Um]-[Uo])*3)/([I Gesamt]/2.72)-0.01*(90-[tm])+0.02*(32-[Cc]) AS Unalt, UnBerVgl([Um],[i],[tm],[Cc]) AS UnVgl3, AktiRef() AS iRef, AkttKorrektur() AS tKorr, AktcKorrektur() AS cKorr, UnBer([Um],[i],[tm],[Cc]) AS Un
+
+FROM tblGewDaten, Normierung INNER JOIN qrySummeUElemente ON Normierung.Normierung = qrySummeUElemente.Normierung
+
+WHERE (((Normierung.Datum)>=[tblGewDaten].[Anfangsdatum] And (Normierung.Datum)<=[tblGewDaten].[Enddatum]) AND ((Normierung.[I Gesamt]) Is Not Null) AND ((Normierung.Cc) Is Not Null) AND ((Normierung.[t An]) Is Not Null) AND ((Normierung.[t Ka]) Is Not Null))
+
+ORDER BY Normierung.Elektrolyseur, Normierung.Datum, Normierung.Zeit;
+
+=== qryUnAlleElemente2
+SELECT tblEingabeUnElement.Elektrolyseur, tblEingabeUnElement.Position, tblEingabeUnElement.Datum, tblEingabeUnElement.Zeit, tblEingabeUnElement.[I Gesamt], [I Gesamt]/GetGewFlaeche() AS i, tblEingabeUnElement.Cc, tblEingabeUnElement.[t An], tblEingabeUnElement.[t Ka], ([t An]+[t Ka])/2 AS tm, [tblEingabeUnElement]![U] AS Um, UnBer([Um],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef, GetGewtKorrektur() AS tKorr, GetGewcKorrektur() AS cKorr
+
+FROM tblGewDaten, tblEingabeUnElement
+
+WHERE (((tblEingabeUnElement.Datum)>[tblGewDaten].[Anfangsdatum] And (tblEingabeUnElement.Datum)<[tblGewDaten].[Enddatum]) AND ((tblEingabeUnElement.[I Gesamt]) Is Not Null) AND ((tblEingabeUnElement.Cc) Is Not Null) AND ((tblEingabeUnElement.[t An]) Is Not Null) AND ((tblEingabeUnElement.[t Ka]) Is Not Null));
+
+=== qryUnAlleGruppen2
+SELECT DISTINCTROW tblEingabeUnGruppe.Gruppe, tblEingabeUnGruppe.Datum, tblEingabeUnGruppe.Zeit, Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating, Gruppenmerkmale.Membrantyp, Gruppenmerkmale.Elektrodenabstand, tblEingabeUnGruppe.[I Gesamt], ([tblEingabeUnGruppe]![I Gesamt]/GetGewFlaeche()) AS i, tblEingabeUnGruppe.Cc, tblEingabeUnGruppe.[t An], tblEingabeUnGruppe.[t Ka], ([tblEingabeUnGruppe]![t An]+[tblEingabeUnGruppe]![t Ka])/2 AS tm, tblEingabeUnGruppe.[U Gesamt], tblEingabeUnGruppe.n, [U Gesamt]/[n] AS Ui, UnBer([Ui],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef
+
+FROM tblGewDaten, tblEingabeUnGruppe INNER JOIN Gruppenmerkmale ON tblEingabeUnGruppe.Gruppe = Gruppenmerkmale.Gruppe
+
+WHERE (((tblEingabeUnGruppe.Datum)>=[tblGewDaten].[Anfangsdatum] And (tblEingabeUnGruppe.Datum)<=[tblGewDaten].[Enddatum]) AND ((tblEingabeUnGruppe.[I Gesamt]) Is Not Null) AND ((tblEingabeUnGruppe.Cc) Is Not Null) AND ((tblEingabeUnGruppe.[t An]) Is Not Null) AND ((tblEingabeUnGruppe.[t Ka]) Is Not Null) AND ((tblEingabeUnGruppe.[U Gesamt]) Is Not Null) AND ((tblEingabeUnGruppe.n) Is Not Null))
+
+ORDER BY tblEingabeUnGruppe.Gruppe, tblEingabeUnGruppe.Datum, tblEingabeUnGruppe.Zeit;
+
+=== qryUnAlleTeilanlagen
+SELECT qryElektrolyseureInAllenTeilanlagen.Teilanlagenbezeichnung, qryUnAlleElektrolyseure.Datum, Avg(qryUnAlleElektrolyseure.[I Gesamt]) AS [Mittelwert von I Gesamt], Avg(qryUnAlleElektrolyseure.i) AS [Mittelwert von i], Avg(qryUnAlleElektrolyseure.Cc) AS [Mittelwert von Cc], Avg(qryUnAlleElektrolyseure.[t Ka]) AS [Mittelwert von t Ka], Avg(qryUnAlleElektrolyseure.[t An]) AS [Mittelwert von t An], Avg(qryUnAlleElektrolyseure.Un) AS [Mittelwert von Un], qryUnAlleElektrolyseure.iRef, Count(qryUnAlleElektrolyseure.Elektrolyseur) AS [Anzahl von Elektrolyseur]
+
+FROM qryElektrolyseureInAllenTeilanlagen INNER JOIN qryUnAlleElektrolyseure ON qryElektrolyseureInAllenTeilanlagen.Elektrolyseurbezeichnung = qryUnAlleElektrolyseure.Elektrolyseur
+
+GROUP BY qryElektrolyseureInAllenTeilanlagen.Teilanlagenbezeichnung, qryUnAlleElektrolyseure.Datum, qryUnAlleElektrolyseure.iRef;
+
+=== qryUnAlleTeilanlagen2
+SELECT qryElektrolyseureInAllenTeilanlagen.Teilanlagenbezeichnung, [Gesamt Normierung Zeitraum].Datum, Avg([Gesamt Normierung Zeitraum].[I Gesamt]) AS [Mittelwert von I Gesamt], Avg([Gesamt Normierung Zeitraum].i) AS [Mittelwert von i], Avg([Gesamt Normierung Zeitraum].Cc) AS [Mittelwert von Cc], Avg([Gesamt Normierung Zeitraum].[t An]) AS [Mittelwert von t An], Avg([Gesamt Normierung Zeitraum].[t Ka]) AS [Mittelwert von t Ka], Avg([Gesamt Normierung Zeitraum].tm) AS [Mittelwert von tm], Avg([Gesamt Normierung Zeitraum].Ui) AS [Mittelwert von Ui], Avg([Gesamt Normierung Zeitraum].Un) AS [Mittelwert von Un], Count([Gesamt Normierung Zeitraum].Un) AS [Anzahl von Un], GetGewiRef() AS iRef, GetGewtKorrektur() AS tKorr, GetGewcKorrektur() AS cKorr, Count([Gesamt Normierung Zeitraum].Position) AS [Anzahl von Position]
+
+FROM qryElektrolyseureInAllenTeilanlagen INNER JOIN [Gesamt Normierung Zeitraum] ON qryElektrolyseureInAllenTeilanlagen.Elektrolyseurbezeichnung = [Gesamt Normierung Zeitraum].Elektrolyseur
+
+GROUP BY qryElektrolyseureInAllenTeilanlagen.Teilanlagenbezeichnung, [Gesamt Normierung Zeitraum].Datum, GetGewiRef(), GetGewtKorrektur(), GetGewcKorrektur();
+
+=== qryUnElektrolyseur
+SELECT NormElek.Elektrolyseur, NormElek.Datum, NormElek.Zeit, NormElek.[I Gesamt], [I Gesamt]/GetGewFlaeche() AS i, NormElek.Cc, NormElek.[t An], NormElek.[t Ka], ([t An]+[t Ka])/2 AS tm, NormElek.Uo, [NormElek]![U Gesamt]/[NormElek]![Elementzahl] AS Um, UnBer([Um],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef, GetGewtKorrektur() AS tKorr, GetGewcKorrektur() AS cKorr
+
+FROM NormElek, tblGewDaten
+
+WHERE (((NormElek.Elektrolyseur)=(SELECT Bezeichnung FROM tblElektrolyseurbezeichnung WHERE tblGewDaten.IDElektrolyseurUnCeSpcElektrolyseur = tblElektrolyseurbezeichnung.Nr)) AND ((NormElek.Datum)>[tblGewDaten].[Anfangsdatum] And (NormElek.Datum)<[tblGewDaten].[Enddatum]) AND ((NormElek.[I Gesamt]) Is Not Null) AND ((NormElek.Cc) Is Not Null) AND ((NormElek.[t An]) Is Not Null) AND ((NormElek.[t Ka]) Is Not Null));
+
+=== qryUnElektrolyseur2
+SELECT DISTINCTROW Normierung.Elektrolyseur, Normierung.Datum, Normierung.Zeit, Normierung.[I Gesamt], [Normierung]![I Gesamt]/GetGewFlaeche() AS i, Normierung.Cc, Normierung.[t An], Normierung.[t Ka], ([Normierung]![t An]+[Normierung]![t Ka])/2 AS tm, Normierung.Uo, qrySummeUElemente.[Mittelwert von Ui] AS Um, [Uo]+(([Um]-[Uo])*3)/([I Gesamt]/2.72)-0.01*(90-[tm])+0.02*(32-[Cc]) AS Unalt, UnBerVgl([Um],[i],[tm],[Cc]) AS UnVgl3, AktiRef() AS iRef, AkttKorrektur() AS tKorr, AktcKorrektur() AS cKorr, UnBer([Um],[i],[tm],[Cc]) AS Un
+
+FROM tblGewDaten, Normierung INNER JOIN qrySummeUElemente ON Normierung.Normierung = qrySummeUElemente.Normierung
+
+WHERE (((Normierung.Elektrolyseur)=(SELECT Bezeichnung FROM tblElektrolyseurbezeichnung WHERE tblGewDaten.IDElektrolyseurUnCeSpcElektrolyseur = tblElektrolyseurbezeichnung.Nr)) AND ((Normierung.Datum)>=[tblGewDaten].[Anfangsdatum] And (Normierung.Datum)<=[tblGewDaten].[Enddatum]) AND ((Normierung.[I Gesamt]) Is Not Null) AND ((Normierung.Cc) Is Not Null) AND ((Normierung.[t An]) Is Not Null) AND ((Normierung.[t Ka]) Is Not Null))
+
+ORDER BY Normierung.Elektrolyseur, Normierung.Datum, Normierung.Zeit;
+
+=== qryUnElektrolyseure
+SELECT NormElek.Elektrolyseur, NormElek.Datum, NormElek.Zeit, NormElek.[I Gesamt], [I Gesamt]/GetGewFlaeche() AS i, NormElek.Cc, NormElek.[t An], NormElek.[t Ka], ([t An]+[t Ka])/2 AS tm, [NormElek]![U Gesamt]/[NormElek]![Elementzahl] AS Um, UnBer([Um],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef, GetGewtKorrektur() AS tKorr, GetGewcKorrektur() AS cKorr, [NormElek]![U Gesamt]/[NormElek]![Elementzahl] AS [Mittelwert von Ui]
+
+FROM tblGewDaten, tblGewElektrolyseureUnCeSpc INNER JOIN NormElek ON tblGewElektrolyseureUnCeSpc.Bezeichnung = NormElek.Elektrolyseur
+
+WHERE (((NormElek.Datum)>[tblGewDaten].[Anfangsdatum] And (NormElek.Datum)<[tblGewDaten].[Enddatum]) AND ((NormElek.[I Gesamt]) Is Not Null) AND ((NormElek.Cc) Is Not Null) AND ((NormElek.[t An]) Is Not Null) AND ((NormElek.[t Ka]) Is Not Null))
+
+ORDER BY NormElek.Elektrolyseur, NormElek.Datum;
+
+=== qryUnElektrolyseure2
+SELECT DISTINCTROW Normierung.Elektrolyseur, Normierung.Datum, Normierung.Zeit, Normierung.[I Gesamt], [Normierung]![I Gesamt]/GetGewFlaeche() AS i, Normierung.Cc, Normierung.[t An], Normierung.[t Ka], ([Normierung]![t An]+[Normierung]![t Ka])/2 AS tm, Normierung.Uo, qrySummeUElemente.[Mittelwert von Ui] AS Um, [Uo]+(([Um]-[Uo])*3)/([I Gesamt]/2.72)-0.01*(90-[tm])+0.02*(32-[Cc]) AS Unalt, UnBerVgl([Um],[i],[tm],[Cc]) AS UnVgl3, AktiRef() AS iRef, AkttKorrektur() AS tKorr, AktcKorrektur() AS cKorr, UnBer([Um],[i],[tm],[Cc]) AS Un
+
+FROM tblGewDaten, tblGewElektrolyseureUnCeSpc INNER JOIN (Normierung INNER JOIN qrySummeUElemente ON Normierung.Normierung = qrySummeUElemente.Normierung) ON tblGewElektrolyseureUnCeSpc.Bezeichnung = Normierung.Elektrolyseur
+
+WHERE (((Normierung.Datum)>=[tblGewDaten].[Anfangsdatum] And (Normierung.Datum)<=[tblGewDaten].[Enddatum]) AND ((Normierung.[I Gesamt]) Is Not Null) AND ((Normierung.Cc) Is Not Null) AND ((Normierung.[t An]) Is Not Null) AND ((Normierung.[t Ka]) Is Not Null))
+
+ORDER BY Normierung.Elektrolyseur, Normierung.Datum, Normierung.Zeit;
+
+=== qryUnElement
+SELECT DISTINCTROW [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, [Gesamt Normierung].[I Gesamt], ([Gesamt Normierung]![I Gesamt]/GetGewFlaeche()) AS i, [Gesamt Normierung].Cc, [Gesamt Normierung].[t An], [Gesamt Normierung].[t Ka], ([Gesamt Normierung]![t An]+[Gesamt Normierung]![t Ka])/2 AS tm, [Gesamt Normierung].Uo, [Gesamt Normierung].Position, [Gesamt Normierung].Ui, Um.[Mittelwert von Ui], [Gesamt Normierung].Un AS Unalt2, TempKorrElement([tm],[Mittelwert von Ui],[Ui]) AS ti, [tm]-([Mittelwert von Ui]-[Ui])*30 AS tiAlt, UnBer([Ui],[i],[ti],[Gesamt Normierung]![Cc]) AS Un, [Gesamt Normierung].Unalt, [Gesamt Normierung].UnVgl3, [Gesamt Normierung].iRef, [Gesamt Normierung].tKorr, [Gesamt Normierung].cKorr
+
+FROM tblGewDaten, [Gesamt Normierung] INNER JOIN Um ON ([Gesamt Normierung].Datum = Um.Datum) AND ([Gesamt Normierung].Elektrolyseur = Um.Elektrolyseur)
+
+WHERE ((([Gesamt Normierung].Elektrolyseur)=(SELECT Bezeichnung FROM tblElektrolyseurbezeichnung WHERE tblGewDaten.IDElektrolyseurUnCeSpcElement = tblElektrolyseurbezeichnung.Nr)) AND (([Gesamt Normierung].Datum)>=[tblGewDaten].[Anfangsdatum] And ([Gesamt Normierung].Datum)<=[tblGewDaten].[Enddatum]) AND (([Gesamt Normierung].Position)=(SELECT IDPositionUnCeSpcElement FROM tblGewDaten)))
+
+ORDER BY [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, [Gesamt Normierung].Position;
+
+=== qryUnElement2
+SELECT tblEingabeUnElement.Elektrolyseur, tblEingabeUnElement.Position, tblEingabeUnElement.Datum, tblEingabeUnElement.Zeit, tblEingabeUnElement.[I Gesamt], [I Gesamt]/GetGewFlaeche() AS i, tblEingabeUnElement.Cc, tblEingabeUnElement.[t An], tblEingabeUnElement.[t Ka], ([t An]+[t Ka])/2 AS tm, [tblEingabeUnElement]![U] AS Um, UnBer([Um],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef, GetGewtKorrektur() AS tKorr, GetGewcKorrektur() AS cKorr
+
+FROM tblElektrolyseurbezeichnung, tblGewDaten, tblEingabeUnElement
+
+WHERE (((tblEingabeUnElement.Elektrolyseur)=(SELECT Bezeichnung FROM tblElektrolyseurbezeichnung WHERE tblGewDaten.IDElektrolyseurUnCeSpcElement = tblElektrolyseurbezeichnung.Nr)) AND ((tblEingabeUnElement.Position)=(SELECT IDPositionUnCeSpcElement FROM tblGewDaten)) AND ((tblEingabeUnElement.Datum)>[tblGewDaten].[Anfangsdatum] And (tblEingabeUnElement.Datum)<[tblGewDaten].[Enddatum]) AND ((tblEingabeUnElement.[I Gesamt]) Is Not Null) AND ((tblEingabeUnElement.Cc) Is Not Null) AND ((tblEingabeUnElement.[t An]) Is Not Null) AND ((tblEingabeUnElement.[t Ka]) Is Not Null));
+
+=== qryUnElemente
+SELECT DISTINCTROW [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Position, "El. "+[Gesamt Normierung]![Elektrolyseur]+" Pos. "+Format([Gesamt Normierung]![Position],"0") AS Bezeichnung, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit, [Gesamt Normierung].[I Gesamt], ([Gesamt Normierung]![I Gesamt]/GetGewFlaeche()) AS i, [Gesamt Normierung].Cc, [Gesamt Normierung].[t An], [Gesamt Normierung].[t Ka], ([Gesamt Normierung]![t An]+[Gesamt Normierung]![t Ka])/2 AS tm, [Gesamt Normierung].Ui, Um.[Mittelwert von Ui], [Gesamt Normierung].Un AS Unalt2, TempKorrElement([tm],[Mittelwert von Ui],[Ui]) AS ti, [tm]-([Mittelwert von Ui]-[Ui])*30 AS tiAlt, UnBer([Ui],[i],[ti],[Gesamt Normierung]![Cc]) AS Un, [Gesamt Normierung].Unalt, [Gesamt Normierung].UnVgl3, [Gesamt Normierung].iRef, [Gesamt Normierung].tKorr, [Gesamt Normierung].cKorr
+
+FROM tblGewDaten, tblGewElementeUnCeSpc INNER JOIN ([Gesamt Normierung] INNER JOIN Um ON ([Gesamt Normierung].Datum = Um.Datum) AND ([Gesamt Normierung].Elektrolyseur = Um.Elektrolyseur)) ON (tblGewElementeUnCeSpc.Position = [Gesamt Normierung].Position) AND (tblGewElementeUnCeSpc.Bezeichnung = [Gesamt Normierung].Elektrolyseur)
+
+WHERE ((([Gesamt Normierung].Datum)>=[tblGewDaten].[Anfangsdatum] And ([Gesamt Normierung].Datum)<=[tblGewDaten].[Enddatum]) AND (([Gesamt Normierung].[I Gesamt]) Is Not Null) AND (([Gesamt Normierung].Cc) Is Not Null) AND (([Gesamt Normierung].[t An]) Is Not Null) AND (([Gesamt Normierung].[t Ka]) Is Not Null) AND (([Gesamt Normierung].Ui) Is Not Null))
+
+ORDER BY [Gesamt Normierung].Elektrolyseur, [Gesamt Normierung].Position, [Gesamt Normierung].Datum, [Gesamt Normierung].Zeit;
+
+=== qryUnElemente2
+SELECT tblEingabeUnElement.Elektrolyseur, tblEingabeUnElement.Position, "El. "+[tblEingabeUnElement]![Elektrolyseur]+" Pos. "+Format([tblEingabeUnElement]![Position],"0") AS Elementbezeichnung, tblEingabeUnElement.Datum, tblEingabeUnElement.Zeit, tblEingabeUnElement.[I Gesamt], [I Gesamt]/GetGewFlaeche() AS i, tblEingabeUnElement.Cc, tblEingabeUnElement.[t An], tblEingabeUnElement.[t Ka], ([t An]+[t Ka])/2 AS tm, [tblEingabeUnElement]![U] AS Um, UnBer([Um],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef, GetGewtKorrektur() AS tKorr, GetGewcKorrektur() AS cKorr
+
+FROM tblElektrolyseurbezeichnung, tblGewDaten, tblGewElementeUnCeSpc INNER JOIN tblEingabeUnElement ON (tblGewElementeUnCeSpc.Position = tblEingabeUnElement.Position) AND (tblGewElementeUnCeSpc.Bezeichnung = tblEingabeUnElement.Elektrolyseur)
+
+WHERE (((tblEingabeUnElement.Datum)>[tblGewDaten].[Anfangsdatum] And (tblEingabeUnElement.Datum)<[tblGewDaten].[Enddatum]) AND ((tblEingabeUnElement.[I Gesamt]) Is Not Null) AND ((tblEingabeUnElement.Cc) Is Not Null) AND ((tblEingabeUnElement.[t An]) Is Not Null) AND ((tblEingabeUnElement.[t Ka]) Is Not Null));
+
+=== qryUnGesamtanlage
+SELECT qryUnAlleElektrolyseure.Datum, Avg(qryUnAlleElektrolyseure.[I Gesamt]) AS [Mittelwert von I Gesamt], Avg(qryUnAlleElektrolyseure.i) AS [Mittelwert von i], Avg(qryUnAlleElektrolyseure.Cc) AS [Mittelwert von Cc], Avg(qryUnAlleElektrolyseure.[t Ka]) AS [Mittelwert von t Ka], Avg(qryUnAlleElektrolyseure.[t An]) AS [Mittelwert von t An], Avg(qryUnAlleElektrolyseure.Un) AS [Mittelwert von Un], qryUnAlleElektrolyseure.iRef, Count(qryUnAlleElektrolyseure.Elektrolyseur) AS [Anzahl von Elektrolyseur]
+
+FROM qryUnAlleElektrolyseure
+
+GROUP BY qryUnAlleElektrolyseure.Datum, qryUnAlleElektrolyseure.iRef;
+
+=== qryUnGesamtanlage2
+SELECT DISTINCTROW [Gesamt Normierung Zeitraum].Datum, Avg([Gesamt Normierung Zeitraum].[I Gesamt]) AS [Mittelwert von I Gesamt], Avg([Gesamt Normierung Zeitraum].i) AS [Mittelwert von i], Avg([Gesamt Normierung Zeitraum].Cc) AS [Mittelwert von Cc], Avg([Gesamt Normierung Zeitraum].[t An]) AS [Mittelwert von t An], Avg([Gesamt Normierung Zeitraum].[t Ka]) AS [Mittelwert von t Ka], Avg([Gesamt Normierung Zeitraum].tm) AS [Mittelwert von tm], Avg([Gesamt Normierung Zeitraum].Uo) AS [Mittelwert von Uo], Avg([Gesamt Normierung Zeitraum].Ui) AS [Mittelwert von Ui1], Avg([Gesamt Normierung Zeitraum].Un) AS [Mittelwert von Un], [Gesamt Normierung Zeitraum].iRef, Count([Gesamt Normierung Zeitraum].Position) AS [Anzahl von Position]
+
+FROM tblGewDaten, [Gesamt Normierung Zeitraum]
+
+GROUP BY [Gesamt Normierung Zeitraum].Datum, [Gesamt Normierung Zeitraum].iRef;
+
+=== qryUnGruppe2
+SELECT DISTINCTROW tblEingabeUnGruppe.Gruppe, tblEingabeUnGruppe.Datum, tblEingabeUnGruppe.Zeit, Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating, Gruppenmerkmale.Membrantyp, Gruppenmerkmale.Elektrodenabstand, tblEingabeUnGruppe.[I Gesamt], ([tblEingabeUnGruppe]![I Gesamt]/GetGewFlaeche()) AS i, tblEingabeUnGruppe.Cc, tblEingabeUnGruppe.[t An], tblEingabeUnGruppe.[t Ka], ([tblEingabeUnGruppe]![t An]+[tblEingabeUnGruppe]![t Ka])/2 AS tm, tblEingabeUnGruppe.[U Gesamt], tblEingabeUnGruppe.n, [U Gesamt]/[n] AS Ui, UnBer([Ui],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef
+
+FROM tblGewDaten, tblEingabeUnGruppe INNER JOIN Gruppenmerkmale ON tblEingabeUnGruppe.Gruppe = Gruppenmerkmale.Gruppe
+
+WHERE (((tblEingabeUnGruppe.Gruppe)=(SELECT IDGruppe FROM tblGewDaten)) AND ((tblEingabeUnGruppe.Datum)>=[tblGewDaten].[Anfangsdatum] And (tblEingabeUnGruppe.Datum)<=[tblGewDaten].[Enddatum]) AND ((tblEingabeUnGruppe.[I Gesamt]) Is Not Null) AND ((tblEingabeUnGruppe.Cc) Is Not Null) AND ((tblEingabeUnGruppe.[t An]) Is Not Null) AND ((tblEingabeUnGruppe.[t Ka]) Is Not Null) AND ((tblEingabeUnGruppe.[U Gesamt]) Is Not Null) AND ((tblEingabeUnGruppe.n) Is Not Null))
+
+ORDER BY tblEingabeUnGruppe.Gruppe, tblEingabeUnGruppe.Datum, tblEingabeUnGruppe.Zeit;
+
+=== qryUnMehrereGruppen
+SELECT ListGr.Gruppe, ListGr.Datum, Avg(ListGr.Un) AS [Mittelwert von Un], ListGr.iRef, Avg(ListGr.i) AS AvgOfi
+
+FROM tblGewGruppenUnCeSpc INNER JOIN ListGr ON tblGewGruppenUnCeSpc.Bezeichnung = ListGr.Gruppe
+
+GROUP BY ListGr.Gruppe, ListGr.Datum, ListGr.iRef;
+
+=== qryUnMehrereGruppen2
+SELECT DISTINCTROW tblEingabeUnGruppe.Gruppe, tblEingabeUnGruppe.Datum, tblEingabeUnGruppe.Zeit, Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating, Gruppenmerkmale.Membrantyp, Gruppenmerkmale.Elektrodenabstand, tblEingabeUnGruppe.[I Gesamt], ([tblEingabeUnGruppe]![I Gesamt]/GetGewFlaeche()) AS i, tblEingabeUnGruppe.Cc, tblEingabeUnGruppe.[t An], tblEingabeUnGruppe.[t Ka], ([tblEingabeUnGruppe]![t An]+[tblEingabeUnGruppe]![t Ka])/2 AS tm, tblEingabeUnGruppe.[U Gesamt], tblEingabeUnGruppe.n, [U Gesamt]/[n] AS Ui, UnBer([Ui],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef
+
+FROM tblGewDaten, tblGewGruppenUnCeSpc INNER JOIN (tblEingabeUnGruppe INNER JOIN Gruppenmerkmale ON tblEingabeUnGruppe.Gruppe = Gruppenmerkmale.Gruppe) ON tblGewGruppenUnCeSpc.Bezeichnung = tblEingabeUnGruppe.Gruppe
+
+WHERE (((tblEingabeUnGruppe.Datum)>=[tblGewDaten].[Anfangsdatum] And (tblEingabeUnGruppe.Datum)<=[tblGewDaten].[Enddatum]) AND ((tblEingabeUnGruppe.[I Gesamt]) Is Not Null) AND ((tblEingabeUnGruppe.Cc) Is Not Null) AND ((tblEingabeUnGruppe.[t An]) Is Not Null) AND ((tblEingabeUnGruppe.[t Ka]) Is Not Null) AND ((tblEingabeUnGruppe.[U Gesamt]) Is Not Null) AND ((tblEingabeUnGruppe.n) Is Not Null))
+
+ORDER BY tblEingabeUnGruppe.Gruppe, tblEingabeUnGruppe.Datum, tblEingabeUnGruppe.Zeit;
+
+=== qryUnTeilanlage
+SELECT qryElektrolyseureInTeilanlage.Teilanlagenbezeichnung, qryUnAlleElektrolyseure.Datum, Avg(qryUnAlleElektrolyseure.[I Gesamt]) AS [Mittelwert von I Gesamt], Avg(qryUnAlleElektrolyseure.i) AS [Mittelwert von i], Avg(qryUnAlleElektrolyseure.Cc) AS [Mittelwert von Cc], Avg(qryUnAlleElektrolyseure.[t Ka]) AS [Mittelwert von t Ka], Avg(qryUnAlleElektrolyseure.[t An]) AS [Mittelwert von t An], Avg(qryUnAlleElektrolyseure.Un) AS [Mittelwert von Un], qryUnAlleElektrolyseure.iRef, Count(qryUnAlleElektrolyseure.Elektrolyseur) AS [Anzahl von Elektrolyseur]
+
+FROM qryUnAlleElektrolyseure INNER JOIN qryElektrolyseureInTeilanlage ON qryUnAlleElektrolyseure.Elektrolyseur = qryElektrolyseureInTeilanlage.Elektrolyseurbezeichnung
+
+GROUP BY qryElektrolyseureInTeilanlage.Teilanlagenbezeichnung, qryUnAlleElektrolyseure.Datum, qryUnAlleElektrolyseure.iRef;
+
+=== qryUnTeilanlage2
+SELECT DISTINCTROW qryElektrolyseureInTeilanlage.Teilanlagenbezeichnung, [Gesamt Normierung Zeitraum].Datum, Avg([Gesamt Normierung Zeitraum].[I Gesamt]) AS [Mittelwert von I Gesamt], Avg([Gesamt Normierung Zeitraum].i) AS [Mittelwert von i], Avg([Gesamt Normierung Zeitraum].Cc) AS [Mittelwert von Cc], Avg([Gesamt Normierung Zeitraum].[t An]) AS [Mittelwert von t An], Avg([Gesamt Normierung Zeitraum].[t Ka]) AS [Mittelwert von t Ka], Avg([Gesamt Normierung Zeitraum].tm) AS [Mittelwert von tm], [Gesamt Normierung Zeitraum].Uo, Avg([Gesamt Normierung Zeitraum].Ui) AS [Mittelwert von Ui], Avg([Gesamt Normierung Zeitraum].Uk) AS [Mittelwert von Uk], [Gesamt Normierung Zeitraum].iRef, [Gesamt Normierung Zeitraum].tKorr, [Gesamt Normierung Zeitraum].cKorr, Avg([Gesamt Normierung Zeitraum].Un) AS [Mittelwert von Un], Count([Gesamt Normierung Zeitraum].Position) AS [Anzahl von Position]
+
+FROM tblGewDaten, [Gesamt Normierung Zeitraum] INNER JOIN qryElektrolyseureInTeilanlage ON [Gesamt Normierung Zeitraum].Elektrolyseur = qryElektrolyseureInTeilanlage.Elektrolyseurbezeichnung
+
+GROUP BY qryElektrolyseureInTeilanlage.Teilanlagenbezeichnung, [Gesamt Normierung Zeitraum].Datum, [Gesamt Normierung Zeitraum].Uo, [Gesamt Normierung Zeitraum].iRef, [Gesamt Normierung Zeitraum].tKorr, [Gesamt Normierung Zeitraum].cKorr;
+
+=== Un f6801
+SELECT Spannungen.Elektrolyseur, Spannungen.Position, Spannungen.Datum, Spannungen.Ui, NormF.[I Gesamt], NormF.Cc, NormF.[t An], NormF.[t Ka], NormF.Uo, *
+
+FROM NormF INNER JOIN Spannungen ON NormF.Normierung = Spannungen.Normierung
+
+ORDER BY Spannungen.Elektrolyseur, Spannungen.Position;
+
+=== UnElekFV
+SELECT DISTINCTROW NormElek.Elektrolyseur, NormElek.Datum, NormElek.Zeit, NormElek.[I Gesamt], [NormElek]![I Gesamt]/2.72 AS i, NormElek.Cc, NormElek.[t An], NormElek.[t Ka], ([NormElek]![t An]+[NormElek]![t Ka])/2 AS tm, NormElek.Uo, NormElek.[U Gesamt], NormElek.Elementzahl, [NormElek]![U Gesamt]/[NormElek]![Elementzahl] AS [Mittelwert von Ui], UnBer([Mittelwert von Ui],[i],[tm],[Cc]) AS Un
+
+FROM NormElek
+
+ORDER BY NormElek.Elektrolyseur, NormElek.Datum, NormElek.Zeit;
+
+=== UnElem
+SELECT DISTINCTROW Um.Elektrolyseur, Um.Datum, Um.Zeit, Um.[I Gesamt], Um.i, Um.Cc, Um.[t An], Um.[t Ka], Um.tm, Um.Uo, Um.[Mittelwert von Ui], [Um]![Uo]+(3/[Um]![i])*([Um]![Mittelwert von Ui]-[Um]![Uo])-([Um]![i]/3)*(90-[Um]![tm])*0.01+([Um]![i]/3)*(32-[Um]![Cc])*0.02 AS Un
+
+FROM Um
+
+GROUP BY Um.Elektrolyseur, Um.Datum, Um.Zeit, Um.[I Gesamt], Um.i, Um.Cc, Um.[t An], Um.[t Ka], Um.tm, Um.Uo, Um.[Mittelwert von Ui], [Um]![Uo]+(3/[Um]![i])*([Um]![Mittelwert von Ui]-[Um]![Uo])-([Um]![i]/3)*(90-[Um]![tm])*0.01+([Um]![i]/3)*(32-[Um]![Cc])*0.02;
+
+=== UnGruppen
+SELECT DISTINCTROW [Norm(Um)GR].Datum, Avg([Norm(Um)GR].i) AS [i Mittel], Avg([Norm(Um)GR].Un) AS [Un Mittel], [Norm(Um)GR].Gruppe, [Norm(Um)GR].Membrantyp, [Gruppen aktiv].[Anzahl von Element Nr], [Gruppen aktiv].[Elektroden Abstand], Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating, GetGewiRef() AS iRef
+
+FROM tblGewDaten, ([Norm(Um)GR] INNER JOIN [Gruppen aktiv] ON [Norm(Um)GR].Gruppe = [Gruppen aktiv].Gruppe) INNER JOIN Gruppenmerkmale ON [Gruppen aktiv].Gruppe = Gruppenmerkmale.Gruppe
+
+GROUP BY [Norm(Um)GR].Datum, [Norm(Um)GR].Gruppe, [Norm(Um)GR].Membrantyp, [Gruppen aktiv].[Anzahl von Element Nr], [Gruppen aktiv].[Elektroden Abstand], Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating, GetGewiRef()
+
+HAVING ((([Norm(Um)GR].Gruppe)=(SELECT IDGruppeUnCeSPCGruppe FROM tblGewDaten)));

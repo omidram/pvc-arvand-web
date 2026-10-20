@@ -1,0 +1,587 @@
+Version =19
+VersionRequired =19
+Checksum =122868186
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =15307
+    ItemSuffix =227
+    Right =11832
+    Bottom =6924
+    RecSrcDt = Begin
+        0x757b225d5488e140
+    End
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7280
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =555
+                    Top =330
+                    Width =13845
+                    Height =645
+                    FontSize =22
+                    BackColor =12632256
+                    ForeColor =4194304
+                    Name ="Text0"
+                    Caption ="Element Admistration"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =12135
+                    Top =5100
+                    Width =2034
+                    Height =561
+                    Name ="Schaltfläche29"
+                    Caption ="Main Menue"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =795
+                    Top =1695
+                    Width =2046
+                    Height =591
+                    TabIndex =1
+                    Name ="Befehl191"
+                    Caption ="Assembly Data"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    BorderWidth =3
+                    OverlapFlags =223
+                    Left =570
+                    Top =1590
+                    Width =13820
+                    Height =4194
+                    Name ="Rechteck202"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =5325
+                    Top =2385
+                    Width =2046
+                    Height =576
+                    TabIndex =2
+                    Name ="Befehl204"
+                    Caption ="Anode Maintenance"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =7590
+                    Top =2385
+                    Width =2046
+                    Height =576
+                    TabIndex =3
+                    Name ="Befehl213"
+                    Caption ="Cathode Maintenance"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3061
+                    Top =1700
+                    Width =2046
+                    Height =576
+                    TabIndex =4
+                    Name ="Befehl214"
+                    Caption ="Group Definition"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =5325
+                    Top =1695
+                    Width =2034
+                    Height =576
+                    TabIndex =5
+                    Name ="Schaltfläche21"
+                    Caption ="Anode details"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =7590
+                    Top =1695
+                    Width =2037
+                    Height =564
+                    TabIndex =6
+                    Name ="Schaltfläche22"
+                    Caption ="Cathode Details"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3061
+                    Top =3061
+                    Width =2049
+                    Height =561
+                    TabIndex =7
+                    Name ="Schaltfläche61"
+                    Caption ="Cell components"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =9870
+                    Top =2385
+                    Width =2037
+                    Height =564
+                    TabIndex =8
+                    Name ="Befehl215"
+                    Caption ="Membrane Maintenance"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =9870
+                    Top =1695
+                    Width =2037
+                    Height =564
+                    TabIndex =9
+                    Name ="Befehl216"
+                    Caption ="Membrane Details"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    Left =9977
+                    Top =6576
+                    Width =2037
+                    Height =564
+                    TabIndex =10
+                    Name ="Befehl217"
+                    Caption ="Membrane Statistics"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =5325
+                    Top =3060
+                    Width =2046
+                    Height =576
+                    TabIndex =11
+                    Name ="Befehl218"
+                    Caption ="Anode Recoating"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =7590
+                    Top =3060
+                    Width =2046
+                    Height =576
+                    TabIndex =12
+                    Name ="Befehl219"
+                    Caption ="Cathode Recoating"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =5325
+                    Top =3750
+                    Width =2046
+                    Height =576
+                    TabIndex =13
+                    Name ="Befehl220"
+                    Caption ="Check Anode Coating"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =7590
+                    Top =3750
+                    Width =2046
+                    Height =576
+                    TabIndex =14
+                    Name ="Befehl221"
+                    Caption ="Check Cathode Coating"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    Visible = NotDefault
+                    OverlapFlags =85
+                    Left =12132
+                    Top =6576
+                    Width =2046
+                    Height =591
+                    TabIndex =15
+                    Name ="Befehl222"
+                    Caption ="Element Inspection"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3061
+                    Top =2381
+                    Width =2046
+                    Height =561
+                    TabIndex =16
+                    Name ="Befehl224"
+                    Caption ="Reasons for Inspection"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =793
+                    Top =2381
+                    Width =2037
+                    Height =564
+                    TabIndex =17
+                    Name ="Command225"
+                    Caption ="Import Montagedaten"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x7e34c414a11f9e468073b3905f252f78
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =793
+                    Top =3061
+                    Width =2037
+                    Height =564
+                    TabIndex =18
+                    Name ="Command226"
+                    Caption ="Import Demontagedaten"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x1829e2be70097243903438bc6ccbbe92
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl213_Click()
+    DoCmd.OpenForm "frmKathodeninstandhaltung"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl214_Click()
+    DoCmd.OpenForm "Gruppenmerkmale"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl215_Click()
+    DoCmd.OpenForm "frmMembraninstandhaltung"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl216_Click()
+    DoCmd.OpenForm "frmMembrandetails"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl217_Click()
+    DoCmd.OpenForm "frmMembrandetails"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl218_Click()
+    DoCmd.OpenForm "frmAnodenrecoating"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl219_Click()
+    DoCmd.OpenForm "frmKathodenrecoating"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl220_Click()
+    DoCmd.OpenForm "frmAnodencoatingpruefung"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl221_Click()
+    DoCmd.OpenForm "frmKathodencoatingpruefung"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl222_Click()
+    DoCmd.OpenForm "frmElementinspektion"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Befehl223_Click()
+    DoCmd.OpenForm "frmSucheInspektionsgrund"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+
+End Sub
+
+Private Sub Befehl224_Click()
+    Dim rst1 As DAO.Recordset
+    Dim dbs As Database
+    Dim tdf As TableDef
+    
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    
+    Set dbs = CurrentDb
+    Set tdf = dbs.TableDefs!tblInspektionsgruende
+    If GewSprache = 1 Then
+        tdf.Fields!IDSprache.DefaultValue = "1"
+    Else
+        tdf.Fields!IDSprache.DefaultValue = "2"
+    End If
+    
+    DoCmd.OpenForm "frmInspektionsgruende"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Command225_Click()
+    DoCmd.OpenForm "frmImportMontagedaten"
+End Sub
+
+Private Sub Command226_Click()
+    DoCmd.OpenForm "frmImportDemontagedaten"
+End Sub
+
+Private Sub Schaltfläche21_Click()
+On Error GoTo Err_Schaltfläche21_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "frmAnodendetails"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche21_Click:
+    Exit Sub
+
+Err_Schaltfläche21_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche21_Click
+    
+End Sub
+
+Private Sub Schaltfläche22_Click()
+On Error GoTo Err_Schaltfläche22_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "frmKathodendetails"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche22_Click:
+    Exit Sub
+
+Err_Schaltfläche22_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche22_Click
+    
+End Sub
+
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text0.Caption = "Zellenverwaltung"
+        Befehl191.Caption = "Montagedaten"
+        Befehl222.Caption = "Elementinspektion"
+        Schaltfläche61.Caption = "Zellen-komponenten"
+        Schaltfläche21.Caption = "Anodendetails"
+        Schaltfläche22.Caption = "Kathodendetails"
+        Befehl204.Caption = "Anoden-instandhaltung"
+        Befehl218.Caption = "Anodenrecoating"
+        Befehl220.Caption = "Anodencoating-Prüfung"
+        Befehl213.Caption = "Kathoden-instandhaltung"
+        Befehl219.Caption = "Kathodenrecoating"
+        Befehl221.Caption = "Kathodencoating-Prüfung"
+        Befehl214.Caption = "Gruppendefinition"
+        Befehl215.Caption = "Membran-instandhaltung"
+        Befehl216.Caption = "Membrandetails"
+        Befehl217.Caption = "Membranstatistik"
+        Befehl224.Caption = "Inspektionsgründe"
+        Command225.Caption = "Import Montagedaten"
+        Command226.Caption = "Import Demontagedaten"
+        Schaltfläche29.Caption = "Hauptmenu"
+        
+    Else
+    
+        Text0.Caption = "Element Administration"
+        Befehl191.Caption = "Assembly Data"
+        Befehl222.Caption = "Element Inspection"
+        Schaltfläche61.Caption = "Cell Components"
+        Schaltfläche21.Caption = "Anode Details"
+        Schaltfläche22.Caption = "Cathode Details"
+        Befehl204.Caption = "Anode Maintenance"
+        Befehl218.Caption = "Anode Recoating"
+        Befehl220.Caption = "Check of Anode Coating"
+        Befehl213.Caption = "Cathode Maintenance"
+        Befehl219.Caption = "Cathode Recoating"
+        Befehl221.Caption = "Check of Cathode Coating"
+        Befehl214.Caption = "Group Definition"
+        Befehl215.Caption = "Membrane Maintenance"
+        Befehl216.Caption = "Membrane Details"
+        Befehl217.Caption = "Membrane Statistics"
+        Befehl224.Caption = "Reasons for Inspection"
+        Command225.Caption = "Import Assembly Data"
+        Command226.Caption = "Import Disassembly Data"
+        Schaltfläche29.Caption = "Main Menu"
+    
+    End If
+
+
+End Sub
+
+Private Sub Befehl191_Click()
+On Error GoTo Err_Befehl191_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "frmMontagedaten"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "frmZellenverwaltung"
+
+Exit_Befehl191_Click:
+    Exit Sub
+
+Err_Befehl191_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl191_Click
+    
+End Sub
+Private Sub Befehl204_Click()
+On Error GoTo Err_Befehl204_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "frmAnodeninstandhaltung"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "frmZellenverwaltung"
+
+Exit_Befehl204_Click:
+    Exit Sub
+
+Err_Befehl204_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl204_Click
+    
+End Sub
+
+Private Sub Schaltfläche29_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "frmZellenverwaltung"
+End Sub
+
+Private Sub Schaltfläche61_Click()
+On Error GoTo Err_Schaltfläche61_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Einzelteile"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "frmZellenverwaltung"
+
+Exit_Schaltfläche61_Click:
+    Exit Sub
+
+Err_Schaltfläche61_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche61_Click
+    
+End Sub

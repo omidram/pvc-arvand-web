@@ -1,0 +1,41 @@
+Version =131074
+ColumnsShown =0
+Begin
+    Action ="Close"
+    Argument ="-1"
+    Argument =""
+    Argument ="1"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="DiaGruppeDR"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End
+Begin
+    Action ="PrintOut"
+    Argument ="2"
+    Argument ="1"
+    Argument ="1"
+    Argument ="0"
+    Argument ="1"
+    Argument ="-1"
+End
+Begin
+    Action ="Close"
+    Argument ="2"
+    Argument ="DiaGruppeDR"
+    Argument ="0"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="Betriebsdaten"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="-1"
+    Argument ="0"
+End

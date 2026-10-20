@@ -1,0 +1,347 @@
+Version =17
+VersionRequired =17
+Checksum =122868191
+Begin Form
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =12585
+    ItemSuffix =118
+    Left =990
+    Top =105
+    Right =13860
+    Bottom =7695
+    RecSrcDt = Begin
+        0x1647bd709cc5e240
+    End
+    RecordSource ="tblEingabeCEElementNaOH"
+    Caption ="Tabelle Leistungstests"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1605
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =7815
+                    Height =570
+                    FontSize =14
+                    ForeColor =4194304
+                    Name ="Text8"
+                    Caption ="Current Efficiency Element"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =9070
+                    Top =113
+                    Width =1716
+                    Height =576
+                    Name ="Hauptmenue"
+                    Caption ="Current Efficiency"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4185
+                    Top =1365
+                    Width =2295
+                    Height =240
+                    Name ="Bezeichnungsfeld101"
+                    Caption ="Elektrolyzer"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3270
+                    Top =1365
+                    Width =855
+                    Height =240
+                    Name ="Bezeichnungsfeld105"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7937
+                    Top =1360
+                    Width =1065
+                    Height =240
+                    Name ="Bezeichnungsfeld109"
+                    Caption ="CE [%]"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =113
+                    Top =793
+                    Width =7815
+                    Height =360
+                    TabIndex =1
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =226
+                    Top =453
+                    Width =7597
+                    Height =227
+                    Name ="Bezeichnungsfeld114"
+                    Caption ="Basis: NaOH Production"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6555
+                    Top =1365
+                    Width =1275
+                    Height =240
+                    Name ="Bezeichnungsfeld115"
+                    Caption ="Position"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1155
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            Begin
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4290
+                    Top =900
+                    Width =2205
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Electrolyzer"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7937
+                    Top =907
+                    Width =1035
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="CE [%]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3270
+                    Top =915
+                    Width =945
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6555
+                    Top =900
+                    Width =1275
+                    Height =240
+                    Name ="Bezeichnungsfeld116"
+                    Caption ="Position"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3283
+                    Width =870
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7937
+                    Width =1020
+                    TabIndex =3
+                    Name ="t An"
+                    ControlSource ="CE"
+                    Format ="Fixed"
+                    EventProcPrefix ="t_An"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =4308
+                    Width =2154
+                    Height =226
+                    TabIndex =1
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"50\""
+                    Name ="Kombinationsfeld110"
+                    ControlSource ="Elektrolyseur"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichn"
+                        "ung].[Bezeichnung] FROM [tblElektrolyseurbezeichnung];"
+                    ColumnWidths ="0;1440"
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6576
+                    Width =1245
+                    TabIndex =2
+                    Name ="Text117"
+                    ControlSource ="Position"
+                    Format ="Fixed"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =9637
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =1153
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Text8.Caption = "Stromausbeute Element"
+        Bezeichnungsfeld114.Caption = "Basis: NaOH Produktion"
+        Bezeichnungsfeld105.Caption = "Datum"
+        Bezeichnungsfeld93.Caption = "Datum"
+        Bezeichnungsfeld101.Caption = "Elektrolyseur"
+        Bezeichnungsfeld66.Caption = "Elektrolyseur"
+        Bezeichnungsfeld115.Caption = "Position"
+        Bezeichnungsfeld116.Caption = "Position"
+        Bezeichnungsfeld109.Caption = "CE [%]"
+        Bezeichnungsfeld68.Caption = "CE [%]"
+        Hauptmenue.Caption = "Stromausbeute"
+        
+    Else
+        Text8.Caption = "Current Efficiency Element"
+        Bezeichnungsfeld114.Caption = "Basis: NaOH Production"
+        Bezeichnungsfeld105.Caption = "Date"
+        Bezeichnungsfeld93.Caption = "Date"
+        Bezeichnungsfeld101.Caption = "Electrolyzer"
+        Bezeichnungsfeld66.Caption = "Electrolyzer"
+        Bezeichnungsfeld115.Caption = "Position"
+        Bezeichnungsfeld116.Caption = "Position"
+        Bezeichnungsfeld109.Caption = "CE [%]"
+        Bezeichnungsfeld68.Caption = "CE [%]"
+        Hauptmenue.Caption = "Current Efficiency"
+    End If
+
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "Anodische Bilanz"
+    DoCmd.Close acForm, "frmTabelleEingabeCEElementNaOH"
+End Sub

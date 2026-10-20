@@ -1,0 +1,248 @@
+Version =19
+VersionRequired =19
+Checksum =122771762
+Begin Form
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    ScrollBars =2
+    PictureAlignment =5
+    PictureSizeMode =1
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =2551
+    DatasheetFontHeight =10
+    ItemSuffix =13
+    Left =6015
+    Top =1950
+    Right =8850
+    Bottom =3525
+    DatasheetGridlinesColor =12632256
+    PaintPalette = Begin
+        0x000359000000000000ccff0005cdff000aceff000fcfff0014d0ff001ad1ff00 ,
+        0x1fd2ff0024d3ff0029d4ff002ed5ff0034d6ff0039d7ff003ed8ff0043d9ff00 ,
+        0x48daff004edbff0053dcff0058ddff005ddeff0062dfff0068e0ff006de1ff00 ,
+        0x72e2ff0077e3ff007ce4ff0082e6ff0087e7ff008ce8ff0091e9ff0096eaff00 ,
+        0x9cebff00a1ecff00a6edff00abeeff00b0efff00b6f0ff00bbf1ff00c0f2ff00 ,
+        0xc5f3ff00caf4ff00cccccc00cfcfcf00d0f5ff00d1d1d100d4d4d400d5f6ff00 ,
+        0xd6d6d600d9d9d900daf7ff00dbdbdb00dedede00dff8ff00e0e0e000e3e3e300 ,
+        0xe4f9ff00e5e5e500e8e8e800eafaff00ebebeb00ededed00effbff00f0f0f000 ,
+        0xf2f2f200f4fcff00f5f5f500f7f7f700f9fdff00fafafa00fcfcfc00ffffff00 ,
+        0x800000000080000080800000000080008000800000808000c0c0c000c0dcc000 ,
+        0xa6caf000fffbf000a0a0a40080808000ff00000000ff0000ffff00000000ff00 ,
+        0xff00ff0000ffff0000000000
+    End
+    RecSrcDt = Begin
+        0xb0d9cb5314d2e240
+    End
+    RecordSource ="tblGewElementeUnCeSpc"
+    Caption ="subfrmStdVoltage3"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            BackStyle =0
+            BorderWidth =1
+            Width =850
+            Height =850
+        End
+        Begin Line
+            BorderWidth =1
+            Width =1701
+        End
+        Begin Image
+            SpecialEffect =1
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =1
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =1
+            BorderWidth =3
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BorderColor =12632256
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =1
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin ListBox
+            SpecialEffect =1
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin Subform
+            SpecialEffect =1
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =1
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="Arial"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =255
+            BackColor =12632256
+            Name ="Formularkopf"
+            GUID = Begin
+                0xdf9d7b1a41f0f4418463ec0ac93dee8c
+            End
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =-7
+                    Width =1650
+                    Height =255
+                    Name ="Electrolyser_Label"
+                    Caption ="Electrolyser"
+                    GUID = Begin
+                        0xeeda0b6182cc9541a3648882a4312f14
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1700
+                    Width =765
+                    Height =255
+                    Name ="Bezeichnungsfeld10"
+                    Caption ="Position"
+                    GUID = Begin
+                        0x3223e33f71b4eb45b009b57776ecb487
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =227
+            BackColor =12632256
+            Name ="Detailbereich"
+            GUID = Begin
+                0x8332cd3def39b047968fd985e8f5b2ae
+            End
+            Begin
+                Begin ComboBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =53
+                    Width =1596
+                    Height =225
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0xbb9b2249d4a37845960c98ac7582ea11
+                    End
+                    Name ="Kombinationsfeld8"
+                    ControlSource ="Bezeichnung"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichn"
+                        "ung].[Bezeichnung] FROM [tblElektrolyseurbezeichnung];"
+                    ColumnWidths ="0;1440"
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =1757
+                    Width =684
+                    Height =227
+                    TabIndex =1
+                    Name ="Text11"
+                    ControlSource ="Position"
+                    GUID = Begin
+                        0xc30cb4b4f86e2d46ba89c560b02544b7
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            Name ="Formularfuß"
+            GUID = Begin
+                0x4054664cbdd5dc438cbec50259afd37b
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Electrolyser_Label.Caption = "Elektrolyseur"
+        Bezeichnungsfeld10.Caption = "Position"
+    Else
+        Electrolyser_Label.Caption = "Electrolyzer"
+        Bezeichnungsfeld10.Caption = "Position"
+    End If
+
+End Sub

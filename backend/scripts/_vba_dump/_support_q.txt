@@ -1,0 +1,82 @@
+﻿=== StromAus2
+SELECT StromAus1.Elektrolyseur, StromAus1.Datum, StromAus1.Zeit, StromAus1.[flow rate], StromAus1.[NaClO3 Pb], StromAus1.[NaClO3 An], StromAus1.[Na2SO4 Pb], StromAus1.[Na2SO4 An], StromAus1.[NaOH Pb], StromAus1.[Na2CO3 Pb], StromAus1.[NaOCl Pb], StromAus1.[NaOCl An], StromAus1.[HCl Pb], StromAus1.[HCl An], [Analyse Chlorgas].[Cl2 + CO2 Cl], [Analyse Chlorgas].[O2 Cl]
+
+FROM StromAus1 INNER JOIN [Analyse Chlorgas] ON (StromAus1.Elektrolyseur = [Analyse Chlorgas].Elektrolyseur) AND (StromAus1.Datum = [Analyse Chlorgas].Datum)
+
+ORDER BY StromAus1.Elektrolyseur, StromAus1.Datum;
+
+=== StromAusVAno
+SELECT StromAus2.Elektrolyseur, StromAus2.Datum, StromAus2.Zeit, StromAus2.[flow rate], StromAus2.[Na2SO4 Pb], StromAus2.[Na2SO4 An], VAnolytBer([flow rate],[Na2SO4 Pb],[Na2SO4 An]) AS VAnolyt
+
+FROM StromAus2
+
+ORDER BY StromAus2.Elektrolyseur, StromAus2.Datum;
+
+=== qryVAnolytElement
+SELECT tblEingabeUnElement.Elektrolyseur, tblEingabeUnElement.Position, tblEingabeUnElement.Datum, tblEingabeUnElement.Zeit, VAnolytBer([Analyse Pure Brine Element]![flow rate],[Analyse Pure Brine Element]![Na2SO4 Pb],[Analyse Anolyt Element]![Na2SO4 An]) AS VAnolyt
+
+FROM (tblEingabeUnElement INNER JOIN [Analyse Pure Brine Element] ON (tblEingabeUnElement.Datum = [Analyse Pure Brine Element].Datum) AND (tblEingabeUnElement.Position = [Analyse Pure Brine Element].Position) AND (tblEingabeUnElement.Elektrolyseur = [Analyse Pure Brine Element].Elektrolyseur)) INNER JOIN [Analyse Anolyt Element] ON ([Analyse Pure Brine Element].Datum = [Analyse Anolyt Element].Datum) AND ([Analyse Pure Brine Element].Position = [Analyse Anolyt Element].Position) AND ([Analyse Pure Brine Element].Elektrolyseur = [Analyse Anolyt Element].Elektrolyseur), tblGewDaten INNER JOIN tblElektrolyseurbezeichnung ON tblGewDaten.IDElektrolyseurCEElement = tblElektrolyseurbezeichnung.Nr
+
+WHERE (((VAnolytBer([Analyse Pure Brine Element]![flow rate],[Analyse Pure Brine Element]![Na2SO4 Pb],[Analyse Anolyt Element]![Na2SO4 An]))<>(-1)));
+
+=== qryVAnolytGruppe
+SELECT tblEingabeUnGruppe.Gruppe, tblEingabeUnGruppe.Datum, tblEingabeUnGruppe.Zeit, VAnolytBer([Analyse Pure Brine Gruppe]![flow rate],[Analyse Pure Brine Gruppe]![Na2SO4 Pb],[Analyse Anolyt Gruppe]![Na2SO4 An]) AS VAnolyt
+
+FROM tblGewDaten, tblEingabeUnGruppe INNER JOIN ([Analyse Pure Brine Gruppe] INNER JOIN [Analyse Anolyt Gruppe] ON ([Analyse Pure Brine Gruppe].Datum = [Analyse Anolyt Gruppe].Datum) AND ([Analyse Pure Brine Gruppe].Gruppe = [Analyse Anolyt Gruppe].Gruppe)) ON (tblEingabeUnGruppe.Datum = [Analyse Pure Brine Gruppe].Datum) AND (tblEingabeUnGruppe.Gruppe = [Analyse Pure Brine Gruppe].Gruppe)
+
+WHERE (((tblEingabeUnGruppe.Datum)>=[tblGewDaten].[Anfangsdatum] And (tblEingabeUnGruppe.Datum)<=[tblGewDaten].[Enddatum]) AND ((VAnolytBer([Analyse Pure Brine Gruppe]![flow rate],[Analyse Pure Brine Gruppe]![Na2SO4 Pb],[Analyse Anolyt Gruppe]![Na2SO4 An]))<>(-1))) OR (((tblEingabeUnGruppe.Gruppe) Like (Select IDGruppe FROM tblGewDaten))) OR (((tblEingabeUnGruppe.Gruppe) Like (Select IDGruppe from tblGewDaten)))
+
+ORDER BY tblEingabeUnGruppe.Datum;
+
+=== qryUiFuerUn
+SELECT DISTINCTROW Spannungen.Normierung, Spannungen.Ui
+
+FROM Spannungen
+
+WHERE (((Spannungen.Ui)>(Select Umin from tblGewDaten)));
+
+=== UmNorm
+SELECT DISTINCTROW Um.Elektrolyseur, Um.Datum, Um.Zeit, Um.[Mittelwert von Ui], [Um]![Uo]+(3/[Um]![i])*([Um]![Mittelwert von Ui]-[Um]![Uo])-([Um]![i]/3)*(90-[Um]![tm])*0.01+([Um]![i]/3)*(32-[Um]![Cc])*0.02 AS Un
+
+FROM Um
+
+GROUP BY Um.Elektrolyseur, Um.Datum, Um.Zeit, Um.[Mittelwert von Ui], [Um]![Uo]+(3/[Um]![i])*([Um]![Mittelwert von Ui]-[Um]![Uo])-([Um]![i]/3)*(90-[Um]![tm])*0.01+([Um]![i]/3)*(32-[Um]![Cc])*0.02;
+
+=== qryNomElekinNormierung
+INSERT INTO Normierung ( Elektrolyseur, Datum, Zeit, [I Gesamt], Cc, [t An], [t Ka], [U Gesamt] )
+
+SELECT NormElek.Elektrolyseur, NormElek.Datum, EL0Ges.Zeit, EL0Ges.[I Ges], NormElek.Cc, [El0Ges].[tKA]-0.5 AS [t An], EL0Ges.tKA, NormElek.[U Gesamt]
+
+FROM NormElek INNER JOIN EL0Ges ON (NormElek.Datum = EL0Ges.Datum) AND (NormElek.Elektrolyseur = EL0Ges.Elektrolyseur)
+
+GROUP BY NormElek.Elektrolyseur, NormElek.Datum, EL0Ges.Zeit, EL0Ges.[I Ges], NormElek.Cc, [El0Ges].[tKA]-0.5, EL0Ges.tKA, NormElek.[U Gesamt];
+
+=== StromAus
+MISSING
+
+=== qryVAnolytTeilanlage
+MISSING
+
+=== Suche aktive Elemente alle AB
+SELECT DISTINCTROW Montage.[Element Nr], Montage.[Anoden Nr], Montage.[Kathoden Nr], Montage.Membrantyp, Montage.[Einschalt Datum], Montage.[Ausschalt Datum], *
+
+FROM Montage
+
+WHERE (((Montage.[Einschalt Datum]) Like "*") AND ((Montage.[Ausschalt Datum]) Is Null))
+
+ORDER BY Montage.[Element Nr];
+
+=== Gruppenmerkmale
+MISSING
+
+=== Montage
+MISSING
+
+=== qryElektrolyseureInAllenTeilanlagen
+SELECT tblTeilanlagenbezeichnung.Bezeichnung AS Teilanlagenbezeichnung, tblElektrolyseuranordnung.Bezeichnung AS Elektrolyseurbezeichnung
+
+FROM tblTeilanlagenbezeichnung INNER JOIN tblElektrolyseuranordnung ON tblTeilanlagenbezeichnung.Bezeichnung = tblElektrolyseuranordnung.Teilanlage
+
+GROUP BY tblTeilanlagenbezeichnung.Bezeichnung, tblElektrolyseuranordnung.Bezeichnung;
+
+['qryVAnolytElement', 'qryVAnolytElementAlt', 'qryVAnolytGruppe', 'StromAus1', 'StromAus2', 'StromAusGes', 'StromAusGesMittel', 'StromAusVAno']

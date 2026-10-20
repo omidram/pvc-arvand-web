@@ -1,0 +1,3 @@
+SELECT qryCEAlleElektrolyseure.Datum, Avg(qryCEAlleElektrolyseure.µNaOH) AS [Mittelwert von µNaOH], Avg(qryCEAlleElektrolyseure.VAnolyt) AS [Mittelwert von VAnolyt], Avg(qryCEAlleElektrolyseure.ConcCl2) AS [Mittelwert von ConcCl2], Avg(qryCEAlleElektrolyseure.ConcO2) AS [Mittelwert von ConcO2], Avg(qryCEAlleElektrolyseure.µNaClO3) AS [Mittelwert von µNaClO3], Avg(qryCEAlleElektrolyseure.µNaOCl) AS [Mittelwert von µNaOCl], Avg(qryCEAlleElektrolyseure.µAlkali) AS [Mittelwert von µAlkali], Avg(qryCEAlleElektrolyseure.µNa2CO3) AS [Mittelwert von µNa2CO3], Avg(qryCEAlleElektrolyseure.µHCl) AS [Mittelwert von µHCl], Avg(qryCEAlleElektrolyseure.µO2) AS [Mittelwert von µO2]
+FROM tblGewDaten, qryCEAlleElektrolyseure
+GROUP BY qryCEAlleElektrolyseure.Datum;

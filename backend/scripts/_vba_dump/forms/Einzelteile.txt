@@ -1,0 +1,615 @@
+Version =17
+VersionRequired =17
+Checksum =-122771775
+Begin Form
+    AutoCenter = NotDefault
+    ScrollBars =0
+    TabularFamily =0
+    GridX =5
+    GridY =5
+    Width =12585
+    ItemSuffix =79
+    Left =1125
+    Top =60
+    Right =13755
+    Bottom =8505
+    RecSrcDt = Begin
+        0xc4363266b687e140
+    End
+    RecordSource ="Einzelteile"
+    Caption ="Einzelteile"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0xc00700008905000089050000890500000000000029310000f000000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204465736b4a6574203639304320536572696573205072696e7465720000 ,
+        0x000437039400060103ff800702000900000000006400010001002c0102000100 ,
+        0x2c01010000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x03000000010000000100000000000000000000004850204465736b4a65742036 ,
+        0x39304320536572696573205072696e7465720000000000000000000000000000 ,
+        0x00000000000000000000000000000000000000004c5054310000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000200000000000000b30d ,
+        0xb009000004000200010000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000010000002c012c01000000000000 ,
+        0x000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x27000800300001004850204465736b4a65742036393043205365726965732050 ,
+        0x72696e74657200485046444a433035004c5054313a0000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextFontFamily =0
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            TextFontFamily =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            TextFontFamily =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            TextFontFamily =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =1961
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =113
+                    Top =340
+                    Width =2940
+                    Height =375
+                    FontSize =14
+                    Name ="Text8"
+                    Caption ="Cell Components"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =450
+                    Top =1504
+                    Width =564
+                    Height =456
+                    Name ="Text10"
+                    Caption ="Part no.:"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1699
+                    Top =1504
+                    Width =1593
+                    Height =228
+                    Name ="Text12"
+                    Caption ="Description"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3860
+                    Top =1504
+                    Width =1458
+                    Height =306
+                    Name ="Text14"
+                    Caption ="Drawing no.:"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5424
+                    Top =1504
+                    Width =612
+                    Height =228
+                    Name ="Text16"
+                    Caption ="Rev."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6164
+                    Top =1504
+                    Width =900
+                    Height =456
+                    Name ="Text18"
+                    Caption ="No. per element"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7256
+                    Top =1474
+                    Width =1248
+                    Height =444
+                    Name ="Text22"
+                    Caption ="Total no. of components"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7378
+                    Top =907
+                    Width =915
+                    Height =227
+                    Name ="Feld26"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7370
+                    Top =340
+                    Width =918
+                    Height =456
+                    Name ="Text27"
+                    Caption ="Element no.:"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8626
+                    Top =907
+                    Width =795
+                    Height =227
+                    TabIndex =1
+                    Name ="Feld28"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8407
+                    Top =340
+                    Width =1233
+                    Height =456
+                    Name ="Text29"
+                    Caption ="Spare part calculation"
+                End
+                Begin Label
+                    Visible = NotDefault
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11565
+                    Top =1474
+                    Width =1017
+                    Height =456
+                    Name ="Text36"
+                    Caption ="Ersatzteile Ja / Nein"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10019
+                    Top =1277
+                    Width =1236
+                    Height =684
+                    Name ="Text37"
+                    Caption ="Calculated no. of spare parts"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =3401
+                    Top =340
+                    Width =1584
+                    Height =576
+                    TabIndex =2
+                    Name ="Schaltfläche26"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =5215
+                    Top =340
+                    Width =1596
+                    Height =576
+                    TabIndex =3
+                    Name ="Schaltfläche23"
+                    Caption ="Element Administration"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8617
+                    Top =1474
+                    Width =1371
+                    Height =459
+                    Name ="Text55"
+                    Caption ="Recommended spare parts"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11225
+                    Top =340
+                    Width =1247
+                    Height =347
+                    FontSize =10
+                    TabIndex =4
+                    BackColor =12632256
+                    Name ="Feld59"
+                    ControlSource ="=Date()"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1137
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            Begin
+                Begin Label
+                    Visible = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11678
+                    Top =680
+                    Width =867
+                    Height =456
+                    Name ="Text45"
+                    Caption ="Ersatz Ja / Nein"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =453
+                    Top =680
+                    Width =564
+                    Height =456
+                    Name ="Text62"
+                    Caption ="Part no.:"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1702
+                    Top =680
+                    Width =1578
+                    Height =228
+                    Name ="Text63"
+                    Caption ="Description"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3848
+                    Top =680
+                    Width =1473
+                    Height =306
+                    Name ="Text64"
+                    Caption ="Drawing no.:"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5442
+                    Top =680
+                    Width =552
+                    Height =228
+                    Name ="Text65"
+                    Caption ="Rev."
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6122
+                    Top =680
+                    Width =900
+                    Height =456
+                    Name ="Text66"
+                    Caption ="No. per element"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7214
+                    Top =650
+                    Width =1248
+                    Height =444
+                    Name ="Text67"
+                    Caption ="Total no. of components"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9977
+                    Top =453
+                    Width =1236
+                    Height =684
+                    Name ="Text69"
+                    Caption ="Calculated no. of spare parts"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8575
+                    Top =650
+                    Width =1371
+                    Height =459
+                    Name ="Text70"
+                    Caption ="Recommended spare parts"
+                End
+            End
+        End
+        Begin Section
+            Height =240
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =453
+                    Width =564
+                    Name ="Teil Nr"
+                    ControlSource ="Teil Nr"
+                    Format ="Standard"
+                    EventProcPrefix ="Teil_Nr"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1132
+                    Width =2604
+                    TabIndex =1
+                    Name ="Benennung"
+                    ControlSource ="Benennung"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3855
+                    Width =1464
+                    TabIndex =2
+                    Name ="Zeichnungs Nr"
+                    ControlSource ="Zeichnungs Nr"
+                    EventProcPrefix ="Zeichnungs_Nr"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5442
+                    Width =672
+                    TabIndex =3
+                    Name ="Revision"
+                    ControlSource ="Revision"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6236
+                    Width =780
+                    TabIndex =4
+                    Name ="Teile pro Element"
+                    ControlSource ="Teile pro Element"
+                    Format ="Standard"
+                    EventProcPrefix ="Teile_pro_Element"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7377
+                    Width =900
+                    TabIndex =5
+                    Name ="Summe Einzelteile"
+                    ControlSource ="=[Teile pro Element]*[Feld26]"
+                    Format ="Standard"
+                    EventProcPrefix ="Summe_Einzelteile"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10204
+                    Width =792
+                    TabIndex =6
+                    Name ="Feld33"
+                    ControlSource ="=[Teile pro Element]*[Feld28]*[Feld34]"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    Locked = NotDefault
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11678
+                    Width =792
+                    TabIndex =7
+                    Name ="Feld34"
+                    ControlSource ="Reserve Index"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8844
+                    Width =792
+                    TabIndex =8
+                    Name ="Feld47"
+                    ControlSource ="=[Summe Einzelteile]*0.02"
+                    Format ="Standard"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =570
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            Begin
+                Begin PageBreak
+                    OverlapFlags =85
+                    Name ="Seitenumbruch38"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9872
+                    Top =113
+                    Width =1470
+                    Height =227
+                    Name ="Feld57"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Zellenkomponenten"
+        Text27.Caption = "Anzahl Elemente"
+        Text29.Caption = "Reserve-elemente"
+        Text10.Caption = "Teile Nr."
+        Text62.Caption = "Teile Nr."
+        Text12.Caption = "Beschreibung"
+        Text63.Caption = "Beschreibung"
+        Text14.Caption = "Zeichnungs-Nr."
+        Text64.Caption = "Zeichnungs-Nr."
+        Text18.Caption = "Anz. pro Element"
+        Text66.Caption = "Anz. pro Element"
+        Text22.Caption = "Gesamtanzahl"
+        Text67.Caption = "Gesamtanzahl"
+        Text55.Caption = "Empfohlene Ersatzteile"
+        Text70.Caption = "Empfohlene Ersatzteile"
+        Text37.Caption = "Berechnete Anzahl Ersatzteile"
+        Text69.Caption = "Berechnete Anzahl Ersatzteile"
+        Text36.Caption = "Ersatzteile Ja/Nein"
+        Text45.Caption = "Ersatzteile Ja/Nein"
+        
+        Schaltfläche26.Caption = "Hauptmenu"
+        Schaltfläche23.Caption = "Zellen-verwaltung"
+        
+    Else
+        Text8.Caption = "Cell Components"
+        Text27.Caption = "No. of Elements"
+        Text29.Caption = "Spare Elements"
+        Text10.Caption = "Part No."
+        Text62.Caption = "Part No."
+        Text12.Caption = "Description"
+        Text63.Caption = "Description"
+        Text14.Caption = "Drawing No."
+        Text64.Caption = "Drawing No."
+        Text18.Caption = "No. per element"
+        Text66.Caption = "No. per element"
+        Text22.Caption = "Total no. of components"
+        Text67.Caption = "Total no. of components"
+        Text55.Caption = "Recommended spare parts"
+        Text70.Caption = "Recommended spare parts"
+        Text37.Caption = "Calculated no. of spare parts"
+        Text69.Caption = "Calculated no. of spare parts"
+        Text36.Caption = "Spare Parts Yes/No"
+        Text45.Caption = "Spare Parts Yes/No"
+        
+        Schaltfläche26.Caption = "Main Menu"
+        Schaltfläche23.Caption = "Element Administration"
+        
+        
+    End If
+
+
+End Sub
+
+Private Sub Schaltfläche23_Click()
+    DoCmd.OpenForm "frmZellenverwaltung"
+    DoCmd.Close acForm, "Einzelteile"
+End Sub
+
+Private Sub Schaltfläche26_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "Einzelteile"
+End Sub

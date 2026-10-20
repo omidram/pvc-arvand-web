@@ -207,7 +207,20 @@ def _ensure_workflow_redesign() -> None:
 
 _ensure_user_auth_source()
 _ensure_user_role_id()
+def _ensure_inspection_decision_column() -> None:
+    """Parallel inspector / process decisions live on the inspection request."""
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("wf_inspection_requests")}
+    except Exception:
+        return
+    if "decisions" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE wf_inspection_requests ADD COLUMN decisions TEXT"))
+
+
 _ensure_inspection_sheet_columns()
+_ensure_inspection_decision_column()
 _ensure_cathodic_ce_columns()
 _ensure_workflow_redesign()
 

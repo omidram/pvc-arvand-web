@@ -1,0 +1,378 @@
+Version =19
+VersionRequired =19
+Checksum =-123705993
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =14740
+    ItemSuffix =84
+    Left =645
+    Top =165
+    Right =14880
+    Bottom =8205
+    RecSrcDt = Begin
+        0x03db384b0fe9e240
+    End
+    Caption =" "
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x130b0000dc080000890500008905000000000000bf280000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c4850354b5f37313534365f50434c00000000000000 ,
+        0x010418009c00b803030700000200090000000000640001000100fcff00000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742035303030205365726965732050434c2036000000 ,
+        0x000000000000040032002e018603789c654fcb2e8341183d67a6ed288a05ad48 ,
+        0x45dd2f11112f6081451fa078804a5c9aef6bb44d88205db2a88d5d130fe009b0 ,
+        0xf006dec203d8b95f66fe5423f12dce393933df9c3995caff31c436afe8a9c426 ,
+        0xdc0193284875a75ada2ac2c549c02502ea37649272471d67dd503a58779461da ,
+        0x864d43f24667a8879409d69bb6b64899a34c5167a94bf4ebd3ccc2538131045e ,
+        0x6ff146e0208e98863b0d39e513ca31f58c72ce70321f5df1dfd3203ceff21192 ,
+        0xa43e433eb1ff06f9808c505fa0ef902fe800254d291ac95073d441da148b901e ,
+        0x6a1fb597b551cabdb1cbcc419c9131eaad753751cfa108b3113e21e083f59820 ,
+        0xac416b1a0bbfcadbb1b67dfdd78eb7edcbb6ed1f7d453fec0a378d5df52017b6 ,
+        0xbc1635cc3305eda47451ba7d548c99a8e71e9defecf37f00a4d5459500000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08002600400001004850204c617365724a657420353030302053657269657320 ,
+        0x50434c2036005c5c5355444f505330325c4850354b5f37313534365f50434c00 ,
+        0x6870356b5f373135343600
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1498
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0xe492f595cb82d345bfdf707b921f6cf8
+            End
+            Begin
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =12925
+                    Top =226
+                    Width =1704
+                    Height =576
+                    Name ="Schaltfläche43"
+                    Caption ="Statistics"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x1f3878774286414b87d1ed210591d88b
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =9070
+                    Top =226
+                    Height =568
+                    TabIndex =1
+                    Name ="Befehl59"
+                    Caption ="Update\015\012Display"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x3e6ece1af4450a4bb17732c7519e2932
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =3
+                    Left =113
+                    Top =226
+                    Width =8835
+                    Height =1035
+                    TabIndex =2
+                    Name ="subfrmSucheMembrantyp"
+                    SourceObject ="Form.subfrmStatistikVerteilungUn"
+                    GUID = Begin
+                        0xbd0c61d27ab49d428121a6c24cb7add8
+                    End
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =10998
+                    Top =226
+                    Width =1704
+                    Height =576
+                    TabIndex =3
+                    Name ="Command83"
+                    Caption ="Chart"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xf733d880c3bf434b9cf96c2eb3f90231
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0xc1041301bf5aec478c1d6c667c557fb1
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7823
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x76f62dc9df8ceb4da32a10967fe71d16
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =2494
+                    Width =13485
+                    Height =5220
+                    Name ="subfrmSuchergebnisMontagedatum"
+                    SourceObject ="Form.subfrmStatistikVerteilungUnErgebnis"
+                    GUID = Begin
+                        0xe3f03166724de844aae26eecabf720bc
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =113
+                    Width =6000
+                    Height =2250
+                    TabIndex =1
+                    Name ="subfrmStatistikElementeUnAbweichungElek"
+                    SourceObject ="Form.subfrmStatistikVerteilungUnElektrolyseur2"
+                    GUID = Begin
+                        0x375f972dd762c9429326d072ff221e02
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0xa28066b1eab08846b19bf9573e5d2fd1
+            End
+        End
+        Begin FormFooter
+            CanGrow = NotDefault
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0xecea775c6f095c458221a9eeb7c49d17
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+Private Sub Befehl59_Click()
+    KorrekturfaktorenAktualisieren
+    VerteilungBerechnen
+    subfrmSuchergebnisMontagedatum.Requery
+    subfrmStatistikElementeUnAbweichungElek.Requery
+End Sub
+
+
+Private Sub Command83_Click()
+    DoCmd.OpenForm "frmDiagrammKlassenVerteilungUn"
+    DoCmd.Close acForm, "frmStatistikVerteilungUn"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Befehl59.Caption = "Anzeige aktualisieren"
+        Command83.Caption = "Diagramm"
+        Schaltfläche43.Caption = "Statistik"
+    
+    Else
+        Befehl59.Caption = "Update Display"
+        Command83.Caption = "Chart"
+        Schaltfläche43.Caption = "Statistics"
+    End If
+
+End Sub
+
+Private Sub Schaltfläche43_Click()
+    DoCmd.OpenForm "frmMenuStatistik"
+    DoCmd.Close acForm, "frmStatistikVerteilungUn"
+End Sub
+
+Private Sub VerteilungBerechnen()
+
+Dim rst1, rst2, rst3, rst12 As DAO.Recordset
+Dim Umin, Umax, Schrittweite, UG, OG As Double
+Dim dbs As Database
+
+Set dbs = CurrentDb
+dbs.Execute (" Delete * From tblVerteilungUnElemente ")
+dbs.Execute (" Delete * From tblVerteilungUnElementeDetails ")
+dbs.Execute (" Delete * From tblKlassenVerteilungUnElemente ")
+
+'Grenzen und Schrittweite einlesen
+    Set rst12 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    Umin = rst12!UminVerteilungUn
+    Umax = rst12!UmaxVerteilungUn
+    Schrittweite = rst12!SchrittweiteVerteilungUn
+    rst12.Close
+    
+'Klassen berechnen
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblKlassenVerteilungUnElemente")
+    rst1.AddNew
+    rst1.Untergrenze = 0
+    Umin = Round(Umin, 3)
+    rst1.Obergrenze = Round(Umin, 3)
+    rst1.Klasse = "<=" + Str(Umin)
+    rst1.Update
+    UG = Umin
+    OG = Round(Umin + Schrittweite, 3)
+    
+    Do Until OG > Umax
+        rst1.AddNew
+        rst1.Untergrenze = Round(UG, 3)
+        rst1.Obergrenze = Round(OG, 3)
+        rst1.Klasse = Str(UG) + " -" + Str(OG)
+        rst1.Update
+        UG = Round(OG, 3)
+        OG = Round(OG + Schrittweite, 3)
+    Loop
+    
+    rst1.AddNew
+    rst1.Untergrenze = Umax
+    rst1.Obergrenze = 100
+    rst1.Klasse = ">" + Str(Umax)
+    rst1.Update
+    rst1.Close
+    
+'Elemente Klassen zuordnen
+    Set rst1 = CurrentDb.OpenRecordset("Select * From qryStatistikElementeUnVerteilung")
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblKlassenVerteilungUnElemente")
+    Set rst3 = CurrentDb.OpenRecordset("Select * From tblVerteilungUnElementeDetails")
+    
+    Do Until rst1.EOF
+        rst2.MoveFirst
+        rst3.AddNew
+        rst3!Elektrolyseur = rst1!Elektrolyseur
+        rst3!Position = rst1!Position
+        rst3!Datum = rst1!Datum
+        rst3!Zeit = rst1!Zeit
+        rst3![I Gesamt] = rst1![I Gesamt]
+        rst3!i = rst1!i
+        rst3![t An] = rst1![t An]
+        rst3![t Ka] = rst1![t Ka]
+        rst3!tm = rst1!tm
+        rst3!Cc = rst1!Cc
+        rst3!iRef = rst1!iRef
+        rst3!Ui = rst1!Ui
+        rst3!Un = rst1!Un
+        Do Until rst2.EOF
+            If (rst1!Un > rst2.Untergrenze) And (rst1!Un <= rst2.Obergrenze) Then
+                rst3!Klasse = rst2!Klasse
+            End If
+            rst2.MoveNext
+        Loop
+        rst3.Update
+        rst1.MoveNext
+    Loop
+    
+    rst3.Close
+    rst2.Close
+    rst1.Close
+
+
+End Sub

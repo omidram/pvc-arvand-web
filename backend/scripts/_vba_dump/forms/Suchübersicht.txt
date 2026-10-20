@@ -1,0 +1,1401 @@
+Version =19
+VersionRequired =19
+Checksum =-122992724
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    AllowEdits = NotDefault
+    ScrollBars =0
+    GridX =5
+    GridY =5
+    Width =15420
+    ItemSuffix =107
+    Top =495
+    Right =15120
+    Bottom =9225
+    RecSrcDt = Begin
+        0x8e9a9c7f0b82e140
+    End
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x89050000890500008905000089050000000000007a360000c422000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c00340203070000020009009a0b3408640001000100fcff00000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin Section
+            Height =8390
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =8844
+                    Top =1247
+                    Width =1812
+                    Height =576
+                    TabIndex =2
+                    Name ="Schaltfläche26"
+                    Caption ="Cathode Number"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =10885
+                    Top =6009
+                    Width =1812
+                    Height =564
+                    TabIndex =4
+                    Name ="Schaltfläche28"
+                    Caption ="Membrane type"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =13035
+                    Top =7590
+                    Width =1809
+                    Height =576
+                    TabIndex =32
+                    Name ="Schaltfläche29"
+                    Caption ="Main Menu"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =12925
+                    Top =3288
+                    Width =1812
+                    Height =576
+                    TabIndex =5
+                    Name ="Schaltfläche31"
+                    Caption ="Assembly remarks"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =6803
+                    Top =1247
+                    Width =1812
+                    Height =564
+                    TabIndex =1
+                    Name ="Schaltfläche39"
+                    Caption ="Anode Number"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =223
+                    Left =450
+                    Top =1140
+                    Width =14516
+                    Height =6222
+                    Name ="Rechteck56"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =2715
+                    Top =1260
+                    Width =1812
+                    Height =576
+                    TabIndex =9
+                    Name ="Schaltfläche57"
+                    Caption ="Assembly date"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =2715
+                    Top =1940
+                    Width =1812
+                    Height =576
+                    TabIndex =10
+                    Name ="Schaltfläche58"
+                    Caption ="Commisioning date"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =2715
+                    Top =2620
+                    Width =1812
+                    Height =576
+                    TabIndex =11
+                    Name ="Schaltfläche59"
+                    Caption ="Decommisioning date"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =2715
+                    Top =3301
+                    Width =1812
+                    Height =576
+                    TabIndex =12
+                    Name ="Schaltfläche60"
+                    Caption ="Disassembly date"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =680
+                    Top =3968
+                    Width =1809
+                    Height =576
+                    TabIndex =21
+                    Name ="Schaltfläche62"
+                    Caption ="DOL"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10885
+                    Top =2607
+                    Width =1809
+                    Height =576
+                    TabIndex =26
+                    Name ="Schaltfläche69"
+                    Caption ="Remembraning"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6803
+                    Top =2607
+                    Width =1803
+                    Height =576
+                    TabIndex =27
+                    Name ="Schaltfläche70"
+                    Caption ="Recoating anode"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8844
+                    Top =2607
+                    Width =1815
+                    Height =576
+                    TabIndex =28
+                    Name ="Schaltfläche71"
+                    Caption ="Recoating cathode"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10895
+                    Top =1247
+                    Width =1806
+                    Height =576
+                    TabIndex =3
+                    Name ="Befehl77"
+                    Caption ="Membrane number"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    TextFontFamily =34
+                    Left =10885
+                    Top =6689
+                    Width =1806
+                    Height =576
+                    FontSize =8
+                    TabIndex =22
+                    Name ="Befehl78"
+                    Caption ="Active Elements Per Membr. Type"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =680
+                    Top =1927
+                    Width =1806
+                    Height =576
+                    TabIndex =20
+                    Name ="Befehl79"
+                    Caption ="Active elements"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =680
+                    Top =3288
+                    Width =1806
+                    Height =576
+                    TabIndex =24
+                    Name ="Befehl81"
+                    Caption ="Elements without DOL"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6817
+                    Top =3969
+                    Width =1806
+                    Height =576
+                    TabIndex =29
+                    Name ="Befehl82"
+                    Caption ="Duplicate anode (all)"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8857
+                    Top =3969
+                    Width =1806
+                    Height =576
+                    TabIndex =30
+                    Name ="Befehl83"
+                    Caption ="Duplicate Cathode (all)"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10892
+                    Top =3962
+                    Width =1806
+                    Height =576
+                    TabIndex =31
+                    Name ="Befehl84"
+                    Caption ="Duplicate membrane (all)"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =12924
+                    Top =5331
+                    Width =1806
+                    Height =576
+                    TabIndex =14
+                    Name ="Befehl85"
+                    Caption ="Active Groups"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =12915
+                    Top =4650
+                    Width =1821
+                    Height =576
+                    TabIndex =13
+                    Name ="Befehl86"
+                    Caption ="Group"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =450
+                    Top =210
+                    Width =14520
+                    Height =570
+                    FontSize =22
+                    FontWeight =600
+                    BackColor =12632256
+                    ForeColor =4194304
+                    Name ="Text0"
+                    Caption ="Search Functions"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =680
+                    Top =2607
+                    Width =1806
+                    Height =576
+                    TabIndex =23
+                    Name ="Befehl87"
+                    Caption ="Passive elements"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =680
+                    Top =1247
+                    Width =1806
+                    Height =576
+                    Name ="Befehl88"
+                    Caption ="Element number"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4755
+                    Top =1940
+                    Width =1812
+                    Height =576
+                    TabIndex =16
+                    Name ="Befehl89"
+                    Caption ="Commissioned Elements"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4755
+                    Top =1260
+                    Width =1812
+                    Height =576
+                    TabIndex =15
+                    Name ="Befehl90"
+                    Caption ="Assembled Elements"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4755
+                    Top =2636
+                    Width =1812
+                    Height =576
+                    TabIndex =17
+                    Name ="Befehl91"
+                    Caption ="Decommission. Elements"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4755
+                    Top =3301
+                    Width =1812
+                    Height =576
+                    TabIndex =18
+                    Name ="Befehl92"
+                    Caption ="Disassembled Elements"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =680
+                    Top =4648
+                    Width =1812
+                    Height =576
+                    TabIndex =19
+                    Name ="Befehl93"
+                    Caption ="Elements in Electrolyzer"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6803
+                    Top =1927
+                    Width =1806
+                    Height =576
+                    TabIndex =6
+                    Name ="Befehl94"
+                    Caption ="Anode Information"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8844
+                    Top =1928
+                    Width =1806
+                    Height =576
+                    TabIndex =7
+                    Name ="Befehl95"
+                    Caption ="Cathode Information"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10885
+                    Top =1927
+                    Width =1806
+                    Height =576
+                    TabIndex =8
+                    Name ="Befehl96"
+                    Caption ="Membrane Information"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =12925
+                    Top =1247
+                    Width =1806
+                    Height =591
+                    TabIndex =25
+                    Name ="Befehl223"
+                    Caption ="Reason for Inspection"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =12925
+                    Top =1927
+                    Width =1806
+                    Height =591
+                    TabIndex =33
+                    Name ="Befehl97"
+                    Caption ="Reason for Inspect. (Code)"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6817
+                    Top =4650
+                    Width =1809
+                    Height =576
+                    TabIndex =34
+                    Name ="Command98"
+                    Caption ="Duplicate anode (active)"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xdce36d630838e249b677a362d26ed9b8
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6817
+                    Top =5330
+                    Width =1803
+                    Height =576
+                    TabIndex =35
+                    Name ="Command99"
+                    Caption ="Duplicate anode (passive)"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x0133fa7b656e274e89223e4107d82406
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8857
+                    Top =4649
+                    Width =1815
+                    Height =576
+                    TabIndex =36
+                    Name ="Command100"
+                    Caption ="Duplicate cathode (active)"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x5045274d09c69c4d8cd57dba0ef6965d
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8857
+                    Top =5329
+                    Width =1806
+                    Height =576
+                    TabIndex =37
+                    Name ="Command101"
+                    Caption ="Duplicate cathode (pass.)"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x3146d2772c85c44aa224cb28241b4971
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10892
+                    Top =4642
+                    Width =1806
+                    Height =576
+                    TabIndex =38
+                    Name ="Command102"
+                    Caption ="Duplicate membr. (act.)"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0xb2de893245c9074f84e4bbf062dd3f49
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10892
+                    Top =5322
+                    Width =1806
+                    Height =576
+                    TabIndex =39
+                    Name ="Command103"
+                    Caption ="Duplicate membr. (pass.)"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x1560bc91c24bbe41a0642f320f708e50
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10892
+                    Top =3285
+                    Width =1806
+                    Height =576
+                    TabIndex =40
+                    Name ="Command104"
+                    Caption ="Membrane Stock"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x998807984459a34da708925dde387be1
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6810
+                    Top =3285
+                    Width =1806
+                    Height =576
+                    TabIndex =41
+                    Name ="Command105"
+                    Caption ="Anode Stock"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x8398f72f6bc772448475000b789cda3e
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8851
+                    Top =3285
+                    Width =1806
+                    Height =576
+                    TabIndex =42
+                    Name ="Command106"
+                    Caption ="Cathode Stock"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0xf4d62b4c6f236045b350793170735a22
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Schaltfläche18_Click()
+On Error GoTo Err_Schaltfläche18_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Montage"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche18_Click:
+    Exit Sub
+
+Err_Schaltfläche18_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche18_Click
+    
+End Sub
+
+Private Sub Schaltfläche19_Click()
+On Error GoTo Err_Schaltfläche19_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Zellensaal"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche19_Click:
+    Exit Sub
+
+Err_Schaltfläche19_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche19_Click
+    
+End Sub
+
+Private Sub Befehl223_Click()
+    DoCmd.OpenForm "frmSucheInspektionsgrund"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Befehl89_Click()
+    DoCmd.OpenForm "frmSucheInbetriebgenommeneElemente"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Befehl90_Click()
+    DoCmd.OpenForm "frmSucheMontierteElemente"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Befehl91_Click()
+    DoCmd.OpenForm "frmSucheAusgeschalteteElemente"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Befehl92_Click()
+    DoCmd.OpenForm "frmSucheDemontierteElemente"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Befehl93_Click()
+    DoCmd.OpenForm "frmSucheElektrolyseurElemente"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Befehl94_Click()
+    DoCmd.OpenForm "frmSucheAnodeninformation"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Befehl95_Click()
+    DoCmd.OpenForm "frmSucheKathodeninformation"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Befehl96_Click()
+    DoCmd.OpenForm "frmSucheMembraninformation"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Befehl97_Click()
+    DoCmd.OpenForm "frmSucheInspektionsgrundCode"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Command100_Click()
+    DoCmd.OpenForm "frmSucheDuplikateKathodenAktiv"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Command101_Click()
+    DoCmd.OpenForm "frmSucheDuplikateKathodenPassiv"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Command102_Click()
+    DoCmd.OpenForm "frmSucheDuplikateMembranenAktiv"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Command103_Click()
+    DoCmd.OpenForm "frmSucheDuplikateMembranenPassiv"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Command104_Click()
+    DoCmd.OpenForm "frmLagerbestandMembranen"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Command105_Click()
+    DoCmd.OpenForm "frmLagerbestandAnoden"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Command106_Click()
+    DoCmd.OpenForm "frmLagerbestandKathoden"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Command98_Click()
+    DoCmd.OpenForm "frmSucheDuplikateAnodenAktiv"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Command99_Click()
+    DoCmd.OpenForm "frmSucheDuplikateAnodenPassiv"
+    DoCmd.Close acForm, "Suchübersicht"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Text0.Caption = "Suchfunktionen"
+        Schaltfläche39.Caption = "Anodennummer"
+        Schaltfläche26.Caption = "Kathoden-nummer"
+        Befehl94.Caption = "Anoden-information"
+        Befehl95.Caption = "Kathoden-information"
+        Befehl96.Caption = "Membran-information"
+        
+        Command104.Caption = "Lagerbestand Membranen"
+        Command105.Caption = "Lagerbestand Anoden"
+        Command106.Caption = "Lagerbestand Kathoden"
+        
+        Befehl84.Caption = "Membran-duplikate (alle)"
+        Command102.Caption = "Membran-duplikate (akt.)"
+        Command103.Caption = "Membran-duplikate (pass.)"
+        Befehl78.Caption = "Aktive Elem. pro Membrantyp"
+        Befehl85.Caption = "Aktive Gruppen"
+        Schaltfläche57.Caption = "Montagedatum"
+        Schaltfläche58.Caption = "Einschaltdatum"
+        Schaltfläche59.Caption = "Ausschaltdatum"
+        Schaltfläche60.Caption = "Demontage-datum"
+        Befehl90.Caption = "Montierte Elem. (Zeitraum)"
+        Befehl89.Caption = "Eingesch. Elem. (Zeitraum)"
+        Befehl91.Caption = "Ausgesch. Elem. (Zeitraum)"
+        Befehl92.Caption = "Demontierte Elem. (Zeitraum)"
+        Schaltfläche28.Caption = "Membrantyp"
+        Befehl82.Caption = "Anodenduplikate (alle)"
+        Command98.Caption = "Anodenduplikate (aktiv)"
+        Command99.Caption = "Anodenduplikate (passiv)"
+        Befehl79.Caption = "Aktive Elemente"
+        Befehl86.Caption = "Gruppe"
+        Schaltfläche62.Caption = "DOL"
+        Schaltfläche69.Caption = "Remembraning"
+        Schaltfläche70.Caption = "Anoden-Recoating"
+        Befehl93.Caption = "Elemente nach Elektrolyseur"
+        Befehl223.Caption = "Inspektions-grund"
+        Befehl97.Caption = "Inspektions-grund (Code)"
+        
+        Befehl83.Caption = "Kathoden-duplikate (alle)"
+        Command100.Caption = "Katoden-duplikate (akt.)"
+        Command101.Caption = "Kathoden-duplikate (pass.)"
+        Befehl87.Caption = "Passive Elemente"
+        Schaltfläche31.Caption = "Montage-bemerkungen"
+        Schaltfläche71.Caption = "Kathoden-Recoating"
+        Befehl88.Caption = "Elementnummer"
+        Befehl77.Caption = "Membran-nummer"
+        Befehl81.Caption = "Elemente ohne Laufzeit"
+       
+        Schaltfläche29.Caption = "Hauptmenu"
+    
+    Else
+    
+        Text0.Caption = "Search Functions"
+        Schaltfläche39.Caption = "Anode Number"
+        Schaltfläche26.Caption = "Cathode Number"
+        
+        Befehl84.Caption = "Duplicate Membrane"
+        Command102.Caption = "Duplicate Membrane (act.)"
+        Command103.Caption = "Duplicate Membr. (pass.)"
+        
+        Befehl94.Caption = "Anode Information"
+        Befehl95.Caption = "Cathode Information"
+        Befehl96.Caption = "Membran-information"
+        
+        Command104.Caption = "Membrane Stock"
+        Command105.Caption = "Anode Stock"
+        Command106.Caption = "Cathode Stock"
+        
+        Befehl78.Caption = "Active Elem. per Membrane Type"
+        Befehl85.Caption = "Active Groups"
+        Schaltfläche57.Caption = "Assembly Date"
+        Schaltfläche58.Caption = "Commissioning Date"
+        Schaltfläche59.Caption = "Decommis-sioning Date"
+        Schaltfläche60.Caption = "Disassembly Date"
+        Befehl90.Caption = "Assem. Elem. (Time Period)"
+        Befehl89.Caption = "Commiss. Elem. (Time Period)"
+        Befehl91.Caption = "Decommiss. Elem. (Time Period)"
+
+        Befehl97.Caption = "Reason for Insp. (Code)"
+        Schaltfläche28.Caption = "Membrane Type"
+        Befehl79.Caption = "Active Elements"
+        Befehl82.Caption = "Duplicate Anode (all)"
+        Command98.Caption = "Duplicate Anode (act.)"
+        Command99.Caption = "Duplicate Anode (pass.)"
+        Befehl86.Caption = "Group"
+        Schaltfläche62.Caption = "DOL"
+        Schaltfläche69.Caption = "Remembraning"
+        Schaltfläche70.Caption = "Anode Recoating"
+
+        
+        Befehl83.Caption = "Duplicate Cathode (all)"
+        Command100.Caption = "Duplicate Cathode (act.)"
+        Command101.Caption = "Duplicate Cathode (pass.)"
+        Befehl87.Caption = "Passive Elements"
+        Schaltfläche31.Caption = "Assembly Remarks"
+        Schaltfläche71.Caption = "Cathode Recoating"
+        Befehl88.Caption = "Element Number"
+        Befehl77.Caption = "Membrane Number"
+        Befehl81.Caption = "Elements without DOL"
+        
+        Schaltfläche29.Caption = "Main Menu"
+    End If
+
+
+End Sub
+
+Private Sub Schaltfläche26_Click()
+On Error GoTo Err_Schaltfläche26_Click
+
+    DoCmd.OpenForm "frmSucheKathodennummer"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche26_Click:
+    Exit Sub
+
+Err_Schaltfläche26_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche26_Click
+    
+End Sub
+
+Private Sub Schaltfläche28_Click()
+On Error GoTo Err_Schaltfläche28_Click
+
+    
+    DoCmd.OpenForm "frmSucheMembrantyp"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche28_Click:
+    Exit Sub
+
+Err_Schaltfläche28_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche28_Click
+    
+End Sub
+
+Private Sub Schaltfläche29_Click()
+    
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "Suchübersicht"
+
+End Sub
+
+Private Sub Schaltfläche30_Click()
+On Error GoTo Err_Schaltfläche30_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Elemente mit Mehrfachposition"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche30_Click:
+    Exit Sub
+
+Err_Schaltfläche30_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche30_Click
+    
+End Sub
+
+Private Sub Schaltfläche31_Click()
+On Error GoTo Err_Schaltfläche31_Click
+
+    DoCmd.OpenForm "frmSucheBemerkungen"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche31_Click:
+    Exit Sub
+
+Err_Schaltfläche31_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche31_Click
+    
+End Sub
+
+Private Sub Schaltfläche39_Click()
+On Error GoTo Err_Schaltfläche39_Click
+
+    DoCmd.OpenForm "frmSucheAnodennummer"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche39_Click:
+    Exit Sub
+
+Err_Schaltfläche39_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche39_Click
+    
+End Sub
+
+Private Sub Schaltfläche57_Click()
+On Error GoTo Err_Schaltfläche57_Click
+
+    DoCmd.OpenForm "frmSucheMontagedatum"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche57_Click:
+    Exit Sub
+
+Err_Schaltfläche57_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche57_Click
+    
+End Sub
+
+Private Sub Schaltfläche58_Click()
+On Error GoTo Err_Schaltfläche58_Click
+
+    DoCmd.OpenForm "frmSucheEinschaltdatum"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche58_Click:
+    Exit Sub
+
+Err_Schaltfläche58_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche58_Click
+    
+End Sub
+
+Private Sub Schaltfläche59_Click()
+On Error GoTo Err_Schaltfläche59_Click
+
+    DoCmd.OpenForm "frmSucheAusschaltdatum"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche59_Click:
+    Exit Sub
+
+Err_Schaltfläche59_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche59_Click
+    
+End Sub
+
+Private Sub Schaltfläche60_Click()
+On Error GoTo Err_Schaltfläche60_Click
+
+    DoCmd.OpenForm "frmSucheDemontagedatum"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche60_Click:
+    Exit Sub
+
+Err_Schaltfläche60_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche60_Click
+    
+End Sub
+
+Private Sub Schaltfläche62_Click()
+On Error GoTo Err_Schaltfläche62_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "frmSucheDOL"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche62_Click:
+    Exit Sub
+
+Err_Schaltfläche62_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche62_Click
+    
+End Sub
+
+Private Sub Schaltfläche63_Click()
+On Error GoTo Err_Schaltfläche63_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Anoden Recoating"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche63_Click:
+    Exit Sub
+
+Err_Schaltfläche63_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche63_Click
+    
+End Sub
+
+Private Sub Schaltfläche64_Click()
+On Error GoTo Err_Schaltfläche64_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Kathoden Recoating"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche64_Click:
+    Exit Sub
+
+Err_Schaltfläche64_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche64_Click
+    
+End Sub
+
+Private Sub Schaltfläche66_Click()
+On Error GoTo Err_Schaltfläche66_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Remembraning aktive Elemente"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche66_Click:
+    Exit Sub
+
+Err_Schaltfläche66_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche66_Click
+    
+End Sub
+
+Private Sub Schaltfläche67_Click()
+On Error GoTo Err_Schaltfläche67_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Remembraning passive Elemente"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche67_Click:
+    Exit Sub
+
+Err_Schaltfläche67_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche67_Click
+    
+End Sub
+
+
+Private Sub Schaltfläche69_Click()
+On Error GoTo Err_Schaltfläche69_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "frmSucheRemembraning"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche69_Click:
+    Exit Sub
+
+Err_Schaltfläche69_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche69_Click
+    
+End Sub
+
+Private Sub Schaltfläche70_Click()
+On Error GoTo Err_Schaltfläche70_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "frmSucheAnodenrecoating"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche70_Click:
+    Exit Sub
+
+Err_Schaltfläche70_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche70_Click
+    
+End Sub
+
+Private Sub Schaltfläche71_Click()
+On Error GoTo Err_Schaltfläche71_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "frmSucheKathodenrecoating"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Schaltfläche71_Click:
+    Exit Sub
+
+Err_Schaltfläche71_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche71_Click
+    
+End Sub
+
+Private Sub Befehl77_Click()
+On Error GoTo Err_Befehl77_Click
+
+    DoCmd.OpenForm "frmSucheMembrannummer"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl77_Click:
+    Exit Sub
+
+Err_Befehl77_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl77_Click
+    
+End Sub
+Private Sub Befehl78_Click()
+On Error GoTo Err_Befehl78_Click
+    
+    DoCmd.OpenForm "frmSucheAktElemMembrantyp"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl78_Click:
+    Exit Sub
+
+Err_Befehl78_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl78_Click
+    
+End Sub
+Private Sub Befehl79_Click()
+On Error GoTo Err_Befehl79_Click
+
+    DoCmd.OpenForm "frmSucheaktiveElemente"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl79_Click:
+    Exit Sub
+
+Err_Befehl79_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl79_Click
+    
+End Sub
+Private Sub Befehl81_Click()
+On Error GoTo Err_Befehl81_Click
+
+    DoCmd.OpenForm "frmSucheElementeOhneLaufzeit"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl81_Click:
+    Exit Sub
+
+Err_Befehl81_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl81_Click
+    
+End Sub
+Private Sub Befehl82_Click()
+On Error GoTo Err_Befehl82_Click
+
+    DoCmd.OpenForm "frmSucheDuplikateAnoden"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl82_Click:
+    Exit Sub
+
+Err_Befehl82_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl82_Click
+    
+End Sub
+Private Sub Befehl83_Click()
+On Error GoTo Err_Befehl83_Click
+
+    DoCmd.OpenForm "frmSucheDuplikateKathoden"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl83_Click:
+    Exit Sub
+
+Err_Befehl83_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl83_Click
+    
+End Sub
+Private Sub Befehl84_Click()
+On Error GoTo Err_Befehl84_Click
+
+    DoCmd.OpenForm "frmSucheDuplikateMembranen"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl84_Click:
+    Exit Sub
+
+Err_Befehl84_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl84_Click
+    
+End Sub
+Private Sub Befehl85_Click()
+On Error GoTo Err_Befehl85_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Gruppen Übersicht"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl85_Click:
+    Exit Sub
+
+Err_Befehl85_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl85_Click
+    
+End Sub
+Private Sub Befehl86_Click()
+On Error GoTo Err_Befehl86_Click
+
+    DoCmd.OpenForm "frmSucheGruppe"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl86_Click:
+    Exit Sub
+
+Err_Befehl86_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl86_Click
+    
+End Sub
+Private Sub Befehl87_Click()
+On Error GoTo Err_Befehl87_Click
+
+    DoCmd.OpenForm "frmSuchepassiveElemente"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl87_Click:
+    Exit Sub
+
+Err_Befehl87_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl87_Click
+    
+End Sub
+Private Sub Befehl88_Click()
+On Error GoTo Err_Befehl88_Click
+
+    DoCmd.OpenForm "frmSucheElementnummer"
+    DoCmd.Close acForm, "Suchübersicht"
+
+Exit_Befehl88_Click:
+    Exit Sub
+
+Err_Befehl88_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl88_Click
+    
+End Sub

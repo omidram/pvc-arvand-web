@@ -1,0 +1,2 @@
+SELECT qryUnElement.Elektrolyseur, qryUnElement.Position, qryCEElementNaOH.Bezeichnung, qryUnElement.Datum, qryUnElement.i, SPCBer([qryUnElement]![Un],[qryCEElementNaOH]![CE]) AS Energieverbrauch, qryUnElement.Un, qryCEElementNaOH.CE, GetGewIRef() AS iRefSPC
+FROM qryUnElement INNER JOIN qryCEElementNaOH ON (qryUnElement.Position = qryCEElementNaOH.Position) AND (qryUnElement.Datum = qryCEElementNaOH.Datum) AND (qryUnElement.Elektrolyseur = qryCEElementNaOH.Elektrolyseur);

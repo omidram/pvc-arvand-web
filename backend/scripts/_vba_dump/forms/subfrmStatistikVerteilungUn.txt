@@ -1,0 +1,400 @@
+Version =19
+VersionRequired =19
+Checksum =-124393446
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    PictureAlignment =5
+    PictureSizeMode =1
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =9070
+    DatasheetFontHeight =10
+    ItemSuffix =20
+    Left =1200
+    Top =1395
+    Right =9765
+    Bottom =2160
+    DatasheetGridlinesColor =12632256
+    PaintPalette = Begin
+        0x000359000000000000ccff0005cdff000aceff000fcfff0014d0ff001ad1ff00 ,
+        0x1fd2ff0024d3ff0029d4ff002ed5ff0034d6ff0039d7ff003ed8ff0043d9ff00 ,
+        0x48daff004edbff0053dcff0058ddff005ddeff0062dfff0068e0ff006de1ff00 ,
+        0x72e2ff0077e3ff007ce4ff0082e6ff0087e7ff008ce8ff0091e9ff0096eaff00 ,
+        0x9cebff00a1ecff00a6edff00abeeff00b0efff00b6f0ff00bbf1ff00c0f2ff00 ,
+        0xc5f3ff00caf4ff00cccccc00cfcfcf00d0f5ff00d1d1d100d4d4d400d5f6ff00 ,
+        0xd6d6d600d9d9d900daf7ff00dbdbdb00dedede00dff8ff00e0e0e000e3e3e300 ,
+        0xe4f9ff00e5e5e500e8e8e800eafaff00ebebeb00ededed00effbff00f0f0f000 ,
+        0xf2f2f200f4fcff00f5f5f500f7f7f700f9fdff00fafafa00fcfcfc00ffffff00 ,
+        0x800000000080000080800000000080008000800000808000c0c0c000c0dcc000 ,
+        0xa6caf000fffbf000a0a0a40080808000ff00000000ff0000ffff00000000ff00 ,
+        0xff00ff0000ffff0000000000
+    End
+    RecSrcDt = Begin
+        0xc15609460ce9e240
+    End
+    RecordSource ="SELECT DISTINCTROW [tblGewDaten].[DatumVerteilungUn], [tblGewDaten].[IDElektroly"
+        "seurVerteilungUn], [tblGewDaten].[UminVerteilungUn], [tblGewDaten].[UmaxVerteilu"
+        "ngUn], [tblGewDaten].[SchrittweiteVerteilungUn] FROM [tblGewDaten];"
+    Caption ="InbetriebgenommeneElemente"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c003402033f8002010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            BackStyle =0
+            BorderWidth =1
+            Width =850
+            Height =850
+        End
+        Begin Line
+            BorderWidth =1
+            Width =1701
+        End
+        Begin Image
+            SpecialEffect =1
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =1
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =1
+            BorderWidth =3
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BorderColor =12632256
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =1
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin ListBox
+            SpecialEffect =1
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin Subform
+            SpecialEffect =1
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =1
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="Arial"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            Name ="Formularkopf"
+            GUID = Begin
+                0xadc2f8991318204ab916d7c470b0585a
+            End
+        End
+        Begin Section
+            Height =1077
+            BackColor =12632256
+            Name ="Detailbereich"
+            GUID = Begin
+                0x495fbb041ade0c40a5a239f6e419e4c2
+            End
+            Begin
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =1020
+                    Top =113
+                    Width =1371
+                    Height =225
+                    Name ="Text8"
+                    ControlSource ="DatumVerteilungUn"
+                    GUID = Begin
+                        0x59cdc8ac5e884940935e501f1f6d295a
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            TextAlign =3
+                            Left =170
+                            Top =120
+                            Width =795
+                            Height =225
+                            Name ="Bezeichnungsfeld9"
+                            Caption ="Datum"
+                            GUID = Begin
+                                0x27841fdebd0d164294cdcfe8a271068c
+                            End
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =5442
+                    Top =63
+                    Width =1770
+                    Height =225
+                    Name ="Bezeichnungsfeld10"
+                    Caption ="U min [V]"
+                    GUID = Begin
+                        0xd02e4975ca7a0e449089429d7e197079
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =7317
+                    Top =56
+                    Width =1191
+                    Height =225
+                    TabIndex =1
+                    Name ="Text11"
+                    ControlSource ="UminVerteilungUn"
+                    Format ="Standard"
+                    GUID = Begin
+                        0xafe3ce7d3e97714fb70264ae85ce8985
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =5446
+                    Top =396
+                    Width =1770
+                    Height =240
+                    Name ="Label13"
+                    Caption ="U max [V]"
+                    GUID = Begin
+                        0x5a3db12d3c346544ba2437f65f290e51
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =7317
+                    Top =396
+                    Width =1191
+                    TabIndex =2
+                    Name ="Text15"
+                    ControlSource ="UmaxVerteilungUn"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x3bba34f2b71c044c85b0f3923b1ed57a
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =7317
+                    Top =736
+                    Width =1191
+                    Height =225
+                    TabIndex =3
+                    Name ="Text16"
+                    ControlSource ="SchrittweiteVerteilungUn"
+                    Format ="Standard"
+                    ValidationRule =">0"
+                    GUID = Begin
+                        0xf239f98a9f401340bccebce82b0888f7
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =5446
+                    Top =736
+                    Width =1770
+                    Height =225
+                    Name ="Label17"
+                    Caption ="Schrittweite [V]"
+                    GUID = Begin
+                        0xf31f51c4b6082145944a4847df4ae657
+                    End
+                End
+                Begin ComboBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    IMESentenceMode =3
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =3968
+                    Top =113
+                    Width =1304
+                    Height =225
+                    TabIndex =4
+                    BorderColor =4194368
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0xc0a2b57b2e03164fb668eb6e7d3394ba
+                    End
+                    Name ="Combo18"
+                    ControlSource ="IDElektrolyseurVerteilungUn"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichnung].[Bezeic"
+                        "hnung] FROM [tblElektrolyseurbezeichnung]"
+                    ColumnWidths ="0;1440"
+                    BaseInfo ="\"SELECT [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichnung].[Beze"
+                        "ichnung] FROM [tblElektrolyseurbezeichnung]\";\"tblElektrolyseurbezeichnung\";\""
+                        "\";\"Nr\";\"Bezeichnung\";\"PrimaryKey\""
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            TextAlign =3
+                            Left =2551
+                            Top =113
+                            Width =1335
+                            Height =260
+                            Name ="Label18"
+                            Caption ="Elektrolyseur"
+                            GUID = Begin
+                                0xc4fb21e070cbe849b7c08922ff3d215c
+                            End
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            Name ="Formularfuß"
+            GUID = Begin
+                0x387b4585f9874343b30c2d59b38b149b
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Bezeichnungsfeld9.Caption = "Datum"
+        Bezeichnungsfeld10.Caption = "U min [V]"
+        Label13.Caption = "U max [V]"
+        Label17.Caption = "Schrittweite [V]"
+    Else
+        Bezeichnungsfeld9.Caption = "Date"
+        Bezeichnungsfeld10.Caption = "U min [V]"
+        Label13.Caption = "U max [V]"
+        Label17.Caption = "Step [V]"
+    End If
+
+End Sub

@@ -1,0 +1,27 @@
+Version =131074
+ColumnsShown =0
+Begin
+    Action ="SetWarnings"
+    Argument ="0"
+End
+Begin
+    Action ="OpenQuery"
+    Argument ="NormELGes"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="OpenTable"
+    Argument ="ElekDia"
+    Argument ="0"
+    Argument ="1"
+End
+Begin
+    Action ="OpenForm"
+    Argument ="DiaGesamtElek"
+    Argument ="0"
+    Argument =""
+    Argument =""
+    Argument ="1"
+    Argument ="0"
+End

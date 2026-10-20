@@ -1,0 +1,2164 @@
+Version =19
+VersionRequired =19
+Checksum =122265367
+Begin Report
+    LayoutForPrint = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    DateGrouping =1
+    GrpKeepTogether =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10212
+    DatasheetFontHeight =10
+    ItemSuffix =342
+    Left =150
+    Right =6180
+    Bottom =7815
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x4921caa48f26e340
+    End
+    RecordSource ="qryInspektionsbericht"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x370200001c0100001c0100001c01000000000000e42700005d37000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x010418009c00b80353ff00020100010000000000640001000f00580201000100 ,
+        0x5802020000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a657420353130302050434c203600000000000000000000 ,
+        0x00000000000004003200c3018603789c65914d4f14411086ebed6e6859403928 ,
+        0xa0c1387e211a335956d0c43d78408c984dd844412e1a3033ec8e6eaa36339068 ,
+        0x8c9a3dea012fdee0e0d9b30750e41ff82b8c9ebd81f8d93d918d8995cefb769e ,
+        0xae74555767d9ffa140754c2b670dbc25fb1020b21db976e67ad714e85ac24956 ,
+        0x4fb846f29bf834f81de4245a0abc0f2d0b3e0abda2fb89a794bc37320279043e ,
+        0x85d6aa5e2e82cf818721672125088c548cbbf60c86c8d90c0c799ffdebb7bdfb ,
+        0xcd631c26fbccd76f3e053f813c07bf00cf197f78de677164e48e21d7b720f0f4 ,
+        0xb31ef446d447fa938ec87ed18af27039f7310fee826c13ffa47497f807f131c8 ,
+        0x0ec977e25f2487c0fde048f10024800c42f72222de0fe9831cc0f271f096d26b ,
+        0xfa35e92bae1c5bc527201b6e69ee365c30d26564cbd8f57c644772b5c66b4fae ,
+        0x4339f94a5e3f6aaf1f8ca251ea04ed7549b412eeed1c366dfce65fdcd1c6afda ,
+        0xd8ddfd8d0e929ec09cd2579df04bdd9c04d94d5da55b0b692d5e0aaa69c24b71 ,
+        0x7af97a35a82c64717ac3b1f1d16231b819a7499c95ab1395e062b9debcb7581a ,
+        0x2fd5c2a8d128cfc6699608076361e952e873c3b10b455f6c0abd24057037b8c7 ,
+        0xf56f3090cff801acfb0bf7b63f83426d90000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001f0039000100000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000000000000000000000485035315f3732 ,
+        0x39383000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            TextFontFamily =2
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin Image
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CheckBox
+            LabelX =230
+            LabelY =-30
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            OldBorderStyle =0
+            TextFontFamily =2
+            Width =1701
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin Subform
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin PageHeader
+            Height =0
+            Name ="PageHeaderSection"
+            GUID = Begin
+                0x4b92aa72a34439418a8b0db3ce900073
+            End
+        End
+        Begin Section
+            KeepTogether = NotDefault
+            CanGrow = NotDefault
+            Height =14173
+            Name ="Detail"
+            GUID = Begin
+                0x1bfd2703bf5bdc499b7907a9ccb46727
+            End
+            Begin
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =4478
+                    Top =680
+                    Width =2268
+                    Height =227
+                    TabIndex =3
+                    Name ="Text33"
+                    GUID = Begin
+                        0xd063fd60d7133b49ae2d4f8359938a80
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =3004
+                            Top =680
+                            Width =964
+                            Height =227
+                            Name ="Label34"
+                            Caption ="Anoden Nr.:"
+                            GUID = Begin
+                                0xd76b9faeabfd3b45a337a7f37637aa1c
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =4478
+                    Top =963
+                    Width =2268
+                    Height =227
+                    TabIndex =4
+                    Name ="Text35"
+                    GUID = Begin
+                        0xd468e5e99422384b90ac910d16db309c
+                    End
+                    Begin
+                        Begin Label
+                            Left =3004
+                            Top =963
+                            Width =1304
+                            Height =227
+                            Name ="Label36"
+                            Caption ="Kathoden Nr.:"
+                            GUID = Begin
+                                0x598892bd28af0144ad39d01a91f93f9c
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =4478
+                    Top =1247
+                    Width =2268
+                    Height =227
+                    TabIndex =5
+                    Name ="Text39"
+                    GUID = Begin
+                        0xd8ec09c080b0424bae20259e4e6a3e39
+                    End
+                    Begin
+                        Begin Label
+                            Left =3004
+                            Top =1247
+                            Width =1304
+                            Height =227
+                            Name ="Label40"
+                            Caption ="Membran Nr.:"
+                            GUID = Begin
+                                0x36bbf826b1462f42bdcc93bf9ac61d67
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =4478
+                    Top =1530
+                    Width =2268
+                    Height =227
+                    TabIndex =6
+                    Name ="Text41"
+                    GUID = Begin
+                        0x4ba5d2b97b12cd4592e845bc596e953a
+                    End
+                    Begin
+                        Begin Label
+                            Left =3004
+                            Top =1530
+                            Width =1304
+                            Height =227
+                            Name ="Label42"
+                            Caption ="Membran Typ:"
+                            GUID = Begin
+                                0x7acbfc5beb2a7c4d96a035c90bf64b52
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =8787
+                    Top =680
+                    Width =1134
+                    Height =227
+                    TabIndex =7
+                    Name ="Text45"
+                    GUID = Begin
+                        0x6de4fe62d52c274d9e5b2fc2aefef093
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =6916
+                            Top =680
+                            Width =964
+                            Height =227
+                            Name ="Label46"
+                            Caption ="Datum:"
+                            GUID = Begin
+                                0x1c4f5bf018845f47ba5f1e602172f19f
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =8787
+                    Top =963
+                    Width =1134
+                    Height =227
+                    TabIndex =8
+                    Name ="Text47"
+                    GUID = Begin
+                        0xf45098512d84ea4ab34a2737ec99f594
+                    End
+                    Begin
+                        Begin Label
+                            Left =6916
+                            Top =963
+                            Width =1304
+                            Height =227
+                            Name ="Label48"
+                            Caption ="Betriebstage:"
+                            GUID = Begin
+                                0x4917110a6c1b544997edcc201c64e0bc
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =8787
+                    Top =1530
+                    Width =1134
+                    Height =227
+                    TabIndex =9
+                    Name ="Text51"
+                    GUID = Begin
+                        0x1ef2c735edfac0488951fbf88a067280
+                    End
+                    Begin
+                        Begin Label
+                            Left =6916
+                            Top =1530
+                            Width =1814
+                            Height =227
+                            Name ="Label52"
+                            Caption ="Elektroden Nr. (Anode) :"
+                            GUID = Begin
+                                0xa429ddfc41e5c7479a532298fec8ee61
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =8787
+                    Top =1247
+                    Width =1134
+                    Height =227
+                    TabIndex =10
+                    Name ="Text53"
+                    GUID = Begin
+                        0xcb0a3df151d381488d876b15e77c4786
+                    End
+                    Begin
+                        Begin Label
+                            Left =6916
+                            Top =1247
+                            Width =1871
+                            Height =227
+                            Name ="Label54"
+                            Caption ="Elektroden Nr. (Kathode):"
+                            GUID = Begin
+                                0x33ae59da085451498b33d9901d237153
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =1700
+                    Top =680
+                    Width =1134
+                    Height =227
+                    TabIndex =11
+                    Name ="Text75"
+                    GUID = Begin
+                        0x5ba0f3a32b6473468526631bc31e60c7
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =396
+                            Top =680
+                            Width =964
+                            Height =227
+                            Name ="Label76"
+                            Caption ="Kunde:"
+                            GUID = Begin
+                                0xac9b7a675d4b0847bb0b00811943a562
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =1700
+                    Top =963
+                    Width =1134
+                    Height =227
+                    TabIndex =12
+                    Name ="Text77"
+                    GUID = Begin
+                        0xab48c965722cb948a47a017082a1edda
+                    End
+                    Begin
+                        Begin Label
+                            Left =396
+                            Top =963
+                            Width =1304
+                            Height =227
+                            Name ="Label78"
+                            Caption ="Elektrolyseur Nr.:"
+                            GUID = Begin
+                                0x562d036afba49349aaa634a3dab2ebac
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =1700
+                    Top =1247
+                    Width =1134
+                    Height =227
+                    TabIndex =13
+                    Name ="Text79"
+                    GUID = Begin
+                        0x37868f06331b354394648528e8184795
+                    End
+                    Begin
+                        Begin Label
+                            Left =396
+                            Top =1247
+                            Width =1304
+                            Height =227
+                            Name ="Label80"
+                            Caption ="Position:"
+                            GUID = Begin
+                                0xd4aa50f3d81d3a4fb034091a3109a9c5
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =1700
+                    Top =1530
+                    Width =1134
+                    Height =227
+                    TabIndex =14
+                    Name ="Text81"
+                    ControlSource ="Element Nr"
+                    GUID = Begin
+                        0x0a7931159f3f7147b03771b48285f16e
+                    End
+                    Begin
+                        Begin Label
+                            Left =396
+                            Top =1530
+                            Width =1304
+                            Height =227
+                            Name ="Label82"
+                            Caption ="Element Nr.:"
+                            GUID = Begin
+                                0x2f83ac7004835a4f962aaef3bce96d1a
+                            End
+                        End
+                    End
+                End
+                Begin Rectangle
+                    BackStyle =0
+                    Left =396
+                    Top =623
+                    Width =2438
+                    Height =1134
+                    Name ="Box83"
+                    GUID = Begin
+                        0x7335ddda39ad594faf72e545fca3256c
+                    End
+                End
+                Begin Line
+                    Left =396
+                    Top =907
+                    Width =2438
+                    Name ="Line85"
+                    GUID = Begin
+                        0x6ff7559dce834147a3747448e7fbb385
+                    End
+                End
+                Begin Line
+                    Left =396
+                    Top =1190
+                    Width =2438
+                    Name ="Line87"
+                    GUID = Begin
+                        0x0143c0d776c46747aa6dd27fc6deef7f
+                    End
+                End
+                Begin Line
+                    Left =396
+                    Top =1474
+                    Width =2438
+                    Name ="Line88"
+                    GUID = Begin
+                        0xcfe360768019f84089a6c1a8c7937727
+                    End
+                End
+                Begin Rectangle
+                    BackStyle =0
+                    Left =3004
+                    Top =623
+                    Width =3742
+                    Height =1134
+                    Name ="Box97"
+                    GUID = Begin
+                        0x3193e70a70a8db45a42d47287c4efff5
+                    End
+                End
+                Begin Line
+                    Left =3004
+                    Top =907
+                    Width =3742
+                    Name ="Line98"
+                    GUID = Begin
+                        0x60a47e631e8bea468f6cedfdcbbcb584
+                    End
+                End
+                Begin Line
+                    Left =3004
+                    Top =1190
+                    Width =3742
+                    Name ="Line99"
+                    GUID = Begin
+                        0xd1c3581be261f340a39097a3d9f4de50
+                    End
+                End
+                Begin Line
+                    Left =3004
+                    Top =1474
+                    Width =3742
+                    Name ="Line100"
+                    GUID = Begin
+                        0x6412a67101c5e444a170c4eb699364f9
+                    End
+                End
+                Begin Rectangle
+                    BackStyle =0
+                    Left =6916
+                    Top =623
+                    Width =3061
+                    Height =1134
+                    Name ="Box109"
+                    GUID = Begin
+                        0xf018082398499f4babc1667cb3ef7967
+                    End
+                End
+                Begin Line
+                    Left =6916
+                    Top =907
+                    Width =3061
+                    Name ="Line110"
+                    GUID = Begin
+                        0xa928cf6ae62a8f4cb060243a6c0e302b
+                    End
+                End
+                Begin Line
+                    Left =6916
+                    Top =1190
+                    Width =3061
+                    Name ="Line111"
+                    GUID = Begin
+                        0xf98fc030baf6b64dbef3dcabc8f61f5f
+                    End
+                End
+                Begin Line
+                    Left =6916
+                    Top =1474
+                    Width =3061
+                    Name ="Line112"
+                    GUID = Begin
+                        0x9611a7c55befe4408443553d873edb66
+                    End
+                End
+                Begin Subform
+                    OldBorderStyle =0
+                    Left =450
+                    Top =2775
+                    Width =4706
+                    Height =2552
+                    TabIndex =15
+                    Name ="subrptInspektionsberichtMAS"
+                    SourceObject ="Report.subrptInspektionsberichtMAS"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0x91e93a73fca3bd49b790c3013116aa05
+                    End
+                End
+                Begin Subform
+                    OldBorderStyle =0
+                    Left =450
+                    Top =5610
+                    Width =4706
+                    Height =2551
+                    TabIndex =16
+                    Name ="subrptInspektionsberichtMKS"
+                    SourceObject ="Report.subrptInspektionsberichtMKS"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0x2d2914a1b7d890449c967f847e1cd339
+                    End
+                End
+                Begin Subform
+                    OldBorderStyle =0
+                    Left =5612
+                    Top =5612
+                    Width =4316
+                    Height =2551
+                    TabIndex =17
+                    Name ="subrptInspektionsberichtLeaktest"
+                    SourceObject ="Report.subrptInspektionsberichtLeaktest"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0x752befc2db4daa42bb3c9d27757d6ae5
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    TextFontFamily =34
+                    Left =5612
+                    Top =2777
+                    Width =4312
+                    Height =397
+                    FontWeight =700
+                    Name ="Label136"
+                    Caption ="Blister"
+                    GUID = Begin
+                        0xf71ed30ca0f8f348bb92f707e5d710a8
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =5612
+                    Top =3174
+                    Width =1247
+                    Height =454
+                    Name ="Label137"
+                    Caption ="Anodenfläche"
+                    GUID = Begin
+                        0x6d22a5a6e9e44940adcb736a7c9b00d8
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =6859
+                    Top =3174
+                    Width =2155
+                    Height =227
+                    Name ="Label138"
+                    Caption ="Peripherie"
+                    GUID = Begin
+                        0x572d6931b77ffd42aedc14f2c890ff6f
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =9014
+                    Top =3174
+                    Width =910
+                    Height =454
+                    Name ="Label139"
+                    Caption ="Ecken"
+                    GUID = Begin
+                        0x26ab68ccdbde0e4bafaa1bbaaced633c
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =6859
+                    Top =3401
+                    Width =738
+                    Height =227
+                    Name ="Label140"
+                    Caption ="Oben"
+                    GUID = Begin
+                        0xb4fe1929ed584c42ad75313ce8498137
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =8333
+                    Top =3401
+                    Width =680
+                    Height =227
+                    Name ="Label141"
+                    Caption ="Seite"
+                    GUID = Begin
+                        0xb66b2f85484cba46b6a6c0321e31d5d3
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =7596
+                    Top =3401
+                    Width =737
+                    Height =227
+                    Name ="Label142"
+                    Caption ="Unten"
+                    GUID = Begin
+                        0xba22a9d3d85027409190efc7a67fa6e9
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =6859
+                    Top =3628
+                    Width =738
+                    Height =227
+                    Name ="Label144"
+                    Caption ="%"
+                    GUID = Begin
+                        0x44f0caa52fc38343a1c34d16e8675ddf
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =7596
+                    Top =3628
+                    Width =737
+                    Height =227
+                    Name ="Label146"
+                    Caption ="%"
+                    GUID = Begin
+                        0x9cc020a86cbf20458602ceef5038284a
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =8333
+                    Top =3628
+                    Width =680
+                    Height =227
+                    Name ="Label147"
+                    Caption ="%"
+                    GUID = Begin
+                        0xfdbc115ab919d24abe63f9b2b6a1768d
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =5612
+                    Top =3628
+                    Width =1247
+                    Height =227
+                    Name ="Label148"
+                    Caption ="%"
+                    GUID = Begin
+                        0xca50649f68fffa4d91499e9fce2d7912
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    TextAlign =2
+                    Left =9014
+                    Top =3628
+                    Width =910
+                    Height =227
+                    Name ="Label149"
+                    Caption ="%"
+                    GUID = Begin
+                        0x218bc2191d756c40913d63355605e34a
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    Left =5612
+                    Top =4081
+                    Width =1985
+                    Height =227
+                    Name ="Label150"
+                    Caption ="Falten (F)"
+                    GUID = Begin
+                        0x2d95281167752249a4dd713e7c87f830
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    Left =5612
+                    Top =4308
+                    Width =1985
+                    Height =227
+                    Name ="Label151"
+                    Caption ="Druckstelle (DS)"
+                    GUID = Begin
+                        0x26e02abd3edbc54b80db93f627e097e5
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    Left =5612
+                    Top =4535
+                    Width =1985
+                    Height =227
+                    Name ="Label152"
+                    Caption ="Sichtbare Löcher (SL)"
+                    GUID = Begin
+                        0xd30299d7e935704ba5a0567469fe8b0c
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    Left =5612
+                    Top =4762
+                    Width =1985
+                    Height =226
+                    Name ="Label153"
+                    Caption ="Risse (R)"
+                    GUID = Begin
+                        0xf5f0bc2af6ddaa4483621ff775f7496c
+                    End
+                End
+                Begin Subform
+                    OldBorderStyle =0
+                    Left =450
+                    Top =8445
+                    Width =4706
+                    Height =2551
+                    TabIndex =18
+                    Name ="subrptInspektionsberichtAHS"
+                    SourceObject ="Report.subrptInspektionsberichtAHS"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0x0732189362db0b49a48246db0e0d0f8f
+                    End
+                End
+                Begin Subform
+                    OldBorderStyle =0
+                    Left =5612
+                    Top =8447
+                    Width =4316
+                    Height =2551
+                    TabIndex =19
+                    Name ="subrptInspektionsberichtKHS"
+                    SourceObject ="Report.subrptInspektionsberichtKHS"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0x2a8c9eb4274f7f49b79219fb2865db3e
+                    End
+                End
+                Begin Label
+                    Left =506
+                    Top =2265
+                    Width =2098
+                    Height =224
+                    Name ="Label190"
+                    Caption ="Membraninspektion:"
+                    GUID = Begin
+                        0x7f28c3fb3fd94744b36f5e6ddb0d53f8
+                    End
+                End
+                Begin Label
+                    Left =506
+                    Top =2549
+                    Width =2098
+                    Height =226
+                    Name ="Label197"
+                    Caption ="Anodenseite (Draufsicht):"
+                    GUID = Begin
+                        0x3fd213a47b4e1e4ca76980ebc702bfbe
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =7596
+                    Top =4081
+                    Width =2327
+                    Height =227
+                    TabIndex =20
+                    Name ="Text198"
+                    ControlSource ="Falten"
+                    GUID = Begin
+                        0x0ce65d2c3470cc4286484b249879ea6c
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    BorderWidth =2
+                    Left =10204
+                    Width =0
+                    Height =13788
+                    Name ="Line200"
+                    GUID = Begin
+                        0x7bda8f2b7ab1a64d8948707b361a23fc
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    BorderWidth =2
+                    Left =113
+                    Width =0
+                    Height =13768
+                    Name ="Line210"
+                    GUID = Begin
+                        0x7422ebc08c3f8b4d9e8e093310515db4
+                    End
+                End
+                Begin Line
+                    BorderWidth =2
+                    Left =113
+                    Top =12018
+                    Width =10088
+                    Name ="Line211"
+                    GUID = Begin
+                        0x425d536a659636418be8c41cff30a2ed
+                    End
+                End
+                Begin Label
+                    TextAlign =2
+                    TextFontFamily =34
+                    Left =170
+                    Top =56
+                    Width =7310
+                    Height =454
+                    FontSize =14
+                    FontWeight =700
+                    Name ="Label22"
+                    Caption ="Inspektionsbericht"
+                    GUID = Begin
+                        0x29d348bce30c0e4ba2fd3ed72733c521
+                    End
+                End
+                Begin Label
+                    TextAlign =2
+                    TextFontFamily =34
+                    Left =7653
+                    Top =56
+                    Width =2500
+                    Height =454
+                    FontSize =14
+                    FontWeight =700
+                    Name ="Label31"
+                    Caption ="09AU-EL-F58-A01"
+                    GUID = Begin
+                        0x98ee35deeb368b4fb3f1ea021ee27c37
+                    End
+                End
+                Begin Line
+                    BorderWidth =2
+                    Left =113
+                    Width =10079
+                    Name ="Line213"
+                    GUID = Begin
+                        0x1459ee79f2ac1946b07f7467bb65baeb
+                    End
+                End
+                Begin Line
+                    BorderWidth =2
+                    Left =113
+                    Top =566
+                    Width =10091
+                    Name ="Line214"
+                    GUID = Begin
+                        0x9cd2dbb9a764a84dba2beda8214aa277
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =7596
+                    Top =4308
+                    Width =2327
+                    Height =227
+                    TabIndex =21
+                    Name ="Text217"
+                    ControlSource ="Druckstellen"
+                    GUID = Begin
+                        0x7e0a607406ba4d47b4ba30a99dcbd97f
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =7596
+                    Top =4535
+                    Width =2327
+                    Height =227
+                    TabIndex =22
+                    Name ="Text218"
+                    ControlSource ="SichtbareLoecher"
+                    GUID = Begin
+                        0x2a4fa3d6d2059043a7f6ee63ba384e9e
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =7596
+                    Top =4762
+                    Width =2327
+                    Height =226
+                    TabIndex =23
+                    Name ="Text219"
+                    ControlSource ="Risse"
+                    GUID = Begin
+                        0x5378e2ad2f1d00479397038668d12b0a
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =5612
+                    Top =3855
+                    Width =1247
+                    Height =226
+                    TabIndex =24
+                    Name ="Text222"
+                    ControlSource ="BlisterAnodenflaeche"
+                    GUID = Begin
+                        0x985af25cc0be0d49b657508ffa8986b8
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =9014
+                    Top =3855
+                    Width =910
+                    Height =226
+                    TabIndex =25
+                    Name ="Text224"
+                    ControlSource ="BlisterEcken"
+                    GUID = Begin
+                        0x141e771e0b585d4981d583b19acdef32
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =6859
+                    Top =3855
+                    Width =738
+                    Height =226
+                    TabIndex =26
+                    Name ="Text225"
+                    ControlSource ="BlisterPeripherieOben"
+                    GUID = Begin
+                        0xb8daf595ec30c144bb685b202ac15ed1
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =7596
+                    Top =3855
+                    Width =737
+                    Height =226
+                    TabIndex =27
+                    Name ="Text226"
+                    ControlSource ="BlisterPeripherieUnten"
+                    GUID = Begin
+                        0xc188c837580c2849b578eaa6d19f16ae
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =8333
+                    Top =3855
+                    Width =680
+                    Height =226
+                    TabIndex =28
+                    Name ="Text227"
+                    ControlSource ="BlisterPeripherieSeite"
+                    GUID = Begin
+                        0xed0ebf7495e4d04ea395e287b2c49260
+                    End
+                End
+                Begin TextBox
+                    OldBorderStyle =1
+                    IMESentenceMode =3
+                    Left =7596
+                    Top =4988
+                    Width =2327
+                    Height =691
+                    TabIndex =29
+                    Name ="Text231"
+                    ControlSource ="BlisterBemerkungen"
+                    GUID = Begin
+                        0xdfeb76a21b57df43a328a9b7bcff28bb
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OldBorderStyle =1
+                            Left =5612
+                            Top =4988
+                            Width =1985
+                            Height =691
+                            Name ="Label232"
+                            Caption ="Bemerkungen :"
+                            GUID = Begin
+                                0x680c42ed96cd6c43b76722d70dfe4d0e
+                            End
+                        End
+                    End
+                End
+                Begin Label
+                    Left =563
+                    Top =5383
+                    Width =2098
+                    Height =226
+                    Name ="Label236"
+                    Caption ="Kathodenseite (Draufsicht):"
+                    GUID = Begin
+                        0xa08629cfc5d27947abd8a49b14409548
+                    End
+                End
+                Begin Label
+                    BackStyle =1
+                    Left =5669
+                    Top =5385
+                    Width =3960
+                    Height =225
+                    Name ="Label237"
+                    Caption ="Leaktest (Anodenseite Draufsicht):"
+                    GUID = Begin
+                        0x3f2f69df9663f048971c9e94cf35cada
+                    End
+                End
+                Begin Label
+                    Left =563
+                    Top =8218
+                    Width =2385
+                    Height =225
+                    Name ="Label238"
+                    Caption ="Anodenhalbschale (Draufsicht):"
+                    GUID = Begin
+                        0xb8913124cb8c044d8b6c2f0af55f7923
+                    End
+                End
+                Begin Label
+                    Left =5669
+                    Top =8220
+                    Width =2550
+                    Height =285
+                    Name ="Label239"
+                    Caption ="Kathodenhalbschale (Draufsicht):"
+                    GUID = Begin
+                        0xacd95155ced1394c98d0ad56b09325bc
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =2607
+                    Top =11055
+                    Width =510
+                    Height =227
+                    TabIndex =30
+                    Name ="Text244"
+                    GUID = Begin
+                        0x42a607f487cd434c83adfd6c02327a35
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =453
+                            Top =11055
+                            Width =2041
+                            Height =227
+                            Name ="Label245"
+                            Caption ="Deformation Wanne (DW):"
+                            GUID = Begin
+                                0x871679583afcdf4a83bbdf5f3f13d202
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =2607
+                    Top =11281
+                    Width =510
+                    Height =227
+                    TabIndex =31
+                    Name ="Text246"
+                    GUID = Begin
+                        0x8794110b00dc284695ca2662c8260bcf
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =453
+                            Top =11281
+                            Width =2041
+                            Height =227
+                            Name ="Label247"
+                            Caption ="Deformation Elektrode (DE):"
+                            GUID = Begin
+                                0x60229a41d827ba48952f6423d39c2f37
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =2607
+                    Top =11508
+                    Width =510
+                    Height =226
+                    TabIndex =32
+                    Name ="Text249"
+                    GUID = Begin
+                        0xf27dce6a24e75b488edf8a3c1b2939fe
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =453
+                            Top =11508
+                            Width =2041
+                            Height =226
+                            Name ="Label250"
+                            Caption ="Verfärbungen (V):"
+                            GUID = Begin
+                                0xb0be7c162e41cd42a0fcc8a610d0813f
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =5329
+                    Top =11055
+                    Width =567
+                    Height =226
+                    TabIndex =33
+                    Name ="Text251"
+                    GUID = Begin
+                        0xe9397b2b8b25414b86cff748811ea1cd
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =3225
+                            Top =11055
+                            Width =1994
+                            Height =226
+                            Name ="Label252"
+                            Caption ="Korrsion Wanne (KW):"
+                            GUID = Begin
+                                0xfa60ae85a824c94ebbbc94f507e4dfed
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =5329
+                    Top =11281
+                    Width =567
+                    Height =227
+                    TabIndex =34
+                    Name ="Text253"
+                    GUID = Begin
+                        0x907ed8767fdea64b96675045fe104db1
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =3225
+                            Top =11281
+                            Width =1994
+                            Height =227
+                            Name ="Label254"
+                            Caption ="Korrsion Elektrode (KW):"
+                            GUID = Begin
+                                0x9ed49454f5ed674a96b03083e18e0dd3
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =2607
+                    Top =11735
+                    Width =510
+                    Height =245
+                    TabIndex =35
+                    Name ="Text257"
+                    GUID = Begin
+                        0x154de2cae91aa64da7a2360f156e51fb
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =453
+                            Top =11735
+                            Width =2040
+                            Height =245
+                            Name ="Label258"
+                            Caption ="Ablagerungen (A):"
+                            GUID = Begin
+                                0x68ed5ca7591a0f4190dfca30bc3a0d80
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =8056
+                    Top =11055
+                    Width =567
+                    Height =226
+                    TabIndex =36
+                    Name ="Text259"
+                    GUID = Begin
+                        0x60e554ee62ea6142b247262e78f73eab
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =6015
+                            Top =11055
+                            Width =1912
+                            Height =226
+                            Name ="Label260"
+                            Caption ="Leakage/Rückwand (LR):"
+                            GUID = Begin
+                                0xdfcee0c1f3f6f14e973f4b8a0da74896
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =8056
+                    Top =11281
+                    Width =567
+                    Height =227
+                    TabIndex =37
+                    Name ="Text262"
+                    GUID = Begin
+                        0xd2dcdbd9ca38e241a6edab20c46e40e3
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =6015
+                            Top =11281
+                            Width =1912
+                            Height =227
+                            Name ="Label263"
+                            Caption ="Leakage/Lasernaht (LL):"
+                            GUID = Begin
+                                0x857139adc6882f4083c6eeee599e460e
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =5329
+                    Top =11735
+                    Width =567
+                    Height =226
+                    TabIndex =38
+                    Name ="Text264"
+                    GUID = Begin
+                        0xaa3068be04ec414ea4fdc2111f91962d
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =3225
+                            Top =11735
+                            Width =2002
+                            Height =226
+                            Name ="Label265"
+                            Caption ="Leakage/Auslaufrohr (LA):"
+                            GUID = Begin
+                                0xb63e0a0df31a3f4184bd55da0ead12b6
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =8056
+                    Top =11508
+                    Width =567
+                    Height =227
+                    TabIndex =39
+                    Name ="Text266"
+                    GUID = Begin
+                        0xa7dd49a6a063c3459d2ca21b8b0cd221
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =6015
+                            Top =11508
+                            Width =1925
+                            Height =227
+                            Name ="Label267"
+                            Caption ="Leakage/Zulauf (LZ)"
+                            GUID = Begin
+                                0x802594b71e5246448554d607a93d1565
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =4932
+                    Top =12075
+                    Width =2098
+                    Height =227
+                    TabIndex =40
+                    Name ="Text278"
+                    GUID = Begin
+                        0x5d215fa5c4d8a54196b9325c26d1c2be
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =2777
+                            Top =12075
+                            Width =1758
+                            Height =227
+                            Name ="Label279"
+                            Caption ="Zustand von:"
+                            GUID = Begin
+                                0x0264493d9d4ee24cb96b81626effc225
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =4932
+                    Top =12302
+                    Width =2098
+                    Height =227
+                    TabIndex =1
+                    Name ="Text280"
+                    ControlSource ="EinsteckrohrAnodeBemerkung"
+                    GUID = Begin
+                        0x1d0d04a996e3e64ca0ccbe74bd485e9f
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =2777
+                            Top =12302
+                            Width =1758
+                            Height =227
+                            Name ="Label281"
+                            Caption ="Einsteckrohr (Anode)"
+                            GUID = Begin
+                                0x12ae447d7a7b714dadf6e2f11ad53289
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =4932
+                    Top =12529
+                    Width =2098
+                    Height =227
+                    TabIndex =2
+                    Name ="Text282"
+                    ControlSource ="EinsteckrohrKathodeBemerkung"
+                    GUID = Begin
+                        0xf03808d0efc2bf4882048c86f3fad0d8
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =2777
+                            Top =12529
+                            Width =1758
+                            Height =227
+                            Name ="Label283"
+                            Caption ="Einsteckrohr (Kathode)"
+                            GUID = Begin
+                                0x051160ebc3b59d4fa495cc18b913bb6c
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =4932
+                    Top =12755
+                    Width =2098
+                    Height =227
+                    Name ="Text284"
+                    ControlSource ="DistanzstreifenAnodeBemerkung"
+                    GUID = Begin
+                        0x394c1d0bbd52a34d8956614fd0eebda4
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =2777
+                            Top =12755
+                            Width =1758
+                            Height =227
+                            Name ="Label285"
+                            Caption ="Distanzreifen (Anode)"
+                            GUID = Begin
+                                0xb0009b71a468d641ab643b8ff5573c3c
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =4932
+                    Top =12982
+                    Width =2098
+                    Height =226
+                    TabIndex =41
+                    Name ="Text286"
+                    ControlSource ="DistanzstreifenKathodeBemerkung"
+                    GUID = Begin
+                        0x9edbecc2b423a74391e91f756cde50d8
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =2777
+                            Top =12982
+                            Width =1758
+                            Height =230
+                            Name ="Label287"
+                            Caption ="Distanzreifen (Kathode)"
+                            GUID = Begin
+                                0x5bebe52b5b4c5e4980ced43c9f663bb2
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =4932
+                    Top =13209
+                    Width =2098
+                    Height =227
+                    TabIndex =42
+                    Name ="Text288"
+                    ControlSource ="RahmendichtungBemerkung"
+                    GUID = Begin
+                        0xf15d837f0354814b94ae7b69492160c1
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =2777
+                            Top =13209
+                            Width =1758
+                            Height =226
+                            Name ="Label289"
+                            Caption ="Rahmendichtung"
+                            GUID = Begin
+                                0x6d0d0f0cd8b5c04abeb9a1e988576ce9
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =8674
+                    Top =12075
+                    Width =1417
+                    Height =230
+                    TabIndex =43
+                    Name ="Text298"
+                    ControlSource ="Name"
+                    GUID = Begin
+                        0xabe916a0f826e94ea6cb19d075340ed9
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =7540
+                            Top =12075
+                            Width =1142
+                            Height =230
+                            Name ="Label299"
+                            Caption ="Name:"
+                            GUID = Begin
+                                0x5648ffc01fa6e441a78aabf92f82dde6
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =8674
+                    Top =12415
+                    Width =1417
+                    Height =226
+                    TabIndex =44
+                    Name ="Text300"
+                    ControlSource ="Date"
+                    GUID = Begin
+                        0x05e3febf31e2604aa9b36d8a18872945
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =7540
+                            Top =12415
+                            Width =1134
+                            Height =226
+                            Name ="Label301"
+                            Caption ="Datum:"
+                            GUID = Begin
+                                0xca51ce5f1e968949af08276ef74e1bde
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =8674
+                    Top =12755
+                    Width =1417
+                    Height =230
+                    TabIndex =45
+                    Name ="Text302"
+                    GUID = Begin
+                        0xfa340d7ee59701498abc2c0f22b715a0
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =7540
+                            Top =12755
+                            Width =1142
+                            Height =230
+                            Name ="Label303"
+                            Caption ="Unterschrift:"
+                            GUID = Begin
+                                0xcfbfc738e50eb04582f6bc5286129354
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    BackStyle =0
+                    IMESentenceMode =3
+                    Left =1984
+                    Top =13492
+                    Width =8172
+                    Height =466
+                    TabIndex =46
+                    Name ="Text306"
+                    ControlSource ="BemerkungenInspektionsbericht"
+                    GUID = Begin
+                        0xa014e052439d664489330c5e8be59bae
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =453
+                            Top =13492
+                            Width =1474
+                            Height =226
+                            Name ="Label307"
+                            Caption ="Bemerkung:"
+                            GUID = Begin
+                                0xbdd307fc23436f4e8759ace7ea825b30
+                            End
+                        End
+                    End
+                End
+                Begin Line
+                    BorderWidth =1
+                    Left =7256
+                    Top =12018
+                    Width =0
+                    Height =1474
+                    Name ="Line308"
+                    GUID = Begin
+                        0x99fdc581babc3a49a434d625fedd33f1
+                    End
+                End
+                Begin TextBox
+                    TextFontFamily =34
+                    IMESentenceMode =3
+                    Left =5329
+                    Top =11508
+                    Width =567
+                    Height =227
+                    TabIndex =47
+                    Name ="Text309"
+                    GUID = Begin
+                        0x4c0a9268bdba5a4ba694fc06eb4ecb58
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =3225
+                            Top =11508
+                            Width =1990
+                            Height =227
+                            Name ="Label310"
+                            Caption ="Leakage/Ecknaht (LE)"
+                            GUID = Begin
+                                0xd1607708306e7a478876367f75021fab
+                            End
+                        End
+                    End
+                End
+                Begin CheckBox
+                    Left =2267
+                    Top =12359
+                    TabIndex =48
+                    Name ="Check311"
+                    ControlSource ="ProbeKathode"
+                    GUID = Begin
+                        0x4f1475f4dd68e34abc47340a41e9f063
+                    End
+                End
+                Begin Label
+                    Left =510
+                    Top =12075
+                    Width =1680
+                    Height =225
+                    Name ="Label319"
+                    Caption ="Probe genommen von:"
+                    GUID = Begin
+                        0x4d31de9b05656e43bc5f9e79b522be29
+                    End
+                End
+                Begin Label
+                    Left =510
+                    Top =12302
+                    Width =1680
+                    Height =225
+                    Name ="Label320"
+                    Caption ="Kathode:"
+                    GUID = Begin
+                        0xea91e2ab744739489849c48eeb154192
+                    End
+                End
+                Begin Label
+                    Left =510
+                    Top =12529
+                    Width =1680
+                    Height =225
+                    Name ="Label321"
+                    Caption ="Anode:"
+                    GUID = Begin
+                        0x293b864794330849a3977b5c6327b549
+                    End
+                End
+                Begin Label
+                    Left =510
+                    Top =12755
+                    Width =1680
+                    Height =225
+                    Name ="Label322"
+                    Caption ="Membrane:"
+                    GUID = Begin
+                        0xe18810137c94f74e89b28853b80f6f84
+                    End
+                End
+                Begin CheckBox
+                    Left =2267
+                    Top =12585
+                    TabIndex =49
+                    Name ="Check323"
+                    ControlSource ="ProbeAnode"
+                    GUID = Begin
+                        0xffd4304ae269a24ab12bcb7481668fc2
+                    End
+                End
+                Begin CheckBox
+                    Left =2267
+                    Top =12812
+                    TabIndex =50
+                    Name ="Check324"
+                    ControlSource ="ProbeMembran"
+                    GUID = Begin
+                        0xbba4a5893fe146469dca86b155bddfda
+                    End
+                End
+                Begin CheckBox
+                    Left =4592
+                    Top =12302
+                    TabIndex =51
+                    Name ="Check325"
+                    ControlSource ="EinsteckrohrAnodeOK"
+                    GUID = Begin
+                        0x2b1fd4cc0df6d4499740a8ddce1d06e3
+                    End
+                End
+                Begin CheckBox
+                    Left =4592
+                    Top =12585
+                    TabIndex =52
+                    Name ="Check326"
+                    ControlSource ="EinsteckrohrKathodeOK"
+                    GUID = Begin
+                        0xe53d7fbcfd152344be5d8a408c4a7dcc
+                    End
+                End
+                Begin CheckBox
+                    Left =4592
+                    Top =12812
+                    TabIndex =53
+                    Name ="Check327"
+                    ControlSource ="DistanzsteifenAnodeOK"
+                    GUID = Begin
+                        0x0fa18ebb334c9b4b987ac317212773c5
+                    End
+                End
+                Begin CheckBox
+                    Left =4592
+                    Top =13039
+                    TabIndex =54
+                    Name ="Check329"
+                    ControlSource ="DistanzstreifenKathodeOK"
+                    GUID = Begin
+                        0x74a70c653b4d0c4c91b726ca1651662f
+                    End
+                End
+                Begin CheckBox
+                    Left =4592
+                    Top =13266
+                    TabIndex =55
+                    Name ="Check330"
+                    ControlSource ="RahmendichtungOK"
+                    GUID = Begin
+                        0x641e3643b44fcb498f0a667967bc0d67
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    BorderWidth =2
+                    Left =113
+                    Top =14003
+                    Width =10099
+                    Name ="Line331"
+                    GUID = Begin
+                        0xe0e5f73f398a814ca1979c6b6f38241d
+                    End
+                End
+                Begin Line
+                    BorderWidth =1
+                    Left =113
+                    Top =13492
+                    Width =10079
+                    Name ="Line332"
+                    GUID = Begin
+                        0x371ad2bdb3eaed4b8a0d7e172c0bb7a4
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    BorderWidth =2
+                    Left =10204
+                    Top =12075
+                    Width =0
+                    Height =1957
+                    Name ="Line333"
+                    GUID = Begin
+                        0x750c489a2ad1044ab9755baa47ff51f8
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    BorderWidth =2
+                    Left =113
+                    Top =12075
+                    Width =0
+                    Height =1928
+                    Name ="Line334"
+                    GUID = Begin
+                        0x68e60364d996554092a9d64840f4abcf
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =2151
+                    Top =1814
+                    Width =7826
+                    Height =397
+                    TabIndex =56
+                    Name ="Text335"
+                    ControlSource ="Inspektionsgrund"
+                    GUID = Begin
+                        0xc6fba7096784504fa2a8a387a443a4a1
+                    End
+                    Begin
+                        Begin Label
+                            Left =390
+                            Top =1815
+                            Width =1695
+                            Height =225
+                            Name ="Label336"
+                            Caption ="Inspektionsgrund:"
+                            GUID = Begin
+                                0x82ffc9e284115b48b3fcfa94716b28c6
+                            End
+                        End
+                    End
+                End
+                Begin Line
+                    Left =396
+                    Top =2211
+                    Width =9581
+                    Name ="Line337"
+                    GUID = Begin
+                        0xb3118db6542fdf49be6a2daa3bddf38c
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    Left =9977
+                    Top =1814
+                    Width =0
+                    Height =397
+                    Name ="Line338"
+                    GUID = Begin
+                        0x98fd96ab2eb0bb43a1072909dd59a6cf
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    Left =396
+                    Top =1814
+                    Width =9581
+                    Name ="Line339"
+                    GUID = Begin
+                        0x1cc2382084059c4caa9b1395424b17ca
+                    End
+                End
+                Begin Line
+                    Left =396
+                    Top =1814
+                    Width =0
+                    Height =397
+                    Name ="Line340"
+                    GUID = Begin
+                        0xe98ac7b27dfe6c4482b97573082f47e8
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            Height =0
+            Name ="PageFooterSection"
+            GUID = Begin
+                0x4815cc87f6a1b7459e62b7c736bd8720
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Report_Open(Cancel As Integer)
+Dim rst1 As DAO.Recordset
+
+If GetIDGewSprache() = 1 Then
+   Label22.Caption = "Inspektionsbericht"
+   
+   Label76.Caption = "Kunde:"
+   Label78.Caption = "Elektrolyseur Nr:"
+   Label80.Caption = "Postion:"
+   Label82.Caption = "Element Nr:"
+   
+   Label34.Caption = "Anoden Nr:"
+   Label36.Caption = "Kathoden Nr:"
+   Label40.Caption = "Membran Nr:"
+   Label42.Caption = "Membran Typ:"
+   
+   Label46.Caption = "Datum:"
+   Label48.Caption = "Betriebstage:"
+   Label54.Caption = "Elektroden Nr.: (Kathode)"
+   Label52.Caption = "Elektroden Nr.: (Anode)"
+   
+   Label336.Caption = "Inspektionsgrund:"
+   
+   Label190.Caption = "Membraninspektion"
+   
+   Label197.Caption = "Anodenseite (Draufsicht)"
+   Label236.Caption = "Kathodenseite (Draufsicht)"
+   Label237.Caption = "Leaktest (Anodenseite Draufsicht)"
+   Label238.Caption = "Anodenhalbschale (Draufsicht)"
+   Label239.Caption = "Kathodenhalbschale (Draufsicht)"
+   
+   
+   Label136.Caption = "Blister"
+   Label137.Caption = "Anodenfläche"
+   Label138.Caption = "Peripherie"
+   Label139.Caption = "Ecken"
+   Label140.Caption = "Oben"
+   Label141.Caption = "Seite"
+   Label142.Caption = "Unten"
+   Label150.Caption = "Falten (F)"
+   Label151.Caption = "Druckstelle (DS)"
+   Label152.Caption = "Sichtbare Löcher (SL)"
+   Label153.Caption = "Risse (R)"
+   Label232.Caption = "Bemerkungen"
+   
+   Label245.Caption = "Deformation Wanne (DW):"
+   Label247.Caption = "Deformation Elektrode (DE):"
+   Label250.Caption = "Verfärbung (V):"
+   Label252.Caption = "Korrosion Wanne (KW):"
+   Label254.Caption = "Korrosion Elektrode (KE):"
+   Label258.Caption = "Ablagerungen (A):"
+   Label260.Caption = "Leckage/Rückwand (LR):"
+   Label263.Caption = "Leckage/Lasernaht (LL):"
+   Label310.Caption = "Leckage/Ecknaht (LE):"
+   Label265.Caption = "Leckage/Auslaufrohr (LA):"
+   Label267.Caption = "Leckage/Zulauf (LZ):"
+   
+   
+   Label319.Caption = "Probe genommen von:"
+   Label320.Caption = "Kathode"
+   Label321.Caption = "Anode"
+   Label322.Caption = "Membrane"
+   
+   Label279.Caption = "Zustand von"
+   Label281.Caption = "Einsteckrohr (Anode):"
+   Label283.Caption = "Einsteckrohr (Kathode):"
+   Label285.Caption = "Distanzstreifen (Anode):"
+   Label287.Caption = "Distanzstreifen (Kathode):"
+   Label289.Caption = "Rahmendichtung:"
+   
+   Label299.Caption = "Name:"
+   Label301.Caption = "Datum:"
+   Label303.Caption = "Unterschrift:"
+   
+   Label307.Caption = "Bemerkungen"
+ 
+   
+   
+   
+Else
+    Label22.Caption = "Inspection report"
+    
+    Label76.Caption = "Client:"
+    Label78.Caption = "Electrolyzer No.:"
+    Label80.Caption = "Postion:"
+    Label82.Caption = "Element No.:"
+    
+    Label34.Caption = "Anode No.:"
+    Label36.Caption = "Cathode No.:"
+    Label40.Caption = "Membrane No.:"
+    Label42.Caption = "Membrane Type:"
+    
+    Label46.Caption = "Date:"
+    Label48.Caption = "Operation days:"
+    Label54.Caption = "Electrode No. (Cathode):"
+    Label52.Caption = "Electrode No. (Anode):"
+    
+    Label336.Caption = "Reason for inspection"
+    
+    Label190.Caption = "Membrane inspection"
+    
+    Label197.Caption = "Anode side (top view)"
+    Label236.Caption = "Cathode side (plan view)"
+    Label237.Caption = "Leak test anode site (plan view)"
+    Label238.Caption = "Anode half shell (plan view)"
+    Label239.Caption = "Cathode half shell (plan view)"
+   
+    Label136.Caption = "Blister"
+    Label137.Caption = "Anode surface"
+    Label138.Caption = "Periphery"
+    Label139.Caption = "Corner"
+    Label140.Caption = "Top"
+    Label141.Caption = "Site"
+    Label142.Caption = "Bottom"
+    Label150.Caption = "Winkle (W)"
+    Label151.Caption = "Pressure marks (PM)"
+    Label152.Caption = "Visible holes (VH)"
+    Label153.Caption = "Tears (T)"
+    Label232.Caption = "Remarks"
+   
+    Label245.Caption = "Deformation pan (DP):"
+    Label247.Caption = "Deformation electrode (DE):"
+    
+    Label250.Caption = "Coloured area (CA):"
+    
+    Label252.Caption = "Corrosion pan (CP):"
+    Label254.Caption = "Corrosion electrode (CE):"
+    
+    Label258.Caption = "Deposits (D):"
+    
+    Label260.Caption = "Leakage pan (LP):"
+    Label263.Caption = "Leakage web area (LW):"
+    Label310.Caption = "Leakage corner area (LC):"
+    Label265.Caption = "Leakage outlet nozzel (LO):"
+    Label267.Caption = "Leakage inlet nozzel (LI):"
+    
+    Label319.Caption = "Sample taken:"
+    Label320.Caption = "Cathode"
+    Label321.Caption = "Anode"
+    Label322.Caption = "Membrane"
+    
+    Label279.Caption = " "
+    Label281.Caption = "Insert pipe (Anode):"
+    Label283.Caption = "Insert pipe (Cathode):"
+    Label285.Caption = "Spacer strip (Anode):"
+    Label287.Caption = "Spacer strip (Cathode):"
+    Label289.Caption = "Frame gasket:"
+    
+    Label299.Caption = "Name:"
+    Label301.Caption = "Date:"
+    Label303.Caption = "Signature:"
+    
+    Label307.Caption = "Remarks:"
+    
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewElementInspektionsbericht ORDER BY [Element Nr]")
+        Me!Text75 = rst1!Kunde
+        Me!Text77 = rst1!Elektrolyseur
+        Me!Text79 = rst1!Position
+        'Me!Elementnummer = rst1![Element Nr]
+        Me!Text33 = rst1![Anoden Nr]
+        Me!Text35 = rst1![Kathoden Nr]
+        Me!Text39 = rst1![Membran Nr]
+        Me!Text41 = rst1![Membrantyp]
+        Me!Text45 = rst1![Demontage Datum]
+        Me!Text47 = rst1!DOL
+        Me!Text335 = rst1!Abschaltgrund
+    rst1.Close
+     
+     
+End If
+End Sub

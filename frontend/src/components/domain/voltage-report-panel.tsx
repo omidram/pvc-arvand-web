@@ -173,6 +173,7 @@ export function VoltageReportPanel({
           max={live.cell_gauge_max}
           label={t("dashboard.maxCellGauge")}
           unit="V"
+          caption={[live.max_electrolyzer, live.max_position].filter(Boolean).join(" / ") || undefined}
           tone={maxVTone(live.max_voltage, live.danger_limit)}
           digits={3}
         />

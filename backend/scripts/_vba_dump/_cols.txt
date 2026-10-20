@@ -1,0 +1,549 @@
+## frmTabelleCEElektrolyseur
+  Label      L=   120 Text8                        cs=                                         cap=Current Efficiency Electrolyzer fmt=
+  Label      L=   453 Text10                       cs=                                         cap=Electrolyser fmt=
+  Label      L=  2154 Text12                       cs=                                         cap=Date fmt=
+  Label      L=  3061 Text14                       cs=                                         cap=Time fmt=
+  CommandButton L=  8163 Hauptmenue                   cs=                                         cap=Menue fmt=
+  Label      L=  3637 Bezeichnungsfeld65           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4649 Bezeichnungsfeld67           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5556 Bezeichnungsfeld69           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld73           cs=                                         cap=µHCl fmt=
+  Label      L=  9185 Bezeichnungsfeld77           cs=                                         cap=µO2 fmt=
+  Label      L=  7361 Bezeichnungsfeld81           cs=                                         cap=µAlkali fmt=
+  Label      L=  8163 Bezeichnungsfeld82           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10206 Bezeichnungsfeld86           cs=                                         cap=µNaOH fmt=
+  CommandButton L=  9977 Befehl89                     cs=                                         cap=Current Efficiency fmt=
+  Label      L=   226 Bezeichnungsfeld102          cs=                                         cap=Basis: Anodic Balance of Electrolyzer fmt=
+  TextBox    L= 10318 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  3636 Bezeichnungsfeld66           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4648 Bezeichnungsfeld68           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5555 Bezeichnungsfeld70           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld74           cs=                                         cap=µHCl fmt=
+  Label      L=  9184 Bezeichnungsfeld78           cs=                                         cap=µO2 fmt=
+  Label      L=  7370 Bezeichnungsfeld83           cs=                                         cap=µAlkali fmt=
+  Label      L=  8277 Bezeichnungsfeld84           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10205 Bezeichnungsfeld85           cs=                                         cap=µNaOH fmt=
+  Label      L=   453 Bezeichnungsfeld92           cs=                                         cap=Electrolyser fmt=
+  Label      L=  2154 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  3061 Bezeichnungsfeld94           cs=                                         cap=Time fmt=
+  TextBox    L=   340 Elektrolyseur                cs=Elektrolyseur                            cap= fmt=
+  TextBox    L=  2040 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  3060 Zeit                         cs=Zeit                                     cap= fmt=Short Time
+  TextBox    L=  3741 VAnolyt                      cs=VAnolyt                                  cap= fmt=Fixed
+  TextBox    L=  5555 Na2SO4                       cs=µNaOCl                                   cap= fmt=Fixed
+  TextBox    L=  9184 temperature                  cs=µO2                                      cap= fmt=Fixed
+  TextBox    L=  4648 Feld27                       cs=µNaClO3                                  cap= fmt=Fixed
+  TextBox    L=  7370 Text57                       cs=µAlkali                                  cap= fmt=Fixed
+  TextBox    L=  8277 Text62                       cs=µNa2CO3                                  cap= fmt=Fixed
+  TextBox    L= 10205 Text64                       cs=µNaOH                                    cap= fmt=Fixed
+  TextBox    L=  6462 Text98                       cs=µHCl                                     cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleCEGesamtanlage
+  Label      L=   120 Text8                        cs=                                         cap=Current Efficiency Total Plant fmt=
+  Label      L=  2616 Text12                       cs=                                         cap=Date fmt=
+  CommandButton L=  8163 Hauptmenue                   cs=                                         cap=Menue fmt=
+  Label      L=  3637 Bezeichnungsfeld65           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4649 Bezeichnungsfeld67           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5556 Bezeichnungsfeld69           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld73           cs=                                         cap=µHCl fmt=
+  Label      L=  9185 Bezeichnungsfeld77           cs=                                         cap=µO2 fmt=
+  Label      L=  7361 Bezeichnungsfeld81           cs=                                         cap=µAlkali fmt=
+  Label      L=  8163 Bezeichnungsfeld82           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10206 Bezeichnungsfeld86           cs=                                         cap=µNaOH fmt=
+  CommandButton L=  9977 Befehl89                     cs=                                         cap=Current Efficiency fmt=
+  Label      L=   226 Bezeichnungsfeld101          cs=                                         cap=Basis: Anodische Bilanz Elektrolyseure fmt=
+  TextBox    L= 10318 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  3636 Bezeichnungsfeld66           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4648 Bezeichnungsfeld68           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5555 Bezeichnungsfeld70           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld74           cs=                                         cap=µHCl fmt=
+  Label      L=  9184 Bezeichnungsfeld78           cs=                                         cap=µO2 fmt=
+  Label      L=  7370 Bezeichnungsfeld83           cs=                                         cap=µAlkali fmt=
+  Label      L=  8277 Bezeichnungsfeld84           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10205 Bezeichnungsfeld85           cs=                                         cap=µNaOH fmt=
+  Label      L=  2616 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  TextBox    L=  2607 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  3636 VAnolyt                      cs=Mittelwert von VAnolyt                   cap= fmt=Fixed
+  TextBox    L=  5555 Na2SO4                       cs=Mittelwert von µNaOCl                    cap= fmt=Fixed
+  TextBox    L=  9184 temperature                  cs=Mittelwert von µO2                       cap= fmt=Fixed
+  TextBox    L=  4648 Feld27                       cs=Mittelwert von µNaClO3                   cap= fmt=Fixed
+  TextBox    L=  7370 Text57                       cs=Mittelwert von µAlkali                   cap= fmt=Fixed
+  TextBox    L=  8277 Text62                       cs=Mittelwert von µNaClO3                   cap= fmt=Fixed
+  TextBox    L= 10205 Text64                       cs=Mittelwert von µNaOH                     cap= fmt=Fixed
+  TextBox    L=  6462 Text98                       cs=Mittelwert von µHCl                      cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleCETeilanlage
+  Label      L=   120 Text8                        cs=                                         cap=Current Efficiency Train fmt=
+  Label      L=   345 Text10                       cs=                                         cap=Train fmt=
+  Label      L=  2034 Text12                       cs=                                         cap=Date fmt=
+  Label      L=  3061 Text14                       cs=                                         cap=Time fmt=
+  Label      L=  3637 Bezeichnungsfeld65           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4649 Bezeichnungsfeld67           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5556 Bezeichnungsfeld69           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld73           cs=                                         cap=µHCl fmt=
+  Label      L=  9185 Bezeichnungsfeld77           cs=                                         cap=µO2 fmt=
+  Label      L=  7361 Bezeichnungsfeld81           cs=                                         cap=µAlkali fmt=
+  Label      L=  8163 Bezeichnungsfeld82           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10206 Bezeichnungsfeld86           cs=                                         cap=µNaOH fmt=
+  CommandButton L=  9297 Befehl89                     cs=                                         cap=Current Efficiency fmt=
+  Label      L=  1133 Bezeichnungsfeld101          cs=                                         cap=Basis: Anodic Balance of Electrolyzers fmt=
+  TextBox    L=  9864 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  3636 Bezeichnungsfeld66           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4648 Bezeichnungsfeld68           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5555 Bezeichnungsfeld70           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld74           cs=                                         cap=µHCl fmt=
+  Label      L=  9184 Bezeichnungsfeld78           cs=                                         cap=µO2 fmt=
+  Label      L=  7370 Bezeichnungsfeld83           cs=                                         cap=µAlkali fmt=
+  Label      L=  8277 Bezeichnungsfeld84           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10205 Bezeichnungsfeld85           cs=                                         cap=µNaOH fmt=
+  Label      L=   345 Bezeichnungsfeld92           cs=                                         cap=Tain fmt=
+  Label      L=  2034 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  3061 Bezeichnungsfeld94           cs=                                         cap=Time fmt=
+  TextBox    L=   340 Elektrolyseur                cs=Teilanlagenbezeichnung                   cap= fmt=
+  TextBox    L=  2040 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  3060 Zeit                         cs=Zeit                                     cap= fmt=Short Time
+  TextBox    L=  3741 VAnolyt                      cs=Summe von VAnolyt                        cap= fmt=Fixed
+  TextBox    L=  5555 Na2SO4                       cs=Mittelwert von µNaOCl                    cap= fmt=Fixed
+  TextBox    L=  9184 temperature                  cs=Mittelwert von µO2                       cap= fmt=Fixed
+  TextBox    L=  4648 Feld27                       cs=Mittelwert von µNaClO3                   cap= fmt=Fixed
+  TextBox    L=  7370 Text57                       cs=Mittelwert von µAlkali                   cap= fmt=Fixed
+  TextBox    L=  8277 Text62                       cs=Mittelwert von µNa2CO3                   cap= fmt=Fixed
+  TextBox    L= 10205 Text64                       cs=Mittelwert von µNaOH                     cap= fmt=Fixed
+  TextBox    L=  6462 Text98                       cs=Mittelwert von µHCl                      cap= fmt=Fixed
+  TextBox    L=  9297 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleCEGruppe
+  Label      L=   120 Text8                        cs=                                         cap=Current Efficiency Electrolyzer fmt=
+  Label      L=   435 Text10                       cs=                                         cap=Group fmt=
+  Label      L=  2154 Text12                       cs=                                         cap=Date fmt=
+  Label      L=  3061 Text14                       cs=                                         cap=Time fmt=
+  CommandButton L=  8163 Hauptmenue                   cs=                                         cap=Menue fmt=
+  Label      L=  3637 Bezeichnungsfeld65           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4649 Bezeichnungsfeld67           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5556 Bezeichnungsfeld69           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld73           cs=                                         cap=µHCl fmt=
+  Label      L=  9185 Bezeichnungsfeld77           cs=                                         cap=µO2 fmt=
+  Label      L=  7361 Bezeichnungsfeld81           cs=                                         cap=µAlkali fmt=
+  Label      L=  8163 Bezeichnungsfeld82           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10206 Bezeichnungsfeld86           cs=                                         cap=µNaOH fmt=
+  CommandButton L=  9977 Befehl89                     cs=                                         cap=Current Efficiency fmt=
+  Label      L=   226 Bezeichnungsfeld102          cs=                                         cap=Basis: Anodic Balance of Electrolyzer fmt=
+  TextBox    L= 10318 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  3636 Bezeichnungsfeld66           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4648 Bezeichnungsfeld68           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5555 Bezeichnungsfeld70           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld74           cs=                                         cap=µHCl fmt=
+  Label      L=  9184 Bezeichnungsfeld78           cs=                                         cap=µO2 fmt=
+  Label      L=  7370 Bezeichnungsfeld83           cs=                                         cap=µAlkali fmt=
+  Label      L=  8277 Bezeichnungsfeld84           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10205 Bezeichnungsfeld85           cs=                                         cap=µNaOH fmt=
+  Label      L=   435 Bezeichnungsfeld92           cs=                                         cap=Group fmt=
+  Label      L=  2154 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  3061 Bezeichnungsfeld94           cs=                                         cap=Time fmt=
+  TextBox    L=   340 Elektrolyseur                cs=Gruppe                                   cap= fmt=
+  TextBox    L=  2040 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  3060 Zeit                         cs=Zeit                                     cap= fmt=Short Time
+  TextBox    L=  3741 VAnolyt                      cs=VAnolyt                                  cap= fmt=Fixed
+  TextBox    L=  5555 Na2SO4                       cs=µNaOCl                                   cap= fmt=Fixed
+  TextBox    L=  9184 temperature                  cs=µO2                                      cap= fmt=Fixed
+  TextBox    L=  4648 Feld27                       cs=µNaClO3                                  cap= fmt=Fixed
+  TextBox    L=  7370 Text57                       cs=µAlkali                                  cap= fmt=Fixed
+  TextBox    L=  8277 Text62                       cs=µNa2CO3                                  cap= fmt=Fixed
+  TextBox    L= 10205 Text64                       cs=µNaOH                                    cap= fmt=Fixed
+  TextBox    L=  6462 Text98                       cs=µHCl                                     cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleCEElement
+  Label      L=   120 Text8                        cs=                                         cap=Current Efficiency Element fmt=
+  Label      L=   113 Text10                       cs=                                         cap=Electrolyser fmt=
+  Label      L=  2154 Text12                       cs=                                         cap=Date fmt=
+  Label      L=  3061 Text14                       cs=                                         cap=Time fmt=
+  Label      L=  3637 Bezeichnungsfeld65           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4649 Bezeichnungsfeld67           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5556 Bezeichnungsfeld69           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld73           cs=                                         cap=µHCl fmt=
+  Label      L=  9185 Bezeichnungsfeld77           cs=                                         cap=µO2 fmt=
+  Label      L=  7361 Bezeichnungsfeld81           cs=                                         cap=µAlkali fmt=
+  Label      L=  8163 Bezeichnungsfeld82           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10206 Bezeichnungsfeld86           cs=                                         cap=µNaOH fmt=
+  CommandButton L= 11565 Befehl89                     cs=                                         cap=Current Efficiency fmt=
+  Label      L=   210 Bezeichnungsfeld102          cs=                                         cap=Basis: Anodic Balance of Element fmt=
+  Label      L=  1455 Bezeichnungsfeld103          cs=                                         cap=Pos. fmt=
+  CommandButton L= 11565 Befehl106                    cs=                                         cap=Update Display fmt=
+  TextBox    L= 10318 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  3636 Bezeichnungsfeld66           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4648 Bezeichnungsfeld68           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5555 Bezeichnungsfeld70           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld74           cs=                                         cap=µHCl fmt=
+  Label      L=  9184 Bezeichnungsfeld78           cs=                                         cap=µO2 fmt=
+  Label      L=  7370 Bezeichnungsfeld83           cs=                                         cap=µAlkali fmt=
+  Label      L=  8277 Bezeichnungsfeld84           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10205 Bezeichnungsfeld85           cs=                                         cap=µNaOH fmt=
+  Label      L=   113 Bezeichnungsfeld92           cs=                                         cap=Electrolyser fmt=
+  Label      L=  2154 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  3061 Bezeichnungsfeld94           cs=                                         cap=Time fmt=
+  Label      L=  1455 Bezeichnungsfeld104          cs=                                         cap=Pos. fmt=
+  TextBox    L=   113 Elektrolyseur                cs=Elektrolyseur                            cap= fmt=
+  TextBox    L=  2040 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  3060 Zeit                         cs=Zeit                                     cap= fmt=Short Time
+  TextBox    L=  3741 VAnolyt                      cs=VAnolyt                                  cap= fmt=Fixed
+  TextBox    L=  5555 Na2SO4                       cs=µNaOCl                                   cap= fmt=Fixed
+  TextBox    L=  9184 temperature                  cs=µO2                                      cap= fmt=Fixed
+  TextBox    L=  4648 Feld27                       cs=µNaClO3                                  cap= fmt=Fixed
+  TextBox    L=  7370 Text57                       cs=µAlkali                                  cap= fmt=Fixed
+  TextBox    L=  8277 Text62                       cs=µNa2CO3                                  cap= fmt=Fixed
+  TextBox    L= 10205 Text64                       cs=µNaOH                                    cap= fmt=Fixed
+  TextBox    L=  6462 Text98                       cs=µHCl                                     cap= fmt=Fixed
+  TextBox    L=  1474 Text105                      cs=Position                                 cap= fmt=General Number
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleCEAlleTeilanlagen
+  Label      L=   120 Text8                        cs=                                         cap=Current Efficiency of all Trains fmt=
+  Label      L=   345 Text10                       cs=                                         cap=Teilanlage fmt=
+  Label      L=  2034 Text12                       cs=                                         cap=Date fmt=
+  Label      L=  3061 Text14                       cs=                                         cap=Time fmt=
+  Label      L=  3637 Bezeichnungsfeld65           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4649 Bezeichnungsfeld67           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5556 Bezeichnungsfeld69           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld73           cs=                                         cap=µHCl fmt=
+  Label      L=  9185 Bezeichnungsfeld77           cs=                                         cap=µO2 fmt=
+  Label      L=  7361 Bezeichnungsfeld81           cs=                                         cap=µAlkali fmt=
+  Label      L=  8163 Bezeichnungsfeld82           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10206 Bezeichnungsfeld86           cs=                                         cap=µNaOH fmt=
+  CommandButton L=  9297 Befehl89                     cs=                                         cap=Current Efficiency fmt=
+  Label      L=   780 Bezeichnungsfeld101          cs=                                         cap=Basis: Current Efficiency Electrolyzers fmt=
+  TextBox    L=  9864 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  3636 Bezeichnungsfeld66           cs=                                         cap=V Anolyt fmt=
+  Label      L=  4648 Bezeichnungsfeld68           cs=                                         cap=µNaClO3 fmt=
+  Label      L=  5555 Bezeichnungsfeld70           cs=                                         cap=µNaOCl fmt=
+  Label      L=  6450 Bezeichnungsfeld74           cs=                                         cap=µHCl fmt=
+  Label      L=  9184 Bezeichnungsfeld78           cs=                                         cap=µO2 fmt=
+  Label      L=  7370 Bezeichnungsfeld83           cs=                                         cap=µAlkali fmt=
+  Label      L=  8277 Bezeichnungsfeld84           cs=                                         cap=µNa2CO3 fmt=
+  Label      L= 10205 Bezeichnungsfeld85           cs=                                         cap=µNaOH fmt=
+  Label      L=   345 Bezeichnungsfeld92           cs=                                         cap=Teilanlage fmt=
+  Label      L=  2034 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  3061 Bezeichnungsfeld94           cs=                                         cap=Time fmt=
+  TextBox    L=   340 Elektrolyseur                cs=Teilanlagenbezeichnung                   cap= fmt=
+  TextBox    L=  2040 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  3060 Zeit                         cs=Zeit                                     cap= fmt=Short Time
+  TextBox    L=  3741 VAnolyt                      cs=Summe von VAnolyt                        cap= fmt=Fixed
+  TextBox    L=  5555 Na2SO4                       cs=Mittelwert von µNaOCl                    cap= fmt=Fixed
+  TextBox    L=  9184 temperature                  cs=Mittelwert von µO2                       cap= fmt=Fixed
+  TextBox    L=  4648 Feld27                       cs=Mittelwert von µNaClO3                   cap= fmt=Fixed
+  TextBox    L=  7370 Text57                       cs=Mittelwert von µAlkali                   cap= fmt=Fixed
+  TextBox    L=  8277 Text62                       cs=Mittelwert von µNa2CO3                   cap= fmt=Fixed
+  TextBox    L= 10205 Text64                       cs=Mittelwert von µNaOH                     cap= fmt=Fixed
+  TextBox    L=  6462 Text98                       cs=Mittelwert von µHCl                      cap= fmt=Fixed
+  TextBox    L=  9297 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnElektrolyseur
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage Electrolyzer fmt=
+  CommandButton L=  8163 Hauptmenue                   cs=                                         cap=Menue fmt=
+  CommandButton L= 10318 Befehl89                     cs=                                         cap=Standardized\015\012Voltage fmt=
+  Label      L=  4989 Bezeichnungsfeld101          cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6463 Bezeichnungsfeld102          cs=                                         cap=t An [°C] fmt=
+  Label      L=  7370 Bezeichnungsfeld103          cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  1927 Bezeichnungsfeld104          cs=                                         cap=Electrolyser fmt=
+  Label      L=  3184 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4087 Bezeichnungsfeld106          cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8277 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  Label      L=   226 Bezeichnungsfeld110          cs=                                         cap=Basis: Table Un Electrolyzers fmt=
+  TextBox    L= 11111 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5100 Bezeichnungsfeld66           cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6576 Bezeichnungsfeld68           cs=                                         cap=t An [°C] fmt=
+  Label      L=  7483 Bezeichnungsfeld85           cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  2040 Bezeichnungsfeld92           cs=                                         cap=Electrolyser fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4185 Bezeichnungsfeld94           cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8385 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  TextBox    L=  2154 Elektrolyseur                cs=Elektrolyseur                            cap= fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4202 i                            cs=i                                        cap= fmt=Standard
+  TextBox    L=  5210 Cc                           cs=Cc                                       cap= fmt=Fixed
+  TextBox    L=  6571 t An                         cs=t An                                     cap= fmt=Fixed
+  TextBox    L=  7490 t Ka                         cs=t Ka                                     cap= fmt=Fixed
+  TextBox    L=  8376 Un                           cs=Un                                       cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnElektrolyseur2
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage Electrolyzer fmt=
+  CommandButton L=  9297 Befehl89                     cs=                                         cap=Standardized\015\012Voltage fmt=
+  Label      L=  4989 Bezeichnungsfeld101          cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6463 Bezeichnungsfeld102          cs=                                         cap=t An [°C] fmt=
+  Label      L=  7370 Bezeichnungsfeld103          cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  1927 Bezeichnungsfeld104          cs=                                         cap=Electrolyser fmt=
+  Label      L=  3184 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4087 Bezeichnungsfeld106          cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8277 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  Label      L=   226 Bezeichnungsfeld110          cs=                                         cap=Basis: Table Un Electrolyzers fmt=
+  TextBox    L= 10204 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5100 Bezeichnungsfeld66           cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6576 Bezeichnungsfeld68           cs=                                         cap=t An [°C] fmt=
+  Label      L=  7483 Bezeichnungsfeld85           cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  2040 Bezeichnungsfeld92           cs=                                         cap=Electrolyser fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4185 Bezeichnungsfeld94           cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8385 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  TextBox    L=  2154 Elektrolyseur                cs=Elektrolyseur                            cap= fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4202 i                            cs=i                                        cap= fmt=Standard
+  TextBox    L=  5210 Cc                           cs=Cc                                       cap= fmt=Fixed
+  TextBox    L=  6571 t An                         cs=t An                                     cap= fmt=Fixed
+  TextBox    L=  7490 t Ka                         cs=t Ka                                     cap= fmt=Fixed
+  TextBox    L=  8376 Un                           cs=Un                                       cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnGesamtanlage
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage Train fmt=
+  CommandButton L=  8163 Hauptmenue                   cs=                                         cap=Menue fmt=
+  CommandButton L= 10318 Befehl89                     cs=                                         cap=Standardized\015\012Voltage fmt=
+  Label      L=  4989 Bezeichnungsfeld101          cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6463 Bezeichnungsfeld102          cs=                                         cap=t An [°C] fmt=
+  Label      L=  7370 Bezeichnungsfeld103          cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  3184 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4087 Bezeichnungsfeld106          cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8277 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  Label      L=   226 Bezeichnungsfeld110          cs=                                         cap=Basis: Table Un Electrolyzers fmt=
+  TextBox    L= 11111 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5100 Bezeichnungsfeld66           cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6576 Bezeichnungsfeld68           cs=                                         cap=t An [°C] fmt=
+  Label      L=  7483 Bezeichnungsfeld85           cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4185 Bezeichnungsfeld94           cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8385 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4202 i                            cs=Mittelwert von i                         cap= fmt=Standard
+  TextBox    L=  5210 Cc                           cs=Mittelwert von Cc                        cap= fmt=Fixed
+  TextBox    L=  6571 t An                         cs=Mittelwert von t An                      cap= fmt=Fixed
+  TextBox    L=  7490 t Ka                         cs=Mittelwert von t Ka                      cap= fmt=Fixed
+  TextBox    L=  8376 Un                           cs=Mittelwert von Un                        cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnGesamtanlage2
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage Train fmt=
+  CommandButton L=  8163 Hauptmenue                   cs=                                         cap=Menue fmt=
+  CommandButton L= 10318 Befehl89                     cs=                                         cap=Standardized\015\012Voltage fmt=
+  Label      L=  4989 Bezeichnungsfeld101          cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6463 Bezeichnungsfeld102          cs=                                         cap=t An [°C] fmt=
+  Label      L=  7370 Bezeichnungsfeld103          cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  3184 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4087 Bezeichnungsfeld106          cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8277 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  Label      L=   210 Bezeichnungsfeld110          cs=                                         cap=Basis: Table Un all Elements per Electrolyzer fmt=
+  TextBox    L= 11111 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5100 Bezeichnungsfeld66           cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6576 Bezeichnungsfeld68           cs=                                         cap=t An [°C] fmt=
+  Label      L=  7483 Bezeichnungsfeld85           cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4185 Bezeichnungsfeld94           cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8385 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4202 i                            cs=Mittelwert von i                         cap= fmt=Standard
+  TextBox    L=  5210 Cc                           cs=Mittelwert von Cc                        cap= fmt=Fixed
+  TextBox    L=  6571 t An                         cs=Mittelwert von t An                      cap= fmt=Fixed
+  TextBox    L=  7490 t Ka                         cs=Mittelwert von t Ka                      cap= fmt=Fixed
+  TextBox    L=  8376 Un                           cs=Mittelwert von Un                        cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnTeilanlage
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage Train fmt=
+  CommandButton L=  8163 Hauptmenue                   cs=                                         cap=Menue fmt=
+  CommandButton L= 10318 Befehl89                     cs=                                         cap=Standardized\015\012Voltage fmt=
+  Label      L=  4989 Bezeichnungsfeld101          cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6463 Bezeichnungsfeld102          cs=                                         cap=t An [°C] fmt=
+  Label      L=  7370 Bezeichnungsfeld103          cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  1905 Bezeichnungsfeld104          cs=                                         cap=Train fmt=
+  Label      L=  3184 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4087 Bezeichnungsfeld106          cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8277 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  Label      L=   226 Bezeichnungsfeld110          cs=                                         cap=Basis: Table Un Electrolyzers fmt=
+  TextBox    L= 11111 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5100 Bezeichnungsfeld66           cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6576 Bezeichnungsfeld68           cs=                                         cap=t An [°C] fmt=
+  Label      L=  7483 Bezeichnungsfeld85           cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  2025 Bezeichnungsfeld92           cs=                                         cap=Train fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4185 Bezeichnungsfeld94           cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8385 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  TextBox    L=  2034 Elektrolyseur                cs=Teilanlagenbezeichnung                   cap= fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4202 i                            cs=Mittelwert von i                         cap= fmt=Standard
+  TextBox    L=  5210 Cc                           cs=Mittelwert von Cc                        cap= fmt=Fixed
+  TextBox    L=  6571 t An                         cs=Mittelwert von t An                      cap= fmt=Fixed
+  TextBox    L=  7490 t Ka                         cs=Mittelwert von t Ka                      cap= fmt=Fixed
+  TextBox    L=  8376 Un                           cs=Mittelwert von Un                        cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnElement
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage Element fmt=
+  CommandButton L= 11565 Hauptmenue                   cs=                                         cap=Update Display fmt=
+  CommandButton L= 11565 Befehl89                     cs=                                         cap=Standardized Voltage fmt=
+  Label      L=  5102 Bezeichnungsfeld101          cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6576 Bezeichnungsfeld102          cs=                                         cap=t An [°C] fmt=
+  Label      L=  7483 Bezeichnungsfeld103          cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  1133 Bezeichnungsfeld104          cs=                                         cap=Electrolyser fmt=
+  Label      L=  3297 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4308 Bezeichnungsfeld106          cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8390 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  Label      L=  2370 Bezeichnungsfeld111          cs=                                         cap=Position fmt=
+  Label      L=   218 Bezeichnungsfeld114          cs=                                         cap=Basis: Single Element Voltage Measurement; t An, T Cath, c NaOH Electrolyzer Ave fmt=
+  TextBox    L= 10318 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5102 Bezeichnungsfeld66           cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6576 Bezeichnungsfeld68           cs=                                         cap=t An [°C] fmt=
+  Label      L=  7483 Bezeichnungsfeld85           cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  1133 Bezeichnungsfeld92           cs=                                         cap=Electrolyser fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4308 Bezeichnungsfeld94           cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8385 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  Label      L=  2385 Bezeichnungsfeld108          cs=                                         cap=Position fmt=
+  TextBox    L=  1135 Elektrolyseur                cs=Elektrolyseur                            cap= fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4307 i                            cs=i                                        cap= fmt=Standard
+  TextBox    L=  5210 Cc                           cs=Cc                                       cap= fmt=Fixed
+  TextBox    L=  6571 t An                         cs=t An                                     cap= fmt=Fixed
+  TextBox    L=  7490 t Ka                         cs=t Ka                                     cap= fmt=Fixed
+  TextBox    L=  8376 Un                           cs=Un                                       cap= fmt=Fixed
+  TextBox    L=  2387 Position                     cs=Position                                 cap= fmt=
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnElement2
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage Single Element fmt=
+  CommandButton L= 11565 Hauptmenue                   cs=                                         cap=Update Display fmt=
+  CommandButton L= 11565 Befehl89                     cs=                                         cap=Standardized Voltage fmt=
+  Label      L=  5102 Bezeichnungsfeld101          cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6576 Bezeichnungsfeld102          cs=                                         cap=t An [°C] fmt=
+  Label      L=  7483 Bezeichnungsfeld103          cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  1133 Bezeichnungsfeld104          cs=                                         cap=Electrolyser fmt=
+  Label      L=  3297 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4308 Bezeichnungsfeld106          cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8390 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  Label      L=  2370 Bezeichnungsfeld111          cs=                                         cap=Position fmt=
+  Label      L=   210 Bezeichnungsfeld114          cs=                                         cap=Basis: Table Un Elements fmt=
+  TextBox    L= 10318 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5102 Bezeichnungsfeld66           cs=                                         cap=Cath. Conc [%] fmt=
+  Label      L=  6576 Bezeichnungsfeld68           cs=                                         cap=t An [°C] fmt=
+  Label      L=  7483 Bezeichnungsfeld85           cs=                                         cap=t Ca. [°C] fmt=
+  Label      L=  1133 Bezeichnungsfeld92           cs=                                         cap=Electrolyser fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4308 Bezeichnungsfeld94           cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  8385 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  Label      L=  2385 Bezeichnungsfeld108          cs=                                         cap=Position fmt=
+  TextBox    L=  1135 Elektrolyseur                cs=Elektrolyseur                            cap= fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4307 i                            cs=i                                        cap= fmt=Standard
+  TextBox    L=  5210 Cc                           cs=Cc                                       cap= fmt=Fixed
+  TextBox    L=  6571 t An                         cs=t An                                     cap= fmt=Fixed
+  TextBox    L=  7490 t Ka                         cs=t Ka                                     cap= fmt=Fixed
+  TextBox    L=  8376 Un                           cs=Un                                       cap= fmt=Fixed
+  TextBox    L=  2387 Position                     cs=Position                                 cap= fmt=
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnGruppe
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage Group fmt=
+  CommandButton L=  8163 Hauptmenue                   cs=                                         cap=Menue fmt=
+  CommandButton L= 10091 Befehl89                     cs=                                         cap=Standardized\015\012Voltage fmt=
+  Label      L=  5230 Bezeichnungsfeld101          cs=                                         cap=Membrane Type fmt=
+  Label      L=  2040 Bezeichnungsfeld104          cs=                                         cap=Group fmt=
+  Label      L=  3312 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4245 Bezeichnungsfeld106          cs=                                         cap=Number fmt=
+  Label      L=  6931 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  TextBox    L= 10318 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5329 Bezeichnungsfeld66           cs=                                         cap=Membrane Type fmt=
+  Label      L=  2025 Bezeichnungsfeld92           cs=                                         cap=Group fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4260 Bezeichnungsfeld94           cs=                                         cap=Number fmt=
+  Label      L=  6916 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  TextBox    L=  2154 Elektrolyseur                cs=Gruppe                                   cap= fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4322 i                            cs=Anzahl von Element Nr                    cap= fmt=Standard
+  TextBox    L=  5329 Cc                           cs=Membrantyp                               cap= fmt=Fixed
+  TextBox    L=  6916 Un                           cs=Un Mittel                                cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnGruppe2
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage all Groups fmt=
+  CommandButton L=  8163 Hauptmenue                   cs=                                         cap=Menue fmt=
+  CommandButton L= 10091 Befehl89                     cs=                                         cap=Standardized\015\012Voltage fmt=
+  Label      L=  5230 Bezeichnungsfeld101          cs=                                         cap=Membrane Type fmt=
+  Label      L=  2040 Bezeichnungsfeld104          cs=                                         cap=Group fmt=
+  Label      L=  3312 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4245 Bezeichnungsfeld106          cs=                                         cap=Number fmt=
+  Label      L=  6931 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  Label      L=   226 Bezeichnungsfeld110          cs=                                         cap=Basis: Table Un Gruppen fmt=
+  TextBox    L= 10318 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5329 Bezeichnungsfeld66           cs=                                         cap=Membrane Type fmt=
+  Label      L=  2025 Bezeichnungsfeld92           cs=                                         cap=Group fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4260 Bezeichnungsfeld94           cs=                                         cap=Number fmt=
+  Label      L=  6916 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  TextBox    L=  2154 Elektrolyseur                cs=Gruppe                                   cap= fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4322 i                            cs=n                                        cap= fmt=Standard
+  TextBox    L=  5329 Cc                           cs=Membrantyp                               cap= fmt=Fixed
+  TextBox    L=  6916 Un                           cs=Un                                       cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleUnElektrolyseure
+  Label      L=   113 Text10                       cs=                                         cap=Electrolyser fmt=
+  Label      L=  1473 Text12                       cs=                                         cap=Date fmt=
+  Label      L=  2380 Text14                       cs=                                         cap=Time fmt=
+  Label      L=  2947 Text16                       cs=                                         cap= I total [kA] fmt=
+  Label      L=  3630 Text18                       cs=                                         cap=i\015\012[kA/m²] fmt=
+  Label      L=  4422 Text20                       cs=                                         cap=Cc [%] fmt=
+  Label      L=  4988 Text22                       cs=                                         cap=t An [°C] fmt=
+  Label      L=  5669 Text24                       cs=                                         cap=t Ka [°C] fmt=
+  Label      L=  6465 Text26                       cs=                                         cap=tm [°C] fmt=
+  Label      L=  7029 Text35                       cs=                                         cap=Um [V] fmt=
+  Label      L=  7710 Text37                       cs=                                         cap=Un [V] fmt=
+  CommandButton L= 10998 Schaltfläche67               cs=                                         cap=Standardized Voltage fmt=
+  Label      L=   120 Text8                        cs=                                         cap=Standarized Voltage Several Electrolysers fmt=
+  CommandButton L= 10998 Befehl73                     cs=                                         cap=Update Display fmt=
+  Label      L=   226 Bezeichnungsfeld76           cs=                                         cap=Basis: Tabelle Un Elektrolyseure fmt=
+  Label      L=   113 Text41                       cs=                                         cap=Electrolyser fmt=
+  Label      L=  1473 Text42                       cs=                                         cap=Date fmt=
+  Label      L=  2380 Text43                       cs=                                         cap=Time fmt=
+  Label      L=  2947 Text44                       cs=                                         cap= I total [kA] fmt=
+  Label      L=  3623 Text45                       cs=                                         cap=i [kA/m²] fmt=
+  Label      L=  4422 Text46                       cs=                                         cap=Cc [%] fmt=
+  Label      L=  4988 Text47                       cs=                                         cap=t An [°C] fmt=
+  Label      L=  5669 Text48                       cs=                                         cap=t Ka [°C] fmt=
+  Label      L=  6360 Text49                       cs=                                         cap=tm [°C] fmt=
+  Label      L=  7029 Text51                       cs=                                         cap=Um [V] fmt=
+  Label      L=  7710 Text52                       cs=                                         cap=Un [V] fmt=
+  TextBox    L=  8617 Feld66                       cs==Date()                                  cap= fmt=
+  TextBox    L=   113 Elektrolyseur                cs=Elektrolyseur                            cap= fmt=
+  TextBox    L=  1360 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  2380 Zeit                         cs=Zeit                                     cap= fmt=Short Time
+  TextBox    L=  3061 I Gesamt                     cs=I Gesamt                                 cap= fmt=Standard
+  TextBox    L=  3741 i                            cs=i                                        cap= fmt=
+  TextBox    L=  4308 Cc                           cs=Cc                                       cap= fmt=Standard
+  TextBox    L=  4988 t An                         cs=t An                                     cap= fmt=Standard
+  TextBox    L=  5669 t Ka                         cs=t Ka                                     cap= fmt=Standard
+  TextBox    L=  6349 tm                           cs=tm                                       cap= fmt=Standard
+  TextBox    L=  7029 Feld36                       cs=Mittelwert von Ui                        cap= fmt=Standard
+  TextBox    L=  7710 Feld38                       cs=Un                                       cap= fmt=Standard
+  TextBox    L=  8050 Feld80                       cs==\                                       cap= fmt=
+## frmTabelleUnMehrereGruppen
+  Label      L=   120 Text8                        cs=                                         cap=Standardized Voltage of Several Groups fmt=
+  CommandButton L= 10544 Hauptmenue                   cs=                                         cap=Update Display fmt=
+  CommandButton L= 10544 Befehl89                     cs=                                         cap=Standardized\015\012Voltage fmt=
+  Label      L=  5230 Bezeichnungsfeld101          cs=                                         cap=Membrane Type fmt=
+  Label      L=  2040 Bezeichnungsfeld104          cs=                                         cap=Group fmt=
+  Label      L=  3312 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  4245 Bezeichnungsfeld106          cs=                                         cap=Number fmt=
+  Label      L=  6931 Bezeichnungsfeld107          cs=                                         cap=Un [V] fmt=
+  Label      L=   226 Bezeichnungsfeld110          cs=                                         cap=Basis: Table Un all Elements per Electrolyzer fmt=
+  TextBox    L= 10318 Feld49                       cs==Date()                                  cap= fmt=
+  Label      L=  5329 Bezeichnungsfeld66           cs=                                         cap=Membrane Type fmt=
+  Label      L=  2025 Bezeichnungsfeld92           cs=                                         cap=Group fmt=
+  Label      L=  3297 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  Label      L=  4260 Bezeichnungsfeld94           cs=                                         cap=Number fmt=
+  Label      L=  6916 Bezeichnungsfeld100          cs=                                         cap=Un [V] fmt=
+  TextBox    L=  2154 Elektrolyseur                cs=Gruppe                                   cap= fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  4322 i                            cs=Anzahl von Element Nr                    cap= fmt=Standard
+  TextBox    L=  5329 Cc                           cs=Membrantyp                               cap= fmt=Fixed
+  TextBox    L=  6916 Un                           cs=Un Mittel                                cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=
+## frmTabelleCEElektrolyseurNaOH
+  Label      L=   120 Text8                        cs=                                         cap=Current Efficiency Electrolyzer fmt=
+  CommandButton L=  9070 Hauptmenue                   cs=                                         cap=Current Efficiency fmt=
+  Label      L=  4185 Bezeichnungsfeld101          cs=                                         cap=Electrolyser fmt=
+  Label      L=  3270 Bezeichnungsfeld105          cs=                                         cap=Date fmt=
+  Label      L=  6576 Bezeichnungsfeld109          cs=                                         cap=CE [%] fmt=
+  Label      L=   226 Bezeichnungsfeld114          cs=                                         cap=Basis: NaOH Production of Electrolyzer fmt=
+  Label      L=  4290 Bezeichnungsfeld66           cs=                                         cap=Electrolyzer fmt=
+  Label      L=  6555 Bezeichnungsfeld68           cs=                                         cap=CE [%] fmt=
+  Label      L=  3270 Bezeichnungsfeld93           cs=                                         cap=Date fmt=
+  TextBox    L=  3283 Datum                        cs=Datum                                    cap= fmt=Short Date
+  TextBox    L=  6571 t An                         cs=CE                                       cap= fmt=Fixed
+  TextBox    L=  4308 Text113                      cs=Elektrolyseur                            cap= fmt=Fixed
+  TextBox    L=  9637 Feld47                       cs==\                                       cap= fmt=

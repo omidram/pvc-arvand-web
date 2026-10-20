@@ -1,0 +1,601 @@
+Version =19
+VersionRequired =19
+Checksum =122771773
+Begin Form
+    AutoCenter = NotDefault
+    OrderByOn = NotDefault
+    GridX =5
+    GridY =5
+    Width =14173
+    ItemSuffix =173
+    Left =225
+    Top =1515
+    Right =14460
+    Bottom =8925
+    OrderBy ="qryKathodenrecoating.AnzRecoatings"
+    RecSrcDt = Begin
+        0xca1ace1a58b4e240
+    End
+    RecordSource ="qryKathodenrecoating"
+    Caption ="subfrmSuchergebnisRemembraning"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0xc60100006e040000960200006e040000000000006f5a0000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a6574203420506c75732028436f70792032290000000000 ,
+        0x0004010494004000037700060200090000000000000001000901580201000100 ,
+        0x5802040000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000006010000020000000000000000000000010040004d5355444f034850 ,
+        0x204c617365724a6574203420506c75730000000000000000000000000000e401 ,
+        0x0000000000003c0100000000040064000a000000
+    End
+    PrtDevNames = Begin
+        0x080011002d00000057494e53504f4f4c004850204c617365724a657420342050 ,
+        0x6c75732028436f7079203229005c5c53686c6e61615c73686c30313900000000 ,
+        0x00000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =465
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Width =570
+                    Height =465
+                    Name ="Text10"
+                    Caption ="Cell no."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3628
+                    Width =1125
+                    Height =450
+                    Name ="Text16"
+                    Caption ="No. of Recoatings"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2381
+                    Width =1125
+                    Height =465
+                    Name ="Text18"
+                    Caption ="Anode No."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =802
+                    Width =885
+                    Height =465
+                    Name ="Text24"
+                    Caption ="Electro-lyser"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1814
+                    Width =465
+                    Height =465
+                    Name ="Text26"
+                    Caption ="Pos."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6236
+                    Width =1260
+                    Height =450
+                    Name ="Text51"
+                    Caption ="No. of pass. Elements"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8844
+                    Width =1140
+                    Height =465
+                    Name ="Label123"
+                    Caption ="Total No. of Elements"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10091
+                    Width =1245
+                    Height =450
+                    Name ="Label122"
+                    Caption ="DOL in pass. Elements"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11451
+                    Width =1140
+                    Height =465
+                    Name ="Label137"
+                    Caption ="DOL in akt. Element"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12699
+                    Width =1005
+                    Height =465
+                    Name ="Label148"
+                    Caption ="Total DOL"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7596
+                    Width =1140
+                    Height =465
+                    Name ="Bezeichnungsfeld155"
+                    Caption ="No. of akt. Elements"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4875
+                    Width =1260
+                    Height =450
+                    Name ="Bezeichnungsfeld166"
+                    Caption ="Last Return Date"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1031
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =566
+                    Width =555
+                    Height =465
+                    Name ="Text76"
+                    Caption ="Cell no."
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3628
+                    Top =566
+                    Width =1131
+                    Height =465
+                    Name ="Text79"
+                    Caption ="No. of Recoatings"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2381
+                    Top =566
+                    Width =1125
+                    Height =465
+                    Name ="Text80"
+                    Caption ="Anode No."
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =802
+                    Top =566
+                    Width =900
+                    Height =465
+                    Name ="Text83"
+                    Caption ="Electro-lyser"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8844
+                    Top =566
+                    Width =1140
+                    Height =450
+                    Name ="Text88"
+                    Caption ="Total No. of Elements"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6236
+                    Top =566
+                    Width =1260
+                    Height =450
+                    Name ="Text89"
+                    Caption ="No. of pass. Elements"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10091
+                    Top =566
+                    Width =1245
+                    Height =450
+                    Name ="Label144"
+                    Caption ="DOL in pass. Elements"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11451
+                    Top =566
+                    Width =1140
+                    Height =465
+                    Name ="Label145"
+                    Caption ="DOL in akt. Element"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12699
+                    Top =566
+                    Width =1140
+                    Height =465
+                    Name ="Label149"
+                    Caption ="Total DOL"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7596
+                    Top =566
+                    Width =1140
+                    Height =465
+                    Name ="Bezeichnungsfeld156"
+                    Caption ="No. of akt. Elements"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1814
+                    Top =566
+                    Width =450
+                    Height =465
+                    Name ="Bezeichnungsfeld162"
+                    Caption ="Pos."
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4875
+                    Top =566
+                    Width =1260
+                    Height =450
+                    Name ="Bezeichnungsfeld167"
+                    Caption ="Last Return Date"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3628
+                    Width =1126
+                    ColumnWidth =1080
+                    TabIndex =3
+                    Name ="Membrane type"
+                    ControlSource ="AnzRecoatings"
+                    EventProcPrefix ="Membrane_type"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2381
+                    Width =1134
+                    ColumnWidth =1164
+                    TabIndex =2
+                    Name ="Membrane no."
+                    ControlSource ="Kathoden Nr"
+                    EventProcPrefix ="Membrane_no_"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Width =567
+                    ColumnWidth =756
+                    Name ="Cell no."
+                    ControlSource ="Element Nr"
+                    EventProcPrefix ="Cell_no_"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8844
+                    Width =1140
+                    TabIndex =5
+                    Name ="Reason for decommis."
+                    ControlSource ="ElementeGesamt"
+                    EventProcPrefix ="Reason_for_decommis_"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6236
+                    Width =1257
+                    TabIndex =4
+                    Name ="DOL"
+                    ControlSource ="ElementePassiv"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =802
+                    Width =899
+                    TabIndex =1
+                    Name ="Electrolyser"
+                    ControlSource ="Elektrolyseur"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10091
+                    Width =1245
+                    TabIndex =6
+                    Name ="Anode coating"
+                    ControlSource ="PassiveDOL"
+                    EventProcPrefix ="Anode_coating"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11451
+                    Width =1140
+                    TabIndex =7
+                    Name ="Anode electrode"
+                    ControlSource ="AktiveDOL"
+                    EventProcPrefix ="Anode_electrode"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12699
+                    Width =1125
+                    TabIndex =8
+                    Name ="Anode shell"
+                    ControlSource ="GesamtDOL"
+                    EventProcPrefix ="Anode_shell"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7596
+                    Width =1125
+                    TabIndex =9
+                    Name ="Text157"
+                    ControlSource ="ElementeAktiv"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1814
+                    Width =449
+                    TabIndex =10
+                    Name ="Text163"
+                    ControlSource ="Position"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4875
+                    Width =1257
+                    TabIndex =11
+                    Name ="Text168"
+                    ControlSource ="Max von Rücklieferdatum"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =453
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12245
+                    Top =113
+                    Width =1597
+                    Height =227
+                    Name ="Feld80"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+                Begin PageBreak
+                    OverlapFlags =85
+                    Name ="Seitenumbruch70"
+                End
+            End
+        End
+        Begin FormFooter
+            CanGrow = NotDefault
+            Height =2834
+            BackColor =12632256
+            Name ="Formularfuß2"
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    Left =121
+                    Top =1133
+                    Width =13710
+                    Height =1590
+                    Name ="subfrmSuchergebnisAnodenrecoatingDetails2"
+                    SourceObject ="Form.subfrmSuchergebnisKathodenrecoatingDetails2"
+                    LinkChildFields ="Kathoden Nr"
+                    LinkMasterFields ="Kathoden Nr"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =121
+                    Top =113
+                    Width =13710
+                    Height =900
+                    TabIndex =1
+                    Name ="subfrmSuchergebnisAnodenrecoatingDetails1"
+                    SourceObject ="Form.subfrmSuchergebnisKathodenrecoatingDetails1"
+                    LinkChildFields ="Kathodennummer"
+                    LinkMasterFields ="Kathoden Nr"
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        
+        Text10.Caption = "Elem. Nr."
+        Text24.Caption = "Elektro-lyseur"
+        Text26.Caption = "Pos."
+        Text18.Caption = "Kathoden Nr."
+        Text16.Caption = "Anzahl Recoatings"
+        Bezeichnungsfeld166.Caption = "Letztes Rück-lieferdatum"
+        Text51.Caption = "Anzahl pass. Elemente"
+        Bezeichnungsfeld155.Caption = "Anzahl akt. Elemente"
+        Label123.Caption = "Gesamtzahl Elemente"
+        Label122.Caption = "DOL in pass. Elementen"
+        Label137.Caption = "DOL in akt. Elementen"
+        Label148.Caption = "Gesamt DOL"
+          
+        Text76.Caption = "Elem. Nr."
+        Text83.Caption = "Elektro-lyseur"
+        Bezeichnungsfeld162.Caption = "Pos."
+        Text80.Caption = "Kathoden Nr."
+        Text79.Caption = "Anzahl Recoatings"
+        Bezeichnungsfeld167.Caption = "Letztes Rück-lieferdatum"
+        Text89.Caption = "Anzahl pass. Elemente"
+        Bezeichnungsfeld156.Caption = "Anzahl akt. Elemente"
+        Text88.Caption = "Gesamtzahl Elemente"
+        Label144.Caption = "DOL in pass. Elementen"
+        Label145.Caption = "DOL in akt. Elementen"
+        Label149.Caption = "Gesamt DOL"
+        
+    Else
+        Text10.Caption = "Cell No."
+        Text24.Caption = "Electro-lyser"
+        Text26.Caption = "Pos."
+        Text18.Caption = "Cathode No."
+        Text16.Caption = "No. of Recoatings"
+        Bezeichnungsfeld166.Caption = "Last Return Date"
+        Text51.Caption = "No. of Pass. Elements"
+        Bezeichnungsfeld155.Caption = "No.of Act. Elements"
+        Label123.Caption = "Toal No. of Elements"
+        Label122.Caption = "DOL in Pass. Elements"
+        Label137.Caption = "DOL in Act. Elements"
+        Label148.Caption = "Total DOL"
+        
+        Text76.Caption = "Cell No."
+        Text83.Caption = "Electro-lyser"
+        Text80.Caption = "Cathode No."
+        Text79.Caption = "No. of Recoatings"
+        Bezeichnungsfeld167.Caption = "Last Return Date"
+        Text89.Caption = "No. of Pass. Elements"
+        Bezeichnungsfeld156.Caption = "No. of Act. Elementes"
+        Text88.Caption = "Total No. of Elements"
+        Label144.Caption = "DOL in Pass. Elements"
+        Label145.Caption = "DOL in Act. Elements"
+        Label149.Caption = "Gesamt DOL"
+        
+      End If
+End Sub

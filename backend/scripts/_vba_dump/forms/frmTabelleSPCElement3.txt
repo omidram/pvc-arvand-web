@@ -1,0 +1,591 @@
+Version =19
+VersionRequired =19
+Checksum =122992735
+Begin Form
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =12585
+    ItemSuffix =104
+    Left =690
+    Top =-255
+    Right =13560
+    Bottom =7725
+    RecSrcDt = Begin
+        0x05ce8e7339d2e240
+    End
+    RecordSource ="qrySPCElement3"
+    Caption ="Analysedaten Anolyt"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c003402033f8002010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1605
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0x16084f4a2336a04db3ec0d65245b4430
+            End
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =7815
+                    Height =570
+                    FontSize =14
+                    Name ="Text8"
+                    Caption ="Specific Power Consumption Element"
+                    GUID = Begin
+                        0x1603fd07e24a2841aed959fc15c5c240
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3360
+                    Top =1365
+                    Width =1215
+                    Height =240
+                    Name ="Text10"
+                    Caption ="Position"
+                    GUID = Begin
+                        0x73d6ebf69e81c44bbd1dec0b77e3d541
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4658
+                    Top =1360
+                    Width =690
+                    Height =240
+                    Name ="Text12"
+                    Caption ="Date"
+                    GUID = Begin
+                        0x5bd56668cafbb547aabe1314c27ea7cc
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =5550
+                    Top =1360
+                    Width =825
+                    Height =240
+                    Name ="Text14"
+                    Caption ="i [kA/m²]"
+                    GUID = Begin
+                        0xadf0beb7aabd3e4ab448afb18e837630
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =6315
+                    Top =1360
+                    Width =1845
+                    Height =240
+                    Name ="Bezeichnungsfeld65"
+                    Caption ="SPC [kWh / t NaOH]"
+                    GUID = Begin
+                        0x0d0bb3392d757e40972abd3cc532b762
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =8163
+                    Top =1360
+                    Width =825
+                    Height =240
+                    Name ="Bezeichnungsfeld67"
+                    Caption ="Un [V]"
+                    GUID = Begin
+                        0xc08bf6ca94eba34bb186c99d62bfb642
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9070
+                    Top =1360
+                    Width =855
+                    Height =240
+                    Name ="Bezeichnungsfeld86"
+                    Caption ="CE [%]"
+                    GUID = Begin
+                        0xe97c977849517446927134084e22c0b6
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =9977
+                    Top =113
+                    Width =2061
+                    Height =576
+                    Name ="Befehl89"
+                    Caption ="Power Consumption"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x4e9400823160ed4fa0736544e39f3fba
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =113
+                    Top =793
+                    Width =7815
+                    Height =360
+                    TabIndex =1
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                    GUID = Begin
+                        0x1ccc88fdcaea664481b9c5ee5b7328d0
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =195
+                    Top =450
+                    Width =7665
+                    Height =225
+                    Name ="Bezeichnungsfeld100"
+                    Caption ="Basis: Table Un all Elements per Electrolyzer , Anodic Balance of Element"
+                    GUID = Begin
+                        0x9fb85901923e2f49a545908c16ea2dd6
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1680
+                    Top =1365
+                    Width =1605
+                    Height =240
+                    Name ="Label101"
+                    Caption ="Electrolyzer"
+                    GUID = Begin
+                        0xc6498e2af094544a84047da36e5e0594
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1147
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            GUID = Begin
+                0x49ed1fa0b133db47a4524e3c7d44e937
+            End
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10318
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                    GUID = Begin
+                        0xb5636c24336f49458718f169a9ba36ae
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6390
+                    Top =900
+                    Width =1725
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="SPC [kWh/t NaOH]"
+                    GUID = Begin
+                        0x4c71fa8ee7d1a04eab66c64ab3673dfb
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8163
+                    Top =907
+                    Width =825
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Un [V]"
+                    GUID = Begin
+                        0xe20609e4955fc941b703902c657a3af6
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9070
+                    Top =907
+                    Width =825
+                    Height =240
+                    Name ="Bezeichnungsfeld85"
+                    Caption ="CE [%]"
+                    GUID = Begin
+                        0x19d6e512edef6342b884eda884c2150e
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3240
+                    Top =900
+                    Width =1215
+                    Height =240
+                    Name ="Bezeichnungsfeld92"
+                    Caption ="Position"
+                    GUID = Begin
+                        0xa126431d4d973c4fab40c341b1c2701d
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4523
+                    Top =907
+                    Width =915
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Date"
+                    GUID = Begin
+                        0x9b42f3b47f05bd47b543a540d9529c34
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5550
+                    Top =900
+                    Width =825
+                    Height =240
+                    Name ="Bezeichnungsfeld94"
+                    Caption ="i (kA/m²)"
+                    GUID = Begin
+                        0xc20d79824db01b45b8e8652771c88d7e
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1680
+                    Top =900
+                    Width =1485
+                    Height =240
+                    Name ="Label102"
+                    Caption ="Electrolyzer"
+                    GUID = Begin
+                        0x9e64dc59ea0f874b8c01fbac2e8e691a
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x56c3e097ec43ee41a2dd4ef0dbfa2d2e
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3288
+                    Width =1155
+                    Name ="Elektrolyseur"
+                    ControlSource ="Position"
+                    GUID = Begin
+                        0x54e4137ff2e46143bdc73ad28b0eeb98
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4544
+                    Width =870
+                    TabIndex =1
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0x117ff47b3732ba4e99f8c2fd4ca47c64
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5568
+                    Width =810
+                    TabIndex =2
+                    Name ="i"
+                    ControlSource ="i"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x773ab5ae060813478a1a7478cabdfdf4
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6471
+                    Width =1590
+                    TabIndex =3
+                    Name ="VAnolyt"
+                    ControlSource ="Energieverbrauch"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0xf82dddc261c9f24cbb57f8e4e67a0288
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8163
+                    Width =780
+                    TabIndex =4
+                    Name ="Feld27"
+                    ControlSource ="Un"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x7b0fc6c1ae0d7146ae7cfe669b439c16
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9070
+                    Width =795
+                    TabIndex =5
+                    Name ="Text64"
+                    ControlSource ="CE"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0x0a742f808bb50f46adb9968a412e7603
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1700
+                    Width =1485
+                    TabIndex =6
+                    Name ="Text103"
+                    ControlSource ="Elektrolyseur"
+                    GUID = Begin
+                        0x3ab69204f9b12344a0ec53afc1a76fdd
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            GUID = Begin
+                0x460ca98478b91e4580125e30d40f544e
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =9751
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                    GUID = Begin
+                        0x53b696e313d7c64a816aaa9e7af19a82
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0xb247550695983342b1ab85e21b93592b
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl89_Click()
+    DoCmd.OpenForm "Energieverbrauch"
+    DoCmd.Close acForm, "frmTabelleSPCElement3"
+
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache = 1 Then
+        Text8.Caption = "Spez. Energieverbrauch Element"
+        Bezeichnungsfeld100.Caption = "Basis: Tabelle Un Individuelles Element, Anodische Bilanz Element"
+        Befehl89.Caption = "Energieverbrauch"
+        Label101.Caption = "Elektrolyseur"
+        Label102.Caption = "Elektrolyseur"
+        Text10.Caption = "Position"
+        Bezeichnungsfeld92.Caption = "Position"
+        Text12.Caption = "Datum"
+        Bezeichnungsfeld93.Caption = "Datum"
+        Text14.Caption = "i [kA/m²]"
+        Bezeichnungsfeld94.Caption = "i [kA/m²]"
+        Bezeichnungsfeld65.Caption = "SPC [kWh/t NaOH]"
+        Bezeichnungsfeld66.Caption = "SPC [kWh/t NaOH]"
+        Bezeichnungsfeld67.Caption = "Un [V]"
+        Bezeichnungsfeld68.Caption = "Un [V]"
+        Bezeichnungsfeld86.Caption = "CE [%]"
+        Bezeichnungsfeld85.Caption = "CE [%]"
+     
+     Else
+        Text8.Caption = "Specific Power Consumption Element"
+        Bezeichnungsfeld100.Caption = "Basis: Table Un Individual Element, Anodic Balance Element"
+        Befehl89.Caption = "Power Consumption"
+        Label101.Caption = "Electrolyzer"
+        Label102.Caption = "Electrolyzer"
+        Text10.Caption = "Position"
+        Bezeichnungsfeld92.Caption = "Position"
+        Text12.Caption = "Date"
+        Bezeichnungsfeld93.Caption = "Date"
+        Text14.Caption = "i [kA/m²]"
+        Bezeichnungsfeld94.Caption = "i [kA/m²]"
+        Bezeichnungsfeld65.Caption = "SPC [kWh/t NaOH]"
+        Bezeichnungsfeld66.Caption = "SPC [kWh/t NaOH]"
+        Bezeichnungsfeld67.Caption = "Un [V]"
+        Bezeichnungsfeld68.Caption = "Un [V]"
+        Bezeichnungsfeld86.Caption = "CE [%]"
+        Bezeichnungsfeld85.Caption = "CE [%]"
+     End If
+
+End Sub

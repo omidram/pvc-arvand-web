@@ -1,0 +1,4 @@
+SELECT DISTINCTROW Montage.[Element Nr], Montage.Elektrolyseur, Montage.Generation, Montage.Position, Montage.[Anoden Nr], Montage.[Kathoden Nr], Montage.[Membran Nr], Montage.Membrantyp, Montage.Gruppe, Montage.[Einschalt Datum], Montage.[Ausschalt Datum], [Ausschalt Datum]-[Einschalt Datum] AS GesamtDOL, IIf(IsNull([Ausschalt Datum]),Date()-[Einschalt Datum],Null) AS AktuelleDOL, Montage.Abschaltgrund, Montage.[Anode Coating], Montage.[Anode Electrode], Montage.[Anode Shell], Montage.[Cathode Coating], Montage.[Cathode Electrode], Montage.[Cathode Shell], Montage.[Info Membrane], Montage.Remarks, Montage.[Montage Datum], Montage.[Demontage Datum], Montage.[Elektroden Abstand]
+FROM Montage
+WHERE (((Montage.[Anoden Nr]) In (SELECT [Anoden Nr] FROM [Montage] As Tmp GROUP BY [Anoden Nr] HAVING Count(*)>1 )))
+ORDER BY Montage.[Anoden Nr];

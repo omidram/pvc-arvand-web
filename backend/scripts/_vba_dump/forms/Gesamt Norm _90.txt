@@ -1,0 +1,752 @@
+Version =17
+VersionRequired =17
+Checksum =-122992705
+Begin Form
+    OrderByOn = NotDefault
+    GridX =5
+    GridY =5
+    Width =11905
+    ItemSuffix =65
+    Top =390
+    Right =11520
+    Bottom =6495
+    Filter ="(([Norm (Um)>90].Position=87))"
+    OrderBy ="[Norm (Um)>90].Datum"
+    RecSrcDt = Begin
+        0x6d613e204d87e140
+    End
+    RecordSource ="Norm (Um)>90"
+    Caption ="Master"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000812e0000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x54656b74726f6e69782033343000000000000000000000000000000000000000 ,
+        0x000403049400b8021f6f8001020009009a0b33086400010000012c0102000100 ,
+        0x2c01020000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000008000000e40c000060090000000000000000000001000000 ,
+        0x02000000000000000000000000000000000000007f92a06ed4b8e5cf73dd1500 ,
+        0x0200010000000100010001000000020002000100580200000000000000000000 ,
+        0x00006400000000000100ffff0100ffff0000ffff0300ffff0000ffff0000ffff ,
+        0x0000ffff0000ffff0100ffff0000ffff0100ffff0100ffff0000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000ffff437573746f6d ,
+        0x2070616765203100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000090420000 ,
+        0x9042000000000000437573746f6d207061676520320000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000904200009042000000000000437573746f6d20706167 ,
+        0x6520330000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000009042000090420000 ,
+        0x000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x080011001f00010057494e53504f4f4c0054656b74726f6e697820333430005c ,
+        0x5c53484c4e41415c53484c303034000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =1035
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =210
+                    Top =150
+                    Width =2970
+                    Height =405
+                    FontSize =14
+                    ForeColor =255
+                    Name ="Text7"
+                    Caption ="Elements > 90°"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =195
+                    Top =795
+                    Width =1185
+                    Height =240
+                    Name ="Text10"
+                    Caption ="Electrolyser"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3061
+                    Top =793
+                    Width =480
+                    Height =240
+                    Name ="Text14"
+                    Caption ="Time"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3628
+                    Top =566
+                    Width =795
+                    Height =465
+                    Name ="Text16"
+                    Caption ="     I     total"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4535
+                    Top =793
+                    Width =300
+                    Height =240
+                    Name ="Text18"
+                    Caption ="i"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5102
+                    Top =793
+                    Width =375
+                    Height =240
+                    Name ="Text20"
+                    Caption ="Cc"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5669
+                    Top =793
+                    Width =495
+                    Height =240
+                    Name ="Text22"
+                    Caption ="t An"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6349
+                    Top =793
+                    Width =495
+                    Height =240
+                    Name ="Text24"
+                    Caption ="t Ka"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7143
+                    Top =793
+                    Width =345
+                    Height =240
+                    Name ="Text26"
+                    Caption ="tm"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7823
+                    Top =793
+                    Width =390
+                    Height =240
+                    Name ="Text28"
+                    Caption ="Uo"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8503
+                    Top =793
+                    Width =330
+                    Height =240
+                    Name ="Text32"
+                    Caption ="Ui"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9183
+                    Top =793
+                    Width =390
+                    Height =240
+                    Name ="Text35"
+                    Caption ="Um"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9863
+                    Top =793
+                    Width =390
+                    Height =240
+                    Name ="Text37"
+                    Caption ="Un"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10543
+                    Top =793
+                    Width =390
+                    Height =240
+                    Name ="Text39"
+                    Caption ="ti"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    TextFontFamily =0
+                    Left =9863
+                    Top =226
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    BackColor =12632256
+                    Name ="Feld28"
+                    ControlSource ="=Date()"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =5669
+                    Top =113
+                    Height =576
+                    TabIndex =1
+                    Name ="Schaltfläche41"
+                    Caption ="Standardized\015\012Voltage"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2154
+                    Top =793
+                    Width =705
+                    Height =240
+                    Name ="Text12"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1474
+                    Top =793
+                    Width =465
+                    Height =240
+                    Name ="Text30"
+                    Caption ="Pos"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =920
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            Begin
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =678
+                    Width =1140
+                    Height =240
+                    Name ="Text42"
+                    Caption ="Electrolyser"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2154
+                    Top =680
+                    Width =705
+                    Height =240
+                    Name ="Text43"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3061
+                    Top =680
+                    Width =495
+                    Height =240
+                    Name ="Text44"
+                    Caption ="Time"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3628
+                    Top =453
+                    Width =795
+                    Height =465
+                    Name ="Text45"
+                    Caption ="    I    total"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4535
+                    Top =680
+                    Width =300
+                    Height =240
+                    Name ="Text46"
+                    Caption ="i"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5102
+                    Top =680
+                    Width =375
+                    Height =240
+                    Name ="Text47"
+                    Caption ="Cc"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5669
+                    Top =680
+                    Width =495
+                    Height =240
+                    Name ="Text48"
+                    Caption ="t An"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6349
+                    Top =680
+                    Width =495
+                    Height =240
+                    Name ="Text49"
+                    Caption ="t Ka"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7143
+                    Top =680
+                    Width =345
+                    Height =240
+                    Name ="Text50"
+                    Caption ="tm"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7823
+                    Top =680
+                    Width =390
+                    Height =240
+                    Name ="Text51"
+                    Caption ="Uo"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1474
+                    Top =680
+                    Width =465
+                    Height =240
+                    Name ="Text52"
+                    Caption ="Pos"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8503
+                    Top =678
+                    Width =330
+                    Height =240
+                    Name ="Text53"
+                    Caption ="Ui"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9183
+                    Top =678
+                    Width =390
+                    Height =240
+                    Name ="Text54"
+                    Caption ="Um"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9863
+                    Top =678
+                    Width =390
+                    Height =240
+                    Name ="Text55"
+                    Caption ="Un"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10543
+                    Top =678
+                    Width =390
+                    Height =240
+                    Name ="Text56"
+                    Caption ="ti"
+                End
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    TextFontFamily =0
+                    Left =9863
+                    Top =226
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    BackColor =12632256
+                    Name ="Feld58"
+                    ControlSource ="=Date()"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Width =1140
+                    ColumnWidth =1245
+                    Name ="Elektrolyseur"
+                    ControlSource ="Elektrolyseur"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2040
+                    Width =870
+                    ColumnWidth =810
+                    TabIndex =1
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3061
+                    Width =570
+                    ColumnWidth =750
+                    TabIndex =2
+                    Name ="Zeit"
+                    ControlSource ="Zeit"
+                    Format ="Short Time"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3741
+                    Width =573
+                    ColumnWidth =945
+                    TabIndex =3
+                    Name ="I Gesamt"
+                    ControlSource ="I Gesamt"
+                    Format ="Standard"
+                    EventProcPrefix ="I_Gesamt"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4422
+                    Width =465
+                    ColumnWidth =570
+                    TabIndex =4
+                    Name ="i"
+                    ControlSource ="i"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4988
+                    Width =573
+                    ColumnWidth =630
+                    TabIndex =5
+                    Name ="Cc"
+                    ControlSource ="Cc"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5669
+                    Width =558
+                    ColumnWidth =675
+                    TabIndex =6
+                    Name ="t An"
+                    ControlSource ="t An"
+                    Format ="Standard"
+                    EventProcPrefix ="t_An"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6349
+                    Width =573
+                    ColumnWidth =675
+                    TabIndex =7
+                    Name ="t Ka"
+                    ControlSource ="t Ka"
+                    Format ="Standard"
+                    EventProcPrefix ="t_Ka"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7029
+                    Width =585
+                    ColumnWidth =690
+                    TabIndex =8
+                    Name ="tm"
+                    ControlSource ="tm"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7710
+                    Width =558
+                    ColumnWidth =555
+                    TabIndex =9
+                    Name ="Uo"
+                    ControlSource ="Uo"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8390
+                    Width =573
+                    ColumnWidth =630
+                    TabIndex =10
+                    Name ="Ui"
+                    ControlSource ="Ui"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9070
+                    Width =558
+                    TabIndex =11
+                    Name ="Feld36"
+                    ControlSource ="Mittelwert von Ui"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9750
+                    Width =558
+                    TabIndex =12
+                    Name ="Feld38"
+                    ControlSource ="Un"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10430
+                    Width =693
+                    TabIndex =13
+                    BackColor =255
+                    Name ="Feld40"
+                    ControlSource ="ti"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1474
+                    Width =453
+                    ColumnWidth =390
+                    TabIndex =14
+                    Name ="Position"
+                    ControlSource ="Position"
+                    Format ="Standard"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9410
+                    Top =113
+                    Width =1747
+                    Height =227
+                    Name ="Feld80"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Schaltfläche41_Click()
+On Error GoTo Err_Schaltfläche41_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Betriebsdaten"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche41_Click:
+    Exit Sub
+
+Err_Schaltfläche41_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche41_Click
+    
+End Sub
+
+Private Sub Befehl61_Click()
+On Error GoTo Err_Befehl61_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Gesamt Norm >90"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Befehl61_Click:
+    Exit Sub
+
+Err_Befehl61_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl61_Click
+    
+End Sub

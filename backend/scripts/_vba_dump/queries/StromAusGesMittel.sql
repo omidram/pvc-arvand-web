@@ -1,0 +1,2 @@
+SELECT Last(StromAusGes.Datum) AS [LetzterWert von Datum], Avg(StromAusGes.VAnolyt) AS [Mittelwert von VAnolyt], Avg(StromAusGes.[µNaClO3]) AS [Mittelwert von µNaClO3], Avg([StromAusGes]![µNaOCl]) AS [Mittelwert von µNaOCl], Avg(StromAusGes.[µAlkali]) AS [Mittelwert von µAlkali], Avg(StromAusGes.[µNa2CO3]) AS [Mittelwert von µNa2CO3], Avg(StromAusGes.[µO2]) AS [Mittelwert von µO2], Avg(StromAusGes.[µNaOH]) AS [Mittelwert von µNaOH]
+FROM StromAusGes;

@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>سامانه مدیریت سل اروند</title>
+<style>
+  @font-face { font-family: Nazanin; src: url("fonts/Nazanin.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: Nazanin; src: url("fonts/Nazanin-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+  @font-face { font-family: Vazir; src: url("fonts/Vazir.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+  :root {
+    --ink: #14262c;
+    --ink-soft: #3d4f54;
+    --teal: #1b645f;
+    --teal-deep: #0e3d3a;
+    --teal-soft: #e6f2f0;
+    --copper: #9a6840;
+    --copper-soft: #f4e6d4;
+    --paper: #f4efe6;
+    --paper-2: #ebe4d6;
+    --white: #fffcf8;
+    --line: #ddd4c6;
+    --danger: #8d3d38;
+    --ok: #1f6b45;
+    --nav: 232px;
+    --shadow: 0 18px 50px rgba(20, 38, 44, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Vazir, Tahoma, sans-serif;
+    font-size: 17px;
+    line-height: 1.85;
+  }
+  button, input { font-family: inherit; }
+  a { color: var(--teal); }
+  .progress {
+    position: fixed; top: 0; right: 0; left: 0; height: 3px; z-index: 40;
+    background: transparent;
+  }
+  .progress > span {
+    display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--copper), var(--teal));
+  }
+  nav {
+    position: fixed; top: 0; right: 0; bottom: 0; width: var(--nav);
+    padding: 28px 18px 24px;
+    background: var(--ink);
+    color: #efe7da;
+    z-index: 30;
+    overflow: auto;
+  }
+  nav .brand {
+    font-size: 20px;
+    line-height: 1.35;
+    margin: 0 0 6px;
+  }
+  nav .brand small { display: block; font-family: Vazir, sans-serif; font-size: 12px; color: #c9bba6; font-weight: 400; margin-top: 4px; }
+  nav ol { list-style: none; margin: 22px 0 0; padding: 0; }
+  nav a {
+    display: block;
+    color: #d9d0c3;
+    text-decoration: none;
+    font-size: 13px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    line-height: 1.45;
+  }
+  nav a.active, nav a:hover { background: rgba(255,255,255,.08); color: white; }
+  nav a.active { box-shadow: inset -3px 0 0 var(--copper); }
+  main { margin-right: var(--nav); }
+  section { padding: 88px 72px 72px; position: relative; min-height: 100vh; background: var(--paper); }
+  .cubes { opacity: .55; }
+  .prose p { font-size: 18.5px; line-height: 2.05; max-width: 48em; }
+  .band { background: var(--ink); color: #f6efe4; }
+  .band h2 { color: white; }
+  .band .lead, .band .prose p { color: #e7d7c3; }
+  .flow { margin-top: 28px; }
+  .flow p { color: var(--ink-soft); margin: 8px 0 0; }
+  .dash { stroke-dasharray: 7 9; animation: march 16s linear infinite; }
+  @keyframes march { to { stroke-dashoffset: -280; } }
+  .timeline { margin-top: 32px; position: relative; display: grid; gap: 4px; }
+  .timeline::before {
+    content: ""; position: absolute; top: 8px; bottom: 8px; right: 23px; width: 2px;
+    background: linear-gradient(var(--copper), var(--teal));
+  }
+  .timeline article { display: grid; grid-template-columns: 72px 1fr; gap: 16px; padding-bottom: 18px; }
+  .timeline .n {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--teal); color: white;
+    display: grid; place-items: center; font-weight: 700; position: relative; z-index: 1;
+  }
+  body::before {
+    content: ""; pointer-events: none; position: fixed; inset: 0; z-index: 4; opacity: .04;
+    background-image: radial-gradient(rgba(20,38,44,.55) .6px, transparent .6px);
+    background-size: 3px 3px;
+  }
+  .world { position: fixed; inset: 0; z-index: 0; pointer-events: none; perspective: 1100px; overflow: hidden; }
+  .floor {
+    position: absolute; left: -30%; right: -30%; bottom: -8%; height: 62%;
+    background:
+      linear-gradient(to top, rgba(14,61,58,.55), transparent 70%),
+      repeating-linear-gradient(90deg, rgba(231,192,138,.28) 0 1px, transparent 1px 84px),
+      repeating-linear-gradient(0deg, rgba(47,143,134,.22) 0 1px, transparent 1px 54px);
+    transform: rotateX(72deg);
+    transform-origin: center bottom;
+    animation: glide 36s linear infinite;
+  }
+  .cubes { display: none; }
+  .cubes i {
+    position: absolute; width: 28px; height: 18px; border-radius: 3px;
+    background: linear-gradient(180deg, #2f8f86, #0e3d3a);
+    box-shadow: 0 8px 0 #071816, 0 0 12px rgba(47,143,134,.45);
+    animation: pulse 4.5s ease-in-out infinite;
+  }
+  .cubes i:nth-child(3n) { background: #3d342c; box-shadow: 0 8px 0 #1a1612; animation: none; opacity: .55; }
+  .cubes i:nth-child(5n) { background: linear-gradient(180deg, #e7c08a, #8d5a34); }
+  @keyframes glide { 50% { background-position: 80px 40px, 40px 0, 0 30px; } }
+  @keyframes pulse { 50% { filter: brightness(1.35); } }
+  main, .progress { position: relative; z-index: 5; }
+  .shot { transition: transform .45s ease, box-shadow .45s ease; transform: perspective(1400px) rotateY(5deg) rotateX(2deg); }
+  .shot:hover { transform: perspective(1400px) rotateY(0deg) translateY(-6px); }
+  section + section { border-top: 1px solid var(--line); }
+  .kicker {
+    color: var(--copper);
+    font-size: 13px;
+    letter-spacing: 0;
+    margin: 0 0 8px;
+    font-weight: 700;
+  }
+  h1, h2, h3, .idx, nav .brand, .choices strong, .steps strong, .role strong, .paths strong {
+    font-family: Vazir, Tahoma, sans-serif;
+    font-weight: 700;
+  }
+  h1, h2, h3 { line-height: 1.45; margin: 0; }
+  h1 { font-size: 58px; }
+  h2 { font-size: 34px; max-width: 22em; }
+  h3 { font-size: 22px; }
+  .en { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+  .lead { font-size: 20px; max-width: 40em; color: var(--ink-soft); margin: 16px 0 0; }
+  .hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 48px;
+    align-items: center;
+    background:
+      radial-gradient(900px 420px at 10% 80%, rgba(27,100,95,.16), transparent 60%),
+      linear-gradient(180deg, #f7f3eb 0%, #efe6d6 100%);
+  }
+  .hero p.sub { font-size: 22px; max-width: 16em; }
+  .meta { margin-top: 28px; color: var(--ink-soft); font-size: 14px; }
+  .hall {
+    height: 520px;
+    border-radius: 28px;
+    background: linear-gradient(180deg, #0d2428 0%, #16383a 55%, #0b1c20 100%);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .hall::before {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,220,160,.18), transparent);
+    transform: translateX(-40%);
+    animation: sweep 9s ease-in-out infinite;
+  }
+  .cells {
+    position: absolute; inset: 70px 36px 80px;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: 46px;
+    gap: 8px;
+  }
+  .cells i {
+    display: block;
+    border-radius: 4px;
+    background: linear-gradient(180deg, #2f8f86, #174e4c);
+    box-shadow: inset 0 0 0 1px rgba(232, 196, 150, .35);
+    opacity: .85;
+  }
+  .cells i:nth-child(3n) { opacity: .45; background: #3d342c; }
+  .cells i:nth-child(7n) { background: linear-gradient(180deg, #d7a15a, #8a5a30); }
+  .bus {
+    position: absolute; left: 28px; right: 28px; height: 8px; border-radius: 99px;
+    background: linear-gradient(90deg, #8d5a34, #e7c08a, #8d5a34);
+  }
+  .bus.top { top: 36px; }
+  .bus.bot { bottom: 36px; }
+  .hall figcaption {
+    position: absolute; bottom: 8px; left: 20px; right: 20px;
+    color: #e7d7c3; font-size: 12px; text-align: center;
+  }
+  @keyframes sweep { 50% { transform: translateX(40%); } }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 32px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 28px; }
+  .card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 22px 22px 18px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.6);
+  }
+  .card h3 { margin-bottom: 8px; }
+  .card p { margin: 0; color: var(--ink-soft); }
+  .card .tag {
+    display: inline-block; margin-bottom: 8px;
+    background: var(--teal-soft); color: var(--teal-deep);
+    border-radius: 999px; padding: 2px 10px; font-size: 12px;
+  }
+  .shot {
+    margin: 0;
+    background: var(--white);
+    border-radius: 22px;
+    padding: 12px 12px 16px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .shot img { width: 100%; border-radius: 14px; display: block; background: #ddd; }
+  .shot figcaption { margin: 12px 8px 0; color: var(--ink-soft); font-size: 14px; }
+  .domains { margin-top: 28px; display: grid; gap: 14px; }
+  .domain {
+    display: grid;
+    grid-template-columns: 92px 1fr 1.15fr;
+    gap: 18px;
+    align-items: start;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 18px 20px;
+  }
+  .domain .idx {
+    font-size: 34px; color: var(--teal); line-height: 1;
+  }
+  .domain h3 { font-size: 24px; }
+  .domain p { margin: 6px 0 0; color: var(--ink-soft); }
+  .benefit { color: var(--ink) !important; }
+  .splits { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-top: 28px; }
+  .split {
+    min-height: 280px;
+    border-radius: 20px;
+    padding: 22px;
+    background: var(--ink);
+    color: #f6efe4;
+  }
+  .split:nth-child(2) { background: #3d342c; }
+  .split:nth-child(3) { background: var(--teal-deep); }
+  .split h3 { color: #f3e0c4; margin-bottom: 10px; }
+  .split p { margin: 0; color: #efe6da; }
+  .fork { display: grid; grid-template-columns: 280px 1fr; gap: 22px; margin-top: 28px; align-items: start; }
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choices button, .steps button {
+    text-align: right;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    color: var(--ink);
+    transition: .2s border, .2s background, .2s transform;
+  }
+  .choices button strong, .steps button strong { display: block; font-size: 22px; }
+  .choices button span, .steps button span { color: var(--ink-soft); font-size: 13px; }
+  .choices button.on, .steps button.on {
+    border-color: var(--teal);
+    background: var(--teal-soft);
+    transform: translateX(-4px);
+  }
+  .detail {
+    background: var(--white);
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    padding: 26px 28px 22px;
+    min-height: 280px;
+  }
+  .detail h3 { margin-bottom: 8px; }
+  .detail .who {
+    display: inline-block; background: var(--copper-soft); color: #6a4324;
+    border-radius: 999px; padding: 2px 10px; font-size: 13px; margin-bottom: 10px;
+  }
+  .detail ul { margin: 10px 0 0; padding: 0 18px 0 0; }
+  .detail li { margin: 6px 0; }
+  .rail { margin-top: 22px; display: grid; grid-template-columns: 300px 1fr; gap: 22px; }
+  .steps { display: flex; flex-direction: column; gap: 8px; }
+  .owner-line {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px;
+  }
+  .owner-line b {
+    background: var(--paper-2); border-radius: 999px; padding: 4px 10px; font-weight: 400; font-size: 13px;
+  }
+  .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 26px; }
+  .role {
+    display: grid; grid-template-columns: 168px 1fr; gap: 12px;
+    background: var(--white); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px;
+  }
+  .role strong { font-size: 20px; color: var(--teal-deep); }
+  .role p { margin: 0; color: var(--ink-soft); font-size: 14.5px; }
+  .role.wide { grid-column: 1 / -1; background: var(--ink); }
+  .role.wide strong, .role.wide p { color: #f4efe6; }
+  .role.wide p { color: #e4d5c2; }
+  .paths { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 24px; }
+  .paths a {
+    display: block; text-decoration: none; color: inherit;
+    background: var(--white); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px;
+  }
+  .paths a:hover { border-color: var(--teal); }
+  .paths strong { display: block; font-size: 20px; }
+  .paths span { color: var(--ink-soft); font-size: 14px; }
+  .close {
+    min-height: 80vh;
+    background: var(--ink);
+    color: #f6efe4;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .close h2 { font-size: 56px; max-width: 12em; color: white; }
+  .close p { max-width: 28em; font-size: 22px; color: #e7d7c3; }
+  .reveal { opacity: 0; transform: translateY(18px); animation: rise .7s ease forwards; }
+  .reveal.d2 { animation-delay: .12s; }
+  .reveal.d3 { animation-delay: .24s; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { animation: none; opacity: 1; transform: none; }
+    .hall::before, .dash, .floor, .cubes i { animation: none; }
+    .shot { transform: none; }
+    html { scroll-behavior: auto; }
+  }
+  @media (max-width: 1100px) {
+    nav { position: sticky; top: 0; width: auto; height: auto; display: flex; gap: 12px; align-items: center; }
+    nav ol { display: flex; gap: 4px; margin: 0; overflow: auto; }
+    nav a { white-space: nowrap; }
+    main { margin-right: 0; }
+    section, .hero { padding: 32px 20px; }
+    .hero, .grid-2, .grid-3, .fork, .rail, .roles, .paths, .splits, .domain { grid-template-columns: 1fr; }
+    h1 { font-size: 46px; }
+    h2 { font-size: 32px; }
+    .role { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="world" aria-hidden="true"><div class="floor"></div><div class="cubes" id="cubes"></div></div>
+<div class="progress" aria-hidden="true"><span id="bar"></span></div>
+<nav>
+  <p class="brand">سامانه مدیریت سل<small>Arvand Cell Management</small></p>
+  <ol id="toc"></ol>
+</nav>
+<main>
+  <section class="hero" id="open" data-label="شروع">
+    <div>
+      <p class="kicker reveal">پتروشیمی اروند · واحد کلر–آلکالی</p>
+      <h1 class="reveal">سامانه مدیریت سل<br>اروند</h1>
+      <p class="lead reveal d2">این روایت، معرفی یک جدول نیست. شرح این است که یک سل چگونه در زنجیره الکترولایزر می‌نشیند، چطور از سه قطعه ساخته می‌شود، و وقتی باید از مدار بیرون بیاید تصمیمش دست چه کسی می‌ماند تا دوباره به سرویس برگردد یا قطعه‌هایش هر کدام راه خودشان را بروند.</p>
+      <p class="meta reveal d3">سامانه مدیریت سل، ادامه نرم‌افزار طراح<br><span class="en">UHDE Administration</span> · نسخه <span class="en">V 1.32</span></p>
+    </div>
+    <div class="hall reveal d2" aria-hidden="true">
+      <div class="bus top"></div>
+      <div class="cells" id="cells"></div>
+      <div class="bus bot"></div>
+      <figcaption>دو ترین، یک باس جریان، و سل‌هایی که بعضی در مدارند و بعضی بیرون</figcaption>
+    </div>
+  </section>
+
+  <section id="plant" data-label="واحد">
+    <p class="kicker">۰۱ · واحد</p>
+    <h2>ساختار واحد: دو ترین و زنجیره سل</h2>
+    <div class="prose">
+      <p class="lead">واحد کلر–آلکالی اروند، نمک را با جریان برق به سه محصول تبدیل می‌کند. سمت آند کلر آزاد می‌شود، سمت کاتد سود و هیدروژن، و غشا این دو نیمه را از هم جدا نگه می‌دارد تا محصول‌ها قاطی نشوند. این تصویر شیمیایی، همان چیزی است که بعداً در برنامه به هویت قطعه، ولتاژ، بازده و توقف وصل می‌شود.</p>
+      <p>اگر فقط یک سل را ببینیم، واحد را ندیده‌ایم. سل‌ها پشت سر هم در الکترولایزر می‌نشینند، الکترولایزرها در دو ترین چیده شده‌اند، و جریان از یک باس مشترک می‌گذرد. پس خروج یک سل، خاموشی کل واحد نیست. بقیه پوزیشن‌ها سر جایشان می‌مانند و فقط همان جایگاه باید تصمیم بگیرد: سل برمی‌گردد، جابه‌جا می‌شود، یا باز می‌شود.</p>
+      <p>ارزش نرم‌افزار از همین‌جا شروع می‌شود. شیفت، کارگاه، فرآیند، تدارکات و انبار هر کدام یک تکه از این مدار را می‌بینند. اگر زبانشان یکی نباشد، سل در یک فرم «در سرویس» است و در فایل دیگری «منتظر پوشش». برنامه وب برای این ساخته شده که این زبان یکی بماند، از روزی که طراح آن را در اکسس نوشت تا امروز که همان منطق در کارتابل زنده است.</p>
+    </div>
+  </section>
+
+  <section id="electrolyzer" data-label="الکترولایزر">
+    <p class="kicker">۰۲ · الکترولایزر</p>
+    <h2>نام الکترولایزرها و دو بلوک پوزیشن</h2>
+    <div class="prose">
+      <p class="lead">هر الکترولایزر نام خودش را دارد. حرف‌ها از A تا M می‌روند و حرف I در این نام‌گذاری نیست، چون با عدد اشتباه گرفته می‌شود. هر حرف دو واحد دارد، یکی در ترین اول و یکی در ترین دوم. بهره‌بردار و کارگاه با همین نام‌ها حرف می‌زنند و برنامه هم همان نام‌ها را نگه داشته تا کسی مجبور نشود بین کد داخلی و زبان شیفت ترجمه کند.</p>
+      <p>درون هر الکترولایزر، پوزیشن‌ها در دو بلوک چیده شده‌اند. خانه پر یعنی المانی آن‌جاست که آند و کاتد و غشایش معلوم است. خانه خالی یعنی جایگاهی که هنوز تصمیم نصب نگرفته، یا سلش برای کارگاه بیرون آمده است. این تفاوت برای گردش کار مهم است، چون درخواست خروج فقط روی خانه‌ای معنی دارد که سل واقعی در آن نشسته باشد.</p>
+      <p>وقتی یک سل باید بیرون بیاید، زنجیره پاک نمی‌شود. پوزیشن‌های کناری سر جایشان می‌مانند و برنامه خروج را به همان المان گره می‌زند. یا سل به کارگاه می‌رود و آنجا تصمیم گرفته می‌شود، یا مستقیم به پوزیشن دیگری می‌نشیند، یا باز می‌شود و سه قطعه‌اش هر کدام سابقه خودشان را ادامه می‌دهند.</p>
+    </div>
+    <div class="flow" aria-hidden="true">
+      <svg viewBox="0 0 920 120" role="img">
+        <defs>
+          <linearGradient id="busg" x1="0" x2="1">
+            <stop offset="0" stop-color="#8d5a34"/><stop offset=".5" stop-color="#e7c08a"/><stop offset="1" stop-color="#8d5a34"/>
+          </linearGradient>
+        </defs>
+        <rect x="20" y="28" width="880" height="8" rx="4" fill="url(#busg)"/>
+        <g fill="#1b645f">
+          <rect x="40" y="48" width="54" height="36" rx="4"/>
+          <rect x="110" y="48" width="54" height="36" rx="4"/>
+          <rect x="180" y="48" width="54" height="36" rx="4" fill="#c4a574"/>
+          <rect x="250" y="48" width="54" height="36" rx="4"/>
+          <rect x="320" y="48" width="54" height="36" rx="4"/>
+          <rect x="390" y="48" width="54" height="36" rx="4" fill="#8d3d38"/>
+          <rect x="460" y="48" width="54" height="36" rx="4"/>
+          <rect x="530" y="48" width="54" height="36" rx="4"/>
+          <rect x="600" y="48" width="54" height="36" rx="4"/>
+          <rect x="670" y="48" width="54" height="36" rx="4" fill="#3d342c"/>
+          <rect x="740" y="48" width="54" height="36" rx="4"/>
+          <rect x="810" y="48" width="54" height="36" rx="4"/>
+        </g>
+        <path class="dash" d="M30 32 H890" fill="none" stroke="#fff6e8" stroke-width="2"/>
+      </svg>
+      <p>خانه‌های سبز در سرویس‌اند، خانه مسی در مسیر تصمیم است، خانه تیره از مدار بیرون است، و خط روشن روی باس نشان می‌دهد جریان با خروج یک سل قطع نمی‌شود.</p>
+    </div>
+  </section>
+
+  <section id="arrangement" data-label="چیدمان">
+    <p class="kicker">۰۳ · چیدمان</p>
+    <h2>چیدمان سلول و درخواست خروج از روی پوزیشن</h2>
+    <div class="prose">
+      <p class="lead">چیدمان سلول برای این نیست که یک تصویر تزئینی از سالن نشان بدهد. هر خانه یک پوزیشن واقعی است و با انتخاب همان خانه، المان نصب‌شده، قطعاتش و کاری که می‌شود روی آن کرد دیده می‌شود. بهره‌بردار لازم نیست اول برود سراغ فرم مونتاژ و شماره را جستجو کند. سل را روی نقشه انتخاب می‌کند و اگر باید از مدار بیرون بیاید، درخواست خروج را از همان‌جا می‌فرستد.</p>
+      <p>این میانبر، سابقه را دور نمی‌زند. درخواستی که از روی چیدمان ساخته می‌شود همان درخواستی است که از داده‌های مونتاژ ساخته می‌شود و همان صاحب‌ها را طی می‌کند. اگر شماره المان‌ها با پوزیشن‌ها نخواند، برنامه اصلاح پنهان و موردی انجام نمی‌دهد. یک بررسی شماره‌گذاری برای کارگاه <span class="en">C-90</span> ساخته می‌شود تا تصویر آن الکترولایزر یک‌بار و کامل دیده شود.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/04-arrangement.png" alt="چیدمان سلول الکترولایزر" />
+      <figcaption>خانه پر، المانی است که آند و کاتد و غشایش معلوم است. خانه خالی جایگاهی است که هنوز نصب نشده یا سلش به کارگاه رفته. درخواست خروج از روی خود همین خانه شروع می‌شود و به کارتابل همان سل می‌رسد.</figcaption>
+    </figure>
+  </section>
+
+  <section id="element" data-label="المان">
+    <p class="kicker">۰۴ · المان</p>
+    <h2>رکورد المان، و جدا شدن آند و کاتد و غشا</h2>
+    <div class="prose">
+      <p class="lead">المان نام جمعی سل است وقتی آند و کاتد و غشا روی یک رکورد مونتاژ نشسته‌اند و آن رکورد به یک الکترولایزر و یک پوزیشن وصل است. شیفت با شماره المان حرف می‌زند، چون در سالن با یک جسم سروکار دارد. مهندسی و کارگاه اما باید بدانند داخل آن جسم چه سریالی نشسته، چون روزی که سل باز می‌شود این سه قطعه دیگر یک سرنوشت ندارند.</p>
+      <p>اگر برنامه فقط شماره المان را نگه دارد، بعد از دمونتاژ حافظه‌اش تمام می‌شود. آندی که باید پوشش مجدد بگیرد گم می‌شود، غشایی که تازه عوض شده با غشای قبلی قاطی می‌شود، و کاتد در موجودی انبار یک ردیف بی‌نام می‌ماند. برای همین از روز مونتاژ، هر قطعه با سریال خودش ثبت می‌شود، حتی وقتی هنوز همه با هم در سرویس‌اند.</p>
+      <p>جدا شدن، سه مسیر باز می‌کند. آند و کاتد به بازرسی پوشش می‌روند و رأی روی همان سریال می‌نشیند. غشا راه نگهداری خودش را دارد و تعویضش رویداد جداست؛ سل می‌تواند بماند و فقط غشا عوض شود. اگر خود سل سالم باشد اصلاً باز نمی‌شود و با همان شماره المان به یک پوزیشن تازه برمی‌گردد.</p>
+    </div>
+  </section>
+
+  <section id="parts" data-label="سه قطعه">
+    <p class="kicker">۰۵ · قطعات</p>
+    <h2>تفکیک سابقه آند، کاتد و غشا</h2>
+    <div class="grid-3">
+      <article class="card">
+        <span class="tag">آند</span>
+        <h3>سطح کلر</h3>
+        <p>آند سریال دارد، پوشش دارد، شرکت پوشش‌دهنده دارد و عمر پوشش دارد. وقتی از المان جدا می‌شود، بازرسی روی همین سریال رأی می‌دهد: پوشش خوب است، متوسط است، باید برای پوشش مجدد برود، یا از رده خارج شود. این رأی در یک برگه جدا بایگانی نمی‌شود. درِ مرحله بعد است و انبار و تدارکات همان را می‌بینند.</p>
+      </article>
+      <article class="card">
+        <span class="tag">کاتد</span>
+        <h3>سطح سود و هیدروژن</h3>
+        <p>کاتد منطق آند را دارد، ولی سابقه، شرکت، گارانتی و رأی خودش را دارد. برنامه هر دو را از یک کارتابل پوشش و خرید عبور می‌دهد تا دست‌به‌دست تکراری ساخته نشود، اما شماره و هویتشان را یکی نمی‌کند. جستجو با سریال کاتد، به رکورد کاتد می‌رسد نه به ردیف همسایه.</p>
+      </article>
+      <article class="card">
+        <span class="tag">غشا</span>
+        <h3>دیوار دو نیمه</h3>
+        <p>غشا رویداد تعویض جدا دارد. می‌شود سل را در مدار نگه داشت و فقط غشا را عوض کرد، و می‌شود در دمونتاژ کامل، غشا را هم از المان جدا کرد. سابقه غشا، جستجوی تعویض و آمار غشا برای همین از مسیر پوشش آند و کاتد جدا مانده‌اند تا یک تصمیم شیمیایی با یک تصمیم کارگاهی قاطی نشود.</p>
+      </article>
+    </div>
+    <div class="prose" style="margin-top:22px">
+      <p>این تفکیک، همان چیزی است که در سال‌های میانی از دست رفت. وقتی بازرسی در یک فایل بود و موجودی در فایل دیگر، رأی «برای پوشش برود» به زندگی همان آند برنمی‌گشت. اینجا رأی، شرکت، ایندنت، گارانتی و برگشت، همه روی همان سریال می‌مانند. دفعه بعد که آن آند دوباره به کارگاه می‌آید، برنامه از صفر شروع نمی‌کند.</p>
+    </div>
+  </section>
+
+  <section id="birth" data-label="تولد المان">
+    <p class="kicker">۰۶ · مونتاژ</p>
+    <h2>ثبت مونتاژ، راه‌اندازی و دمونتاژ</h2>
+    <div class="prose">
+      <p class="lead">در داده‌های مونتاژ، المان با الکترولایزر، پوزیشن، شماره گروه، نسل، شماره آند، شماره کاتد و شماره غشا ثبت می‌شود. تاریخ مونتاژ، تاریخ راه‌اندازی و تاریخ دمونتاژ روی همان رکورد می‌ماند. این رکورد شناسنامه سل است. هر گزارش بعدی، از ولتاژ یک المان تا جستجوی یک سریال، به همین شناسنامه برمی‌گردد.</p>
+      <p>کارخانه سال‌ها این شناسنامه را در فایل‌های اکسل پراکنده داشت. واردات مونتاژ و واردات دمونتاژ برای این است که آن فایل‌ها نسخه رقیب نسازند. ردیف واردشده روی همان المان و همان سریال می‌نشیند، نه در یک جدول موازی که ماه بعد با جدول اصلی اختلاف پیدا کند. اگر رابطه‌ها نخوانند، کنترل رابطه‌ها همان‌جا در فرم مونتاژ در دسترس است تا تناقض قبل از آنکه به گزارش راه پیدا کند دیده شود.</p>
+      <p>المانی که هنوز به سل نرسیده، مسیر دیگری در کارگاه دارد. انتظار مونتاژ، در حال مونتاژ، کنترل مونتاژ، آماده، و بعد صدور کد جدید. صاحب این مسیر کارگاه <span class="en">C-90</span> است. راه‌اندازی، کد جدید را به سرویس برمی‌گرداند. سل سالمی که فقط جابه‌جا می‌شود این مسیر را طی نمی‌کند و با همان شماره به پوزیشن تازه می‌رود.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/26-assembly-flow.png" alt="فلو عملیات مونتاژ و جدول شناسنامه المان" />
+      <figcaption>فلو بالای فرم تزئین نیست. هر خانه یک وضعیت واقعی است و با انتخاب آن، جدول زیر فقط همان جمعیت را نشان می‌دهد. ردیف بالا مسیر سل داخل واحد است و ردیف پایین مسیر ساخت المان نو در کارگاه. جدول، شناسنامه است: الکترولایزر، پوزیشن، آند، کاتد و غشا روی یک رکورد.</figcaption>
+    </figure>
+  </section>
+
+  <section id="uhde" class="band" data-label="نرم‌افزار طراح">
+    <p class="kicker">۰۷ · طراح</p>
+    <h2>بخش‌های نرم‌افزار UHDE Administration</h2>
+    <div class="prose">
+      <p class="lead">شرکت طراح برای همین قطعات و همین واحد نرم‌افزار نوشت. نام آن <span class="en">UHDE Administration</span> است، روی اکسس مایکروسافت کار می‌کند، و در کارخانه به آن <span class="en">EAP</span> می‌گویند. هدفش پر کردن فرم نبود. هدف این بود که هویت قطعه، سرهم‌بندی، ولتاژ، بازده، آنالیز و توقف با یک زبان بمانند؛ زبانی که هم شیفت بلد باشد و هم مهندسی.</p>
+      <p>عمق آن نرم‌افزار در تب‌هایش بود. از مدیریت المان و چیدمان شروع می‌شد، به ولتاژ استاندارد در چند سطح می‌رسید، بازده را با دو مبنا حساب می‌کرد، انرژی را از ولتاژ نرمال‌شده و بازده همان روز می‌ساخت، آنالیزها را خوراک محاسبه می‌دانست، و توقف را بدون دلیل قبول نمی‌کرد. جستجو هم سؤال کارخانه را جواب می‌داد: این سریال کجاست، کی مونتاژ شده، و کی از سرویس خارج شده.</p>
+      <p>پروژه وب از نو اختراع نشد. قرار شد هرچه طراح در آن قرارداد خواسته، جایی جمع شود که چند نفر همزمان به آن برسند، و داده همان نام‌ها و همان منطق محاسبه را حفظ کند. آنچه اضافه شده، دست‌به‌دست است. اکسس می‌توانست تاریخ را نگه دارد. اینجا تا صاحب مرحله کارش را نکند، مرحله بعد دکمه‌ای نمی‌بیند.</p>
+    </div>
+  </section>
+
+  <section id="identity" data-label="هویت قطعه">
+    <p class="kicker">۰۸ · هویت</p>
+    <h2>سابقه سریال در جزئیات قطعه و جستجو</h2>
+    <div class="prose">
+      <p class="lead">در طراحی طراح، مدیریت المان فقط فهرست شماره نبود. جزئیات آند، جزئیات کاتد، جزئیات غشا، چیدمان، بازرسی مونتاژ، نگهداری و بازپوشش کنار هم نشسته بودند تا مونتاژ بعدی از صفر شروع نشود. برنامه باید بداند این آند قبلاً کجا بوده، پوششش چه وضعی داشته، و آخرین بار چه رأیی گرفته است.</p>
+      <p>جستجو همین زندگی را قابل سؤال می‌کند. می‌شود المان فعال را از غیرفعال جدا کرد، با شماره آند یا کاتد یا غشا پیدا کرد، بازه تاریخ مونتاژ و راه‌اندازی و دمونتاژ را گذاشت، تکراری‌ها را دید، تعویض غشا را دنبال کرد و روز بهره‌برداری را خواند. سؤال کارخانه این نیست که جدول را از اول ورق بزنند. سؤال این است که این قطعه الان کجاست و دفعه قبل چه شده.</p>
+      <p>فایده این حافظه وقتی روشن می‌شود که قطعه برای بار دوم به پوشش می‌رود. گارانتی قبلی، شرکت قبلی و عمر خدمت قبلی روی همان سریال مانده‌اند. مقایسه عمر پوشش با ضمانت، بدون این سابقه ممکن نیست و با یک فایل اکسل تازه هم ساخته نمی‌شود، چون فایل تازه زندگی قبلی را ندارد.</p>
+    </div>
+  </section>
+
+  <section id="voltage" data-label="ولتاژ">
+    <p class="kicker">۰۹ · ولتاژ استاندارد</p>
+    <h2>ولتاژ استاندارد از کل واحد تا یک المان</h2>
+    <div class="prose">
+      <p class="lead">ولتاژ استاندارد در نرم‌افزار طراح چند سطح داشت و همان سطح‌ها حفظ شده‌اند. می‌شود کل واحد را دید، یک ترین را، یک الکترولایزر را، یک گروه را، یا فقط یک المان را. برای هر سطح هم جدول هست و هم نمودار. المان‌های با ولتاژ بالا جدا فهرست می‌شوند، چون میانگین خوب، سل بد را پنهان می‌کند. توزیع ولتاژ هم نشان می‌دهد جمعیت سل‌ها به کدام سمت رفته، نه فقط اینکه یک عدد متوسط چند است.</p>
+      <p>ورود داده هم به همین سطح‌ها شکسته شده است. الکترولایزر، المان، گروه، و تک‌المان هر کدام در ورود خودشان هستند. این تفکیک سلیقه صفحه نیست. اگر ولتاژ گروه با ولتاژ تک‌المان قاطی شود، دیگر نمی‌شود فهمید انحراف مال یک سل است یا مال یک دسته. طراح عمداً این‌ها را جدا کرده بود و برنامه وب همان درها را نگه داشته است.</p>
+      <p>یک قفل هم به این منطق اضافه شده که جای خالی را به عدد تبدیل نکند. اگر کیلوآمپر یک الکترولایزر در یک ساعت پر نشده باشد، ولتاژ همان ساعت بسته است. میانگین، ساعت بی‌بار را داخل حساب نمی‌آورد. اگر بار پاک شود، ولتاژ جفتش هم برداشته می‌شود. بازده و انرژی از ولتاژی که جریانی پشتش نبوده ساخته نمی‌شوند.</p>
+    </div>
+  </section>
+
+  <section id="efficiency" data-label="بازده">
+    <p class="kicker">۱۰ · بازده جریان</p>
+    <h2>بازده جریان از تولید سود و از بیلان آندی</h2>
+    <div class="prose">
+      <p class="lead">راه اول، بازده از تولید سود همان آزمون است. راه دوم، بیلان آندی است و به آنالیز آب‌نمک خالص، آنولیت و گاز کلر همان روز وصل است. انرژی از ولتاژ نرمال‌شده و بازده همان روز به دست می‌آید. اگر یکی از ورودی‌های لازم نباشد، آن ردیف نتیجه نمی‌سازد. جای خالی، صفر ساختگی نمی‌شود و برنامه به شیفت یک عدد دروغ نشان نمی‌دهد.</p>
+      <p>فرمول‌ها همان رابطه فایل طراح‌اند. سطح محاسبه هم همان است: کل واحد، ترین، الکترولایزر، گروه و المان، و برای چند الکترولایزر یا چند گروه با هم. این سلسله برای این است که اختلاف یک الکترولایزر با بقیه، داخل میانگین واحد حل نشود. شیفت می‌تواند همان روز را یک‌بار برای کل مدار و یک‌بار برای یک واحد خاص بخواند.</p>
+      <p>روی برگه بازده کاتدی، ورود قرائت از امضای بازرسی و فرآیند جداست. تغییر عدد، امضا را پاک می‌کند تا یک نتیجه امضاشده با داده‌ای که بعداً عوض شده قاطی نشود. ساعت‌های ورود هم آزاد نیستند. فقط ساعت‌هایی که طراحی برایشان قرائت خواسته باز می‌شوند، و الکترولایزری که بارش خاموش است از میانگین و توان کنار می‌رود.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/08-efficiency.png" alt="برگه بازده کاتدی و امضای بازرسی و فرآیند" />
+      <figcaption>برگه بازده، ورود قرائت را از امضای بازرسی و فرآیند جدا کرده است. ردیف بار و ردیف ولتاژ جفت‌اند. اگر بار یک ساعت خالی باشد، ولتاژ همان ساعت حساب نمی‌شود و نتیجه از جای خالی ساخته نمی‌شود.</figcaption>
+    </figure>
+  </section>
+
+  <section id="energy" data-label="انرژی">
+    <p class="kicker">۱۱ · انرژی</p>
+    <h2>مصرف انرژی و نمودار Un / Ce</h2>
+    <div class="prose">
+      <p class="lead">مصرف انرژی در طراحی طراح از ولتاژ نرمال‌شده و بازده همان روز می‌آمد. اگر این دو از دو جای مختلف و دو روز مختلف برداشته شوند، عدد انرژی دیگر توضیح‌دهنده واحد نیست. برنامه وب همین جفت‌شدن را حفظ کرده است. انرژی گزارش مستقلی نیست که بشود بدون بازده و بدون ولتاژ پر کرد.</p>
+      <p>صفحه <span class="en">Un / Ce</span> همین زوج را روی یک نمودار می‌گذارد: ولتاژ استاندارد و بازده، برای بازه‌ای که کاربر انتخاب می‌کند. اگر در آن بازه جفت معتبری نباشد، نمودار با نقطه ساختگی پر نمی‌شود. این صفحه برای مهندسی است که می‌خواهد ببیند بالا رفتن ولتاژ با افت بازده همراه بوده یا نه، بدون آنکه دو گزارش را کنار هم روی میز پهن کند.</p>
+      <p>نمودارهای واحد، ولتاژ و جریان و توان را برای کل واحد، یک ترین یا یک الکترولایزر روی یک بوم می‌گذارند. هر سری را می‌شود روشن یا خاموش کرد. این ابزار بایگانی نیست. برای این است که انحراف، قبل از آنکه فقط در شیفت بعد تعریف شود، روی همان محور زمان دیده شود.</p>
+    </div>
+  </section>
+
+  <section id="analysis" data-label="آنالیز">
+    <p class="kicker">۱۲ · آنالیز</p>
+    <h2>آنالیز آب‌نمک، آنولیت، کاتولیت، کلر و اسید</h2>
+    <div class="prose">
+      <p class="lead">آب‌نمک خالص، آنولیت، کاتولیت، گاز کلر، اسید برای اسیدی‌سازی، آب دمین و خوراک سود رقیق، هر کدام در نرم‌افزار طراح جای خودشان را داشتند. هر کدام را می‌شود برای کل واحد، یک ترین، یک گروه یا یک المان دید. این سطح‌بندی تکرار ولتاژ نیست. بیلان آندی بدون آنالیز همان روز وجود ندارد، و اگر آنالیز سطح اشتباه را بخواند، بازده الکترولایزر با بازده واحد قاطی می‌شود.</p>
+      <p>برای همین آنالیز در منو کنار بازده نشسته، نه در یک بایگانی دور. واردات آنالیز هم هست تا برگه‌های آزمایشگاه به ردیف قابل محاسبه تبدیل شوند، ولی واردات جایگزین محاسبه نیست. اگر ماده لازم برای بیلان نرسیده باشد، نتیجه آن روز ساخته نمی‌شود و کسی مجبور نیست جای خالی را با حدس پر کند.</p>
+      <p>امضای فرآیند روی شیت بازده، به همین خوراک وصل است. فرآیندی که آنالیز را می‌شناسد، نتیجه را هم امضا می‌کند. اگر عدد بعد از امضا عوض شود، امضا پاک می‌شود تا مسئولیت نتیجه با داده‌ای که واقعاً دیده شده بماند.</p>
+    </div>
+  </section>
+
+  <section id="shutdown" data-label="توقف">
+    <p class="kicker">۱۳ · توقف</p>
+    <h2>ورود توقف، دلیل، دسته و علت تریپ</h2>
+    <div class="prose">
+      <p class="lead">توقف در طراحی طراح یک فهرست خالی نبود. دلیل، دسته، علت تریپ و جمع‌بندی در یک بازه زمانی از اول کنار خاموشی بودند. ساعتی که واحد یا یک الکترولایزر از دست می‌دهد، اگر به حافظه شیفت تکیه کند، هفته بعد دیگر قابل توضیح نیست. برنامه همان ساختار را نگه داشته و علت تریپ را از صفحه نتایج جدا کرده و کنار ورود گذاشته است.</p>
+      <p>کسی که علت تازه اضافه می‌کند، لازم نیست برود جای دیگری تا ببیند آن علت در توقف‌های واقعی چه سهمی دارد. فهرست علت‌ها و خلاصه به تفکیک علت، هر دو در بخش ورود هستند. نتایج، دلیل و دسته و بازه زمانی را جدا نگه می‌دارند تا گزارش مدیریتی با فرم ورود قاطی نشود، ولی داده یکی است.</p>
+      <p>توقف به گردش کار سل هم وصل است. بهره‌بردار تا خاموشی را ثبت نکند، کارگاه سل را تحویل نمی‌گیرد. این قفل برای کاغذبازی نیست. برای این است که خروج فیزیکی و دلیل خروج با هم بمانند، و کارگاه سلی را تحویل نگیرد که هنوز در مدار «روشن» است.</p>
+    </div>
+  </section>
+
+  <section id="search" data-label="جستجو">
+    <p class="kicker">۱۴ · جستجو</p>
+    <h2>جستجو با شماره، تاریخ و وضعیت</h2>
+    <div class="prose">
+      <p class="lead">جستجو در نرم‌افزار طراح، ورق زدن جدول نبود. سؤال‌هایی بود که شیفت و کارگاه واقعاً می‌پرسند. المان فعال است یا غیرفعال. این شماره آند، این شماره کاتد، یا این شماره غشا مال کدام المان است. در این بازه چه چیزهایی مونتاژ شده، راه‌اندازی شده، یا از سرویس خارج شده‌اند. کدام سریال تکراری است. غشا کی عوض شده. روز بهره‌برداری کدام است.</p>
+      <p>اگر این سؤال‌ها به «فایل را باز کن و پیدا کن» برگردند، حافظه واحد دوباره شخصی می‌شود. برنامه وب همان سؤال‌ها را سر جایشان گذاشته تا جواب از شناسنامه المان بیاید، نه از نسخه‌ای که روی کامپیوتر یک نفر مانده. نتیجه جستجو به همان رکوردی می‌رسد که مونتاژ، ولتاژ و کارتابل هم به آن وصل‌اند.</p>
+    </div>
+  </section>
+
+  <section id="gap" class="band" data-label="سال‌های میانی">
+    <p class="kicker">۱۵ · فاصله</p>
+    <h2>فاصله سال‌های میانی و فایل‌های جدا</h2>
+    <div class="prose">
+      <p class="lead">نرم‌افزار طراح ارزشمند بود چون حافظه واحد بود. در عمل، بخشی از کار روزانه از داخل آن بیرون زد. هر تکه برای خودش فایل، مسئول و نسخه درست پیدا کرد. مشکل این نبود که مردم اکسل بلد نبودند. مشکل این بود که آخرین فایل، جای حافظه مشترک را گرفت و کسی که آن فایل را نداشت، از تصمیم عقب می‌ماند.</p>
+      <p>مونتاژ یک فایل بود، دمونتاژ فایل دیگری، تفکیک الکترود فایل سوم، و برگه بازرسی جایی که به سریال برنمی‌گشت. توضیح پوشش، تاریخ و شرکت بین این‌ها از هم جدا می‌ماندند. دو نفر می‌توانستند هر دو راست بگویند و دو حقیقت متفاوت داشته باشند، چون هر کدام آخرین نسخه‌ای را دیده بودند که دست خودشان بود.</p>
+      <p>بازگشت به یک سابقه، یعنی واردات مونتاژ و دمونتاژ و برگه بازرسی نسخه رقیب نسازد. ردیف تازه روی همان سریال می‌نشیند. از آن به بعد، کارتابل صاحب دارد و مرحله بعد تا کار مرحله قبل تمام نشود باز نمی‌شود. این همان تکه‌ای است که در سال‌های میانی پاره شده بود.</p>
+    </div>
+  </section>
+
+  <section id="islands" data-label="بازرسی جدا">
+    <p class="kicker">۱۶ · بازرسی جزیره‌ای</p>
+    <h2>اتصال رأی بازرسی به همان سریال</h2>
+    <div class="prose">
+      <p class="lead">بازرسی پوشش در این سال‌ها انجام می‌شد. خوب، متوسط، خارج از رده، یا ارسال برای پوشش مجدد، جایی ثبت می‌شد. مشکل این بود که آن رأی به زندگی همان آند یا کاتد برنمی‌گشت. کارگاه نتیجه را در برگه خودش می‌دید، انبار عدد دیگری در موجودی داشت، و تدارکات از فهرست سوم کار می‌کرد. سه جزیره، یک قطعه.</p>
+      <p>در کارتابل، رأی درِ مرحله بعد است. اگر بازرسی خدمات را رد کند، دلیل نوشته می‌شود و قطعه برای دوباره‌کاری به شرکت برمی‌گردد. اگر تأیید شود، کار به <span class="en">C-90</span> می‌رسد تا قطعه به چرخه استفاده برگردد یا تأیید نشود و به تدارکات پس برود. هیچ‌کدام از این دو راه، پاک کردن ردیف نیست. مسیر برگشت همان‌قدر رسمی است که مسیر رفتن.</p>
+      <p>بازرسی المان هم جزیره جدا نمانده است. وقتی دمونتاژ تازه ثبت می‌شود، درخواست بازرسی برای تعمیرات باز می‌شود. کسی لازم نیست یادش بماند که این سل باز شده و باید فرم دیگری پر شود. باز شدن سل، خودش درِ بازرسی را باز می‌کند.</p>
+    </div>
+  </section>
+
+  <section id="parseh" data-label="پارسه">
+    <p class="kicker">۱۷ · تغذیه بدون گزارش</p>
+    <h2>تغذیه پارسه بدون گزارش‌های طراح</h2>
+    <div class="prose">
+      <p class="lead">در این فاصله، داده به سیستم‌هایی مثل پارسه هم تغذیه می‌شد. تغذیه لازم بود، ولی گزارش‌هایی که طراح ساخته بود از دل همان تغذیه درنمی‌آمد. ولتاژ در چند سطح، بازده با دو مبنا، انرژی همان روز، توزیع ولتاژ، و توقف با علت، همان چیزهایی بودند که مهندسی با آن‌ها واحد را می‌خواند. سیستمی که فقط داده را می‌گیرد و این طبقه‌بندی را پس نمی‌دهد، حافظه واحد نیست.</p>
+      <p>برنامه وب آن سلسله را سر جایش گذاشته است. منو هنوز حوزه‌های طراح را دارد، از المان و چیدمان تا ولتاژ و بازده و آنالیز و توقف. کنارش کارتابلی هست که آن نرم‌افزارهای تغذیه‌ای برایش ساخته نشده بودند: خروج سل، پوشش، خرید، ایندنت و گارانتی. گزارش بدون دست‌به‌دست ناقص بود، و دست‌به‌دست بدون گزارش هم فقط گردش کاغذ است.</p>
+    </div>
+  </section>
+
+  <section id="project" data-label="پروژه وب">
+    <p class="kicker">۱۸ · پروژه</p>
+    <h2>منوی برنامه وب و حوزه‌های اکسس</h2>
+    <div class="prose">
+      <p class="lead">پروژه این نبود که فرم‌ها از نو اختراع شوند. قرار شد هرچه طراح خواسته جایی جمع شود که بهره‌بردار، کارگاه سل، <span class="en">C-90</span>، فرآیند، تدارکات و انبار همزمان به آن برسند. داده طراح به همین برنامه تغذیه شده تا نام الکترولایزر، سریال قطعه و منطق محاسبه عوض نشود. کسی که سال‌ها با <span class="en">EAP</span> کار کرده، در حالت کلاسیک همان چینش را می‌بیند و همان داده در نمای مدیریتی هم خوانده می‌شود.</p>
+      <p>زبان کارخانه حفظ شده است. نام فرم‌ها، فارسی و انگلیسی، همان نام‌هایی است که شیفت با آن‌ها کار کرده. تاریخ شمسی است. فرمول بازده کاتدی همان رابطه اکسل طراح است و بیلان آندی هم با همان جفت‌شدن آنالیز و جریان روز. اگر ورودی نباشد، نتیجه ساخته نمی‌شود.</p>
+      <p>آنچه نسبت به اکسس تمام شده، دست‌به‌دست است. اکسس می‌توانست تاریخ دمونتاژ را نگه دارد. اینجا تا <span class="en">C-90</span> آن تاریخ را تأیید نکند، درخواست بسته نمی‌شود. اکسس فرم پوشش داشت. اینجا قطعه بین تدارکات، انبار، شرکت، بازرسی و <span class="en">C-90</span> حرکت می‌کند و هر مرحله صاحب و مهلت دارد.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/01-menu.png" alt="منوی اصلی برنامه" />
+      <figcaption>منوی اصلی همان حوزه‌های نرم‌افزار طراح را دارد: المان، چیدمان، ولتاژ، بازده، انرژی، آنالیز، آمار و توقف. انبار، مانیتورینگ و داشبورد المنت ادامه همان منطق‌اند، جایی که اکسس فرم داشت و اینجا تصمیم و کارتابل هم هست.</figcaption>
+    </figure>
+  </section>
+
+  <section id="cell-flow" data-label="خروج سل">
+    <p class="kicker">۱۹ · خروج سل</p>
+    <h2>ترتیب درخواست خروج سل</h2>
+    <div class="prose">
+      <p class="lead">درخواست خروج از دو جا شروع می‌شود. از فرم داده‌های مونتاژ، یا از چیدمان بعد از انتخاب همان سل. هر دو به یک کارتابل می‌رسند. مرحله اول مال بهره‌بردار است، چون کسی که مدار را می‌بیند باید خاموشی را ثبت کند. تا این ثبت نباشد، کارگاه سل دکمه‌ای برای تحویل نمی‌بیند. این ترتیب، خروج فیزیکی را به دلیل توقف گره می‌زند.</p>
+      <p>بعد از تحویل، سل در کارگاه است و هنوز تصمیم تمام نشده. سه در پیش روست: سالم بماند و به یک پوزیشن برگردد، همین حالا جابه‌جا شود، یا باز شود. روی هر در که در بخش بعد می‌زنید، می‌بینید درخواست دست چه کسی می‌ماند و دقیقاً کی بسته می‌شود. انتخاب در، به‌تنهایی درخواست را تمام نمی‌کند.</p>
+    </div>
+    <div class="owner-line">
+      <b>۱. درخواست خروج از مونتاژ یا از چیدمان</b>
+      <b>۲. ثبت خاموشی توسط بهره‌بردار</b>
+      <b>۳. تحویل در کارگاه سل</b>
+      <b>۴. یکی از سه تصمیم</b>
+    </div>
+    <figure class="shot" style="margin-top:22px">
+      <img src="media/02-assembly.png" alt="عملیات مونتاژ روی داده‌های مونتاژ" />
+      <figcaption>هر مرحله فلو، جدول زیر را فیلتر می‌کند. در سرویس، خاموش، پوزیشن جدید، انتظار دمونتاژ، خارج از رده، و مسیر مونتاژ المان نو، جمعیت جدا دارند. کلیک روی مرحله، همان جمعیت را نشان می‌دهد نه یک توضیح ثابت.</figcaption>
+    </figure>
+  </section>
+
+  <section id="decisions" data-label="سه تصمیم">
+    <p class="kicker">۲۰ · سه در</p>
+    <h2>سه نتیجه بعد از تحویل در کارگاه سل</h2>
+    <p class="lead">بعد از تحویل در کارگاه، یکی از این سه راه انتخاب می‌شود. متن کنارش می‌گوید درخواست باز می‌ماند یا بسته می‌شود، و دکمه دست چه کسی است.</p>
+    <div class="fork">
+      <div class="choices" id="cell-choices">
+        <button type="button" data-key="keep"><strong>سالم بماند</strong><span>تا روز نصب، درخواست باز است</span></button>
+        <button type="button" data-key="move"><strong>جابه‌جایی</strong><span>نصب تازه، و بستن درخواست</span></button>
+        <button type="button" data-key="open"><strong>باز شود</strong><span>تاریخ دمونتاژ را C-90 قطعی می‌کند</span></button>
+      </div>
+      <div class="detail" id="cell-detail"></div>
+    </div>
+    <div class="prose" style="margin-top:22px">
+      <p>سل سالم این مسیر را تا باز شدن ادامه نمی‌دهد. با همان شماره المان به پوزیشن برمی‌گردد و قطعاتش از هم جدا نمی‌شوند. سل خراب برعکس است. تا تاریخ باز شدن قطعی نشود، دمونتاژ روی شناسنامه نمی‌نشیند و بازرسی قطعه هم شروع نمی‌شود. جابه‌جایی فوری هم یک نصب تازه است. سابقه پوزیشن قبلی پاک نمی‌شود. نصب جدید روی همان المان نوشته می‌شود و جایگاه مقصد اگر سل دیگری داشته باشد قبول نمی‌شود.</p>
+    </div>
+  </section>
+
+  <section id="newcell" data-label="المان نو">
+    <p class="kicker">۲۱ · المان نو</p>
+    <h2>مسیر مونتاژ المان نو در کارگاه</h2>
+    <div class="prose">
+      <p class="lead">وقتی سل باز می‌شود، پوزیشن خالی می‌ماند تا المان دیگری بنشیند. آن المان از مسیر کارگاه می‌آید، نه از بازگشت همان قطعات در همان ساعت. انتظار مونتاژ، در حال مونتاژ، کنترل مونتاژ، آماده، و صدور کد جدید، پنج خانه این مسیرند و صاحبشان کارگاه <span class="en">C-90</span> است. راه‌اندازی، کد جدید را به وضعیت در سرویس برمی‌گرداند و فلو دوباره از خانه اول خوانده می‌شود.</p>
+      <p>کنترل مونتاژ برای این است که سه سریال، قبل از آنکه المان به سالن برود، با هم خوانا باشند. صدور کد، هویت تازه را رسمی می‌کند. بدون این کد، یک مجموعه آند و کاتد و غشا هنوز المان قابل نصب نیست. برنامه این ترتیب را روی همان فلو نشان می‌دهد تا کارگاه مرحله را رد نکند و مستقیم به «آماده» نرسد.</p>
+      <p>سلی که سالم مانده و فقط جابه‌جا می‌شود، وارد این پنج خانه نمی‌شود. شماره المانش عوض نمی‌شود و قطعاتش از هم جدا نمی‌شوند. قاطی کردن این دو مسیر، همان اشتباهی است که در فایل‌های جدا پیش می‌آمد: یک سل جابه‌جا شده، در فهرست «منتظر مونتاژ» هم دیده می‌شد.</p>
+    </div>
+  </section>
+
+  <section id="piece-flow" data-label="پوشش مجدد">
+    <p class="kicker">۲۲ · پوشش</p>
+    <h2>مراحل پوشش مجدد تا برگشت قطعه</h2>
+    <div class="prose">
+      <p class="lead">آند یا کاتدی که باید پوشش مجدد بگیرد، بین چند صاحب می‌چرخد. ردیف کارتابل مال یک گروه است. گروه بعدی دکمه اقدام را نمی‌بیند، چون هنوز نوبتش نیست. این محدودیت ظاهر فرم نیست. برای این است که شرکت، ایندنت، ارسال، برگشت و تأیید فنی هر کدام سند خودشان را داشته باشند و هیچ‌کدام با عجله مرحله قبل پاک نشود.</p>
+      <p>کد پالت را سیستم می‌سازد، نه کاربر. از لحظه انتخاب قطعه، همه با یک کد حرف می‌زنند: تدارکات، انبار، شرکت و بازرسی. اگر هر کدام کد خودش را می‌ساخت، برگشت قطعه به سریال اول وصل نمی‌شد. روی هر مرحله بزنید تا ببینید آن قدم دقیقاً چه چیزی را ثبت می‌کند و اگر انجام نشود چه چیزی ناقص می‌ماند.</p>
+    </div>
+    <div class="rail">
+      <div class="steps" id="piece-steps"></div>
+      <div class="detail" id="piece-detail"></div>
+    </div>
+  </section>
+
+  <section id="purchase" data-label="خرید نو">
+    <p class="kicker">۲۳ · خرید</p>
+    <h2>مراحل خرید قطعه نو</h2>
+    <div class="prose">
+      <p class="lead">قطعه نو هنوز سریالی در سابقه ندارد، پس مسیر پوشش مجدد را طی نمی‌کند. تدارکات درخواست را با شرکت، تعداد و مدارک ثبت می‌کند. انبار شماره ایندنت را می‌زند تا خرید سند انبار داشته باشد. تدارکات بعد از آن، تاریخ سفارش، تاریخ تحویل و علت تأخیر را می‌نویسد. در پایان، <span class="en">C-90</span> کد قطعه نو را به نام یک قطعه جدید ثبت می‌کند تا از آن به بعد مثل بقیه سریال‌ها قابل جستجو و قابل مونتاژ باشد.</p>
+      <p>کوتاه‌تر بودن این مسیر به معنی بی‌صاحب بودن نیست. تا ایندنت نباشد، سفارش کامل نیست. تا ثبت کد نباشد، قطعه وارد شناسنامه المان نمی‌شود. خرید در یک شیت کنار پوشش نمی‌ماند. از همان کارتابل انبار دیده می‌شود تا تدارکات دو صف جدا را با دو حقیقت جدا اداره نکند.</p>
+    </div>
+  </section>
+
+  <section id="warehouse" data-label="انبار">
+    <p class="kicker">۲۴ · انبار</p>
+    <h2>کارتابل انبار و شماره ایندنت</h2>
+    <div class="prose">
+      <p class="lead">انبار در این گردش کار انبارگردانیِ جدا نیست. در پوشش مجدد، شماره ایندنت را روی همان کد پالت می‌گذارد. در خرید نو، ایندنت را روی همان درخواست می‌گذارد. بدون این شماره، ارسال به شرکت یا سفارش خرید، خروج بی‌سند است. برای همین مرحله انبار وسط مسیر نشسته، نه انتهای یک فرم اداری.</p>
+      <p>کارتابل انبار آند و کاتد را با هم نشان می‌دهد، ولی ردیف‌ها را یکی نمی‌کند. هر ردیف مرحله، صاحب، کد و مهلت خودش را دارد. بازرسی المان و شرکت‌ها کنار همین گردش کارند تا کسی که ایندنت می‌زند، بداند قطعه از کدام رأی آمده و به کدام شرکت می‌رود. جستجو با سریال، از میان سفارش‌های پوشش هم جواب می‌دهد. لازم نیست کد پالت را از حفظ بدانند.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/05-storage.png" alt="کارتابل انبار آند و کاتد" />
+      <figcaption>کارتابل انبار، پوشش مجدد و خرید نو را در یک صف نشان می‌دهد. هر ردیف صاحب و مرحله دارد. تا انبار ایندنت را نزند، تدارکات مرحله ارسال یا سفارش را کامل نمی‌بیند.</figcaption>
+    </figure>
+  </section>
+
+  <section id="warranty" data-label="گارانتی">
+    <p class="kicker">۲۵ · گارانتی و رد</p>
+    <h2>گارانتی روی سریال و رد خدمات</h2>
+    <div class="prose">
+      <p class="lead">وقتی قطعه از شرکت برمی‌گردد، تدارکات فقط تاریخ رسیدن را نمی‌نویسد. مدت تأخیر و طرف تأخیر هم ثبت می‌شود: کارخانه، شرکت، حمل، یا سایر. اکسل گزارش شرکت پیوست می‌شود و مدت گارانتی روی همان سریال می‌نشیند. دفعه بعد که آن آند یا کاتد دوباره به پوشش می‌رود، عمر خدمت با ضمانت قبلی مقایسه می‌شود. این مقایسه بدون اتصال به سریال ممکن نیست.</p>
+      <p>رد کردن، پاک کردن ردیف نیست. بازرسی می‌تواند خدمات را رد کند و دلیل بنویسد. قطعه برای دوباره‌کاری به شرکت برمی‌گردد و مسیر از مرحله شرکت دوباره معنی پیدا می‌کند. <span class="en">C-90</span> هم می‌تواند تأیید نهایی را ندهد و کار را به تدارکات پس بفرستد. هر دو رد، در کارتابل می‌مانند تا معلوم باشد قطعه چرا به چرخه برنگشته است.</p>
+    </div>
+  </section>
+
+  <section id="life" data-label="سرگذشت یک سل">
+    <p class="kicker">۲۶ · از سرویس تا برگشت</p>
+    <h2>ترتیب کار از سرویس تا برگشت به مدار</h2>
+    <p class="lead">این ترتیب، جمع همان درهایی است که جدا جدا توضیح داده شد. هر خانه صاحب دارد و تا تمام نشود خانه بعد باز نمی‌شود.</p>
+    <div class="timeline">
+      <article>
+        <div class="n">۱</div>
+        <div>
+          <h3>در سرویس</h3>
+          <p>سل روی پوزیشن خودش است و آند و کاتد و غشا روی یک رکورد مونتاژ نشسته‌اند. تصویر این وضعیت مال سرپرست الکترولایزرهاست. اگر شماره المان با پوزیشن نخواند، اصلاح پنهان انجام نمی‌شود و یک بررسی شماره‌گذاری برای کارگاه <span class="en">C-90</span> ساخته می‌شود.</p>
+        </div>
+      </article>
+      <article>
+        <div class="n">۲</div>
+        <div>
+          <h3>خروج</h3>
+          <p>بهره‌بردار از مونتاژ یا از خود چیدمان درخواست می‌دهد و خاموشی را با دلیل ثبت می‌کند. تا این ثبت نباشد، کارگاه سل را تحویل نمی‌گیرد. علت توقف در بخش توقف واحد می‌ماند، کنار دسته و علت تریپ، تا جلسه بعد به حافظه شیفت تکیه نکند.</p>
+        </div>
+      </article>
+      <article>
+        <div class="n">۳</div>
+        <div>
+          <h3>تصمیم کارگاه</h3>
+          <p>سل سالم با همان شماره به پوزیشن تازه برمی‌گردد و تا روز نصب درخواست باز می‌ماند. جابه‌جایی فوری همان لحظه یک نصب تازه است و درخواست را می‌بندد. سل خراب برای باز شدن می‌رود و با انتخاب این در، کار تمام نمی‌شود.</p>
+        </div>
+      </article>
+      <article>
+        <div class="n">۴</div>
+        <div>
+          <h3>دمونتاژ و بازرسی</h3>
+          <p>کارگاه <span class="en">C-90</span> تاریخ باز شدن را تأیید می‌کند. اگر دمونتاژ تازه باشد، درخواست بازرسی برای تعمیرات باز می‌شود. رأی پوشش روی همان سریال می‌نشیند: بماند، پوشش مجدد، یا خارج از رده. رأی، درِ مرحله بعد است.</p>
+        </div>
+      </article>
+      <article>
+        <div class="n">۵</div>
+        <div>
+          <h3>پوشش یا خرید، بعد انبار</h3>
+          <p>قطعه کد پالت می‌گیرد. تدارکات شرکت و تاریخ را می‌گذارد، انبار ایندنت را به همان کد اضافه می‌کند، ارسال و برگشت و تأخیر و گارانتی ثبت می‌شود، تعمیرات تأیید یا رد می‌کند، و <span class="en">C-90</span> قطعه را به چرخه برمی‌گرداند یا به تدارکات پس می‌فرستد.</p>
+        </div>
+      </article>
+      <article>
+        <div class="n">۶</div>
+        <div>
+          <h3>برگشت به مدار</h3>
+          <p>جای سل بازشده را المانی پر می‌کند که در کارگاه مونتاژ، کنترل و کد گرفته است. راه‌اندازی آن را به سرویس برمی‌گرداند. سل سالم این خانه را طی نمی‌کند. فقط پوزیشن عوض می‌شود و شناسنامه‌اش همان شماره قبلی است.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section id="roles" data-label="نقش‌ها">
+    <p class="kicker">۲۷ · صاحب هر گره</p>
+    <h2>نقش‌های کارخانه؛ دیدن جدا از اقدام</h2>
+    <div class="prose">
+      <p class="lead">سیزده نقش کارخانه تعریف شده است، ولی سرپرست و کارشناس هر بخش فعلاً یک اختیار دارند. تفاوت نقش‌ها در این است که چه تصمیمی مال آن‌هاست، نه در این که یکی فرم را ببیند و دیگری نبیند. دیدن کارتابل با اقدام روی آن یکی نیست. مدیریت سازمان همه ردیف‌های باز را می‌بیند و دکمه اقدام ندارد. مدیر کارخانه در هر گره می‌تواند کار را جلو ببرد، برای وقتی که یک مرحله معطل مانده است.</p>
+    </div>
+    <div class="roles">
+      <article class="role"><strong>الکترولایزرها</strong><p>تصویر سل‌های در سرویس و شناسنامه مونتاژ مال این نقش است. جایگاه و هویت المان را این‌ها نگه می‌دارند و درخواست خروج را از روی واقعیت سالن می‌بینند.</p></article>
+      <article class="role"><strong>بهره‌بردار</strong><p>خاموشی، علت توقف و درخواست خروج با بهره‌بردار است. تا خاموشی ثبت نشود، کارگاه سل دکمه تحویل را نمی‌بیند و خروج فیزیکی از دلیل جدا نمی‌شود.</p></article>
+      <article class="role"><strong>فرآیند</strong><p>آنالیزها و شیت بازده مال فرآیند است. امضای فرآیند کنار امضای بازرسی می‌نشیند و اگر عدد بعد از امضا عوض شود، امضا پاک می‌شود.</p></article>
+      <article class="role"><strong>کارگاه C-90</strong><p>دمونتاژ، مسیر المان نو، انتخاب قطعه برای پوشش و تأیید بازگشت قطعه به چرخه مال این کارگاه است. تاریخ باز شدن را فقط این نقش قطعی می‌کند.</p></article>
+      <article class="role"><strong>تدارکات</strong><p>شرکت، تاریخ ارسال و بازگشت، ارسال، دریافت، طرف تأخیر و درخواست خرید نو با تدارکات است. گارانتی را هم بعد از برگشت همین نقش روی سریال می‌نویسد.</p></article>
+      <article class="role"><strong>انبار</strong><p>شماره ایندنت را روی کد پالت یا روی خرید می‌گذارد. بدون این شماره، ارسال و سفارش سند انبار ندارند و مرحله بعد باز نمی‌شود.</p></article>
+      <article class="role"><strong>تعمیرات</strong><p>بازرسی آند و کاتد جداشده و بازرسی المان تازه‌دمونتاژشده مال تعمیرات است. تأیید، قطعه را به مرحله بعد می‌برد. رد، با دلیل به شرکت برمی‌گردد.</p></article>
+      <article class="role"><strong>کارگاه سل</strong><p>تحویل سل خارج‌شده، انتخاب سالم یا خراب، و کمک به برگرداندن سل سالم به پوزیشن مال کارگاه سل است. نصب را تا وقتی پوزیشن اشغال نباشد می‌تواند ثبت کند.</p></article>
+      <article class="role wide"><strong>مدیر کارخانه و مدیریت سازمان</strong><p>مدیر کارخانه در هر مرحله می‌تواند کار را جلو ببرد تا یک گره معطل، کل مسیر را نگه ندارد. مدیریت سازمان همان تصویر را فقط برای دیدن دارد. کارتابل برایش باز است و اقدام بسته است، تا نظارت با دخالت در کار شیفت قاطی نشود.</p></article>
+    </div>
+  </section>
+
+  <section id="sla" data-label="مهلت">
+    <p class="kicker">۲۸ · کارتابل</p>
+    <h2>مهلت مرحله‌ها و زنگ کارتابل همان نقش</h2>
+    <div class="prose">
+      <p class="lead">دست‌به‌دست بدون مهلت، به تعویق بی‌صدا تبدیل می‌شود. هر مرحله سقف زمانی دارد. نزدیک شدن به مهلت هشدار می‌دهد و رد شدن از آن، دیرکرد را روی همان ردیف نشان می‌دهد. برای پوشش، تاریخ وعده شرکت جای سقف ثابت را می‌گیرد، چون تأخیر واقعی مال تقویم شرکت است نه مال یک عدد کلی در تنظیمات.</p>
+      <p>زنگ بالای برنامه همه کارتابل کارخانه را روی سر کاربر نمی‌ریزد. فقط ردیف‌هایی را می‌آورد که مال نقش او هستند. با باز شدن ردیف، برنامه به همان درخواست می‌رود، نه به یک فهرست کلی که باید دوباره در آن جستجو کرد. این تفاوت بین «خبر داشتن» و «رسیدن به کار» است.</p>
+      <p>مهلت‌ها در تنظیمات قابل دیدن‌اند تا عددها پنهان و سلیقه‌ای نباشند. اگر یک مرحله باید بیشتر طول بکشد، سقفش همان‌جا عوض می‌شود و کارتابل بعدی با سقف تازه هشدار می‌دهد. کسی مجبور نیست مهلت را در یک فایل جانبی نگه دارد.</p>
+    </div>
+  </section>
+
+  <section id="room" data-label="سل‌روم">
+    <p class="kicker">۲۹ · دیدن مدار</p>
+    <h2>مانیتورینگ سالن و داشبورد المنت‌ها</h2>
+    <div class="prose">
+      <p class="lead">مانیتورینگ دو ترین را کنار هم نشان می‌دهد، با هشدار و سلامت سل. واحدی که خاموش است از جمع کنار می‌رود تا تصویر، میانگین بی‌بار نباشد. این صفحه برای شیفت است که بخواهد قبل از ورق زدن جدول، ببیند کدام الکترولایزر از بقیه جدا شده است.</p>
+      <p>داشبورد المنت سؤال دیگری دارد. سل کجاست و قطعه‌اش به کدام درِ بعدی باید برود. کارگاه، پوشش، عمر قطعه و درخواست‌های باز از خود سابقه المان ساخته می‌شوند. این صفحه جای فرم مونتاژ را نمی‌گیرد. جمعیت را طوری نشان می‌دهد که تصمیم بعدی معلوم باشد، نه اینکه فقط یک عدد کلی روی میز بماند.</p>
+    </div>
+    <div class="grid-2">
+      <figure class="shot">
+        <img src="media/03-monitoring.png" alt="مانیتورینگ دو ترین" />
+        <figcaption>سل‌روم. هر الکترولایزر نوار ولتاژ خودش را دارد. واحد خاموش از جمع کنار می‌رود تا تصویر، میانگین ساعت بی‌بار نباشد.</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="media/06-dashboard.png" alt="داشبورد المنت‌ها" />
+        <figcaption>داشبورد، کارگاه و پوشش و عمر قطعه را از سابقه المان می‌سازد. سؤال صفحه این است که سل کجاست و قطعه‌اش به کدام در باید برود.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="settings" data-label="حافظه فایل‌ها">
+    <p class="kicker">۳۰ · تنظیمات</p>
+    <h2>تنظیمات واحد و فایل جدول‌ها</h2>
+    <div class="prose">
+      <p class="lead">تنظیمات، انباری از گزینه‌های پراکنده نیست. جایی است که واحد، چیدمان الکترولایزر، کلاس‌های ولتاژ، سطح الکترود، دلایل بازرسی، مهلت گردش کار و فایل جدول‌ها یک‌جا تعریف می‌شوند. اگر این تعریف‌ها در کامپیوتر افراد بمانند، فردا دو نفر دو کلاس ولتاژ متفاوت دارند و گزارش‌هایشان با هم نمی‌خواند.</p>
+      <p>بخش فایل جدول‌ها نشان می‌دهد آخرین اکسل هر جدول کی آمده و چند رکورد از آن نشسته است. بارگذاری تازه، کل جدول را جایگزین می‌کند تا دو نیمه از دو فایل با هم زندگی نکنند. حذف فایل هم یعنی همان جدول و ردیف‌هایش با هم می‌روند، نه اینکه فایل پاک شود و داده یتیم بماند. این رفتار، جواب همان سال‌هایی است که نسخه درست مال کسی بود که آخرین فایل را داشت.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/25-settings.png" alt="فایل جدول‌ها در تنظیمات" />
+      <figcaption>هر جدول برنامه، فایل اکسل آخر، حجم و تعداد رکورد را نشان می‌دهد. بارگذاری جدید کل جدول را عوض می‌کند تا دو نسخه از یک سابقه کنار هم نمانند.</figcaption>
+    </figure>
+  </section>
+
+
+  <section id="dashmap" data-label="نقشه سل‌ها">
+    <p class="kicker">۳۲ · داشبورد</p>
+    <h2>نقشه پر بودن هر الکترولایزر و وضعیت سل‌های داخل آن</h2>
+    <div class="prose">
+      <p class="lead">داشبورد المنت فقط یک عدد کلی نیست. تب سلول‌ها نشان می‌دهد در هر الکترولایزر چند پوزیشن پر است، کجا دو المان روی یک سل ثبت شده، و خود چیدمان همان الکترولایزر با شماره المان دیده می‌شود. تب‌های کنار آن، گزارش کار، گردش کار سل، کارگاه، قطعات نصب‌شده، پوشش، حدود عمر و حدود داده را از همان سابقه می‌سازند.</p>
+      <p>از این صفحه می‌شود فهمید سل بعدی باید به کدام در برود: در سرویس بماند، به کارگاه برود، یا قطعه‌اش وارد پوشش شود. گزارش المان هم از همین‌جا باز می‌شود تا شیفت بین فرم مونتاژ و تصویر سالن جابه‌جا نشود.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/62-dashboard-cells.png" alt="داشبورد مدیریت المنت‌ها و نقشه سلول‌ها" />
+      <figcaption>تب سلول‌ها، پر بودن هر الکترولایزر را جدا نشان می‌دهد و پایین صفحه چیدمان همان واحد را با شماره المان می‌گذارد. هشدار بالای جدول، سل‌هایی را نشان می‌دهد که بیش از یک المان روی یک پوزیشن دارند.</figcaption>
+    </figure>
+  </section>
+
+  <section id="recoating" data-label="هشت مرحله پوشش">
+    <p class="kicker">۳۳ · پوشش مجدد</p>
+    <h2>هشت مرحله پوشش، از انتخاب شرکت تا پایان پایه</h2>
+    <div class="prose">
+      <p class="lead">در انبار آند و کاتد، پوشش مجدد یک نوار مرحله دارد. انتخاب شرکت پوشش‌دهنده با تدارکات شروع می‌شود. بعد انبار شماره ایندنت را می‌زند، تدارکات ارسال به شرکت را ثبت می‌کند، برگشت از شرکت و تأیید نهایی تعمیرات می‌آید، بازرسی و تأیید پایه انجام می‌شود، و در آخر قطعه به پایه برمی‌گردد. تا مرحله جاری تمام نشود، مرحله بعد برای نقش بعدی باز نمی‌شود.</p>
+      <p>روی همین فرم، تعداد در هر پالت و تفکیک آند و کاتد در پالت جدا مشخص می‌شود. درخواست‌های باز پایین صفحه می‌مانند تا کد، مرحله، مهلت و شرکت در یک ردیف دیده شود. خرید نو تب خودش را دارد و با این نوار قاطی نمی‌شود.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/63-recoating.png" alt="نوار هشت مرحله پوشش مجدد" />
+      <figcaption>نوار پوشش مجدد، صاحب هر قدم را زیر اسم مرحله نوشته است. ردیف پایین، کد پالت و مرحله جاری را نشان می‌دهد تا انبار و تدارکات روی یک سابقه کار کنند.</figcaption>
+    </figure>
+  </section>
+
+  <section id="coating-file" data-label="پرونده پوشش">
+    <p class="kicker">۳۴ · پرونده یک پالت</p>
+    <h2>پرونده هر کد پالت: شرکت، تاریخ، پالت و تأیید</h2>
+    <div class="prose">
+      <p class="lead">با باز شدن یک کد پوشش، همان هشت مرحله به‌صورت پرونده دیده می‌شود. شرکت، شماره ایندنت، تاریخ ارسال، تاریخ برگشت و نتیجه بازرسی روی همان کد می‌ماند. اگر قطعه داخل پالت به بازرسی المان نیاز داشته باشد، درخواست بازرسی از همین پرونده ساخته می‌شود و فایل اکسل پالت به آن وصل است.</p>
+      <p>رد یا تأیید اینجا پاک کردن ردیف نیست. نتیجه روی سریال داخل پالت می‌نشیند و مرحله به شرکت یا به پایه برمی‌گردد. به این شکل، انبار، تدارکات، تعمیرات و کارگاه C-90 یک پرونده را می‌بینند، نه چهار فایل جدا.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/61-coating-dialog.png" alt="پرونده یک کد پوشش و پالت" />
+      <figcaption>پرونده کد پوشش، مرحله جاری را مشخص می‌کند و قطعات داخل پالت را با نوع، سریال و وضعیت نشان می‌دهد. درخواست بازرسی از همین پنجره به تعمیرات می‌رود.</figcaption>
+    </figure>
+  </section>
+
+  <section id="piece-record" data-label="شناسنامه قطعه">
+    <p class="kicker">۳۵ · شناسنامه آند و کاتد</p>
+    <h2>شناسنامه قطعه: سریال، المان، پوشش و وضعیت سرویس</h2>
+    <div class="prose">
+      <p class="lead">در انبار، هر آند یا کاتد یک ردیف شناسنامه دارد. شماره سریال، وضعیت، المان میزبان، تاریخ مونتاژ، عمر، تعداد پوشش و آخرین گردش کار در همان ردیف است. کنار جدول، عملیات همان قطعه است: ارسال به نگهداری، ثبت برگشت، و نتیجه بازرسی. لازم نیست برای دیدن وضع یک آند، بین فرم مونتاژ و فرم انبار جستجو شود.</p>
+      <p>تب‌های همین صفحه، کارتابل، تابعیت، پوشش مجدد، شرکت‌ها، خرید، بازرسی، تاریخچه و گزارش را جدا کرده است. آمار بالای صفحه فقط ورودی این تب‌هاست: داخل سل، آماده نصب، برگشتی، و آندها یا کاتدهایی که باید از هم جدا خوانده شوند.</p>
+    </div>
+    <figure class="shot" style="margin-top:28px">
+      <img src="media/60-anode-record.png" alt="شناسنامه آند در انبار" />
+      <figcaption>جستجوی سریال، ردیف همان آند را با المان، پوشش و آخرین کار باز می‌کند. دکمه‌های چپ، کار بعدی همان قطعه است نه یک فرم عمومی.</figcaption>
+    </figure>
+  </section>
+
+  <section id="forms" data-label="بقیه فرم‌ها">
+    <p class="kicker">۳۶ · فرم‌هایی که در منو هستند</p>
+    <h2>فرم‌های گزارش، نگهداری و مدیریت که کنار کارتابل قرار دارند</h2>
+    <div class="prose">
+      <p class="lead">کارتابل سل و پوشش، همه برنامه نیست. منو و فهرست فرم‌ها، همان ابزارهای گزارش و نگهداری نرم‌افزار طراح را هم دارند. هر کدام سطح و ورودی خودش را دارد تا عدد یک الکترولایزر با عدد کل واحد قاطی نشود.</p>
+    </div>
+    <div class="grid-2">
+      <article class="card">
+        <h3>ولتاژ: ورود و نمودار</h3>
+        <p>ورود ولتاژ برای الکترولایزر، همه المان‌ها، گروه و تک‌المان جداست. خروجی، جدول یا نمودار است برای کل واحد، ترین، یک الکترولایزر، گروه یا المان. المان‌های با ولتاژ بالا فهرست جدا دارند و توزیع ولتاژ استاندارد نشان می‌دهد جمعیت سل‌ها به کدام سمت رفته است. ساعتی که بارش خالی است در ورود بسته می‌ماند.</p>
+      </article>
+      <article class="card">
+        <h3>بازده، انرژی و Un / Ce</h3>
+        <p>بازده از تولید سود، و بیلان آندی از آنالیز آب‌نمک و آنولیت و گاز کلر، هر کدام برای واحد، ترین، الکترولایزر، گروه و المان حساب می‌شوند. مصرف انرژی از ولتاژ نرمال‌شده و بازده همان روز می‌آید. صفحه Un / Ce همین زوج را روی یک نمودار می‌گذارد و اگر جفت معتبر نباشد نقطه نمی‌سازد.</p>
+      </article>
+      <article class="card">
+        <h3>آنالیزها</h3>
+        <p>آب‌نمک خالص، آنولیت، کاتولیت، گاز کلر، اسید برای اسیدی‌سازی، آب دمین و خوراک سود رقیق هر کدام فرم خود را دارند و در سطح واحد، ترین، گروه یا المان دیده می‌شوند. واردات آنالیز، برگه آزمایشگاه را به ردیف قابل محاسبه تبدیل می‌کند. بیلان آندی بدون همین ردیف‌ها نتیجه نمی‌سازد.</p>
+      </article>
+      <article class="card">
+        <h3>آمار، ملاحظات و تست ران</h3>
+        <p>آمار، توزیع و میانگین‌های همان داده‌های ولتاژ و بازده را برای مقایسه نشان می‌دهد. ملاحظات، یادداشت بهره‌برداری را با تاریخ و بخش واحد نگه می‌دارد تا کنار شیفت شفاهی نماند. نتایج تست ران، آزمون عملکرد را با مبنا و بخش واحد ثبت می‌کند و از گزارش روزانه جداست.</p>
+      </article>
+      <article class="card">
+        <h3>توقف واحد</h3>
+        <p>فهرست توقف، دلایل، دسته‌ها و علت تریپ در بخش ورود هستند. نتایج، همان داده‌ها را در بازه زمانی و به تفکیک دلیل یا دسته نشان می‌دهد. ثبت خاموشی اینجا به درخواست خروج سل وصل است؛ تا بهره‌بردار خاموشی را ننویسد کارگاه سل را تحویل نمی‌گیرد.</p>
+      </article>
+      <article class="card">
+        <h3>جستجو</h3>
+        <p>جستجو المان فعال و غیرفعال، شماره آند و کاتد و غشا، تاریخ مونتاژ و راه‌اندازی و خروج و دمونتاژ، گروه، روز بهره‌برداری، بازرسی، تعویض غشا و سریال تکراری را جدا دارد. جواب به همان رکورد مونتاژ برمی‌گردد، نه به یک فهرست کپی‌شده.</p>
+      </article>
+      <article class="card">
+        <h3>جزئیات آند، کاتد، غشا و گروه</h3>
+        <p>مدیریت المان علاوه بر مونتاژ، فرم جزئیات آند، جزئیات کاتد و جزئیات غشا دارد. تعریف گروه و نمای کلی گروه، سل‌ها را برای گزارش ولتاژ و بازده دسته‌بندی می‌کند. تعویض غشا و آمار غشا از مسیر پوشش آند و کاتد جدا مانده است.</p>
+      </article>
+      <article class="card">
+        <h3>تفکیک، بازرسی و اجزای سلول</h3>
+        <p>تفکیک الکترود، وضعیت قطعه بعد از باز شدن را ثبت می‌کند. بازرسی المان و گزارش بازرسی مونتاژ، رأی کارگاه را به همان المان برمی‌گرداند. اجزای سلول و گزارش تعمیر آند، کاتد و غشا، نگهداری را از گردش پوشش جدا نگه می‌دارند تا یک تعمیر مکانیکی با یک سفارش پوشش عوض نشود.</p>
+      </article>
+      <article class="card">
+        <h3>نمودار واحد</h3>
+        <p>نمودار ولتاژ، جریان و توان برای کل واحد، یک ترین یا یک الکترولایزر روی یک بوم است. هر سری را می‌شود جدا روشن یا خاموش کرد. این صفحه برای دیدن روند همان بازه است، نه برای ورود عدد.</p>
+      </article>
+      <article class="card">
+        <h3>کاربران، فعالیت، تیکت و لاگ</h3>
+        <p>کاربران و دسترسی‌ها، سیزده نقش کارخانه را روی فرم‌ها می‌گذارد. فعالیت، نشان می‌دهد چه کسی چه رکوردی را عوض کرده است. تیکت برای پیگیری کار داخل واحد است و لاگ، ورود و اقدام را برای بازبینی نگه می‌دارد. درباره EAP شناسنامه نسخه برنامه است.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="paths" data-label="مسیرها">
+    <p class="kicker">۳۱ · کجا دیده می‌شود</p>
+    <h2>فهرست بخش‌های داخل برنامه</h2>
+    <p class="lead">این فهرست میانبر تزئینی نیست. هر ردیف، درِ یکی از تصمیم‌هایی است که در بخش‌های بالا شرح داده شد و داخل همین روایت باز می‌شود.</p>
+    <div class="paths">
+      <a href="#arrangement"><strong>چیدمان سلول</strong><span>پوزیشن، المان نصب‌شده، و درخواست خروج از روی خود سل.</span></a>
+      <a href="#birth"><strong>داده‌های مونتاژ</strong><span>شناسنامه المان و فلو زنده سرویس، کارگاه، دمونتاژ و مونتاژ نو.</span></a>
+      <a href="#room"><strong>داشبورد المنت‌ها</strong><span>کارگاه، قطعات نصب‌شده، پوشش و حدود عمر، از خود سابقه.</span></a>
+      <a href="#warehouse"><strong>انبار آند و کاتد</strong><span>پوشش مجدد، خرید نو، ایندنت، شرکت، گارانتی و بازرسی.</span></a>
+      <a href="#voltage"><strong>ولتاژ استاندارد</strong><span>از کل واحد تا یک المان، با قفل ساعت بی‌بار.</span></a>
+      <a href="#efficiency"><strong>بازده و انرژی</strong><span>فرمول طراح، دو مبنا، و انرژی همان روز.</span></a>
+      <a href="#analysis"><strong>آنالیز</strong><span>آب‌نمک، آنولیت، کاتولیت و کلر؛ خوراک بیلان.</span></a>
+      <a href="#shutdown"><strong>توقف واحد</strong><span>دلیل، دسته و علت تریپ کنار ورود.</span></a>
+      <a href="#room"><strong>مانیتورینگ</strong><span>دو ترین، هشدار، و کنار رفتن واحد خاموش از میانگین.</span></a>
+      <a href="#roles"><strong>کاربران و نقش‌ها</strong><span>سیزده نقش؛ دیدن کارتابل جدا از حق اقدام.</span></a>
+      <a href="#sla"><strong>مهلت گردش کار</strong><span>سقف هر مرحله، و هشداری که فقط کار همان نقش را می‌آورد.</span></a>
+      <a href="#settings"><strong>فایل جدول‌ها</strong><span>آخرین اکسل هر سابقه، بدون نسخه رقیب.</span></a>
+      <a href="#dashmap"><strong>نقشه سل‌ها</strong><span>پر بودن هر الکترولایزر و چیدمان شماره المان.</span></a>
+      <a href="#recoating"><strong>هشت مرحله پوشش</strong><span>از انتخاب شرکت تا برگشت قطعه به پایه.</span></a>
+      <a href="#piece-record"><strong>شناسنامه آند و کاتد</strong><span>سریال، المان میزبان، پوشش و کار بعدی.</span></a>
+      <a href="#forms"><strong>آمار، جستجو، توقف و نگهداری</strong><span>فرم‌های گزارش و نگهداری کنار کارتابل.</span></a>
+    </div>
+  </section>
+
+  <section class="close" id="end" data-label="جمع">
+    <p class="kicker">جمع</p>
+    <h2>جمع‌بندی: حافظه طراح و کارتابل</h2>
+    <p>نرم‌افزار طراح حافظه واحد بود: هویت قطعه، ولتاژ در چند سطح، بازده با دو مبنا، آنالیز به‌عنوان خوراک محاسبه، و توقفی که دلیل می‌خواست. برنامه وب همان حافظه را سر جایش گذاشت. دست‌به‌دست‌هایی را که در اکسس فقط طرح شده بودند، به مسیر، صاحب، مهلت و راه بازگشت تبدیل کرد، تا سل از لحظه خروج تا برگشت قطعه، وسط راه گم نشود.</p>
+    <p class="meta">Arvand Cell Management · پتروشیمی اروند · V 1.32</p>
+  </section>
+</main>
+<script>
+const cells = document.getElementById("cells");
+for (let i = 0; i < 48; i++) cells.appendChild(document.createElement("i"));
+const cubes = document.getElementById("cubes");
+for (let i = 0; i < 42; i++) {
+  const el = document.createElement("i");
+  el.style.right = (6 + (i % 14) * 6.4) + "%";
+  el.style.top = (8 + Math.floor(i / 14) * 28) + "%";
+  el.style.animationDelay = (i % 7) * 0.35 + "s";
+  cubes.appendChild(el);
+}
+
+const toc = document.getElementById("toc");
+const sections = [...document.querySelectorAll("main > section")];
+const labels = {
+  open: "شروع",
+  electrolyzer: "الکترولایزر",
+  element: "المان و قطعات",
+  uhde: "نرم‌افزار طراح",
+  gap: "سال‌های میانی",
+  project: "پروژه وب",
+  "cell-flow": "سازوکار سل",
+  "piece-flow": "پوشش و خرید",
+  life: "سرگذشت یک سل",
+  roles: "نقش‌ها",
+  beyond: "فراتر از اکسس",
+  paths: "مسیرها",
+  end: "جمع"
+};
+sections.forEach((sec) => {
+  const li = document.createElement("li");
+  const a = document.createElement("a");
+  a.href = "#" + sec.id;
+  a.textContent = sec.dataset.label || labels[sec.id] || sec.id;
+  a.dataset.id = sec.id;
+  li.appendChild(a);
+  toc.appendChild(li);
+});
+
+const links = [...toc.querySelectorAll("a")];
+const bar = document.getElementById("bar");
+function onScroll() {
+  const y = window.scrollY + 120;
+  let current = sections[0].id;
+  sections.forEach((sec) => { if (sec.offsetTop <= y) current = sec.id; });
+  links.forEach((a) => a.classList.toggle("active", a.dataset.id === current));
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  bar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + "%";
+}
+document.addEventListener("scroll", onScroll, { passive: true });
+onScroll();
+
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "PageDown" && e.key !== "PageUp") return;
+  const y = window.scrollY + 80;
+  let idx = 0;
+  sections.forEach((sec, i) => { if (sec.offsetTop <= y) idx = i; });
+  const next = e.key === "ArrowDown" || e.key === "PageDown" ? Math.min(sections.length - 1, idx + 1) : Math.max(0, idx - 1);
+  if (next !== idx) {
+    e.preventDefault();
+    sections[next].scrollIntoView({ behavior: "smooth" });
+  }
+});
+
+const cellCopy = {
+  keep: {
+    title: "سل سالم در کارگاه گم نمی‌شود",
+    who: "بهره‌بردار یا کارگاه سل",
+    body: "تصمیم «بماند» درخواست را نمی‌بندد. سل در وضعیت آماده کارگاه است و کارتابل روی بازگشت به مدار می‌ماند.",
+    points: [
+      "الکترولایزر و پوزیشن و تاریخ نصب انتخاب می‌شود.",
+      "پوزیشن اشغال را برنامه رد می‌کند.",
+      "با نصب، تصمیم به جابه‌جاییِ انجام‌شده تبدیل می‌شود و درخواست بسته می‌شود.",
+      "تا آن لحظه، هم بهره‌بردار و هم کارگاه سل دکمه نصب را دارند."
+    ]
+  },
+  move: {
+    title: "جابه‌جایی، یک نصب تازه است",
+    who: "بهره‌بردار، بعد از خاموشی",
+    body: "اگر سل باید همین حالا به جایگاه دیگری برود، پوزیشن جدید ثبت می‌شود و درخواست همان‌جا تمام می‌شود. این مسیر برای وقتی است که کارگاه لازم نیست سل را نگه دارد.",
+    points: [
+      "سل باید از مدار خارج شده باشد.",
+      "جایگاه مقصد نباید سل دیگری داشته باشد.",
+      "سابقه نصب قبلی می‌ماند؛ نصب جدید روی همان المان نوشته می‌شود."
+    ]
+  },
+  open: {
+    title: "باز شدن، تا تأیید C-90 تمام نیست",
+    who: "اول کارگاه، بعد C-90، بعد تعمیرات",
+    body: "انتخاب دمونتاژ درخواست را نمی‌بندد. سل به انتظار تأیید تاریخ باز شدن می‌رود و فقط C-90 آن تاریخ را قطعی می‌کند.",
+    points: [
+      "با ثبت تاریخ، دمونتاژ روی المان می‌نشیند.",
+      "اگر دمونتاژ تازه باشد، درخواست بازرسی قطعه برای تعمیرات باز می‌شود.",
+      "آند و کاتد از اینجا به رأی پوشش می‌رسند: بماند، پوشش مجدد، یا Rate off.",
+      "درخواست قدیمی که قبلاً بسته شده و هنوز منتظر دمونتاژ است، دوباره به کارتابل C-90 برمی‌گردد."
+    ]
+  }
+};
+const cellChoices = document.getElementById("cell-choices");
+const cellDetail = document.getElementById("cell-detail");
+function showCell(key) {
+  const item = cellCopy[key];
+  cellChoices.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.key === key));
+  cellDetail.innerHTML = `<span class="who">${item.who}</span><h3>${item.title}</h3><p>${item.body}</p><ul>${item.points.map((p) => `<li>${p}</li>`).join("")}</ul>`;
+}
+cellChoices.addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (btn) showCell(btn.dataset.key);
+});
+showCell("open");
+
+const pieceCopy = [
+  ["انتخاب قطعه", "C-90", "قطعه از سابقه واقعی همان سریال انتخاب می‌شود، نه از یک فهرست دستی. سیستم کد پالت را می‌سازد تا از این لحظه تدارکات، انبار، شرکت و بازرسی با یک شناسه حرف بزنند. اگر این کد ساخته نشود، برگشت قطعه به آند یا کاتد اول وصل نمی‌شود."],
+  ["شرکت و تاریخ", "تدارکات", "تدارکات شرکت پوشش‌دهنده، تاریخ ارسال و تاریخ وعده بازگشت را ثبت می‌کند و فایل قطعات را برای شرکت می‌فرستد. تا این تاریخ‌ها نباشد، انبار نمی‌داند برای کدام خروج باید ایندنت بزند و مهلت مرحله بعد هم معنی ندارد."],
+  ["ایندنت", "انبار", "انبار شماره ایندنت را صادر می‌کند و آن را به همان کد پالت اضافه می‌کند. بدون این شماره، خروج قطعه از کارخانه سند انبار ندارد و مرحله ارسال برای تدارکات باز نمی‌شود. ایندنت وسط مسیر است، نه یک فرم جدا در انتهای کار."],
+  ["ارسال", "تدارکات", "با ثبت ارسال، خروج فیزیکی قطعی می‌شود و قطعه نزد شرکت است. از این لحظه مهلت، تاریخ وعده‌ای است که شرکت داده، نه یک سقف ثابت داخل برنامه. کارتابل همان تاریخ را نشان می‌دهد تا دیرکرد با تقویم واقعی شرکت سنجیده شود."],
+  ["برگشت", "تدارکات", "تاریخ رسیدن، مدت تأخیر و طرف تأخیر ثبت می‌شود: کارخانه، شرکت، حمل، یا سایر. گزارش شرکت پیوست می‌شود و مدت گارانتی روی همان سریال می‌نشیند تا دفعه بعد، عمر پوشش با ضمانت قبلی مقایسه شود."],
+  ["تأیید فنی", "تعمیرات و فرآیند", "خدمات یا تأیید می‌شود یا با دلیل رد می‌شود. رد کردن ردیف را پاک نمی‌کند. قطعه برای دوباره‌کاری به شرکت برمی‌گردد و مسیر از مرحله شرکت دوباره ادامه پیدا می‌کند. تأیید، در را برای بازگشت به چرخه باز می‌کند."],
+  ["بازگشت به چرخه", "C-90", "کارگاه C-90 قطعه را به استفاده برمی‌گرداند، یا تأیید نهایی را نمی‌دهد و کار را به تدارکات پس می‌فرستد. هر دو تصمیم در کارتابل می‌ماند تا معلوم باشد قطعه چرا به مونتاژ برگشته یا هنوز بیرون از چرخه است."]
+];
+const pieceSteps = document.getElementById("piece-steps");
+const pieceDetail = document.getElementById("piece-detail");
+pieceCopy.forEach((step, i) => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.innerHTML = `<strong>${step[0]}</strong><span>${step[1]}</span>`;
+  b.addEventListener("click", () => showPiece(i));
+  pieceSteps.appendChild(b);
+});
+function showPiece(i) {
+  [...pieceSteps.children].forEach((b, n) => b.classList.toggle("on", n === i));
+  const step = pieceCopy[i];
+  pieceDetail.innerHTML = `<span class="who">${step[1]}</span><h3>${step[0]}</h3><p>${step[2]}</p>`;
+}
+showPiece(0);
+
+function isolateLatin(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  const re = /[A-Za-z][A-Za-z0-9./+\-]*([ ]+[A-Za-z0-9./+\-]+)*/g;
+  nodes.forEach((node) => {
+    const parent = node.parentElement;
+    if (!parent || parent.closest("script, style, .en")) return;
+    const text = node.nodeValue;
+    if (!re.test(text)) return;
+    re.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let last = 0;
+    let match;
+    while ((match = re.exec(text))) {
+      if (match.index > last) frag.appendChild(document.createTextNode(text.slice(last, match.index)));
+      const span = document.createElement("span");
+      span.className = "en";
+      span.dir = "ltr";
+      span.textContent = match[0];
+      frag.appendChild(span);
+      last = match.index + match[0].length;
+    }
+    if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+    parent.replaceChild(frag, node);
+  });
+}
+isolateLatin(document.querySelector("main"));
+const showCellBase = showCell;
+showCell = function (key) {
+  showCellBase(key);
+  isolateLatin(cellDetail);
+};
+const showPieceBase = showPiece;
+showPiece = function (i) {
+  showPieceBase(i);
+  isolateLatin(pieceDetail);
+};
+showCell("open");
+showPiece(0);
+</script>
+</body>
+</html>

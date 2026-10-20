@@ -183,6 +183,9 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   const [from, setFrom] = useState(() => dateFrom || monthStartIso());
   const [to, setTo] = useState(() => dateTo || todayIsoLocal());
   const [draft, setDraft] = useState<Partial<Shutdown>>({});
+  const [editing, setEditing] = useState<number | null>(null);
+  const [editDraft, setEditDraft] = useState<Partial<Shutdown>>({});
+  const [query, setQuery] = useState("");
 
   const listParams = useMemo(() => {
     const params: Record<string, unknown> = { limit: 2000 };
@@ -222,7 +225,17 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     [causes]
   );
 
-  const totalMins = rows.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) =>
+      [r.nr, r.plant_part, r.code, r.cause, r.category, r.remarks, r.shutdown_time, r.startup_time, r.ka_before_trip]
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
+    );
+  }, [rows, query]);
+  const totalMins = shown.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
   const totalHm = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, "0")}`;
 
   function fieldVisible(field: string) {
@@ -262,7 +275,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       patch.category = match.category;
     }
     if (isNew) setDraft((d) => ({ ...d, ...patch }));
-    else if (row) saveRow(row, patch);
+    else setEditDraft((d) => ({ ...d, ...patch }));
   }
 
   function applyCause(row: Shutdown | null, cause: string, isNew: boolean) {
@@ -277,7 +290,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       patch.category = match.category;
     }
     if (isNew) setDraft((d) => ({ ...d, ...patch }));
-    else if (row) saveRow(row, patch);
+    else setEditDraft((d) => ({ ...d, ...patch }));
   }
 
   function createNew() {
@@ -336,9 +349,13 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
             <span>{t("menus.till")}</span>
             <DateInput className="access-inset-field" value={to} onChange={(e) => setTo(e.target.value)} />
           </label>
+          <label className="flex flex-col gap-1">
+            <span>{t("common.search")}</span>
+            <input className="access-inset-field w-52" value={query} onChange={(e) => setQuery(e.target.value)} />
+          </label>
         </div>
         <div className="shutdown-summary-chip font-bold">
-          {t("shutdowns.totalDuration")}: {totalHm} &nbsp;·&nbsp; {t("shutdowns.totalShutdowns")}: {rows.length}
+          {t("shutdowns.totalDuration")}: {totalHm} &nbsp;·&nbsp; {t("shutdowns.totalShutdowns")}: {shown.length}
         </div>
       </div>
       <div className="overflow-auto shutdown-list-scroll">
@@ -359,11 +376,14 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               {fieldVisible("mtbf_days") ? <th className="w-24">{t("fields.mtbfDays")}</th> : null}
               {fieldVisible("category") ? <th className="w-28">{t("fields.category")}</th> : null}
               {fieldVisible("remarks") ? <th>{t("fields.remarks")}</th> : null}
-              {editable ? <th className="w-16" /> : null}
+              {editable ? <th className="w-36" /> : null}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
+            {shown.map((row) => {
+              const open = editing === row.nr;
+              const src = (open ? { ...row, ...editDraft } : row) as Shutdown;
+              return (
               <tr key={row.nr} onClick={() => setActive(row.nr)} className={active === row.nr ? "is-active-row" : undefined}>
                 <td className="access-selector">{active === row.nr ? "►" : ""}</td>
                 <td>
@@ -371,13 +391,13 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 </td>
                 {fieldVisible("plant_part") ? (
                   <td onClick={(e) => e.stopPropagation()}>
-                    {editable ? (
+                    {open ? (
                       <ElectrolyzerCombo
                         variant="access"
                         className="w-full min-w-[4rem]"
                         plainOptions={PLANT_SCOPES}
-                        value={plantPartValue(row.plant_part)}
-                        onChange={(v) => saveRow(row, { plant_part: plantPartValue(v) || null })}
+                        value={plantPartValue(src.plant_part)}
+                        onChange={(v) => setEditDraft((d) => ({ ...d, plant_part: plantPartValue(v) || null }))}
                       />
                     ) : (
                       <span className="block px-1">{plantPartValue(row.plant_part) || "—"}</span>
@@ -389,9 +409,9 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                     <input
                       type="datetime-local"
                       className="w-full tabular-nums"
-                      value={toLocalInput(row.shutdown_time)}
-                      disabled={!editable}
-                      onChange={(e) => saveRow(row, { shutdown_time: toApiDateTime(e.target.value) })}
+                      value={toLocalInput(src.shutdown_time)}
+                      disabled={!open}
+                      onChange={(e) => setEditDraft((d) => ({ ...d, shutdown_time: toApiDateTime(e.target.value) }))}
                     />
                   </td>
                 ) : null}
@@ -400,22 +420,22 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                     <input
                       type="datetime-local"
                       className="w-full tabular-nums"
-                      value={toLocalInput(row.startup_time)}
-                      disabled={!editable}
-                      onChange={(e) => saveRow(row, { startup_time: toApiDateTime(e.target.value) })}
+                      value={toLocalInput(src.startup_time)}
+                      disabled={!open}
+                      onChange={(e) => setEditDraft((d) => ({ ...d, startup_time: toApiDateTime(e.target.value) }))}
                     />
                   </td>
                 ) : null}
                 <td>
-                  <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(row)} readOnly tabIndex={-1} />
+                  <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(src)} readOnly tabIndex={-1} />
                 </td>
                 {fieldVisible("code") ? (
                   <td onClick={(e) => e.stopPropagation()}>
                     <ComboInput
                       listId={`sd-code-${row.nr}`}
                       options={codeOptions}
-                      value={row.code || ""}
-                      disabled={!editable}
+                      value={src.code || ""}
+                      disabled={!open}
                       className="w-14"
                       onChange={(v) => applyCode(row, v, false)}
                     />
@@ -426,8 +446,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                     <ComboInput
                       listId={`sd-cause-${row.nr}`}
                       options={causeOptions}
-                      value={row.cause || ""}
-                      disabled={!editable}
+                      value={src.cause || ""}
+                      disabled={!open}
                       onChange={(v) => applyCause(row, v, false)}
                     />
                   </td>
@@ -438,22 +458,22 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                       type="number"
                       step="0.01"
                       className="w-20 text-center tabular-nums"
-                      value={row.ka_before_trip ?? ""}
-                      disabled={!editable}
+                      value={src.ka_before_trip ?? ""}
+                      disabled={!open}
                       onChange={(e) =>
-                        saveRow(row, { ka_before_trip: e.target.value === "" ? null : Number(e.target.value) })
+                        setEditDraft((d) => ({ ...d, ka_before_trip: e.target.value === "" ? null : Number(e.target.value) }))
                       }
                     />
                   </td>
                 ) : null}
                 {fieldVisible("lost_load") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={row.lost_load ?? ""} readOnly tabIndex={-1} title="Chlorine lost = duration × KA / 4.85" />
+                    <input className="w-24 text-center tabular-nums" value={open ? "" : (row.lost_load ?? "")} readOnly tabIndex={-1} title="Chlorine lost = duration × KA / 4.85" />
                   </td>
                 ) : null}
                 {fieldVisible("lost_production") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={row.lost_production ?? ""} readOnly tabIndex={-1} title="NaOH lost = chlorine lost × 1.112" />
+                    <input className="w-24 text-center tabular-nums" value={open ? "" : (row.lost_production ?? "")} readOnly tabIndex={-1} title="NaOH lost = chlorine lost × 1.112" />
                   </td>
                 ) : null}
                 {fieldVisible("mtbf_days") ? (
@@ -462,10 +482,10 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                       type="number"
                       step="0.1"
                       className="w-20 text-center tabular-nums"
-                      value={row.mtbf_days ?? ""}
-                      disabled={!editable}
+                      value={src.mtbf_days ?? ""}
+                      disabled={!open}
                       title={t("fields.mtbfDays")}
-                      onChange={(e) => saveRow(row, { mtbf_days: e.target.value === "" ? null : Number(e.target.value) })}
+                      onChange={(e) => setEditDraft((d) => ({ ...d, mtbf_days: e.target.value === "" ? null : Number(e.target.value) }))}
                     />
                   </td>
                 ) : null}
@@ -474,9 +494,9 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                     <ComboInput
                       listId={`sd-cat-${row.nr}`}
                       options={categoryOptions}
-                      value={row.category || ""}
-                      disabled={!editable}
-                      onChange={(v) => saveRow(row, { category: v || null })}
+                      value={src.category || ""}
+                      disabled={!open}
+                      onChange={(v) => setEditDraft((d) => ({ ...d, category: v || null }))}
                     />
                   </td>
                 ) : null}
@@ -484,14 +504,44 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   <td onClick={(e) => e.stopPropagation()}>
                     <input
                       className="w-full"
-                      value={row.remarks || ""}
-                      disabled={!editable}
-                      onChange={(e) => saveRow(row, { remarks: e.target.value || null })}
+                      value={src.remarks || ""}
+                      disabled={!open}
+                      onChange={(e) => setEditDraft((d) => ({ ...d, remarks: e.target.value || null }))}
                     />
                   </td>
                 ) : null}
                 {editable ? (
-                  <td onClick={(e) => e.stopPropagation()}>
+                  <td onClick={(e) => e.stopPropagation()} className="whitespace-nowrap">
+                    {open ? (
+                      <>
+                        <button
+                          type="button"
+                          className="access-btn text-[11px]"
+                          disabled={updateMutation.isPending}
+                          onClick={() => {
+                            saveRow(src, {});
+                            setEditing(null);
+                          }}
+                        >
+                          {t("common.save")}
+                        </button>
+                        <button type="button" className="access-btn text-[11px]" onClick={() => setEditing(null)}>
+                          {t("common.cancel")}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        className="access-btn text-[11px]"
+                        onClick={() => {
+                          setEditing(row.nr);
+                          setEditDraft({ ...row });
+                          setActive(row.nr);
+                        }}
+                      >
+                        {t("common.edit")}
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="access-btn text-[11px]"
@@ -504,7 +554,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   </td>
                 ) : null}
               </tr>
-            ))}
+              );
+            })}
             {editable && active === "new" ? (
               <tr className="is-active-row">
                 <td className="access-selector">*</td>

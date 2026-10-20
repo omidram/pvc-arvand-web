@@ -1,0 +1,301 @@
+Version =19
+VersionRequired =19
+Checksum =-123705999
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =18708
+    ItemSuffix =82
+    Left =-60
+    Top =-45
+    Right =14820
+    Bottom =8940
+    RecSrcDt = Begin
+        0x0043f28f8087e240
+    End
+    RecordSource ="tblBasisdaten"
+    Caption =" "
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x130b0000dc080000890500008905000000000000bf280000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c4850354b5f37313534365f50434c00000000000000 ,
+        0x010418009c00b803030700000200090000000000640001000100fcff00000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742035303030205365726965732050434c2036000000 ,
+        0x000000000000040032002e018603789c654fcb2e8341183d67a6ed288a05ad48 ,
+        0x45dd2f11112f6081451fa078804a5c9aef6bb44d88205db2a88d5d130fe009b0 ,
+        0xf006dec203d8b95f66fe5423f12dce393933df9c3995caff31c436afe8a9c426 ,
+        0xdc0193284875a75ada2ac2c549c02502ea37649272471d67dd503a58779461da ,
+        0x864d43f24667a8879409d69bb6b64899a34c5167a94bf4ebd3ccc2538131045e ,
+        0x6ff146e0208e98863b0d39e513ca31f58c72ce70321f5df1dfd3203ceff21192 ,
+        0xa43e433eb1ff06f9808c505fa0ef902fe800254d291ac95073d441da148b901e ,
+        0x6a1fb597b551cabdb1cbcc419c9131eaad753751cfa108b3113e21e083f59820 ,
+        0xac416b1a0bbfcadbb1b67dfdd78eb7edcbb6ed1f7d453fec0a378d5df52017b6 ,
+        0xbc1635cc3305eda47451ba7d548c99a8e71e9defecf37f00a4d5459500000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08002600400001004850204c617365724a657420353030302053657269657320 ,
+        0x50434c2036005c5c5355444f505330325c4850354b5f37313534365f50434c00 ,
+        0x6870356b5f373135343600
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1474
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0x7f54dc1baf62fe4eaa2f088355133b2c
+            End
+            Begin
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =11565
+                    Top =226
+                    Width =1704
+                    Height =576
+                    Name ="Schaltfläche43"
+                    Caption ="Statistics"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x36d032980a85f440baf44ac94ededdbf
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =9637
+                    Top =226
+                    Height =568
+                    TabIndex =1
+                    Name ="Befehl59"
+                    Caption ="Update\015\012Display"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xf1b5b3ee185355418388db364ac25158
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =3
+                    Left =113
+                    Top =226
+                    Width =8040
+                    Height =585
+                    TabIndex =2
+                    Name ="subfrmSucheMembrantyp"
+                    SourceObject ="Form.subfrmEnergieverbrauchDurchschnitt"
+                    GUID = Begin
+                        0x69009d15e9e2514884af54c44d751f33
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13606
+                    Top =340
+                    Width =1251
+                    FontSize =10
+                    TabIndex =3
+                    Name ="Text79"
+                    ControlSource ="=Date()"
+                    GUID = Begin
+                        0x18c625aef9ad684db6dda75c44bfdafb
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =1020
+                    Width =8050
+                    Height =235
+                    Name ="Label81"
+                    Caption ="Basis: Table Un Electrolyzers, CE from Anodic Balance Electrolyzers"
+                    GUID = Begin
+                        0x1bdc8e7796e67a46a554cb57f956071f
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0x34648263061a024ebf5e5aecdaf890eb
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7937
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x2a1d7a52f0bae844beab28df0e657860
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =113
+                    Width =18015
+                    Height =7695
+                    Name ="subfrmSuchergebnisMontierteElemente"
+                    SourceObject ="Form.subfrmEnergieverbrauchDurchschnittErgebnis"
+                    GUID = Begin
+                        0xb91c43c3ac7c6344966aa03b1f146ad9
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0xb2f85e7b81e0d24e95ecb7ec8fd74007
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0x094ff0364c30554cb20e7c007b38ca6f
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+
+Private Sub Befehl59_Click()
+    KorrekturfaktorenAktualisieren
+    subfrmSuchergebnisMontierteElemente.Requery
+End Sub
+
+Private Sub Befehl80_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "frmSucheMontierteElemente"
+
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        
+        Label81.Caption = "Basis: Tabelle Un Elektrolyseure, CE aus anodischer Bilanz Elektrolyseure"
+        Befehl59.Caption = "Anzeige aktualisieren"
+        Schaltfläche43.Caption = "Statistik"
+        
+    Else
+        Label81.Caption = "Basis: Table Un Elektrolyzers, CE from Anodic Balance Electrolyzers"
+        Befehl59.Caption = "Update Display"
+        Schaltfläche43.Caption = "Statistics"
+        
+    End If
+
+End Sub
+
+Private Sub Schaltfläche43_Click()
+    DoCmd.OpenForm "frmMenuStatistik"
+    DoCmd.Close acForm, "frmEnergieverbrauchDurchschnitt"
+End Sub

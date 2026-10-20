@@ -1,0 +1,1012 @@
+Version =19
+VersionRequired =19
+Checksum =122992735
+Begin Form
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =12849
+    ItemSuffix =86
+    Top =420
+    Right =13140
+    Bottom =7965
+    OrderBy ="[Analyse anolyt Ges].Datum"
+    RecSrcDt = Begin
+        0x407fb4d2f689e140
+    End
+    RecordSource ="Analyse anolyt Ges"
+    Caption ="Analysedaten Anolyt"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x890500008905000089050000890500000000000029310000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c00340203670004010009009a0b34086400010002012c0101000100 ,
+        0x2c01020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1940
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =113
+                    Width =7815
+                    Height =450
+                    FontSize =14
+                    ForeColor =4194304
+                    Name ="Text8"
+                    Caption =" Anolyte Analysis Total Plant"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1247
+                    Top =1361
+                    Width =690
+                    Height =240
+                    Name ="Text12"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2268
+                    Top =1361
+                    Width =570
+                    Height =240
+                    Name ="Text14"
+                    Caption ="Time"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =3061
+                    Top =1134
+                    Width =690
+                    Height =240
+                    Name ="Text16"
+                    Caption ="NaCl"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =3848
+                    Top =1134
+                    Width =915
+                    Height =240
+                    Name ="Text18"
+                    Caption ="NaClO3"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =6019
+                    Top =1133
+                    Width =672
+                    Height =240
+                    Name ="Text20"
+                    Caption ="NaOCl"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =4875
+                    Top =1134
+                    Width =855
+                    Height =240
+                    Name ="Text22"
+                    Caption ="Na2SO4"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =9072
+                    Top =1134
+                    Width =900
+                    Height =240
+                    Name ="Text24"
+                    Caption ="t"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =10318
+                    Top =1134
+                    Width =465
+                    Height =240
+                    Name ="Text26"
+                    Caption ="pH"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =3062
+                    Top =1361
+                    Width =690
+                    Height =240
+                    Name ="Text42"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =3969
+                    Top =1361
+                    Width =690
+                    Height =240
+                    Name ="Text43"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =6010
+                    Top =1361
+                    Width =690
+                    Height =240
+                    Name ="Text44"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =4989
+                    Top =1361
+                    Width =690
+                    Height =240
+                    Name ="Text45"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =9184
+                    Top =1361
+                    Width =795
+                    Height =240
+                    Name ="Text46"
+                    Caption ="°C"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =8503
+                    Top =226
+                    Height =576
+                    Name ="Hauptmenue"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10318
+                    Top =226
+                    Width =1596
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl52"
+                    Caption ="Analysis"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0xc0c0c00080808000ff00000000ff0000ffff00000000ff00ff00ff0000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =7824
+                    Top =1134
+                    Width =1365
+                    Height =240
+                    Name ="Bezeichnungsfeld58"
+                    Caption ="Density at 20°C"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =8050
+                    Top =1361
+                    Width =690
+                    Height =240
+                    Name ="Bezeichnungsfeld59"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =10305
+                    Top =1365
+                    Width =495
+                    Height =210
+                    Name ="Bezeichnungsfeld71"
+                    Caption ="[/]"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =113
+                    Top =680
+                    Width =7815
+                    Height =345
+                    TabIndex =2
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =7021
+                    Top =1136
+                    Width =675
+                    Height =240
+                    Name ="Bezeichnungsfeld75"
+                    Caption ="HCl"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =7030
+                    Top =1361
+                    Width =690
+                    Height =240
+                    Name ="Bezeichnungsfeld76"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Top =1700
+                    Width =1185
+                    Height =240
+                    Name ="Label80"
+                    Caption ="Specification"
+                    GUID = Begin
+                        0xae4c65118bcea441a17f52f7475a3dd1
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2955
+                    Top =1695
+                    Width =900
+                    Height =240
+                    Name ="Label81"
+                    Caption ="220 - 230"
+                    GUID = Begin
+                        0x76ddc3046b94d9469860d72d5c34f6d9
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3960
+                    Top =1695
+                    Width =705
+                    Height =240
+                    Name ="Label82"
+                    Caption ="<12"
+                    GUID = Begin
+                        0xd55931d82b7a5e41a54f931d614b8b16
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4980
+                    Top =1695
+                    Width =735
+                    Height =240
+                    Name ="Label83"
+                    Caption ="<10"
+                    GUID = Begin
+                        0xc11027c2b6ad4949b2650469efc07b41
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9165
+                    Top =1695
+                    Width =825
+                    Height =240
+                    Name ="Label84"
+                    Caption ="85-88"
+                    GUID = Begin
+                        0x04152a6a9734a04a9233dd48d27d9c29
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10290
+                    Top =1695
+                    Width =525
+                    Height =210
+                    Name ="Label85"
+                    Caption ="2,4-4"
+                    GUID = Begin
+                        0xf28f31a653b8684fb75855784783d86e
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1147
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            Begin
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1246
+                    Top =907
+                    Width =690
+                    Height =240
+                    Name ="Text29"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2250
+                    Top =900
+                    Width =585
+                    Height =240
+                    Name ="Text30"
+                    Caption ="Time"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =3060
+                    Top =680
+                    Width =690
+                    Height =240
+                    Name ="Text31"
+                    Caption ="NaCl"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =3847
+                    Top =680
+                    Width =915
+                    Height =240
+                    Name ="Text32"
+                    Caption ="NaClO3"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =6015
+                    Top =675
+                    Width =675
+                    Height =240
+                    Name ="Text33"
+                    Caption ="NaOCl"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =4874
+                    Top =680
+                    Width =855
+                    Height =240
+                    Name ="Text34"
+                    Caption ="Na2SO4"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =9071
+                    Top =680
+                    Width =900
+                    Height =240
+                    Name ="Text35"
+                    Caption ="t"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =10317
+                    Top =680
+                    Width =465
+                    Height =240
+                    Name ="Text36"
+                    Caption ="pH"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =3060
+                    Top =907
+                    Width =690
+                    Height =240
+                    Name ="Text37"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =3967
+                    Top =907
+                    Width =690
+                    Height =240
+                    Name ="Text38"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =6008
+                    Top =907
+                    Width =690
+                    Height =240
+                    Name ="Text39"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =4987
+                    Top =907
+                    Width =690
+                    Height =240
+                    Name ="Text40"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =9184
+                    Top =907
+                    Width =795
+                    Height =240
+                    Name ="Text41"
+                    Caption ="°C"
+                End
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10883
+                    Top =226
+                    Width =1026
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =7823
+                    Top =680
+                    Width =1365
+                    Height =240
+                    Name ="Bezeichnungsfeld60"
+                    Caption ="Density at 20°C"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =8050
+                    Top =907
+                    Width =690
+                    Height =240
+                    Name ="Bezeichnungsfeld61"
+                    Caption ="g/l"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =10317
+                    Top =907
+                    Width =465
+                    Height =210
+                    Name ="Bezeichnungsfeld72"
+                    Caption ="[°C]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =7020
+                    Top =675
+                    Width =705
+                    Height =240
+                    Name ="Bezeichnungsfeld77"
+                    Caption ="HCl"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =7029
+                    Top =907
+                    Width =690
+                    Height =240
+                    Name ="Bezeichnungsfeld78"
+                    Caption ="g/l"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1133
+                    Width =870
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2267
+                    Width =585
+                    TabIndex =1
+                    Name ="Zeit"
+                    ControlSource ="Zeit"
+                    Format ="Short Time"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3060
+                    Width =690
+                    TabIndex =2
+                    Name ="NaCl"
+                    ControlSource ="NaCl"
+                    Format ="General Number"
+                    StatusBarText ="g/l"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6008
+                    Width =795
+                    TabIndex =5
+                    Name ="HOCl"
+                    ControlSource ="NaOCl"
+                    Format ="General Number"
+                    StatusBarText ="g/l"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4874
+                    Width =915
+                    TabIndex =4
+                    Name ="Na2SO4"
+                    ControlSource ="Na2SO4"
+                    Format ="General Number"
+                    StatusBarText ="g/l"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9184
+                    Width =900
+                    TabIndex =7
+                    Name ="temperature"
+                    ControlSource ="temperature"
+                    Format ="General Number"
+                    StatusBarText ="Grad C"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10318
+                    Width =675
+                    TabIndex =8
+                    Name ="pH"
+                    ControlSource ="pH"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3967
+                    Width =690
+                    TabIndex =3
+                    Name ="Feld27"
+                    ControlSource ="NaClO3"
+                    Format ="General Number"
+                    StatusBarText ="g/l"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8050
+                    Width =900
+                    TabIndex =6
+                    Name ="Text62"
+                    ControlSource ="density at 20°"
+                    Format ="General Number"
+                    StatusBarText ="g/l"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7029
+                    Width =795
+                    TabIndex =9
+                    Name ="Text79"
+                    ControlSource ="HCl"
+                    Format ="General Number"
+                    StatusBarText ="g/l"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =10204
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Schaltfläche50_Click()
+On Error GoTo Err_Schaltfläche50_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Analysen"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche50_Click:
+    Exit Sub
+
+Err_Schaltfläche50_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche50_Click
+    
+End Sub
+
+Sub Befehl52_Click()
+On Error GoTo Err_Befehl52_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Analyse"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "An Anolyt Gesamt"
+
+Exit_Befehl52_Click:
+    Exit Sub
+
+Err_Befehl52_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl52_Click
+    
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    GewClOAnalyse = rst1!IDClOAnalyse
+    GewAnsaeurung = rst1!IDAnsaeurung
+    rst1.Close
+    'Bei Anlagen ohne Ansäurung HCl Analysedaten ausblenden
+    If GewAnsaeurung <> 1 Then
+        Bezeichnungsfeld75.Visible = False
+        Bezeichnungsfeld76.Visible = False
+        Bezeichnungsfeld77.Visible = False
+        Bezeichnungsfeld78.Visible = False
+        Text79.Visible = False
+        'Bei Anlagen ohne Ansäuerung Textfelder verschieben
+        Bezeichnungsfeld58.Left = 7000
+        Bezeichnungsfeld59.Left = 7350
+        Bezeichnungsfeld60.Left = 7000
+        Bezeichnungsfeld61.Left = 7350
+        Text62.Left = 7250
+        'Bei Anlagen ohne Ansäuerung Textfelder verschieben
+        Text24.Left = 8600
+        Label84.Left = 8600
+        Text46.Left = 8600
+        Text35.Left = 8600
+        Text41.Left = 8600
+        temperature.Left = 8600
+        'Bei Anlagen ohne Ansäuerung Textfelder verschieben
+        Text26.Left = 10000
+        Bezeichnungsfeld71.Left = 10000
+        Label85.Left = 10000
+        Text36.Left = 10000
+        Bezeichnungsfeld72.Left = 10000
+        pH.Left = 9900
+        
+    End If
+    
+    'Sollwerte für Analysedaten ausblenden
+    If GetIDAnalysenGrenzwerteAnzeigen = 0 Then
+        Label80.Visible = False
+        Label81.Visible = False
+        Label82.Visible = False
+        Label83.Visible = False
+        Label84.Visible = False
+        Label85.Visible = False
+    End If
+    
+    
+    
+    If GewSprache = 1 Then
+        Text8.Caption = "Anolyt-Analyse Gesamtanlage"
+        Text12.Caption = "Datum"
+        Text29.Caption = "Datum"
+        Text14.Caption = "Zeit"
+        Text30.Caption = "Zeit"
+        Text16.Caption = "NaCl"
+        Text42.Caption = "[g/l]"
+        Text31.Caption = "NaCl"
+        Text37.Caption = "[g/l]"
+        Text18.Caption = "NaClO3"
+        Text43.Caption = "[g/l]"
+        Text32.Caption = "NaClO3"
+        Text38.Caption = "[g/l]"
+        Text22.Caption = "Na2SO4"
+        Text45.Caption = "[g/l]"
+        Text22.Caption = "Na2SO4"
+        Text45.Caption = "[g/l]"
+        Text22.Caption = "Na2SO4"
+        Text45.Caption = "[g/l]"
+        Text22.Caption = "Na2SO4"
+        Text45.Caption = "[g/l]"
+        If GewClOAnalyse = 1 Then
+            Text20.Caption = "NaOCl"
+        Else
+            Text20.Caption = "HOCl"
+        End If
+        Text44.Caption = "[g/l]"
+        If GewClOAnalyse = 1 Then
+            Text33.Caption = "NaOCl"
+        Else
+            Text33.Caption = "HOCl"
+        End If
+        Text39.Caption = "[g/l]"
+        Bezeichnungsfeld75.Caption = "HCl"
+        Bezeichnungsfeld76.Caption = "[g/l]"
+        Bezeichnungsfeld77.Caption = "HCl"
+        Bezeichnungsfeld78.Caption = "[g/l]"
+        Bezeichnungsfeld58.Caption = "Dichte bei 20°C"
+        Bezeichnungsfeld59.Caption = "[g/l]"
+        Bezeichnungsfeld60.Caption = "Dichte bei 20°C"
+        Bezeichnungsfeld61.Caption = "[g/l]"
+        Text24.Caption = "t"
+        Text46.Caption = "[°C]"
+        Text35.Caption = "t"
+        Text41.Caption = "[°C]"
+        Text26.Caption = "pH"
+        Bezeichnungsfeld71.Caption = "[/]"
+        Text36.Caption = "pH"
+        Bezeichnungsfeld72.Caption = "[/]"
+        
+        Label80.Caption = "Sollwerte"
+        
+        Befehl52.Caption = "Analysen"
+        Hauptmenue.Caption = "Hauptmenu"
+        
+    Else
+        Text8.Caption = "Anolyte Analysis Total Plant"
+        Text12.Caption = "Date"
+        Text29.Caption = "Date"
+        Text14.Caption = "Time"
+        Text30.Caption = "Time"
+        Text16.Caption = "NaCl"
+        Text42.Caption = "[g/l]"
+        Text31.Caption = "NaCl"
+        Text37.Caption = "[g/l]"
+        Text18.Caption = "NaClO3"
+        Text43.Caption = "[g/l]"
+        Text32.Caption = "NaClO3"
+        Text38.Caption = "[g/l]"
+        Text22.Caption = "Na2SO4"
+        Text45.Caption = "[g/l]"
+        Text22.Caption = "Na2SO4"
+        Text45.Caption = "[g/l]"
+        If GewClOAnalyse = 1 Then
+            Text20.Caption = "NaOCl"
+        Else
+            Text20.Caption = "HOCl"
+        End If
+        Text44.Caption = "[g/l]"
+        If GewClOAnalyse = 1 Then
+            Text33.Caption = "NaOCl"
+        Else
+            Text33.Caption = "HOCl"
+        End If
+        Text39.Caption = "[g/l]"
+        Bezeichnungsfeld75.Caption = "HCl"
+        Bezeichnungsfeld76.Caption = "[g/l]"
+        Bezeichnungsfeld77.Caption = "HCl"
+        Bezeichnungsfeld78.Caption = "[g/l]"
+        Bezeichnungsfeld58.Caption = "Density at 20°C"
+        Bezeichnungsfeld59.Caption = "[g/l]"
+        Bezeichnungsfeld60.Caption = "Density at 20°C"
+        Bezeichnungsfeld61.Caption = "[g/l]"
+        Text24.Caption = "t"
+        Text46.Caption = "[°C]"
+        Text35.Caption = "t"
+        Text41.Caption = "[°C]"
+        Text26.Caption = "pH"
+        Bezeichnungsfeld71.Caption = "[/]"
+        Text36.Caption = "pH"
+        Bezeichnungsfeld72.Caption = "[/]"
+        
+        Label80.Caption = "Specification"
+        
+        Befehl52.Caption = "Analysis"
+        Hauptmenue.Caption = "Main Menu"
+    End If
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "An Anolyt Gesamt"
+End Sub

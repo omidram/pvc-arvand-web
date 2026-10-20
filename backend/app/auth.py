@@ -49,6 +49,7 @@ FORM_KEYS: list[str] = [
     # Cell removal: operation switches the cell off, the cell shop receives it and decides
     "wf_operation",
     "wf_cellshop",
+    "wf_process",
 ]
 
 # Per-form table fields that can be granted view/edit independently of the
@@ -334,6 +335,7 @@ _PROCESS_ACCESS = {
     "analyses": "edit",
     "voltage": "view",
     "search": "view",
+    "wf_process": "edit",
 }
 _C90_ACCESS = {
     "dashboard": "view",
@@ -382,6 +384,7 @@ _PLANT_VIEW = {
     "wf_inspection": "view",
     "wf_operation": "view",
     "wf_cellshop": "view",
+    "wf_process": "view",
 }
 
 DEFAULT_ROLES: list[dict] = [
@@ -615,6 +618,7 @@ DEFAULT_ROLES: list[dict] = [
             "wf_inspection": "edit",
             "wf_operation": "edit",
             "wf_cellshop": "edit",
+            "wf_process": "edit",
         },
     },
     {

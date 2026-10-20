@@ -1,0 +1,1758 @@
+{
+ "forms": {
+  "Gruppenmerkmale": {
+   "controls": [
+    {
+     "name": "Feld28",
+     "controltype": 109,
+     "left": 11905,
+     "top": 226,
+     "width": 1142,
+     "height": 347,
+     "tabindex": 0,
+     "controlsource": "=Date()",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Bezeichnungsfeld80",
+     "controltype": 100,
+     "left": 226,
+     "top": 1020,
+     "width": 796,
+     "height": 226,
+     "caption": "Group",
+     "visible": "True"
+    },
+    {
+     "name": "Befehl99",
+     "controltype": 104,
+     "left": 8157,
+     "top": 113,
+     "width": 2166,
+     "height": 456,
+     "tabindex": 1,
+     "caption": "Group Overview",
+     "onclick": "[Event Procedure]",
+     "visible": "True",
+     "enabled": "True"
+    },
+    {
+     "name": "Text8",
+     "controltype": 100,
+     "left": 113,
+     "top": 113,
+     "width": 2835,
+     "height": 405,
+     "caption": "Group Definition",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld169",
+     "controltype": 100,
+     "left": 1133,
+     "top": 793,
+     "width": 1021,
+     "height": 451,
+     "caption": "Anode coating",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld172",
+     "controltype": 100,
+     "left": 2267,
+     "top": 793,
+     "width": 1021,
+     "height": 451,
+     "caption": "Cathode coating",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld175",
+     "controltype": 100,
+     "left": 5790,
+     "top": 1020,
+     "width": 7696,
+     "height": 226,
+     "caption": "Remarks",
+     "visible": "True"
+    },
+    {
+     "name": "Befehl180",
+     "controltype": 104,
+     "left": 5896,
+     "top": 113,
+     "width": 2046,
+     "height": 456,
+     "tabindex": 2,
+     "caption": "Search",
+     "onclick": "[Event Procedure]",
+     "visible": "True",
+     "enabled": "True"
+    },
+    {
+     "name": "Befehl181",
+     "controltype": 104,
+     "left": 3176,
+     "top": 113,
+     "width": 2496,
+     "height": 456,
+     "tabindex": 3,
+     "caption": "Element Administration",
+     "onclick": "[Event Procedure]",
+     "visible": "True",
+     "enabled": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld182",
+     "controltype": 100,
+     "left": 4535,
+     "top": 793,
+     "width": 1141,
+     "height": 451,
+     "caption": "Electrode\r\ngap",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld184",
+     "controltype": 100,
+     "left": 3401,
+     "top": 793,
+     "width": 1021,
+     "height": 451,
+     "caption": "Membrane\r\ntype",
+     "visible": "True"
+    },
+    {
+     "name": "Text71",
+     "controltype": 100,
+     "left": 120,
+     "top": 120,
+     "width": 2835,
+     "height": 405,
+     "caption": "Group Definition",
+     "visible": "True"
+    },
+    {
+     "name": "Feld74",
+     "controltype": 109,
+     "left": 11905,
+     "top": 226,
+     "width": 1142,
+     "height": 347,
+     "tabindex": 0,
+     "controlsource": "=Date()",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Bezeichnungsfeld157",
+     "controltype": 100,
+     "left": 226,
+     "top": 1020,
+     "width": 796,
+     "height": 226,
+     "caption": "Group",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld170",
+     "controltype": 100,
+     "left": 1133,
+     "top": 793,
+     "width": 1021,
+     "height": 451,
+     "caption": "Anode coating",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld173",
+     "controltype": 100,
+     "left": 2267,
+     "top": 793,
+     "width": 1021,
+     "height": 451,
+     "caption": "Cathode coating",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld176",
+     "controltype": 100,
+     "left": 5790,
+     "top": 1020,
+     "width": 7696,
+     "height": 226,
+     "caption": "Remarks",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld183",
+     "controltype": 100,
+     "left": 3401,
+     "top": 793,
+     "width": 1021,
+     "height": 451,
+     "caption": "Membrane\r\ntype",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld185",
+     "controltype": 100,
+     "left": 4535,
+     "top": 793,
+     "width": 1141,
+     "height": 451,
+     "caption": "Electrode\r\ngap",
+     "visible": "True"
+    },
+    {
+     "name": "Text78",
+     "controltype": 109,
+     "left": 226,
+     "top": 0,
+     "width": 806,
+     "height": 233,
+     "tabindex": 0,
+     "controlsource": "Gruppe",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text171",
+     "controltype": 109,
+     "left": 1247,
+     "top": 0,
+     "width": 896,
+     "height": 233,
+     "tabindex": 1,
+     "controlsource": "Anodencoating",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text174",
+     "controltype": 109,
+     "left": 2267,
+     "top": 0,
+     "width": 1031,
+     "height": 233,
+     "tabindex": 2,
+     "controlsource": "Kathodencoating",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text177",
+     "controltype": 109,
+     "left": 5791,
+     "top": 0,
+     "width": 7706,
+     "height": 233,
+     "tabindex": 5,
+     "controlsource": "Bemerkungen",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text186",
+     "controltype": 109,
+     "left": 3409,
+     "top": 0,
+     "width": 1013,
+     "height": 226,
+     "tabindex": 3,
+     "controlsource": "Membrantyp",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text187",
+     "controltype": 109,
+     "left": 4535,
+     "top": 0,
+     "width": 1134,
+     "height": 226,
+     "tabindex": 4,
+     "controlsource": "Elektrodenabstand",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Feld80",
+     "controltype": 109,
+     "left": 10204,
+     "top": 113,
+     "width": 1747,
+     "height": 227,
+     "tabindex": 0,
+     "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Seitenumbruch70",
+     "controltype": 118,
+     "left": 0,
+     "top": 0,
+     "visible": "True"
+    }
+   ],
+   "Caption": "Gruppendefinition",
+   "RecordSource": "Gruppenmerkmale",
+   "DefaultView": "1",
+   "AllowAdditions": "True",
+   "AllowEdits": "True",
+   "AllowDeletions": "True",
+   "OnOpen": "[Event Procedure]",
+   "HasModule": "True",
+   "vba": "Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.\r\n\r\n\r\nPrivate Sub Befehl180_Click()\r\n    DoCmd.OpenForm \"Suchübersicht\"\r\n    DoCmd.Close acForm, \"Gruppenmerkmale\"\r\nEnd Sub\r\n\r\nPrivate Sub Befehl181_Click()\r\n    DoCmd.OpenForm \"frmZellenverwaltung\"\r\n    DoCmd.Close acForm, \"Gruppenmerkmale\"\r\nEnd Sub\r\n\r\nPrivate Sub Befehl99_Click()\r\nOn Error GoTo Err_Befehl99_Click\r\n\r\n    Dim stDocName As String\r\n    Dim stLinkCriteria As String\r\n\r\n    stDocName = \"Gruppen Übersicht\"\r\n    DoCmd.OpenForm stDocName, , , stLinkCriteria\r\n    DoCmd.Close acForm, \"Gruppenmerkmale\"\r\n\r\nExit_Befehl99_Click:\r\n    Exit Sub\r\n\r\nErr_Befehl99_Click:\r\n    MsgBox Err.Description\r\n    Resume Exit_Befehl99_Click\r\n    \r\nEnd Sub\r\n\r\nPrivate Sub Form_Open(Cancel As Integer)\r\n    Set rst1 = CurrentDb.OpenRecordset(\"Select * From tblGewDaten ORDER BY IDSprache\")\r\n    GewSprache = rst1!IDSprache\r\n    rst1.Close\r\n    If GewSprache = 1 Then\r\n        Text8.Caption = \"Gruppendefinition\"\r\n        Text71.Caption = \"Gruppendefinition\"\r\n        Bezeichnungsfeld80.Caption = \"Gruppe\"\r\n        Bezeichnungsfeld157.Caption = \"Gruppe\"\r\n        Bezeichnungsfeld169.Caption = \"Anoden-Coating\"\r\n        Bezeichnungsfeld170.Caption = \"Anoden-Coating\"\r\n        Bezeichnungsfeld172.Caption = \"Kathoden-Coating\"\r\n        Bezeichnungsfeld173.Caption = \"Kathoden-Coating\"\r\n        Bezeichnungsfeld182.Caption = \"Elektroden-abstand\"\r\n        Bezeichnungsfeld185.Caption = \"Elektroden-abstand\"\r\n        Bezeichnungsfeld184.Caption = \"Membran-typ\"\r\n        Bezeichnungsfeld183.Caption = \"Membran-typ\"\r\n        Bezeichnungsfeld175.Caption = \"Bemerkungen\"\r\n        Bezeichnungsfeld176.Caption = \"Bemerkungen\"\r\n        Befehl181.Caption = \"Zellenverwaltung\"\r\n        Befehl180.Caption = \"Suchübersicht\"\r\n        Befehl99.Caption = \"Gruppenübersicht\"\r\n        \r\n    Else\r\n        Text8.Caption = \"Group Definition\"\r\n        Text71.Caption = \"Group Definition\"\r\n        Bezeichnungsfeld80.Caption = \"Group\"\r\n        Bezeichnungsfeld157.Caption = \"Group\"\r\n        Bezeichnungsfeld169.Caption = \"Anode Coating\"\r\n        Bezeichnungsfeld170.Caption = \"Anode Coating\"\r\n        Bezeichnungsfeld172.Caption = \"Kathoden-Coating\"\r\n        Bezeichnungsfeld173.Caption = \"Kathoden-Coating\"\r\n        Bezeichnungsfeld182.Caption = \"Electrode gap\"\r\n        Bezeichnungsfeld185.Caption = \"Electrode gap\"\r\n        Bezeichnungsfeld184.Caption = \"Membrane type\"\r\n        Bezeichnungsfeld183.Caption = \"Membrane type\"\r\n        Bezeichnungsfeld175.Caption = \"Remarks\"\r\n        Bezeichnungsfeld176.Caption = \"Remarks\"\r\n        Befehl181.Caption = \"Element Administration\"\r\n        Befehl180.Caption = \"Search Functions\"\r\n        Befehl99.Caption = \"Group Overview\"\r\n    End If\r\n\r\n\r\nEnd Sub"
+  },
+  "Gruppen Übersicht": {
+   "controls": [
+    {
+     "name": "Text8",
+     "controltype": 100,
+     "left": 113,
+     "top": 113,
+     "width": 2685,
+     "height": 405,
+     "caption": "Active Groups",
+     "visible": "True"
+    },
+    {
+     "name": "Text16",
+     "controltype": 100,
+     "left": 1142,
+     "top": 793,
+     "width": 1020,
+     "height": 465,
+     "caption": "Membrane typ",
+     "visible": "True"
+    },
+    {
+     "name": "Schaltfläche27",
+     "controltype": 104,
+     "left": 3061,
+     "top": 113,
+     "width": 2166,
+     "height": 456,
+     "tabindex": 0,
+     "caption": "Search",
+     "onclick": "[Event Procedure]",
+     "visible": "True",
+     "enabled": "True"
+    },
+    {
+     "name": "Feld28",
+     "controltype": 109,
+     "left": 10867,
+     "top": 226,
+     "width": 1142,
+     "height": 347,
+     "tabindex": 1,
+     "controlsource": "=Date()",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text77",
+     "controltype": 100,
+     "left": 0,
+     "top": 907,
+     "width": 1065,
+     "height": 240,
+     "caption": "Group",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld81",
+     "controltype": 100,
+     "left": 2381,
+     "top": 793,
+     "width": 1020,
+     "height": 465,
+     "caption": "Electrode gap",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld83",
+     "controltype": 100,
+     "left": 3401,
+     "top": 770,
+     "width": 1035,
+     "height": 480,
+     "caption": "Active elements",
+     "visible": "True"
+    },
+    {
+     "name": "Befehl91",
+     "controltype": 104,
+     "left": 5555,
+     "top": 113,
+     "width": 1926,
+     "height": 456,
+     "tabindex": 2,
+     "caption": "Group Definition",
+     "onclick": "[Event Procedure]",
+     "visible": "True",
+     "enabled": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld119",
+     "controltype": 100,
+     "left": 7256,
+     "top": 907,
+     "width": 2040,
+     "height": 240,
+     "caption": "Remarks",
+     "visible": "True"
+    },
+    {
+     "name": "Feld74",
+     "controltype": 109,
+     "left": 10868,
+     "top": 226,
+     "width": 1142,
+     "height": 347,
+     "tabindex": 0,
+     "controlsource": "=Date()",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Bezeichnungsfeld122",
+     "controltype": 100,
+     "left": 90,
+     "top": 120,
+     "width": 2655,
+     "height": 405,
+     "caption": "Active Groups",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld124",
+     "controltype": 100,
+     "left": 1142,
+     "top": 793,
+     "width": 1020,
+     "height": 465,
+     "caption": "Membrane typ",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld125",
+     "controltype": 100,
+     "left": 0,
+     "top": 907,
+     "width": 1065,
+     "height": 240,
+     "caption": "Group",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld126",
+     "controltype": 100,
+     "left": 2381,
+     "top": 793,
+     "width": 1020,
+     "height": 465,
+     "caption": "Electrode gap",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld127",
+     "controltype": 100,
+     "left": 3401,
+     "top": 770,
+     "width": 1035,
+     "height": 480,
+     "caption": "Active elements",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld135",
+     "controltype": 100,
+     "left": 7256,
+     "top": 907,
+     "width": 2040,
+     "height": 240,
+     "caption": "Remarks",
+     "visible": "True"
+    },
+    {
+     "name": "Membrantyp",
+     "controltype": 109,
+     "left": 1020,
+     "top": 0,
+     "width": 1350,
+     "height": 225,
+     "tabindex": 0,
+     "controlsource": "Membrantyp",
+     "visible": "True",
+     "enabled": "False",
+     "locked": "True"
+    },
+    {
+     "name": "Feld75",
+     "controltype": 109,
+     "left": 136,
+     "top": 0,
+     "width": 795,
+     "height": 225,
+     "tabindex": 1,
+     "controlsource": "Gruppe",
+     "visible": "True",
+     "enabled": "False",
+     "locked": "True"
+    },
+    {
+     "name": "Text80",
+     "controltype": 109,
+     "left": 2509,
+     "top": 0,
+     "width": 795,
+     "height": 225,
+     "tabindex": 2,
+     "controlsource": "Elektroden Abstand",
+     "visible": "True",
+     "enabled": "False",
+     "locked": "True"
+    },
+    {
+     "name": "Text85",
+     "controltype": 109,
+     "left": 3401,
+     "top": 0,
+     "width": 915,
+     "height": 225,
+     "tabindex": 3,
+     "controlsource": "Anzahl von Element Nr",
+     "visible": "True",
+     "enabled": "False",
+     "locked": "True"
+    },
+    {
+     "name": "Text121",
+     "controltype": 109,
+     "left": 4523,
+     "top": 0,
+     "width": 7500,
+     "height": 225,
+     "tabindex": 4,
+     "controlsource": "Bemerkungen",
+     "visible": "True",
+     "enabled": "False",
+     "locked": "True"
+    },
+    {
+     "name": "Feld80",
+     "controltype": 109,
+     "left": 10318,
+     "top": 226,
+     "width": 1747,
+     "height": 227,
+     "tabindex": 0,
+     "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    }
+   ],
+   "Caption": "Gruppenübersicht",
+   "RecordSource": "Gruppen aktiv",
+   "DefaultView": "1",
+   "AllowAdditions": "True",
+   "AllowEdits": "False",
+   "AllowDeletions": "False",
+   "OnOpen": "[Event Procedure]",
+   "HasModule": "True",
+   "vba": "Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.\r\n\r\nPrivate Sub Form_Open(Cancel As Integer)\r\n    If GetIDGewSprache() = 1 Then\r\n        Text8.Caption = \"Aktive Gruppen\"\r\n        Bezeichnungsfeld122.Caption = \"Aktive Gruppen\"\r\n        Text77.Caption = \"Gruppe\"\r\n        Bezeichnungsfeld125.Caption = \"Gruppe\"\r\n        Text16.Caption = \"Membran-typ\"\r\n        Bezeichnungsfeld124.Caption = \"Membran-typ\"\r\n        Bezeichnungsfeld81.Caption = \"Elektroden-abstand\"\r\n        Bezeichnungsfeld126.Caption = \"Elektroden-abstand\"\r\n        Bezeichnungsfeld83.Caption = \"Aktive Elemente\"\r\n        Bezeichnungsfeld127.Caption = \"Aktive Elemente\"\r\n        Bezeichnungsfeld119.Caption = \"Bemerkungen\"\r\n        Bezeichnungsfeld135.Caption = \"Bemerkungen\"\r\n        Befehl91.Caption = \"Gruppendefinition\"\r\n        Schaltfläche27.Caption = \"Suchfunktionen\"\r\n        \r\n    Else\r\n        Text8.Caption = \"Active Groups\"\r\n        Bezeichnungsfeld122.Caption = \"Active Groups\"\r\n        Text77.Caption = \"Group\"\r\n        Bezeichnungsfeld125.Caption = \"Group\"\r\n        Text16.Caption = \"Membrane Type\"\r\n        Bezeichnungsfeld124.Caption = \"Membrane Type\"\r\n        Bezeichnungsfeld81.Caption = \"Electrode Gap\"\r\n        Bezeichnungsfeld126.Caption = \"Electrode Gap\"\r\n        Bezeichnungsfeld83.Caption = \"Active Elements\"\r\n        Bezeichnungsfeld127.Caption = \"Active Elements\"\r\n        Bezeichnungsfeld119.Caption = \"Remarks\"\r\n        Bezeichnungsfeld135.Caption = \"Remarks\"\r\n        Befehl91.Caption = \"Group Definition\"\r\n        Schaltfläche27.Caption = \"Search\"\r\n        \r\n    End If\r\n\r\n\r\n\r\nEnd Sub\r\n\r\nPrivate Sub Schaltfläche27_Click()\r\nOn Error GoTo Err_Schaltfläche27_Click\r\n\r\n    Dim DocName As String\r\n    Dim LinkCriteria As String\r\n\r\n    DocName = \"Suchübersicht\"\r\n    DoCmd.OpenForm DocName, , , LinkCriteria\r\n    DoCmd.Close acForm, \"Gruppen Übersicht\"\r\n    \r\nExit_Schaltfläche27_Click:\r\n    Exit Sub\r\n\r\nErr_Schaltfläche27_Click:\r\n    MsgBox Error$\r\n    Resume Exit_Schaltfläche27_Click\r\n    \r\nEnd Sub\r\n\r\n\r\nPrivate Sub Befehl91_Click()\r\nOn Error GoTo Err_Befehl91_Click\r\n\r\n    Dim stDocName As String\r\n    Dim stLinkCriteria As String\r\n\r\n    stDocName = \"Gruppenmerkmale\"\r\n    DoCmd.OpenForm stDocName, , , stLinkCriteria\r\n    DoCmd.Close acForm, \"Gruppen Übersicht\"\r\n\r\nExit_Befehl91_Click:\r\n    Exit Sub\r\n\r\nErr_Befehl91_Click:\r\n    MsgBox Err.Description\r\n    Resume Exit_Befehl91_Click\r\n    \r\nEnd Sub"
+  },
+  "Gruppen": {
+   "controls": [
+    {
+     "name": "Eingebettet0",
+     "controltype": 114,
+     "left": 113,
+     "top": 113,
+     "width": 11910,
+     "height": 6240,
+     "tabindex": 0,
+     "rowsource": "TRANSFORM AVG([Gruppierung].[Un Mittel]) AS [Un Mittel] SELECT Format([Datum], \"WW \\ 'YY\",0) FROM [Gruppierung] GROUP BY Year([Datum])*CLng(54)+DatePart(\"WW\", [Datum],0)-1, Format([Datum], \"WW \\ 'YY\",0) PIVOT [Gruppe];",
+     "rowsourcetype": "Table/Query",
+     "visible": "True",
+     "enabled": "False",
+     "locked": "True"
+    },
+    {
+     "name": "Schaltfläche1",
+     "controltype": 104,
+     "left": 9411,
+     "top": 6462,
+     "width": 2046,
+     "height": 576,
+     "tabindex": 1,
+     "caption": "Betriebsdaten",
+     "onclick": "DiaGrupEnde",
+     "visible": "True",
+     "enabled": "True"
+    },
+    {
+     "name": "Text68",
+     "controltype": 100,
+     "left": 9977,
+     "top": 226,
+     "width": 1800,
+     "height": 450,
+     "caption": "       Skoghall        UAN 05-1242-600",
+     "visible": "True"
+    }
+   ],
+   "DefaultView": "0",
+   "AllowAdditions": "True",
+   "AllowEdits": "True",
+   "AllowDeletions": "True",
+   "HasModule": "True",
+   "vba": "Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.\r\n\r\nPrivate Sub Schaltfläche1_Click()\r\nOn Error GoTo Err_Schaltfläche1_Click\r\n\r\n    Dim DocName As String\r\n    Dim LinkCriteria As String\r\n\r\n    DocName = \"Betriebsdaten\"\r\n    DoCmd.OpenForm DocName, , , LinkCriteria\r\n\r\nExit_Schaltfläche1_Click:\r\n    Exit Sub\r\n\r\nErr_Schaltfläche1_Click:\r\n    MsgBox Error$\r\n    Resume Exit_Schaltfläche1_Click\r\n    \r\nEnd Sub\r\n"
+  },
+  "frmSucheGruppe": {
+   "controls": [
+    {
+     "name": "Schaltfläche43",
+     "controltype": 104,
+     "left": 10998,
+     "top": 226,
+     "width": 1704,
+     "height": 576,
+     "tabindex": 0,
+     "caption": "Search",
+     "onclick": "[Event Procedure]",
+     "visible": "True",
+     "enabled": "True"
+    },
+    {
+     "name": "Befehl59",
+     "controltype": 104,
+     "left": 7143,
+     "top": 226,
+     "width": 1701,
+     "height": 568,
+     "tabindex": 1,
+     "caption": "Update\r\nDisplay",
+     "onclick": "[Event Procedure]",
+     "visible": "True",
+     "enabled": "True"
+    },
+    {
+     "name": "subfrmSucheMembrantyp",
+     "controltype": 112,
+     "left": 113,
+     "top": 226,
+     "width": 6795,
+     "height": 585,
+     "tabindex": 2,
+     "sourceobject": "subfrmSucheGruppe",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text79",
+     "controltype": 109,
+     "left": 13379,
+     "top": 340,
+     "width": 1251,
+     "height": 255,
+     "tabindex": 3,
+     "controlsource": "=Date()",
+     "visible": "True",
+     "enabled": "False",
+     "locked": "True"
+    },
+    {
+     "name": "Befehl80",
+     "controltype": 104,
+     "left": 9070,
+     "top": 226,
+     "width": 1704,
+     "height": 576,
+     "tabindex": 4,
+     "caption": "Main Menue",
+     "onclick": "[Event Procedure]",
+     "visible": "True",
+     "enabled": "True"
+    },
+    {
+     "name": "subfrmSuchergebnisGruppe",
+     "controltype": 112,
+     "left": 113,
+     "top": 113,
+     "width": 14505,
+     "height": 7695,
+     "tabindex": 0,
+     "sourceobject": "subfrmSuchergebnisGruppe",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    }
+   ],
+   "Caption": " ",
+   "RecordSource": "tblBasisdaten",
+   "DefaultView": "0",
+   "AllowAdditions": "True",
+   "AllowEdits": "True",
+   "AllowDeletions": "True",
+   "OnOpen": "[Event Procedure]",
+   "HasModule": "True",
+   "vba": "Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.\r\n\r\nPrivate Sub Schaltfläche30_Click()\r\nOn Error GoTo Err_Schaltfläche30_Click\r\n\r\n    Dim x As Integer\r\n\r\n    x = Shell(\"EXCEL.EXE\", 1)\r\n\r\nExit_Schaltfläche30_Click:\r\n    Exit Sub\r\n\r\nErr_Schaltfläche30_Click:\r\n    MsgBox Error$\r\n    Resume Exit_Schaltfläche30_Click\r\n    \r\nEnd Sub\r\n\r\nPrivate Sub Schaltfläche33_Click()\r\nOn Error GoTo Err_Schaltfläche33_Click\r\n\r\n\r\n    DoCmd.DoMenuItem A_FORMBAR, A_RECORDSMENU, A_REFRESH, , A_MENU_VER20\r\n\r\nExit_Schaltfläche33_Click:\r\n    Exit Sub\r\n\r\nErr_Schaltfläche33_Click:\r\n    MsgBox Error$\r\n    Resume Exit_Schaltfläche33_Click\r\n    \r\nEnd Sub\r\n\r\nPrivate Sub Schaltfläche34_Click()\r\nOn Error GoTo Err_Schaltfläche34_Click\r\n\r\n\r\n    DoCmd.PrintOut\r\n\r\nExit_Schaltfläche34_Click:\r\n    Exit Sub\r\n\r\nErr_Schaltfläche34_Click:\r\n    MsgBox Error$\r\n    Resume Exit_Schaltfläche34_Click\r\n    \r\nEnd Sub\r\n\r\nPrivate Sub Schaltfläche44_Click()\r\nOn Error GoTo Err_Schaltfläche44_Click\r\n\r\n\r\n    DoCmd.PrintOut\r\n\r\nExit_Schaltfläche44_Click:\r\n    Exit Sub\r\n\r\nErr_Schaltfläche44_Click:\r\n    MsgBox Error$\r\n    Resume Exit_Schaltfläche44_Click\r\n    \r\nEnd Sub\r\n\r\n\r\nPrivate Sub Befehl59_Click()\r\n    subfrmSuchergebnisGruppe.Requery\r\nEnd Sub\r\n\r\nPrivate Sub Befehl80_Click()\r\n    DoCmd.OpenForm \"Header\"\r\n    DoCmd.Close acForm, \"frmSucheGruppe\"\r\n\r\nEnd Sub\r\n\r\nPrivate Sub Form_Open(Cancel As Integer)\r\n    Dim rst1 As DAO.Recordset\r\n    Set rst1 = CurrentDb.OpenRecordset(\"Select * From tblGewDaten ORDER BY IDSprache\")\r\n    GewSprache = rst1!IDSprache\r\n    rst1.Close\r\n    If GewSprache = 1 Then\r\n        Befehl59.Caption = \"Anzeige aktualisieren\"\r\n        Befehl80.Caption = \"Hauptmenu\"\r\n        Schaltfläche43.Caption = \"Suchfunktionen\"\r\n    \r\n    Else\r\n        Befehl59.Caption = \"Update Display\"\r\n        Befehl80.Caption = \"Main Menu\"\r\n        Schaltfläche43.Caption = \"Search\"\r\n    End If\r\n\r\nEnd Sub\r\n\r\nPrivate Sub Schaltfläche43_Click()\r\n    DoCmd.OpenForm \"Suchübersicht\"\r\n    DoCmd.Close acForm, \"frmSucheGruppe\"\r\nEnd Sub"
+  },
+  "subfrmSucheGruppe": {
+   "controls": [
+    {
+     "name": "Text8",
+     "controltype": 100,
+     "left": 566,
+     "top": 113,
+     "width": 2610,
+     "height": 345,
+     "caption": "Search Group",
+     "visible": "True"
+    },
+    {
+     "name": "Kombinationsfeld159",
+     "controltype": 111,
+     "left": 3401,
+     "top": 113,
+     "width": 1701,
+     "height": 255,
+     "tabindex": 0,
+     "controlsource": "SucheGruppe",
+     "rowsource": "SELECT DISTINCTROW [qryVerwendeteGruppen].[Gruppe] FROM [qryVerwendeteGruppen];",
+     "rowsourcetype": "Table/Query",
+     "limittolist": "False",
+     "boundcolumn": "1",
+     "columnwidths": "1440",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Seitenumbruch70",
+     "controltype": 118,
+     "left": 0,
+     "top": 0,
+     "visible": "True"
+    }
+   ],
+   "Caption": "Montage",
+   "RecordSource": "tblGewDaten",
+   "DefaultView": "1",
+   "AllowAdditions": "False",
+   "AllowEdits": "True",
+   "AllowDeletions": "True",
+   "OnOpen": "[Event Procedure]",
+   "HasModule": "True",
+   "vba": "Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.\r\n\r\nPrivate Sub Form_Open(Cancel As Integer)\r\n    Dim rst1 As DAO.Recordset\r\n    Set rst1 = CurrentDb.OpenRecordset(\"Select * From tblGewDaten ORDER BY IDSprache\")\r\n    GewSprache = rst1!IDSprache\r\n    rst1.Close\r\n    If GewSprache = 1 Then\r\n        Text8.Caption = \"Suche Gruppe\"\r\n    Else\r\n        Text8.Caption = \"Search Group\"\r\n        \r\n    End If\r\nEnd Sub\r\n\r\n\r\n"
+  },
+  "subfrmSuchergebnisGruppe": {
+   "controls": [
+    {
+     "name": "Text10",
+     "controltype": 100,
+     "left": 0,
+     "top": 0,
+     "width": 570,
+     "height": 465,
+     "caption": "Cell no.",
+     "visible": "True"
+    },
+    {
+     "name": "Text12",
+     "controltype": 100,
+     "left": 3174,
+     "top": 5,
+     "width": 795,
+     "height": 450,
+     "caption": "Anode no.",
+     "visible": "True"
+    },
+    {
+     "name": "Text14",
+     "controltype": 100,
+     "left": 3968,
+     "top": 5,
+     "width": 915,
+     "height": 450,
+     "caption": "Cathode no.",
+     "visible": "True"
+    },
+    {
+     "name": "Text16",
+     "controltype": 100,
+     "left": 6009,
+     "top": 5,
+     "width": 1011,
+     "height": 465,
+     "caption": "Membrane type",
+     "visible": "True"
+    },
+    {
+     "name": "Text18",
+     "controltype": 100,
+     "left": 4875,
+     "top": 5,
+     "width": 1125,
+     "height": 465,
+     "caption": "Membrane no.",
+     "visible": "True"
+    },
+    {
+     "name": "Text22",
+     "controltype": 100,
+     "left": 7823,
+     "top": 5,
+     "width": 915,
+     "height": 465,
+     "caption": "Assembly date",
+     "visible": "True"
+    },
+    {
+     "name": "Text24",
+     "controltype": 100,
+     "left": 566,
+     "top": 5,
+     "width": 780,
+     "height": 465,
+     "caption": "Electro-lyser",
+     "visible": "True"
+    },
+    {
+     "name": "Text26",
+     "controltype": 100,
+     "left": 1360,
+     "top": 5,
+     "width": 465,
+     "height": 465,
+     "caption": "Pos.",
+     "visible": "True"
+    },
+    {
+     "name": "Text32",
+     "controltype": 100,
+     "left": 8730,
+     "top": 5,
+     "width": 1140,
+     "height": 465,
+     "caption": "Commis. date",
+     "visible": "True"
+    },
+    {
+     "name": "Text51",
+     "controltype": 100,
+     "left": 11452,
+     "top": 0,
+     "width": 570,
+     "height": 465,
+     "caption": "tot. DOL",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld92",
+     "controltype": 100,
+     "left": 2494,
+     "top": 5,
+     "width": 690,
+     "height": 465,
+     "caption": "Group",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld95",
+     "controltype": 100,
+     "left": 10431,
+     "top": 0,
+     "width": 1020,
+     "height": 465,
+     "caption": "Decommis.date",
+     "visible": "True"
+    },
+    {
+     "name": "Label123",
+     "controltype": 100,
+     "left": 13040,
+     "top": 0,
+     "width": 2265,
+     "height": 465,
+     "caption": "Reason for decommission/inspection",
+     "visible": "True"
+    },
+    {
+     "name": "Label122",
+     "controltype": 100,
+     "left": 22904,
+     "top": 0,
+     "width": 1020,
+     "height": 465,
+     "caption": "Anode coating",
+     "visible": "True"
+    },
+    {
+     "name": "Label121",
+     "controltype": 100,
+     "left": 25972,
+     "top": 5,
+     "width": 1020,
+     "height": 465,
+     "caption": "Cathode coating",
+     "visible": "True"
+    },
+    {
+     "name": "Label120",
+     "controltype": 100,
+     "left": 29027,
+     "top": 0,
+     "width": 1590,
+     "height": 465,
+     "caption": "Membrane",
+     "visible": "True"
+    },
+    {
+     "name": "Label137",
+     "controltype": 100,
+     "left": 23931,
+     "top": 5,
+     "width": 1035,
+     "height": 465,
+     "caption": "Anode electrode",
+     "visible": "True"
+    },
+    {
+     "name": "Label134",
+     "controltype": 100,
+     "left": 26986,
+     "top": 0,
+     "width": 1020,
+     "height": 465,
+     "caption": "Cathode electrode",
+     "visible": "True"
+    },
+    {
+     "name": "Label143",
+     "controltype": 100,
+     "left": 15299,
+     "top": 0,
+     "width": 7605,
+     "height": 465,
+     "caption": "Remarks",
+     "visible": "True"
+    },
+    {
+     "name": "Label148",
+     "controltype": 100,
+     "left": 24952,
+     "top": 5,
+     "width": 1005,
+     "height": 465,
+     "caption": "Anode shell",
+     "visible": "True"
+    },
+    {
+     "name": "Label150",
+     "controltype": 100,
+     "left": 28013,
+     "top": 5,
+     "width": 1020,
+     "height": 465,
+     "caption": "Cathode shell",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld157",
+     "controltype": 100,
+     "left": 7029,
+     "top": 5,
+     "width": 795,
+     "height": 465,
+     "caption": "Gap\r\n[mm]",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld162",
+     "controltype": 100,
+     "left": 12019,
+     "top": 0,
+     "width": 1020,
+     "height": 465,
+     "caption": "Disassem-bly date",
+     "visible": "True"
+    },
+    {
+     "name": "Label167",
+     "controltype": 100,
+     "left": 1814,
+     "top": 0,
+     "width": 690,
+     "height": 465,
+     "caption": "Gen.",
+     "visible": "True"
+    },
+    {
+     "name": "Label171",
+     "controltype": 100,
+     "left": 9864,
+     "top": 0,
+     "width": 570,
+     "height": 465,
+     "caption": "curr.DOL",
+     "visible": "True"
+    },
+    {
+     "name": "Feld74",
+     "controltype": 109,
+     "left": 13947,
+     "top": 113,
+     "width": 1142,
+     "height": 347,
+     "tabindex": 0,
+     "controlsource": "=Date()",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text76",
+     "controltype": 100,
+     "left": 0,
+     "top": 566,
+     "width": 555,
+     "height": 465,
+     "caption": "Cell no.",
+     "visible": "True"
+    },
+    {
+     "name": "Text77",
+     "controltype": 100,
+     "left": 3181,
+     "top": 566,
+     "width": 780,
+     "height": 450,
+     "caption": "Anode no. ",
+     "visible": "True"
+    },
+    {
+     "name": "Text78",
+     "controltype": 100,
+     "left": 3968,
+     "top": 566,
+     "width": 915,
+     "height": 450,
+     "caption": "Cathode no. ",
+     "visible": "True"
+    },
+    {
+     "name": "Text79",
+     "controltype": 100,
+     "left": 6009,
+     "top": 566,
+     "width": 1026,
+     "height": 465,
+     "caption": "Membrane type",
+     "visible": "True"
+    },
+    {
+     "name": "Text80",
+     "controltype": 100,
+     "left": 4875,
+     "top": 566,
+     "width": 1125,
+     "height": 465,
+     "caption": "Membrane no.",
+     "visible": "True"
+    },
+    {
+     "name": "Text82",
+     "controltype": 100,
+     "left": 7823,
+     "top": 566,
+     "width": 915,
+     "height": 465,
+     "caption": "Assembly date",
+     "visible": "True"
+    },
+    {
+     "name": "Text83",
+     "controltype": 100,
+     "left": 566,
+     "top": 566,
+     "width": 780,
+     "height": 465,
+     "caption": "Electro-lyser",
+     "visible": "True"
+    },
+    {
+     "name": "Text84",
+     "controltype": 100,
+     "left": 1360,
+     "top": 566,
+     "width": 465,
+     "height": 450,
+     "caption": "Pos.",
+     "visible": "True"
+    },
+    {
+     "name": "Text85",
+     "controltype": 100,
+     "left": 8730,
+     "top": 566,
+     "width": 1140,
+     "height": 465,
+     "caption": "Commis. date",
+     "visible": "True"
+    },
+    {
+     "name": "Text86",
+     "controltype": 100,
+     "left": 10431,
+     "top": 566,
+     "width": 1020,
+     "height": 465,
+     "caption": "Decommis.date",
+     "visible": "True"
+    },
+    {
+     "name": "Text88",
+     "controltype": 100,
+     "left": 13040,
+     "top": 566,
+     "width": 2265,
+     "height": 450,
+     "caption": "Reason for decommission/inspection",
+     "visible": "True"
+    },
+    {
+     "name": "Text89",
+     "controltype": 100,
+     "left": 11452,
+     "top": 566,
+     "width": 570,
+     "height": 450,
+     "caption": "tot. DOL",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld93",
+     "controltype": 100,
+     "left": 2494,
+     "top": 566,
+     "width": 690,
+     "height": 450,
+     "caption": "Group",
+     "visible": "True"
+    },
+    {
+     "name": "Label119",
+     "controltype": 100,
+     "left": 29027,
+     "top": 566,
+     "width": 1590,
+     "height": 450,
+     "caption": "Membrane",
+     "visible": "True"
+    },
+    {
+     "name": "Label142",
+     "controltype": 100,
+     "left": 15307,
+     "top": 566,
+     "width": 7605,
+     "height": 450,
+     "caption": "Remarks",
+     "visible": "True"
+    },
+    {
+     "name": "Label144",
+     "controltype": 100,
+     "left": 22904,
+     "top": 566,
+     "width": 1020,
+     "height": 465,
+     "caption": "Anode coating",
+     "visible": "True"
+    },
+    {
+     "name": "Label145",
+     "controltype": 100,
+     "left": 23924,
+     "top": 566,
+     "width": 1035,
+     "height": 465,
+     "caption": "Anode electrode",
+     "visible": "True"
+    },
+    {
+     "name": "Label146",
+     "controltype": 100,
+     "left": 25965,
+     "top": 566,
+     "width": 1020,
+     "height": 465,
+     "caption": "Cathode coating",
+     "visible": "True"
+    },
+    {
+     "name": "Label147",
+     "controltype": 100,
+     "left": 26986,
+     "top": 566,
+     "width": 1020,
+     "height": 465,
+     "caption": "Cathode electrode",
+     "visible": "True"
+    },
+    {
+     "name": "Label149",
+     "controltype": 100,
+     "left": 24945,
+     "top": 566,
+     "width": 1005,
+     "height": 465,
+     "caption": "Anode shell",
+     "visible": "True"
+    },
+    {
+     "name": "Label151",
+     "controltype": 100,
+     "left": 28006,
+     "top": 566,
+     "width": 1020,
+     "height": 465,
+     "caption": "Cathode shell",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld158",
+     "controltype": 100,
+     "left": 7029,
+     "top": 566,
+     "width": 795,
+     "height": 465,
+     "caption": "Gap\r\n[mm]",
+     "visible": "True"
+    },
+    {
+     "name": "Bezeichnungsfeld163",
+     "controltype": 100,
+     "left": 12019,
+     "top": 566,
+     "width": 1020,
+     "height": 465,
+     "caption": "Disassem-bly date",
+     "visible": "True"
+    },
+    {
+     "name": "Label168",
+     "controltype": 100,
+     "left": 1814,
+     "top": 566,
+     "width": 690,
+     "height": 450,
+     "caption": "Gen.",
+     "visible": "True"
+    },
+    {
+     "name": "Label172",
+     "controltype": 100,
+     "left": 9864,
+     "top": 566,
+     "width": 570,
+     "height": 450,
+     "caption": "curr.DOL",
+     "visible": "True"
+    },
+    {
+     "name": "Anode no.",
+     "controltype": 109,
+     "left": 3061,
+     "top": 0,
+     "width": 907,
+     "height": 255,
+     "tabindex": 4,
+     "controlsource": "Anoden Nr",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Cathode no.",
+     "controltype": 109,
+     "left": 3969,
+     "top": 0,
+     "width": 907,
+     "height": 255,
+     "tabindex": 5,
+     "controlsource": "Kathoden Nr",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Membrane type",
+     "controltype": 109,
+     "left": 6009,
+     "top": 0,
+     "width": 1021,
+     "height": 255,
+     "tabindex": 7,
+     "controlsource": "Membrantyp",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Membrane no.",
+     "controltype": 109,
+     "left": 4876,
+     "top": 0,
+     "width": 1134,
+     "height": 255,
+     "tabindex": 6,
+     "controlsource": "Membran Nr",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Commis.",
+     "controltype": 109,
+     "left": 8730,
+     "top": 0,
+     "width": 1137,
+     "height": 255,
+     "tabindex": 10,
+     "controlsource": "Einschalt Datum",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Decomis.",
+     "controltype": 109,
+     "left": 10431,
+     "top": 0,
+     "width": 1026,
+     "height": 255,
+     "tabindex": 11,
+     "controlsource": "Ausschalt Datum",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Cell no.",
+     "controltype": 109,
+     "left": 0,
+     "top": 0,
+     "width": 567,
+     "height": 255,
+     "tabindex": 0,
+     "controlsource": "Element Nr",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Reason for decommis.",
+     "controltype": 109,
+     "left": 13039,
+     "top": 0,
+     "width": 2265,
+     "height": 255,
+     "tabindex": 14,
+     "controlsource": "Abschaltgrund",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "DOL",
+     "controltype": 109,
+     "left": 11460,
+     "top": 0,
+     "width": 567,
+     "height": 255,
+     "tabindex": 12,
+     "controlsource": "=[Ausschalt Datum]-[Einschalt Datum]",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Electrolyser",
+     "controltype": 109,
+     "left": 567,
+     "top": 0,
+     "width": 794,
+     "height": 255,
+     "tabindex": 1,
+     "controlsource": "Elektrolyseur",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Position",
+     "controltype": 109,
+     "left": 1360,
+     "top": 0,
+     "width": 454,
+     "height": 255,
+     "tabindex": 2,
+     "controlsource": "Position",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Group",
+     "controltype": 109,
+     "left": 2494,
+     "top": 0,
+     "width": 561,
+     "height": 255,
+     "tabindex": 3,
+     "controlsource": "Gruppe",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Assembly date",
+     "controltype": 109,
+     "left": 7823,
+     "top": 0,
+     "width": 915,
+     "height": 255,
+     "tabindex": 9,
+     "controlsource": "Montage Datum",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Anode coating",
+     "controltype": 109,
+     "left": 22903,
+     "top": 0,
+     "width": 1020,
+     "height": 255,
+     "tabindex": 16,
+     "controlsource": "Anode coating",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Cathode coating",
+     "controltype": 109,
+     "left": 25965,
+     "top": 0,
+     "width": 1020,
+     "height": 255,
+     "tabindex": 19,
+     "controlsource": "Cathode coating",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Info membrane",
+     "controltype": 109,
+     "left": 29026,
+     "top": 0,
+     "width": 1605,
+     "height": 255,
+     "tabindex": 22,
+     "controlsource": "Info membrane",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Anode electrode",
+     "controltype": 109,
+     "left": 23924,
+     "top": 0,
+     "width": 1005,
+     "height": 255,
+     "tabindex": 17,
+     "controlsource": "Anode electrode",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Cathode electrode",
+     "controltype": 109,
+     "left": 26985,
+     "top": 0,
+     "width": 1020,
+     "height": 255,
+     "tabindex": 20,
+     "controlsource": "Cathode electrode",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Anode shell",
+     "controltype": 109,
+     "left": 24944,
+     "top": 0,
+     "width": 1005,
+     "height": 255,
+     "tabindex": 18,
+     "controlsource": "Anode shell",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Cathode shell",
+     "controltype": 109,
+     "left": 28006,
+     "top": 0,
+     "width": 1020,
+     "height": 255,
+     "tabindex": 21,
+     "controlsource": "Cathode shell",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text141",
+     "controltype": 109,
+     "left": 15307,
+     "top": 0,
+     "width": 7605,
+     "height": 255,
+     "tabindex": 15,
+     "controlsource": "Remarks",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text156",
+     "controltype": 109,
+     "left": 7029,
+     "top": 0,
+     "width": 795,
+     "height": 255,
+     "tabindex": 8,
+     "controlsource": "Elektroden Abstand",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Text164",
+     "controltype": 109,
+     "left": 12018,
+     "top": 0,
+     "width": 1026,
+     "height": 255,
+     "tabindex": 13,
+     "controlsource": "Demontage Datum",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Generation",
+     "controltype": 109,
+     "left": 1814,
+     "top": 0,
+     "width": 681,
+     "height": 255,
+     "tabindex": 23,
+     "controlsource": "Generation",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "CurrentDOL",
+     "controltype": 109,
+     "left": 9864,
+     "top": 0,
+     "width": 561,
+     "height": 255,
+     "tabindex": 24,
+     "controlsource": "AktuelleDOL",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Feld80",
+     "controltype": 109,
+     "left": 12925,
+     "top": 113,
+     "width": 1597,
+     "height": 227,
+     "tabindex": 0,
+     "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+     "visible": "True",
+     "enabled": "True",
+     "locked": "False"
+    },
+    {
+     "name": "Seitenumbruch70",
+     "controltype": 118,
+     "left": 0,
+     "top": 0,
+     "visible": "True"
+    }
+   ],
+   "Caption": "Montage",
+   "RecordSource": "qryGruppe",
+   "DefaultView": "1",
+   "AllowAdditions": "True",
+   "AllowEdits": "True",
+   "AllowDeletions": "True",
+   "OnOpen": "[Event Procedure]",
+   "HasModule": "True",
+   "vba": "Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.\r\nOption Explicit\r\n\r\nPrivate Sub Form_Open(Cancel As Integer)\r\n    Dim rst1 As DAO.Recordset\r\n    Dim PosX As Long\r\n    \r\n    'Felder anordnen\r\n    Set rst1 = CurrentDb.OpenRecordset(\"Select * From tblMontagedatenFormat ORDER BY ElementNrAnzeigen\")\r\n    rst1.MoveFirst\r\n    PosX = 0\r\n    Text10.Left = PosX\r\n    Text76.Left = PosX\r\n    [Cell no.].Left = PosX\r\n    Text10.Width = rst1!ElementNrBreite\r\n    Text76.Width = rst1!ElementNrBreite\r\n    [Cell no.].Width = rst1!ElementNrBreite\r\n    If rst1!ElementNrAnzeigen = 0 Then\r\n        Text10.Visible = False\r\n        Text76.Visible = False\r\n        [Cell no.].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!ElementNrBreite\r\n    End If\r\n    \r\n    Text24.Left = PosX\r\n    Text83.Left = PosX\r\n    Electrolyser.Left = PosX\r\n    Text24.Width = rst1!ElektrolyseurBreite\r\n    Text83.Width = rst1!ElektrolyseurBreite\r\n    Electrolyser.Width = rst1!ElektrolyseurBreite\r\n    If rst1!ElektrolyseurAnzeigen = 0 Then\r\n        Text24.Visible = False\r\n        Text83.Visible = False\r\n        Electrolyser.Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!ElektrolyseurBreite\r\n    End If\r\n    \r\n    Text26.Left = PosX\r\n    Text84.Left = PosX\r\n    Position.Left = PosX\r\n    Text26.Width = rst1!PosBreite\r\n    Text84.Width = rst1!PosBreite\r\n    Position.Width = rst1!PosBreite\r\n    If rst1!PosAnzeigen = 0 Then\r\n        Text26.Visible = False\r\n        Text84.Visible = False\r\n        Position.Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!PosBreite\r\n    End If\r\n        \r\n    Label167.Left = PosX\r\n    Label168.Left = PosX\r\n    Generation.Left = PosX\r\n    Label167.Width = rst1!GenerationBreite\r\n    Label168.Width = rst1!GenerationBreite\r\n    Generation.Width = rst1!GenerationBreite\r\n    If rst1!GenerationAnzeigen = 0 Then\r\n        Label167.Visible = False\r\n        Label168.Visible = False\r\n        Generation.Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!GenerationBreite\r\n    End If\r\n    \r\n    Bezeichnungsfeld92.Left = PosX\r\n    Bezeichnungsfeld93.Left = PosX\r\n    Group.Left = PosX\r\n    Bezeichnungsfeld92.Width = rst1!GruppeBreite\r\n    Bezeichnungsfeld93.Width = rst1!GruppeBreite\r\n    Group.Width = rst1!GruppeBreite\r\n    If rst1!GruppeAnzeigen = 0 Then\r\n        Bezeichnungsfeld92.Visible = False\r\n        Bezeichnungsfeld93.Visible = False\r\n        Group.Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!GruppeBreite\r\n    End If\r\n    \r\n    Text12.Left = PosX\r\n    Text77.Left = PosX\r\n    [Anode no.].Left = PosX\r\n    Text12.Width = rst1!AnodeNrBreite\r\n    Text77.Width = rst1!AnodeNrBreite\r\n    [Anode no.].Width = rst1!AnodeNrBreite\r\n    If rst1!AnodeNrAnzeigen = 0 Then\r\n        Text12.Visible = False\r\n        Text77.Visible = False\r\n        [Anode no.].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!AnodeNrBreite\r\n    End If\r\n    \r\n    Text14.Left = PosX\r\n    Text78.Left = PosX\r\n    [Cathode no.].Left = PosX\r\n    Text14.Width = rst1!KathodeNrBreite\r\n    Text78.Width = rst1!KathodeNrBreite\r\n    [Cathode no.].Width = rst1!KathodeNrBreite\r\n    If rst1!KathodeNrAnzeigen = 0 Then\r\n        Text14.Visible = False\r\n        Text78.Visible = False\r\n        [Cathode no.].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!KathodeNrBreite\r\n    End If\r\n    \r\n    Text18.Left = PosX\r\n    Text80.Left = PosX\r\n    [Membrane No.].Left = PosX\r\n    Text18.Width = rst1!MembranNrBreite\r\n    Text80.Width = rst1!MembranNrBreite\r\n    [Membrane No.].Width = rst1!MembranNrBreite\r\n    If rst1!MembranNrAnzeigen = 0 Then\r\n        Text18.Visible = False\r\n        Text80.Visible = False\r\n        [Membrane No.].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!MembranNrBreite\r\n    End If\r\n    \r\n    Text16.Left = PosX\r\n    Text79.Left = PosX\r\n    [Membrane type].Left = PosX\r\n    Text16.Width = rst1!MembrantypBreite\r\n    Text79.Width = rst1!MembrantypBreite\r\n    [Membrane type].Width = rst1!MembrantypBreite\r\n    If rst1!MembrantypAnzeigen = 0 Then\r\n        Text16.Visible = False\r\n        Text79.Visible = False\r\n        [Membrane type].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!MembrantypBreite\r\n    End If\r\n    \r\n    Bezeichnungsfeld157.Left = PosX\r\n    Bezeichnungsfeld158.Left = PosX\r\n    Text156.Left = PosX\r\n    Bezeichnungsfeld157.Width = rst1!ElektrodenAbstandBreite\r\n    Bezeichnungsfeld157.Width = rst1!ElektrodenAbstandBreite\r\n    Text156.Width = rst1!ElektrodenAbstandBreite\r\n    If rst1!ElektrodenAbstandAnzeigen = 0 Then\r\n        Bezeichnungsfeld157.Visible = False\r\n        Bezeichnungsfeld158.Visible = False\r\n        Text156.Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!ElektrodenAbstandBreite\r\n    End If\r\n    \r\n    Text22.Left = PosX\r\n    Text82.Left = PosX\r\n    [Assembly date].Left = PosX\r\n    Text22.Width = rst1!MontagedatumBreite\r\n    Text82.Width = rst1!MontagedatumBreite\r\n    [Assembly date].Width = rst1!MontagedatumBreite\r\n    If rst1!MontagedatumAnzeigen = 0 Then\r\n        Text22.Visible = False\r\n        Text82.Visible = False\r\n        [Assembly date].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!MontagedatumBreite\r\n    End If\r\n    \r\n    Text32.Left = PosX\r\n    Text85.Left = PosX\r\n    [Commis.].Left = PosX\r\n    Text32.Width = rst1!InbetriebnahmeDatumBreite\r\n    Text85.Width = rst1!InbetriebnahmeDatumBreite\r\n    [Commis.].Width = rst1!InbetriebnahmeDatumBreite\r\n    If rst1!InbetriebnahmeDatumAnzeigen = 0 Then\r\n        Text32.Visible = False\r\n        Text85.Visible = False\r\n        [Commis.].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!InbetriebnahmeDatumBreite\r\n    End If\r\n    \r\n    Label171.Left = PosX\r\n    Label172.Left = PosX\r\n    CurrentDOL.Left = PosX\r\n    Label171.Width = rst1!DOLBreite\r\n    Label172.Width = rst1!DOLBreite\r\n    CurrentDOL.Width = rst1!DOLBreite\r\n    If rst1!DOLAnzeigen = 0 Then\r\n        Label171.Visible = False\r\n        Label172.Visible = False\r\n        CurrentDOL.Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!DOLBreite\r\n    End If\r\n    \r\n    Bezeichnungsfeld95.Left = PosX\r\n    Text86.Left = PosX\r\n    [Decomis.].Left = PosX\r\n    Bezeichnungsfeld95.Width = rst1!AbschaltdatumBreite\r\n    Text86.Width = rst1!AbschaltdatumBreite\r\n    [Decomis.].Width = rst1!AbschaltdatumBreite\r\n    If rst1!AbschaltdatumAnzeigen = 0 Then\r\n        Bezeichnungsfeld95.Visible = False\r\n        Text86.Visible = False\r\n        [Decommis.].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!AbschaltdatumBreite\r\n    End If\r\n    \r\n    Text51.Left = PosX\r\n    Text89.Left = PosX\r\n    DOL.Left = PosX\r\n    Text51.Width = rst1!DOLBreite\r\n    Text89.Width = rst1!DOLBreite\r\n    DOL.Width = rst1!DOLBreite\r\n    If rst1!DOLAnzeigen = 0 Then\r\n        Text51.Visible = False\r\n        Text89.Visible = False\r\n        DOL.Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!DOLBreite\r\n    End If\r\n\r\n    Bezeichnungsfeld162.Left = PosX\r\n    Bezeichnungsfeld163.Left = PosX\r\n    Text164.Left = PosX\r\n    Bezeichnungsfeld162.Width = rst1!DemontagedatumBreite\r\n    Bezeichnungsfeld163.Width = rst1!DemontagedatumBreite\r\n    Text164.Width = rst1!DemontagedatumBreite\r\n    If rst1!DemontagedatumAnzeigen = 0 Then\r\n        Bezeichnungsfeld162.Visible = False\r\n        Bezeichnungsfeld163.Visible = False\r\n        Text164.Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!DemontagedatumBreite\r\n    End If\r\n    \r\n    Label123.Left = PosX\r\n    Text88.Left = PosX\r\n    [Reason for Decommis.].Left = PosX\r\n    Label123.Width = rst1!AbschaltgrundBreite\r\n    Text88.Width = rst1!AbschaltgrundBreite\r\n    [Reason for Decommis.].Width = rst1!AbschaltgrundBreite\r\n    If rst1!AbschaltgrundAnzeigen = 0 Then\r\n        Label123.Visible = False\r\n        Text88.Visible = False\r\n        [Reason for Decommis.].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!AbschaltgrundBreite\r\n    End If\r\n    \r\n    Label143.Left = PosX\r\n    Label142.Left = PosX\r\n    Text141.Left = PosX\r\n    Label143.Width = rst1!BemerkungenBreite\r\n    Label142.Width = rst1!BemerkungenBreite\r\n    Text141.Width = rst1!BemerkungenBreite\r\n    If rst1!BemerkungenAnzeigen = 0 Then\r\n        Label143.Visible = False\r\n        Label142.Visible = False\r\n        Text141.Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!BemerkungenBreite\r\n    End If\r\n    \r\n    Label122.Left = PosX\r\n    Label144.Left = PosX\r\n    [Anode coating].Left = PosX\r\n    Label122.Width = rst1!AnodencoatingBreite\r\n    Label144.Width = rst1!AnodencoatingBreite\r\n    [Anode coating].Width = rst1!AnodencoatingBreite\r\n    If rst1!AnodencoatingAnzeigen = 0 Then\r\n        Label122.Visible = False\r\n        Label144.Visible = False\r\n        [Anode coating].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!AnodencoatingBreite\r\n    End If\r\n    \r\n    Label137.Left = PosX\r\n    Label145.Left = PosX\r\n    [Anode electrode].Left = PosX\r\n    Label137.Width = rst1!AnodenelektrodeBreite\r\n    Label145.Width = rst1!AnodenelektrodeBreite\r\n    [Anode electrode].Width = rst1!AnodenelektrodeBreite\r\n    If rst1!AnodenelektrodeAnzeigen = 0 Then\r\n        Label137.Visible = False\r\n        Label145.Visible = False\r\n        [Anode electrode].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!AnodenelektrodeBreite\r\n    End If\r\n    \r\n    Label148.Left = PosX\r\n    Label149.Left = PosX\r\n    [Anode shell].Left = PosX\r\n    Label148.Width = rst1!AnodenwanneBreite\r\n    Label149.Width = rst1!AnodenwanneBreite\r\n    [Anode shell].Width = rst1!AnodenwanneBreite\r\n    If rst1!AnodenwanneAnzeigen = 0 Then\r\n        Label148.Visible = False\r\n        Label149.Visible = False\r\n        [Anode shell].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!AnodenwanneBreite\r\n    End If\r\n    \r\n    Label121.Left = PosX\r\n    Label146.Left = PosX\r\n    [Cathode coating].Left = PosX\r\n    Label121.Width = rst1!KathodencoatingBreite\r\n    Label146.Width = rst1!KathodencoatingBreite\r\n    [Cathode coating].Width = rst1!KathodencoatingBreite\r\n    If rst1!KathodencoatingAnzeigen = 0 Then\r\n        Label121.Visible = False\r\n        Label146.Visible = False\r\n        [Cathode coating].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!KathodencoatingBreite\r\n    End If\r\n    \r\n    Label134.Left = PosX\r\n    Label147.Left = PosX\r\n    [Cathode electrode].Left = PosX\r\n    Label134.Width = rst1!KathodenelektrodeBreite\r\n    Label147.Width = rst1!KathodenelektrodeBreite\r\n    [Cathode electrode].Width = rst1!KathodenelektrodeBreite\r\n    If rst1!KathodenelektrodeAnzeigen = 0 Then\r\n        Label134.Visible = False\r\n        Label147.Visible = False\r\n        [Cathode electrode].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!KathodenelektrodeBreite\r\n    End If\r\n    \r\n    Label150.Left = PosX\r\n    Label151.Left = PosX\r\n    [Cathode shell].Left = PosX\r\n    Label150.Width = rst1!KathodenwanneBreite\r\n    Label151.Width = rst1!KathodenwanneBreite\r\n    [Cathode shell].Width = rst1!KathodenwanneBreite\r\n    If rst1!KathodenwanneAnzeigen = 0 Then\r\n        Label150.Visible = False\r\n        Label151.Visible = False\r\n        [Cathode shell].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!KathodenwanneBreite\r\n    End If\r\n    \r\n    Label120.Left = PosX\r\n    Label119.Left = PosX\r\n    [Info membrane].Left = PosX\r\n    Label120.Width = rst1!MembranBreite\r\n    Label119.Width = rst1!MembranBreite\r\n    [Info membrane].Width = rst1!MembranBreite\r\n    If rst1!MembranAnzeigen = 0 Then\r\n        Label120.Visible = False\r\n        Label119.Visible = False\r\n        [Info membrane].Visible = False\r\n    Else\r\n        PosX = PosX + rst1!Feldabstand + rst1!MembranBreite\r\n    End If\r\n    \r\n    Me.Width = PosX\r\n    rst1.Close\r\n    \r\n    'Felder beschriften\r\n    If GetIDGewSprache() = 1 Then\r\n        Text10.Caption = \"Elem. Nr.\"\r\n        Text24.Caption = \"Elektro-lyseur\"\r\n        Text26.Caption = \"Pos.\"\r\n        Label167.Caption = \"Gen.\"\r\n        Bezeichnungsfeld92.Caption = \"Grup-pe\"\r\n        Text12.Caption = \"Anode Nr.\"\r\n        Text14.Caption = \"Kathode Nr.\"\r\n        Text18.Caption = \"Membran Nr.\"\r\n        Text16.Caption = \"Membran-typ\"\r\n        Bezeichnungsfeld157.Caption = \"Elektr. Abstd.\"\r\n        Text32.Caption = \"Inbetriebn.-datum\"\r\n        Bezeichnungsfeld95.Caption = \"Abschalt-datum\"\r\n        Text51.Caption = \"tot. DOL\"\r\n        Label171.Caption = \"akt. DOL\"\r\n        Label123.Caption = \"Abschaltgrund/Inspektion\"\r\n        Bezeichnungsfeld162.Caption = \"Demont.-datum\"\r\n        Label122.Caption = \"Anoden-Coating\"\r\n        Label137.Caption = \"Anoden-Elektrode\"\r\n        Label148.Caption = \"Anoden-Wanne\"\r\n        Label121.Caption = \"Kathoden-Coating\"\r\n        Label134.Caption = \"Kathoden-Elektrode\"\r\n        Label150.Caption = \"Kathoden-Wanne\"\r\n        Label120.Caption = \"Membran\"\r\n        Label143.Caption = \"Bemerkungen\"\r\n        Text22.Caption = \"Montage-datum\"\r\n        \r\n        Text76.Caption = \"Elem. Nr.\"\r\n        Text83.Caption = \"Elektro-lyseur\"\r\n        Text84.Caption = \"Pos.\"\r\n        Label168.Caption = \"Gen.\"\r\n        Bezeichnungsfeld93.Caption = \"Grup-pe\"\r\n        Text77.Caption = \"Anode Nr.\"\r\n        Text78.Caption = \"Kathode Nr.\"\r\n        Text80.Caption = \"Membran Nr.\"\r\n        Text79.Caption = \"Membran-typ\"\r\n        Bezeichnungsfeld158.Caption = \"Elektr. Abstd.\"\r\n        Text85.Caption = \"Inbetriebn.-datum\"\r\n        Text86.Caption = \"Abschalt-datum\"\r\n        Text89.Caption = \"tot. DOL\"\r\n        Label171.Caption = \"akt. DOL\"\r\n        Text88.Caption = \"Abschaltgrund/Inspektion\"\r\n        Bezeichnungsfeld163.Caption = \"Demont.-datum\"\r\n        Label144.Caption = \"Anoden-Coating\"\r\n        Label145.Caption = \"Anoden-Elektrode\"\r\n        Label149.Caption = \"Anoden-Wanne\"\r\n        Label146.Caption = \"Kathoden-Coating\"\r\n        Label147.Caption = \"Kathoden-Elektrode\"\r\n        Label151.Caption = \"Kathoden-Wanne\"\r\n        Label119.Caption = \"Membran\"\r\n        Label142.Caption = \"Bemerkungen\"\r\n        Text22.Caption = \"Montage-datum\"\r\n    Else\r\n        \r\n        Text10.Caption = \"Cell No.\"\r\n        Text24.Caption = \"Electro-lyser\"\r\n        Text26.Caption = \"Pos.\"\r\n        Label167.Caption = \"Gen.\"\r\n        Bezeichnungsfeld92.Caption = \"Group\"\r\n        Text12.Caption = \"Anode No.\"\r\n        Text14.Caption = \"Cathode No.\"\r\n        Text18.Caption = \"Membrane No.\"\r\n        Text16.Caption = \"Membrane type\"\r\n        Bezeichnungsfeld157.Caption = \"Gap [mm]\"\r\n        Text32.Caption = \"Commiss. date\"\r\n        Bezeichnungsfeld95.Caption = \"Decommiss. date\"\r\n        Text51.Caption = \"tot. DOL\"\r\n        Label171.Caption = \"curr. DOL\"\r\n        Label123.Caption = \"Reason for Decommissioning/Inspection\"\r\n        Bezeichnungsfeld162.Caption = \"Disassem-bly date\"\r\n        Label122.Caption = \"Anode Coating\"\r\n        Label137.Caption = \"Anode Electrode\"\r\n        Label148.Caption = \"Anode Shell\"\r\n        Text22.Caption = \"Assembly Date\"\r\n        Label143.Caption = \"Remarks\"\r\n        Label120.Caption = \"Membrane\"\r\n        Label150.Caption = \"Cathode Shell\"\r\n        Label134.Caption = \"Cathode Electrode\"\r\n        Label121.Caption = \"Cathode Coating\"\r\n        Label148.Caption = \"Anode Shell\"\r\n        \r\n        Text76.Caption = \"Cell No.\"\r\n        Text83.Caption = \"Electro-lyser\"\r\n        Text84.Caption = \"Pos.\"\r\n        Label168.Caption = \"Gen.\"\r\n        Bezeichnungsfeld93.Caption = \"Group\"\r\n        Text77.Caption = \"Anode No.\"\r\n        Text78.Caption = \"Cathode No.\"\r\n        Text80.Caption = \"Membrane No.\"\r\n        Text79.Caption = \"Membrane type\"\r\n        Bezeichnungsfeld157.Caption = \"Gap [mm]\"\r\n        Text85.Caption = \"Commiss. date\"\r\n        Text86.Caption = \"Decommiss. date\"\r\n        Text89.Caption = \"tot. DOL\"\r\n        Label172.Caption = \"curr. DOL\"\r\n        Text88.Caption = \"Reason for Decommissioning/Inspection\"\r\n        Bezeichnungsfeld163.Caption = \"Disassem-bly date\"\r\n        Label144.Caption = \"Anode Coating\"\r\n        Label145.Caption = \"Anode Electrode\"\r\n        Label149.Caption = \"Anode Shell\"\r\n        Label142.Caption = \"Remarks\"\r\n        Label119.Caption = \"Membrane\"\r\n        Label151.Caption = \"Cathode Shell\"\r\n        Label147.Caption = \"Cathode Electrode\"\r\n        Label146.Caption = \"Cathode Coating\"\r\n        Text82.Caption = \"Assembly Date\"\r\n        \r\n    End If\r\nEnd Sub"
+  }
+ },
+ "tables": {
+  "Gruppenmerkmale": {
+   "fields": [
+    {
+     "name": "Gruppe",
+     "type": 7,
+     "size": 8
+    },
+    {
+     "name": "Anodencoating",
+     "type": 10,
+     "size": 50
+    },
+    {
+     "name": "Kathodencoating",
+     "type": 10,
+     "size": 50
+    },
+    {
+     "name": "Membrantyp",
+     "type": 10,
+     "size": 50
+    },
+    {
+     "name": "Elektrodenabstand",
+     "type": 7,
+     "size": 8
+    },
+    {
+     "name": "Bemerkungen",
+     "type": 10,
+     "size": 100
+    }
+   ],
+   "rows": [
+    {
+     "Gruppe": "1.0",
+     "Anodencoating": "2",
+     "Kathodencoating": "3",
+     "Membrantyp": null,
+     "Elektrodenabstand": null,
+     "Bemerkungen": null
+    },
+    {
+     "Gruppe": "2.0",
+     "Anodencoating": "denora",
+     "Kathodencoating": "denora",
+     "Membrantyp": null,
+     "Elektrodenabstand": null,
+     "Bemerkungen": null
+    },
+    {
+     "Gruppe": "3.0",
+     "Anodencoating": null,
+     "Kathodencoating": null,
+     "Membrantyp": null,
+     "Elektrodenabstand": null,
+     "Bemerkungen": null
+    }
+   ]
+  },
+  "Gruppierung": {
+   "fields": [
+    {
+     "name": "Datum",
+     "type": 8,
+     "size": 8
+    },
+    {
+     "name": "Un Mittel",
+     "type": 7,
+     "size": 8
+    },
+    {
+     "name": "Gruppe",
+     "type": 4,
+     "size": 4
+    },
+    {
+     "name": "Membrantyp",
+     "type": 10,
+     "size": 50
+    },
+    {
+     "name": "Anzahl von Element Nr",
+     "type": 4,
+     "size": 4
+    },
+    {
+     "name": "Elektroden Abstand",
+     "type": 7,
+     "size": 8
+    },
+    {
+     "name": "Anodencoating",
+     "type": 10,
+     "size": 50
+    },
+    {
+     "name": "Kathodencoating",
+     "type": 10,
+     "size": 50
+    },
+    {
+     "name": "iRef",
+     "type": 10,
+     "size": 255
+    }
+   ],
+   "rows": []
+  }
+ },
+ "queries": {
+  "qryGruppe": "SELECT DISTINCTROW Montage.[Element Nr], Montage.Elektrolyseur, Montage.Position, Montage.Generation, Montage.[Anoden Nr], Montage.[Kathoden Nr], Montage.[Membran Nr], Montage.Membrantyp, Montage.Gruppe, Montage.[Einschalt Datum], Montage.[Ausschalt Datum], IIf(IsNull([Ausschalt Datum]),Date()-[Einschalt Datum],Null) AS AktuelleDOL, [Ausschalt Datum]-[Einschalt Datum] AS GesamtDOL, Montage.Abschaltgrund, Montage.[Anode Coating], Montage.[Anode Electrode], Montage.[Anode Shell], Montage.[Cathode Coating], Montage.[Cathode Electrode], Montage.[Cathode Shell], Montage.[Info Membrane], Montage.Remarks, Montage.[Montage Datum], Montage.[Demontage Datum], Montage.[Elektroden Abstand]\r\nFROM Montage, tblGewDaten\r\nWHERE (((Montage.Gruppe) Like (SELECT SucheGruppe FROM tblGewDaten)))\r\nORDER BY Montage.[Element Nr], Montage.[Anoden Nr], Montage.[Membran Nr];\r\n",
+  "qryVerwendeteGruppen": "SELECT Montage.Gruppe\r\nFROM Montage\r\nGROUP BY Montage.Gruppe\r\nORDER BY Montage.Gruppe;\r\n",
+  "Gruppen aktiv": "SELECT [Suche aktive Elemente alle AB].Gruppe, [Suche aktive Elemente alle AB].Membrantyp, [Suche aktive Elemente alle AB].[Elektroden Abstand], Count([Suche aktive Elemente alle AB].[Element Nr]) AS [Anzahl von Element Nr], Gruppenmerkmale.Bemerkungen, Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating\r\nFROM [Suche aktive Elemente alle AB] INNER JOIN Gruppenmerkmale ON [Suche aktive Elemente alle AB].Gruppe = Gruppenmerkmale.Gruppe\r\nGROUP BY [Suche aktive Elemente alle AB].Gruppe, [Suche aktive Elemente alle AB].Membrantyp, [Suche aktive Elemente alle AB].[Elektroden Abstand], Gruppenmerkmale.Bemerkungen, Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating\r\nHAVING ((([Suche aktive Elemente alle AB].Gruppe)>0));\r\n",
+  "UnGruppen": "SELECT DISTINCTROW [Norm(Um)GR].Datum, Avg([Norm(Um)GR].i) AS [i Mittel], Avg([Norm(Um)GR].Un) AS [Un Mittel], [Norm(Um)GR].Gruppe, [Norm(Um)GR].Membrantyp, [Gruppen aktiv].[Anzahl von Element Nr], [Gruppen aktiv].[Elektroden Abstand], Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating, GetGewiRef() AS iRef\r\nFROM tblGewDaten, ([Norm(Um)GR] INNER JOIN [Gruppen aktiv] ON [Norm(Um)GR].Gruppe = [Gruppen aktiv].Gruppe) INNER JOIN Gruppenmerkmale ON [Gruppen aktiv].Gruppe = Gruppenmerkmale.Gruppe\r\nGROUP BY [Norm(Um)GR].Datum, [Norm(Um)GR].Gruppe, [Norm(Um)GR].Membrantyp, [Gruppen aktiv].[Anzahl von Element Nr], [Gruppen aktiv].[Elektroden Abstand], Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating, GetGewiRef()\r\nHAVING ((([Norm(Um)GR].Gruppe)=(SELECT IDGruppeUnCeSPCGruppe FROM tblGewDaten)));\r\n"
+ }
+}

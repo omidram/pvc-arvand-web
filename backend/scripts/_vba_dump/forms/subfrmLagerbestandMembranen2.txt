@@ -1,0 +1,329 @@
+Version =19
+VersionRequired =19
+Checksum =119539053
+Begin Form
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    CloseButton = NotDefault
+    ScrollBars =2
+    PictureAlignment =5
+    PictureSizeMode =1
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =7920
+    DatasheetFontHeight =10
+    ItemSuffix =28
+    Left =465
+    Top =2340
+    Right =6195
+    Bottom =4320
+    DatasheetGridlinesColor =12632256
+    PaintPalette = Begin
+        0x000359000000000000ccff0005cdff000aceff000fcfff0014d0ff001ad1ff00 ,
+        0x1fd2ff0024d3ff0029d4ff002ed5ff0034d6ff0039d7ff003ed8ff0043d9ff00 ,
+        0x48daff004edbff0053dcff0058ddff005ddeff0062dfff0068e0ff006de1ff00 ,
+        0x72e2ff0077e3ff007ce4ff0082e6ff0087e7ff008ce8ff0091e9ff0096eaff00 ,
+        0x9cebff00a1ecff00a6edff00abeeff00b0efff00b6f0ff00bbf1ff00c0f2ff00 ,
+        0xc5f3ff00caf4ff00cccccc00cfcfcf00d0f5ff00d1d1d100d4d4d400d5f6ff00 ,
+        0xd6d6d600d9d9d900daf7ff00dbdbdb00dedede00dff8ff00e0e0e000e3e3e300 ,
+        0xe4f9ff00e5e5e500e8e8e800eafaff00ebebeb00ededed00effbff00f0f0f000 ,
+        0xf2f2f200f4fcff00f5f5f500f7f7f700f9fdff00fafafa00fcfcfc00ffffff00 ,
+        0x800000000080000080800000000080008000800000808000c0c0c000c0dcc000 ,
+        0xa6caf000fffbf000a0a0a40080808000ff00000000ff0000ffff00000000ff00 ,
+        0xff00ff0000ffff0000000000
+    End
+    RecSrcDt = Begin
+        0x97a66a075fe9e240
+    End
+    RecordSource ="qryLagerbestandMembranen2"
+    Caption ="subfrmAnlage"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c4850354b5f37313534365f50434c00000000000000 ,
+        0x010418009c00b803033f80020100090000000000640001000700580202000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742035303030205365726965732050434c2036000000 ,
+        0x000000000000040032002e018603789c654fcb2e8341183d67a6ed288a05ad48 ,
+        0x45dd2f11112f6081451fa078804a5c9aef6bb44d88205db2a88d5d130fe009b0 ,
+        0xf006dec203d8b95f66fe5423f12dce393933df9c3995caff31c436afe8a9c426 ,
+        0xdc0193284875a75ada2ac2c549c02502ea37649272471d67dd503a58779461da ,
+        0x864d43f24667a8879409d69bb6b64899a34c5167a94bf4ebd3ccc2538131045e ,
+        0x6ff146e0208e98863b0d39e513ca31f58c72ce70321f5df1dfd3203ceff21192 ,
+        0xa43e433eb1ff06f9808c505fa0ef902fe800254d291ac95073d441da148b901e ,
+        0x6a1fb597b551cabdb1cbcc419c9131eaad753751cfa108b3113e21e083f59820 ,
+        0xac416b1a0bbfcadbb1b67dfdd78eb7edcbb6ed1f7d453fec0a378d5df52017b6 ,
+        0xbc1635cc3305eda47451ba7d548c99a8e71e9defecf37f00a4d5459500000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08002600400001004850204c617365724a657420353030302053657269657320 ,
+        0x50434c2036005c5c5355444f505330325c4850354b5f37313534365f50434c00 ,
+        0x6870356b5f373135343600
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            BackStyle =0
+            BorderWidth =1
+            Width =850
+            Height =850
+        End
+        Begin Line
+            BorderWidth =1
+            Width =1701
+        End
+        Begin Image
+            SpecialEffect =1
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =1
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =1
+            BorderWidth =3
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BorderColor =12632256
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =1
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin ListBox
+            SpecialEffect =1
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin Subform
+            SpecialEffect =1
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =1
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="Arial"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =340
+            BackColor =12632256
+            Name ="Formularkopf"
+            GUID = Begin
+                0xf35d70150128e74ba06d5ad5d05fb875
+            End
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =195
+                    Top =60
+                    Width =2085
+                    Height =225
+                    FontWeight =700
+                    Name ="Label25"
+                    Caption ="Membrane Type"
+                    FontName ="MS Sans Serif"
+                    GUID = Begin
+                        0x745662fd585a3343aa483988197f2878
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2494
+                    Top =56
+                    Width =1455
+                    Height =225
+                    FontWeight =700
+                    Name ="Label26"
+                    Caption ="Anzahl"
+                    FontName ="MS Sans Serif"
+                    GUID = Begin
+                        0xeabe38e20488f24cbc5f02c37307bd5c
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =240
+            BackColor =12632256
+            Name ="Detailbereich"
+            GUID = Begin
+                0xf8e886c9ac279d4d8268963744c6472f
+            End
+            Begin
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =170
+                    Width =2091
+                    Name ="Text19"
+                    ControlSource ="Membrantyp"
+                    FontName ="MS Sans Serif"
+                    GUID = Begin
+                        0x730b34490413894ea62de60e36f3a658
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =2607
+                    Width =1371
+                    TabIndex =1
+                    Name ="Text23"
+                    ControlSource ="AnzahlMembranen"
+                    FontName ="MS Sans Serif"
+                    GUID = Begin
+                        0x2f8003a178ab2942b6a3b007896781c1
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =453
+            BackColor =12632256
+            Name ="Formularfuß"
+            GUID = Begin
+                0x12828a7b833d8d4987ac87044ac939d8
+            End
+            Begin
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =2607
+                    Top =56
+                    Width =1371
+                    Name ="Text24"
+                    ControlSource ="=Sum([AnzahlMembranen])"
+                    FontName ="MS Sans Serif"
+                    GUID = Begin
+                        0xcf2c7c7e2f9eb94c944348d0686441d4
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =56
+                    Width =2055
+                    Height =225
+                    FontWeight =700
+                    Name ="Label27"
+                    Caption ="Summe"
+                    FontName ="MS Sans Serif"
+                    GUID = Begin
+                        0xc261e5ffdddb724787a167810916e78a
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache = 1 Then
+        Label25.Caption = "Membrantyp"
+        Label26.Caption = "Anzahl"
+        Label27.Caption = "Summe"
+    Else
+        Label25.Caption = "Membrane Type"
+        Label26.Caption = "Number"
+        Label27.Caption = "Sum"
+    End If
+
+End Sub

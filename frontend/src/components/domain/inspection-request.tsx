@@ -18,6 +18,7 @@ import {
   workflowApi,
   type InspectionRequest,
   type InspectionRequestDetail,
+  type PieceVerdict,
   type WfGroup,
 } from "@/lib/workflow";
 
@@ -158,6 +159,63 @@ export function InspectionRequestModal({ id, onClose }: { id: number | null; onC
   );
 }
 
+function sideLabel(d: InspectionRequestDetail, side: "inspection" | "process", t: T) {
+  const block = d.decisions?.[side];
+  const bits = (["anode", "cathode"] as const)
+    .map((kind) => {
+      const item = block?.[kind];
+      if (!item?.result) return null;
+      return `${t(kind === "anode" ? "wf.kind.anode" : "wf.kind.cathode")}: ${item.healthy ? t("wf.insp.healthy") : t("wf.insp.notHealthy")} — ${item.result}`;
+    })
+    .filter(Boolean);
+  return bits.length ? bits.join(" · ") : t("wf.insp.waitingSide");
+}
+
+function PieceDecision({
+  d,
+  side,
+  t,
+  onDone,
+}: {
+  d: InspectionRequestDetail;
+  side: "inspection" | "process";
+  t: T;
+  onDone: (next: InspectionRequestDetail) => void;
+}) {
+  const saved = d.decisions?.[side];
+  const [anode, setAnode] = useState<PieceVerdict>({ healthy: saved?.anode?.healthy ?? true, result: saved?.anode?.result || "" });
+  const [cathode, setCathode] = useState<PieceVerdict>({ healthy: saved?.cathode?.healthy ?? true, result: saved?.cathode?.result || "" });
+  const run = useMutation({
+    mutationFn: () =>
+      workflowApi.inspectionStep(d.id, "decide", {
+        side,
+        anode: d.anode_nr ? { healthy: !!anode.healthy, result: anode.result || "" } : undefined,
+        cathode: d.cathode_nr ? { healthy: !!cathode.healthy, result: cathode.result || "" } : undefined,
+      }),
+    onSuccess: onDone,
+  });
+  const field = (kind: "anode" | "cathode", value: PieceVerdict, set: (v: PieceVerdict) => void) => (
+    <div className="wh-form-inline wf-inline-plain">
+      <strong>{t(kind === "anode" ? "wf.kind.anode" : "wf.kind.cathode")}</strong>
+      <label>
+        <input type="checkbox" checked={!!value.healthy} onChange={(e) => set({ ...value, healthy: e.target.checked })} /> {t("wf.insp.healthy")}
+      </label>
+      <input className="wh-grow" value={value.result || ""} placeholder={t("wf.insp.result")} onChange={(e) => set({ ...value, result: e.target.value })} />
+    </div>
+  );
+  return (
+    <div className="wf-section">
+      <h4>{t(side === "inspection" ? "wf.group.inspection" : "wf.group.process")}</h4>
+      {d.anode_nr ? field("anode", anode, setAnode) : null}
+      {d.cathode_nr ? field("cathode", cathode, setCathode) : null}
+      <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => run.mutate()}>
+        {t("wf.insp.confirmSide")}
+      </button>
+      {run.error ? <div className="wf-alert">{(run.error as Error).message}</div> : null}
+    </div>
+  );
+}
+
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
@@ -217,6 +275,47 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
           {d.created_by || "—"} · {formatDateTime(d.created_at)}
         </Fact>
       </div>
+
+      {d.cell ? (
+        <section className="wf-section">
+          <h4>{t("wf.insp.cellTitle")}</h4>
+          <div className="wh-facts wf-facts">
+            <Fact label={t("wf.insp.assembly")}>{formatDate(d.cell.assembly_date)}</Fact>
+            <Fact label={t("wf.insp.commission")}>{formatDate(d.cell.commissioning_date)}</Fact>
+            <Fact label={t("wf.insp.gap")}>{d.cell.gap_mm || "—"}</Fact>
+            <Fact label={t("wf.insp.membrane")}>{d.cell.membrane_type || d.membrane_nr || "—"}</Fact>
+            <Fact label={t("wf.insp.anodeCoat")}>{d.cell.anode_coating || "—"}</Fact>
+            <Fact label={t("wf.insp.cathodeCoat")}>{d.cell.cathode_coating || "—"}</Fact>
+            <Fact label={t("wf.insp.dol")}>{d.cell.dol_days ?? "—"}</Fact>
+            {d.cell.decommission_reason ? <Fact label={t("wf.insp.reason")}>{d.cell.decommission_reason}</Fact> : null}
+          </div>
+          <div className="wh-form-inline wf-inline-plain">
+            {d.anode_nr ? (
+              <Link className="wf-link" href={`/segregation?serial_nr=${encodeURIComponent(d.anode_nr)}`} target="_blank">
+                {t("wf.kind.anode")} {d.anode_nr}
+              </Link>
+            ) : null}
+            {d.cathode_nr ? (
+              <Link className="wf-link" href={`/segregation?serial_nr=${encodeURIComponent(d.cathode_nr)}`} target="_blank">
+                {t("wf.kind.cathode")} {d.cathode_nr}
+              </Link>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      {open && (acts.includes("decide_inspection") || acts.includes("decide_process")) ? (
+        <section className="wf-section">
+          <h4>{t("wf.insp.parallelTitle")}</h4>
+          <p className="wh-subdesc">{t("wf.insp.parallelHint")}</p>
+          <div className="wh-facts wf-facts">
+            <Fact label={t("wf.group.inspection")}>{sideLabel(d, "inspection", t)}</Fact>
+            <Fact label={t("wf.group.process")}>{sideLabel(d, "process", t)}</Fact>
+          </div>
+          {acts.includes("decide_inspection") ? <PieceDecision d={d} side="inspection" t={t} onDone={done} /> : null}
+          {acts.includes("decide_process") ? <PieceDecision d={d} side="process" t={t} onDone={done} /> : null}
+        </section>
+      ) : null}
 
       {d.report ? (
         <section className="wf-section">

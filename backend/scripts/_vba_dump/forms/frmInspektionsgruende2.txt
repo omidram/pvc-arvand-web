@@ -1,0 +1,36 @@
+Version =17
+VersionRequired =17
+Checksum =-122868189
+Begin Form
+    PopUp = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    BorderStyle =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =5669
+    DatasheetFontHeight =10
+    Left =5940
+    Top =2115
+    Right =13395
+    Bottom =5865
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xe1e667059eb4e240
+    End
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Section
+            Height =1701
+            BackColor =-2147483633
+            Name ="Detailbereich"
+        End
+    End
+End

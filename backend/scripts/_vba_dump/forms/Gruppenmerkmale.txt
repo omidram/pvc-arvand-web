@@ -1,0 +1,515 @@
+Version =17
+VersionRequired =17
+Checksum =-122771766
+Begin Form
+    AutoCenter = NotDefault
+    GridX =5
+    GridY =5
+    Width =13606
+    ItemSuffix =188
+    Left =495
+    Top =345
+    Right =14385
+    Bottom =8310
+    RecSrcDt = Begin
+        0x9a46f6c2ee9de140
+    End
+    RecordSource ="Gruppenmerkmale"
+    Caption ="Gruppendefinition"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x1e030000180300004d0300001803000000000000e83a0000e900000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x4850204465736b4a657420383930432053657269657300000000000000000000 ,
+        0x000437039400060103ff800702000900000000006400010001002c0102000100 ,
+        0x2c01010000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x03000000010000000100000000000000000000004850204465736b4a65742038 ,
+        0x3930432053657269657300000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000000000004c5054313a00000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000000000000000b30d ,
+        0xb009000006000200010000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000002c012c010000
+    End
+    PrtDevNames = Begin
+        0x080011002800010057494e53504f4f4c004850204465736b4a65742038393043 ,
+        0x20536572696573004c5054313a00000000000000000000000000000000000000 ,
+        0x000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =1247
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    TextFontFamily =0
+                    Left =11905
+                    Top =226
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    BackColor =12632256
+                    Name ="Feld28"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =1020
+                    Width =796
+                    Height =226
+                    Name ="Bezeichnungsfeld80"
+                    Caption ="Group"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =8157
+                    Top =113
+                    Width =2166
+                    Height =456
+                    TabIndex =1
+                    Name ="Befehl99"
+                    Caption ="Group Overview"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =113
+                    Top =113
+                    Width =2835
+                    Height =405
+                    FontSize =14
+                    Name ="Text8"
+                    Caption ="Group Definition"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1133
+                    Top =793
+                    Width =1021
+                    Height =451
+                    Name ="Bezeichnungsfeld169"
+                    Caption ="Anode coating"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2267
+                    Top =793
+                    Width =1021
+                    Height =451
+                    Name ="Bezeichnungsfeld172"
+                    Caption ="Cathode coating"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5790
+                    Top =1020
+                    Width =7696
+                    Height =226
+                    Name ="Bezeichnungsfeld175"
+                    Caption ="Remarks"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =5896
+                    Top =113
+                    Width =2046
+                    Height =456
+                    TabIndex =2
+                    Name ="Befehl180"
+                    Caption ="Search"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =3176
+                    Top =113
+                    Width =2496
+                    Height =456
+                    TabIndex =3
+                    Name ="Befehl181"
+                    Caption ="Element Administration"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4535
+                    Top =793
+                    Width =1141
+                    Height =451
+                    Name ="Bezeichnungsfeld182"
+                    Caption ="Electrode\015\012gap"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3401
+                    Top =793
+                    Width =1021
+                    Height =451
+                    Name ="Bezeichnungsfeld184"
+                    Caption ="Membrane\015\012type"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1247
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =120
+                    Top =120
+                    Width =2835
+                    Height =405
+                    FontSize =14
+                    Name ="Text71"
+                    Caption ="Group Definition"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    TextFontFamily =0
+                    Left =11905
+                    Top =226
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    BackColor =12632256
+                    Name ="Feld74"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =1020
+                    Width =796
+                    Height =226
+                    Name ="Bezeichnungsfeld157"
+                    Caption ="Group"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1133
+                    Top =793
+                    Width =1021
+                    Height =451
+                    Name ="Bezeichnungsfeld170"
+                    Caption ="Anode coating"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2267
+                    Top =793
+                    Width =1021
+                    Height =451
+                    Name ="Bezeichnungsfeld173"
+                    Caption ="Cathode coating"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5790
+                    Top =1020
+                    Width =7696
+                    Height =226
+                    Name ="Bezeichnungsfeld176"
+                    Caption ="Remarks"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3401
+                    Top =793
+                    Width =1021
+                    Height =451
+                    Name ="Bezeichnungsfeld183"
+                    Caption ="Membrane\015\012type"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4535
+                    Top =793
+                    Width =1141
+                    Height =451
+                    Name ="Bezeichnungsfeld185"
+                    Caption ="Electrode\015\012gap"
+                End
+            End
+        End
+        Begin Section
+            Height =233
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Width =806
+                    Height =233
+                    Name ="Text78"
+                    ControlSource ="Gruppe"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1247
+                    Width =896
+                    Height =233
+                    TabIndex =1
+                    Name ="Text171"
+                    ControlSource ="Anodencoating"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2267
+                    Width =1031
+                    Height =233
+                    TabIndex =2
+                    Name ="Text174"
+                    ControlSource ="Kathodencoating"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5791
+                    Width =7706
+                    Height =233
+                    TabIndex =5
+                    Name ="Text177"
+                    ControlSource ="Bemerkungen"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3409
+                    Width =1013
+                    Height =226
+                    TabIndex =3
+                    Name ="Text186"
+                    ControlSource ="Membrantyp"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4535
+                    Width =1134
+                    Height =226
+                    TabIndex =4
+                    Name ="Text187"
+                    ControlSource ="Elektrodenabstand"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10204
+                    Top =113
+                    Width =1747
+                    Height =227
+                    Name ="Feld80"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+                Begin PageBreak
+                    OverlapFlags =85
+                    Name ="Seitenumbruch70"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl180_Click()
+    DoCmd.OpenForm "Suchübersicht"
+    DoCmd.Close acForm, "Gruppenmerkmale"
+End Sub
+
+Private Sub Befehl181_Click()
+    DoCmd.OpenForm "frmZellenverwaltung"
+    DoCmd.Close acForm, "Gruppenmerkmale"
+End Sub
+
+Private Sub Befehl99_Click()
+On Error GoTo Err_Befehl99_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Gruppen Übersicht"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Gruppenmerkmale"
+
+Exit_Befehl99_Click:
+    Exit Sub
+
+Err_Befehl99_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl99_Click
+    
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Gruppendefinition"
+        Text71.Caption = "Gruppendefinition"
+        Bezeichnungsfeld80.Caption = "Gruppe"
+        Bezeichnungsfeld157.Caption = "Gruppe"
+        Bezeichnungsfeld169.Caption = "Anoden-Coating"
+        Bezeichnungsfeld170.Caption = "Anoden-Coating"
+        Bezeichnungsfeld172.Caption = "Kathoden-Coating"
+        Bezeichnungsfeld173.Caption = "Kathoden-Coating"
+        Bezeichnungsfeld182.Caption = "Elektroden-abstand"
+        Bezeichnungsfeld185.Caption = "Elektroden-abstand"
+        Bezeichnungsfeld184.Caption = "Membran-typ"
+        Bezeichnungsfeld183.Caption = "Membran-typ"
+        Bezeichnungsfeld175.Caption = "Bemerkungen"
+        Bezeichnungsfeld176.Caption = "Bemerkungen"
+        Befehl181.Caption = "Zellenverwaltung"
+        Befehl180.Caption = "Suchübersicht"
+        Befehl99.Caption = "Gruppenübersicht"
+        
+    Else
+        Text8.Caption = "Group Definition"
+        Text71.Caption = "Group Definition"
+        Bezeichnungsfeld80.Caption = "Group"
+        Bezeichnungsfeld157.Caption = "Group"
+        Bezeichnungsfeld169.Caption = "Anode Coating"
+        Bezeichnungsfeld170.Caption = "Anode Coating"
+        Bezeichnungsfeld172.Caption = "Kathoden-Coating"
+        Bezeichnungsfeld173.Caption = "Kathoden-Coating"
+        Bezeichnungsfeld182.Caption = "Electrode gap"
+        Bezeichnungsfeld185.Caption = "Electrode gap"
+        Bezeichnungsfeld184.Caption = "Membrane type"
+        Bezeichnungsfeld183.Caption = "Membrane type"
+        Bezeichnungsfeld175.Caption = "Remarks"
+        Bezeichnungsfeld176.Caption = "Remarks"
+        Befehl181.Caption = "Element Administration"
+        Befehl180.Caption = "Search Functions"
+        Befehl99.Caption = "Group Overview"
+    End If
+
+
+End Sub

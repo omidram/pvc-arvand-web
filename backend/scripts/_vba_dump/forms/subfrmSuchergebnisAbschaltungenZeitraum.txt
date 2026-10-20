@@ -1,0 +1,572 @@
+Version =19
+VersionRequired =19
+Checksum =122868176
+Begin Form
+    OrderByOn = NotDefault
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =14853
+    ItemSuffix =135
+    Left =120
+    Top =1020
+    Right =14355
+    Bottom =8400
+    OrderBy ="[qryAbschaltungenZeitraum].[Ursache] DESC, Nr"
+    RecSrcDt = Begin
+        0xc36cef90f8cae240
+    End
+    RecordSource ="qryAbschaltungenZeitraum"
+    Caption ="Abschaltungen"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =1378
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2495
+                    Top =1138
+                    Width =1710
+                    Height =240
+                    Name ="Bezeichnungsfeld101"
+                    Caption ="Einschaltzeitpunkt"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =794
+                    Top =1138
+                    Width =1590
+                    Height =240
+                    Name ="Bezeichnungsfeld105"
+                    Caption ="Abschaltzeitpunkt"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10206
+                    Top =1138
+                    Width =4320
+                    Height =240
+                    Name ="Bezeichnungsfeld107"
+                    Caption ="Bemerkung"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6349
+                    Top =1138
+                    Width =2610
+                    Height =240
+                    Name ="Bezeichnungsfeld109"
+                    Caption ="Ursache"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =1138
+                    Width =555
+                    Height =240
+                    Name ="Bezeichnungsfeld110"
+                    Caption ="Nr."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4290
+                    Top =1133
+                    Width =1035
+                    Height =240
+                    Name ="Bezeichnungsfeld119"
+                    Caption ="Dauer [h]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9070
+                    Top =1138
+                    Width =1020
+                    Height =240
+                    Name ="Bezeichnungsfeld123"
+                    Caption ="Category"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5430
+                    Top =1133
+                    Width =810
+                    Height =240
+                    Name ="Bezeichnungsfeld127"
+                    Caption ="Code"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =8957
+                    Top =113
+                    Width =1134
+                    Height =227
+                    Name ="Text131"
+                    ControlSource ="=Count([Nr])"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6236
+                    Top =113
+                    Width =2608
+                    Height =227
+                    Name ="Bezeichnungsfeld132"
+                    Caption ="Anzahl der Abschaltungen"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6236
+                    Top =460
+                    Width =2608
+                    Height =227
+                    Name ="Bezeichnungsfeld133"
+                    Caption ="Gesamtdauer [h]"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    Left =8957
+                    Top =460
+                    Width =1134
+                    Height =227
+                    TabIndex =1
+                    Name ="Text134"
+                    ControlSource ="=Sum([Dauer])"
+                    Format ="Fixed"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1147
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10204
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =794
+                    Top =907
+                    Width =1605
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Abschaltzeitpunkt"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6349
+                    Top =907
+                    Width =2610
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Ursache"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =907
+                    Width =585
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Nr."
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10206
+                    Top =907
+                    Width =4320
+                    Height =240
+                    Name ="Bezeichnungsfeld100"
+                    Caption ="Bemerkung"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2495
+                    Top =907
+                    Width =1725
+                    Height =240
+                    Name ="Bezeichnungsfeld111"
+                    Caption ="Einschaltzeitpunkt"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4305
+                    Top =900
+                    Width =1020
+                    Height =240
+                    Name ="Bezeichnungsfeld120"
+                    Caption ="Dauer[h]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9070
+                    Top =907
+                    Width =1020
+                    Height =240
+                    Name ="Bezeichnungsfeld124"
+                    Caption ="Category"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5430
+                    Top =900
+                    Width =825
+                    Height =240
+                    Name ="Bezeichnungsfeld128"
+                    Caption ="Code"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Width =555
+                    Name ="Datum"
+                    ControlSource ="Nr"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2495
+                    Width =1710
+                    TabIndex =2
+                    Name ="Cc"
+                    ControlSource ="Einschaltzeitpunkt"
+                    Format ="General Date"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =10205
+                    Width =4305
+                    TabIndex =5
+                    Name ="Un"
+                    ControlSource ="Bemerkung"
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =794
+                    Width =1590
+                    TabIndex =1
+                    Name ="Text112"
+                    ControlSource ="Abschaltzeitpunkt"
+                    Format ="General Date"
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =2520
+                    Left =6349
+                    Width =2616
+                    TabIndex =4
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"300\""
+                    Name ="Kombinationsfeld118"
+                    ControlSource ="Ursache"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryAbschaltungsursachen].[ID], [qryAbschaltungsursachen].[Ab"
+                        "schaltungsursache] FROM [qryAbschaltungsursachen];"
+                    ColumnWidths ="0;2520"
+                    AfterUpdate ="[Event Procedure]"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4320
+                    Width =1005
+                    TabIndex =3
+                    Name ="Text121"
+                    ControlSource ="Dauer"
+                    Format ="Fixed"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9070
+                    Width =1014
+                    Height =226
+                    TabIndex =6
+                    Name ="Text126"
+                    ControlSource ="Kategorie"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    ListWidth =1440
+                    Left =5442
+                    Width =794
+                    Height =226
+                    TabIndex =7
+                    ColumnInfo ="\"\";\"\";\"10\";\"100\""
+                    Name ="Kombinationsfeld130"
+                    ControlSource ="Code"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryAbschaltungsursachen].[Code] FROM [qryAbschaltungsursache"
+                        "n];"
+                    ColumnWidths ="1440"
+                    AfterUpdate ="[Event Procedure]"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß4"
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+
+Private Sub Befehl115_Click()
+    DoCmd.OpenForm "frmAbschaltungsursachen"
+    DoCmd.Close acForm, "frmAbschaltungen"
+End Sub
+
+Private Sub Befehl116_Click()
+    DoCmd.OpenForm "frmAbschaltungszusammenfassung"
+    DoCmd.Close acForm, "frmAbschaltungen"
+End Sub
+
+
+Private Sub Form_Open(Cancel As Integer)
+
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Bezeichnungsfeld132.Caption = "Abschaltungen im Zeitraum"
+        Bezeichnungsfeld133.Caption = "Gesamtdauer [h]"
+        Bezeichnungsfeld110.Caption = "Nr."
+        Bezeichnungsfeld93.Caption = "Nr."
+        Bezeichnungsfeld105.Caption = "Abschaltzeitpunkt"
+        Bezeichnungsfeld66.Caption = "Abschaltzeitpunkt"
+        Bezeichnungsfeld101.Caption = "Einschaltzeitpunkt"
+        Bezeichnungsfeld111.Caption = "Einschaltzeitpunkt"
+        Bezeichnungsfeld119.Caption = "Dauer [h]"
+        Bezeichnungsfeld120.Caption = "Dauer [h]"
+        Bezeichnungsfeld109.Caption = "Ursache"
+        Bezeichnungsfeld68.Caption = "Ursache"
+        Bezeichnungsfeld127.Caption = "Code"
+        Bezeichnungsfeld128.Caption = "Code"
+        Bezeichnungsfeld123.Caption = "Kategorie"
+        Bezeichnungsfeld124.Caption = "Kategorie"
+        Bezeichnungsfeld107.Caption = "Bemerkung"
+        Bezeichnungsfeld100.Caption = "Bemerkung"
+        
+    Else
+        Bezeichnungsfeld132.Caption = "Shut Downs in Time Period"
+        Bezeichnungsfeld133.Caption = "Total Duration [h]"
+        Bezeichnungsfeld110.Caption = "No."
+        Bezeichnungsfeld93.Caption = "No."
+        Bezeichnungsfeld105.Caption = "Shut Down Time"
+        Bezeichnungsfeld66.Caption = "Shut Down Time"
+        Bezeichnungsfeld101.Caption = "Start Up Time"
+        Bezeichnungsfeld111.Caption = "Start Up Time"
+        Bezeichnungsfeld119.Caption = "Duration [h]"
+        Bezeichnungsfeld120.Caption = "Duration [h]"
+        Bezeichnungsfeld127.Caption = "Code"
+        Bezeichnungsfeld128.Caption = "Code"
+        Bezeichnungsfeld109.Caption = "Reason"
+        Bezeichnungsfeld68.Caption = "Reason"
+        Bezeichnungsfeld123.Caption = "Category"
+        Bezeichnungsfeld124.Caption = "Category"
+        Bezeichnungsfeld107.Caption = "Remarks"
+        Bezeichnungsfeld100.Caption = "Remarks"
+        
+    End If
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "frmMenuAbschaltungen"
+    DoCmd.Close acForm, "frmAbschaltungen"
+End Sub
+
+Private Sub Kombinationsfeld118_AfterUpdate()
+    UpdateCode
+    UpdateKategorie
+End Sub
+
+Private Sub Kombinationsfeld130_AfterUpdate()
+    UpdateAbschaltungsursache
+    UpdateKategorie
+End Sub
+
+Private Sub UpdateKategorie()
+    Dim GewKategorie, GewCode As Variant
+    Dim rst2 As DAO.Recordset
+    
+    Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM qryAbschaltungsursachen WHERE" & _
+    "(((qryAbschaltungsursachen.Abschaltungsursache)='" & Me!Kombinationsfeld118 & "'))  ")
+        
+    If rst2.BOF And rst2.EOF Then
+        rst2.Close
+        Exit Sub
+    End If
+    rst2.MoveFirst
+    GewKategorie = rst2!Kategorie
+    rst2.Close
+    Me!Text126 = GewKategorie
+    
+End Sub
+
+Private Sub UpdateCode()
+    Dim GewCode As Variant
+    Dim rst2 As DAO.Recordset
+    
+    Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM qryAbschaltungsursachen WHERE" & _
+    "(((qryAbschaltungsursachen.Abschaltungsursache)='" & Me!Kombinationsfeld118 & "'))  ")
+
+    If rst2.BOF And rst2.EOF Then
+        rst2.Close
+        Exit Sub
+    End If
+
+    rst2.MoveFirst
+    GewCode = rst2!Code
+    rst2.Close
+    Me!Kombinationsfeld130 = GewCode
+    
+End Sub
+
+Private Sub UpdateAbschaltungsursache()
+    Dim GewAbschaltungsursache As Variant
+    Dim rst2 As DAO.Recordset
+    
+    Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM qryAbschaltungsursachen WHERE" & _
+        "(((qryAbschaltungsursachen.Code)='" & Me!Kombinationsfeld130 & "'))  ")
+    Debug.Print Me!Kombinationsfeld130, rst2!Code, rst2!Abschaltungsursache
+    If rst2.BOF And rst2.EOF Then
+        rst2.Close
+        Exit Sub
+    End If
+    
+    rst2.MoveFirst
+    GewAbschaltungsursache = rst2!Abschaltungsursache
+    rst2.Close
+    Me!Kombinationsfeld118 = GewAbschaltungsursache
+
+End Sub
+  

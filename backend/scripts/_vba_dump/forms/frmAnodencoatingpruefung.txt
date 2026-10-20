@@ -1,0 +1,368 @@
+Version =17
+VersionRequired =17
+Checksum =-122868170
+Begin Form
+    AutoCenter = NotDefault
+    OrderByOn = NotDefault
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =13606
+    DatasheetFontHeight =10
+    ItemSuffix =17
+    Left =495
+    Top =600
+    Right =14385
+    Bottom =7410
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x97a2342c55afe240
+    End
+    RecordSource ="tblAnodencoatingpruefung"
+    Caption ="tblMaier: Anodencoatingprüfung"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =1395
+            BackColor =-2147483633
+            Name ="Formularkopf"
+            Begin
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =56
+                    Top =953
+                    Width =2280
+                    Height =420
+                    FontWeight =700
+                    Name ="Anodennummer Bezeichnungsfeld"
+                    Caption ="Anode Number"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="Anodennummer_Bezeichnungsfeld"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =2325
+                    Top =960
+                    Width =1770
+                    Height =420
+                    FontWeight =700
+                    Name ="Restschichtdicke Bezeichnungsfeld"
+                    Caption ="Coatingthickness [%]"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="Restschichtdicke_Bezeichnungsfeld"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4185
+                    Top =960
+                    Width =1125
+                    Height =420
+                    FontWeight =700
+                    Name ="Potential Bezeichnungsfeld"
+                    Caption ="Potential [V]"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="Potential_Bezeichnungsfeld"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5385
+                    Top =953
+                    Width =2280
+                    Height =420
+                    FontWeight =700
+                    Name ="Prüfer Bezeichnungsfeld"
+                    Caption ="Inspector"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="Prüfer_Bezeichnungsfeld"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7702
+                    Top =953
+                    Width =1500
+                    Height =420
+                    FontWeight =700
+                    Name ="Prüfdatum Bezeichnungsfeld"
+                    Caption ="Date of Inspection"
+                    Tag ="DetachedLabel"
+                    EventProcPrefix ="Prüfdatum_Bezeichnungsfeld"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =60
+                    Top =345
+                    Width =3660
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BackColor =12632256
+                    ForeColor =0
+                    Name ="Text13"
+                    Caption ="Anode Coating Inspection"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextFontFamily =2
+                    Left =5612
+                    Top =283
+                    Width =2271
+                    Height =561
+                    FontSize =10
+                    FontWeight =700
+                    Name ="Schaltfläche66"
+                    Caption ="Element Administration"
+                    OnClick ="[Event Procedure]"
+                    FontName ="System"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9300
+                    Top =960
+                    Width =4125
+                    Height =435
+                    FontWeight =700
+                    Name ="Bezeichnungsfeld13"
+                    Caption ="Remark"
+                End
+            End
+        End
+        Begin Section
+            Height =284
+            BackColor =-2147483633
+            Name ="Detailbereich"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2381
+                    Width =1695
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =1
+                    Name ="Restschichtdicke"
+                    ControlSource ="Restschichtdicke"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =4195
+                    Width =1080
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =2
+                    Name ="Potential"
+                    ControlSource ="Potential"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =5385
+                    Width =2280
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =3
+                    Name ="Prüfer"
+                    ControlSource ="Prüfer"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =7766
+                    Width =1398
+                    Height =255
+                    ColumnWidth =825
+                    TabIndex =4
+                    Name ="Prüfdatum"
+                    ControlSource ="Prüfdatum"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ListWidth =1440
+                    Left =56
+                    Width =2271
+                    Height =256
+                    ColumnInfo ="\"\";\"\";\"10\";\"50\""
+                    Name ="Kombinationsfeld11"
+                    ControlSource ="Anodennummer"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryVerwendeteAnodennummern].[Anoden Nr] FROM [qryVerwendeteA"
+                        "nodennummern];"
+                    ColumnWidths ="1440"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =9294
+                    Width =4198
+                    Height =284
+                    TabIndex =5
+                    Name ="Text15"
+                    ControlSource ="Bemerkung"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="Formularfuß"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+
+
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        
+        Me![Text13].Caption = "Anodencoatingprüfung"
+        Me![Schaltfläche66].Caption = "Zellenverwaltung"
+        Me![Anodennummer Bezeichnungsfeld].Caption = "Anodennummer"
+        Me![Potential Bezeichnungsfeld].Caption = "Potential [V]"
+        Me![Restschichtdicke Bezeichnungsfeld].Caption = "Restschichtdicke [%]"
+        Me![Prüfer Bezeichnungsfeld].Caption = "Prüfer"
+        Me![Prüfdatum Bezeichnungsfeld].Caption = "Prüfdatum"
+        Me![Bezeichnungsfeld13].Caption = "Bemerkung"
+        
+    Else
+    
+        Me![Text13].Caption = "Anode Coating Inspection"
+        Me![Schaltfläche66].Caption = "Element Administration"
+        Me![Anodennummer Bezeichnungsfeld].Caption = "Anode No."
+        Me![Potential Bezeichnungsfeld].Caption = "Potential [V]"
+        Me![Restschichtdicke Bezeichnungsfeld].Caption = "Residual Thickness [%]"
+        Me![Prüfer Bezeichnungsfeld].Caption = "Inspector"
+        Me![Prüfdatum Bezeichnungsfeld].Caption = "Date"
+        Me![Bezeichnungsfeld13].Caption = "Remark"
+        
+    End If
+
+
+
+
+End Sub
+
+Private Sub Schaltfläche66_Click()
+
+    DoCmd.OpenForm "frmZellenverwaltung"
+    DoCmd.Close acForm, "frmAnodencoatingpruefung"
+
+End Sub

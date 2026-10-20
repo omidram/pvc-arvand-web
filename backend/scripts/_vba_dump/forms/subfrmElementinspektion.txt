@@ -1,0 +1,524 @@
+Version =19
+VersionRequired =19
+Checksum =-122265372
+Begin Form
+    AllowEditing = NotDefault
+    AutoCenter = NotDefault
+    DefaultView =0
+    RecordLocks =1
+    GridX =5
+    GridY =5
+    Width =14173
+    ItemSuffix =142
+    Left =225
+    Top =2610
+    Right =14685
+    Bottom =8040
+    RecSrcDt = Begin
+        0x4529d2b317cbe240
+    End
+    RecordSource ="qryElementinspektion"
+    Caption ="Montage"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x89050000890500008905000089050000000000009f4c0000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x4850204465736b4a6574203839354320536572696573205072696e7465720000 ,
+        0x010405409c006c040fff001e02000900990b33086400010000002c0102000100 ,
+        0x2c01030000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0300000001000000010000000000000000000000000000000000000059381202 ,
+        0x4800500020004400650073006b004a0065007400200038003900350043002000 ,
+        0x53006500720069006500730020005000720069006e0074006500720000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000001000100000001000000020007000000000000000000000000000000 ,
+        0x00002c012c01cb0019016009f90cb009b30d27000c00ae09b30d010000000100 ,
+        0x0100000001000000010000000100000001000000010000000100000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000059381202
+    End
+    PrtDevNames = Begin
+        0x080011003000010077696e73706f6f6c004850204465736b4a65742038393543 ,
+        0x20536572696573205072696e746572004c5054313a0000000000000000000000 ,
+        0x000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            SpecialEffect =2
+            Height =0
+            BackColor =12632256
+            Name ="Formularkopf1"
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =5442
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =566
+                    Width =1232
+                    Height =226
+                    Name ="Text122"
+                    ControlSource ="Element Nr"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    Left =4526
+                    Top =566
+                    Width =6780
+                    Height =2955
+                    TabIndex =1
+                    Name ="subfrmListeInspektionsgruende"
+                    SourceObject ="Form.subfrmListeInspektionsgruende"
+                    LinkChildFields ="Element Nr;Elektrolyseur;Position"
+                    LinkMasterFields ="Element Nr;Elektrolyseur;Position"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =6236
+                            Top =911
+                            Width =2700
+                            Height =240
+                            Name ="subfrmListeInspektionsgruende Beschriftung"
+                            Caption ="subfrmListeInspektionsgruende"
+                            EventProcPrefix ="subfrmListeInspektionsgruende_Beschriftung"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =1587
+                    Width =1232
+                    Height =226
+                    TabIndex =2
+                    Name ="Text125"
+                    ControlSource ="Anoden Nr"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =1927
+                    Width =1232
+                    Height =226
+                    TabIndex =3
+                    Name ="Text126"
+                    ControlSource ="Kathoden Nr"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =2267
+                    Width =1232
+                    Height =226
+                    TabIndex =4
+                    Name ="Text127"
+                    ControlSource ="Membrantyp"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =2607
+                    Width =1232
+                    Height =226
+                    TabIndex =5
+                    Name ="Text128"
+                    ControlSource ="Membran Nr"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =2947
+                    Width =1232
+                    Height =226
+                    TabIndex =6
+                    Name ="Text129"
+                    ControlSource ="Montage Datum"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =3288
+                    Width =1232
+                    Height =226
+                    TabIndex =7
+                    Name ="Text130"
+                    ControlSource ="Einschalt Datum"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =1133
+                    Top =566
+                    Width =1560
+                    Height =225
+                    Name ="Text52"
+                    Caption ="Element Nr."
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =1133
+                    Top =907
+                    Width =1605
+                    Height =225
+                    Name ="Text53"
+                    Caption ="Elektrolyseur."
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =1133
+                    Top =1247
+                    Width =1605
+                    Height =240
+                    Name ="Text54"
+                    Caption ="Position"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =1153
+                    Top =1587
+                    Width =1560
+                    Height =240
+                    Name ="Text55"
+                    Caption ="Anoden-Nr"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =1153
+                    Top =1930
+                    Width =1590
+                    Height =225
+                    Name ="Text56"
+                    Caption ="Kathoden-Nr"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =1247
+                    Top =2267
+                    Width =1470
+                    Height =225
+                    Name ="Text57"
+                    Caption ="Membrantyp"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =3628
+                    Width =1232
+                    Height =226
+                    TabIndex =8
+                    Name ="Text131"
+                    ControlSource ="Ausschalt Datum"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =3968
+                    Width =1232
+                    Height =226
+                    TabIndex =9
+                    Name ="Text132"
+                    ControlSource ="Demontage Datum"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =1247
+                    Top =2607
+                    Width =1470
+                    Height =225
+                    Name ="Text58"
+                    Caption ="Membran-Nr."
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =572
+                    Top =2948
+                    Width =2145
+                    Height =225
+                    Name ="Text59"
+                    Caption ="Montagedatum"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =563
+                    Top =3288
+                    Width =2115
+                    Height =225
+                    Name ="Text60"
+                    Caption ="Einschaltdatum"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =4308
+                    Width =8507
+                    Height =226
+                    TabIndex =10
+                    Name ="Text133"
+                    ControlSource ="Remarks"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =4648
+                    Width =8492
+                    Height =226
+                    TabIndex =11
+                    Name ="Text134"
+                    ControlSource ="Abschaltgrund"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =912
+                    Width =1232
+                    Height =226
+                    TabIndex =12
+                    Name ="Text135"
+                    ControlSource ="Elektrolyseur"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2834
+                    Top =1258
+                    Width =1232
+                    Height =226
+                    TabIndex =13
+                    Name ="Text136"
+                    ControlSource ="Position"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =563
+                    Top =3628
+                    Width =2160
+                    Height =240
+                    Name ="Text62"
+                    Caption ="Ausschaltdatum"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =565
+                    Top =3968
+                    Width =2145
+                    Height =225
+                    Name ="Text63"
+                    Caption ="Demontagedatum"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =566
+                    Top =4315
+                    Width =2145
+                    Height =225
+                    Name ="Text65"
+                    Caption ="Bemerkungen"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =120
+                    Top =4650
+                    Width =2595
+                    Height =225
+                    Name ="Bezeichnungsfeld92"
+                    Caption ="Abschaltgrund/Inspektion"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl96_Click()
+    DoCmd.OpenForm "frmMontagedaten"
+    DoCmd.Close acForm, "frmElementinspektion"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    If GetIDGewSprache = 1 Then
+        
+        Text52.Caption = "Element Nr."
+        Text53.Caption = "Elektrolyseur"
+        Text54.Caption = "Position"
+        Text55.Caption = "Anoden-Nr."
+        Text56.Caption = "Kathoden-Nr."
+        Text57.Caption = "Membrantyp"
+        Text58.Caption = "Membran-Nr."
+        Text59.Caption = "Montagedatum"
+        Text60.Caption = "Einschaltdatum"
+        Text62.Caption = "Ausschaltdatum"
+        Text63.Caption = "Demontagedatum"
+        Text65.Caption = "Bemerkungen"
+        Bezeichnungsfeld92.Caption = "Abschaltgrund/Inspektion"
+    
+    Else
+        
+        Text52.Caption = "Cell No."
+        Text53.Caption = "Electrolyser"
+        Text54.Caption = "Position"
+        Text55.Caption = "Anode No."
+        Text56.Caption = "Cathode No."
+        Text57.Caption = "Membrane Type"
+        Text58.Caption = "Membrane No."
+        Text59.Caption = "Assembly Date"
+        Text60.Caption = "Commissioning Date"
+        Text62.Caption = "Decommissioning Date"
+        Text63.Caption = "Disassembly Date"
+        Text65.Caption = "Remarks"
+        Bezeichnungsfeld92.Caption = "Reason for Decomm./Inspect."
+
+    End If
+
+End Sub
+
+Private Sub Schaltfläche27_Click()
+    DoCmd.OpenForm "frmZellenverwaltung"
+    DoCmd.Close acForm, "frmElementinspektion"
+End Sub

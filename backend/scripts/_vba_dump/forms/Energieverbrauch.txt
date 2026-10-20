@@ -1,0 +1,1945 @@
+Version =19
+VersionRequired =19
+Checksum =122992734
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =16118
+    ItemSuffix =308
+    Top =324
+    Right =11856
+    Bottom =7248
+    RecSrcDt = Begin
+        0xb091e98692cee240
+    End
+    RecordSource ="tblGewDaten"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c003402033f8002010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =9864
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =340
+                    Top =113
+                    Width =14955
+                    Height =1260
+                    FontSize =22
+                    BackColor =12632256
+                    Name ="Text0"
+                    Caption ="Power Consumption"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =12926
+                    Top =566
+                    Width =2034
+                    Height =561
+                    Name ="Schaltfläche29"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    BorderWidth =3
+                    OverlapFlags =93
+                    Left =6463
+                    Top =2154
+                    Width =2690
+                    Height =7494
+                    Name ="Rechteck202"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6463
+                    Top =1587
+                    Width =2730
+                    Height =330
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12632256
+                    Name ="Bezeichnungsfeld203"
+                    Caption ="Electrolyzers"
+                    FontName ="Microsoft Sans Serif"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6689
+                    Top =8844
+                    Width =2271
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl204"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =6881
+                    Top =5544
+                    Width =2055
+                    Height =450
+                    TabIndex =2
+                    Name ="subfrmSPC1"
+                    SourceObject ="Form.subfrmSPC1"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    SpecialEffect =3
+                    Left =558
+                    Top =692
+                    Width =6435
+                    Height =525
+                    TabIndex =3
+                    Name ="subfrmAuswertungszeitraum"
+                    SourceObject ="Form.subfrmAuswertungszeitraum"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =340
+                    Top =1587
+                    Width =2715
+                    Height =330
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12632256
+                    Name ="Bezeichnungsfeld215"
+                    Caption ="Total Plant"
+                    FontName ="Microsoft Sans Serif"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    BorderWidth =3
+                    OverlapFlags =93
+                    Left =340
+                    Top =2154
+                    Width =2720
+                    Height =7494
+                    Name ="Rechteck216"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =567
+                    Top =8844
+                    Width =2256
+                    Height =576
+                    TabIndex =4
+                    Name ="Befehl218"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =223
+                    Left =6541
+                    Top =4984
+                    Width =2492
+                    Height =2388
+                    TabIndex =5
+                    Name ="Rahmen227"
+                    ControlSource ="IDUmfangSPCElectrolyseur"
+                    GUID = Begin
+                        0x11b1a36913714045a9b107cae8c9090d
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =6661
+                            Top =4864
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld228"
+                            Caption ="Berechnung für"
+                            GUID = Begin
+                                0x6e36a777a987034b8e3fced265d99f60
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6768
+                            Top =5238
+                            OptionValue =1
+                            Name ="Option230"
+                            GUID = Begin
+                                0x43a610516b69434ca3df59679e75e91f
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =6998
+                                    Top =5210
+                                    Width =1635
+                                    Height =240
+                                    Name ="Bezeichnungsfeld231"
+                                    Caption ="Einzelelektrolyseur"
+                                    GUID = Begin
+                                        0xb61c58f1edc18647b0f82775f7fa70f0
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6768
+                            Top =6117
+                            OptionValue =3
+                            Name ="Option321"
+                            GUID = Begin
+                                0xeb5fb474d3fda34b8b26061ef4a7bf4d
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =6997
+                                    Top =6117
+                                    Width =1695
+                                    Height =240
+                                    Name ="Bezeichnungsfeld322"
+                                    Caption ="Mehrere Elektrolyseure"
+                                    GUID = Begin
+                                        0xfdc3826861ed63419d3a9114a066f283
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6803
+                            Top =6944
+                            OptionValue =2
+                            Name ="Option232"
+                            GUID = Begin
+                                0xe836f6a0bf40ae4788d7dc8a6928b6ed
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =7033
+                                    Top =6916
+                                    Width =1590
+                                    Height =240
+                                    Name ="Bezeichnungsfeld233"
+                                    Caption ="Alle Elektrolyseure"
+                                    GUID = Begin
+                                        0x12a68ae0127452488e64dc66bb545ebd
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =6576
+                    Top =7717
+                    Width =2492
+                    Height =913
+                    TabIndex =6
+                    Name ="Rahmen220"
+                    ControlSource ="IDDarstellungSPCElektrolyseur"
+                    GUID = Begin
+                        0xbc426d41d3fb234481835444415d113d
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =6801
+                            Top =7597
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld221"
+                            Caption ="Ergebnisse als"
+                            GUID = Begin
+                                0x41ce77130c3c5b4cba5bd3c056eb0fa8
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6867
+                            Top =7955
+                            OptionValue =1
+                            Name ="Option223"
+                            GUID = Begin
+                                0x4d8d16959f08bd4ab01c0977ead15cfc
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =7097
+                                    Top =7927
+                                    Width =780
+                                    Height =240
+                                    Name ="Bezeichnungsfeld224"
+                                    Caption ="Diagramm"
+                                    GUID = Begin
+                                        0x434f4f13a570ed478e4b9f3926a2409a
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6867
+                            Top =8285
+                            OptionValue =2
+                            Name ="Option225"
+                            GUID = Begin
+                                0xe4edce4845440541a34b6fea95e10346
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =7097
+                                    Top =8257
+                                    Width =600
+                                    Height =240
+                                    Name ="Bezeichnungsfeld226"
+                                    Caption ="Tabelle"
+                                    GUID = Begin
+                                        0xa0d5928bee23084a98175aec55777ef7
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =454
+                    Top =7717
+                    Width =2492
+                    Height =913
+                    TabIndex =7
+                    Name ="Frame219"
+                    ControlSource ="IDDarstellungSPCGesamtanlage"
+                    GUID = Begin
+                        0xeacaeff61eaca4438ce537375d239bbb
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =679
+                            Top =7597
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label220"
+                            Caption ="Ergebnisse als"
+                            GUID = Begin
+                                0xda04347d431f65449ce061ace50e728a
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =745
+                            Top =7955
+                            OptionValue =1
+                            Name ="Option221"
+                            GUID = Begin
+                                0xf47ade336975a345a2f6ffe2ebfc1293
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =975
+                                    Top =7927
+                                    Width =780
+                                    Height =240
+                                    Name ="Label222"
+                                    Caption ="Diagramm"
+                                    GUID = Begin
+                                        0x32fb9f322efa2a4a83d06c279189c30e
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =745
+                            Top =8285
+                            OptionValue =2
+                            Name ="Option224"
+                            GUID = Begin
+                                0x5b57b343fd220a43b6337bfac5ffe33f
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =975
+                                    Top =8257
+                                    Width =600
+                                    Height =240
+                                    Name ="Label225"
+                                    Caption ="Tabelle"
+                                    GUID = Begin
+                                        0xff89121c54e7ed4fb0ba3e485c9ff723
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =6541
+                    Top =2490
+                    Width =2492
+                    Height =913
+                    TabIndex =8
+                    Name ="Frame226"
+                    ControlSource ="IDBasisUnfuerSPCElektrolyseur"
+                    GUID = Begin
+                        0x715f9a6d5faa6b4a87eaad3a2c4d36e9
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =6713
+                            Top =2377
+                            Width =1455
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label227"
+                            Caption ="Table Un"
+                            GUID = Begin
+                                0x98d0135bd0d1c74490389c94b91a3b9e
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6832
+                            Top =2728
+                            OptionValue =1
+                            Name ="Option228"
+                            GUID = Begin
+                                0xa869a18c4dfda244a835157fc37a0d64
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =7062
+                                    Top =2700
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label229"
+                                    Caption ="Electrolyzers"
+                                    GUID = Begin
+                                        0xbdf8bae72842064cb825108c44675e0f
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6832
+                            Top =3058
+                            OptionValue =2
+                            Name ="Option231"
+                            GUID = Begin
+                                0x47cda74f70abd04b9cc6e6798f7cdb25
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =7062
+                                    Top =3030
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label232"
+                                    Caption ="All Elements per Electrol."
+                                    GUID = Begin
+                                        0x657b763d4666c44d9e58a078dc8afcf7
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =6541
+                    Top =3737
+                    Width =2492
+                    Height =913
+                    TabIndex =9
+                    Name ="Frame233"
+                    ControlSource ="IDBasisCEfuerSPCElektrolyseur"
+                    GUID = Begin
+                        0x5a61c33911245641af7779df12f517a9
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =6758
+                            Top =3622
+                            Width =1365
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label234"
+                            Caption ="Basis CE"
+                            GUID = Begin
+                                0x1d5e45e252ed6743a010ac8264bc8d3a
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6832
+                            Top =3975
+                            OptionValue =1
+                            Name ="Option235"
+                            GUID = Begin
+                                0x0a26dd0d151cd04a8e619da4f297a5d0
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =7062
+                                    Top =3947
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label236"
+                                    Caption ="Anodic Balance Electrol."
+                                    GUID = Begin
+                                        0x2e4f5c05b93adf47949af3d9dd26529c
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6832
+                            Top =4305
+                            OptionValue =2
+                            Name ="Option237"
+                            GUID = Begin
+                                0xc656ddfbbea47a4c9fb3c783c54bc229
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =7062
+                                    Top =4277
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label238"
+                                    Caption ="NaOH Prod. Electrolyzers"
+                                    GUID = Begin
+                                        0x573fde5ac84d784592e6d7697b3747f7
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    BorderWidth =3
+                    OverlapFlags =93
+                    Left =9543
+                    Top =2151
+                    Width =2690
+                    Height =7494
+                    Name ="Box239"
+                    GUID = Begin
+                        0xf6906aa6ae9126468ca72f7bc00f67e3
+                    End
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9525
+                    Top =1587
+                    Width =2715
+                    Height =330
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12632256
+                    Name ="Label240"
+                    Caption ="Groups"
+                    FontName ="Microsoft Sans Serif"
+                    GUID = Begin
+                        0x1a38b8ef995a31409996e656ea77fe4c
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =9769
+                    Top =8841
+                    Width =2271
+                    Height =576
+                    TabIndex =10
+                    Name ="Command241"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x033cfcd11b79404aa6259f7212cb1388
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =9961
+                    Top =5541
+                    Width =2055
+                    Height =450
+                    TabIndex =11
+                    Name ="subfrmGruppeSPC"
+                    SourceObject ="Form.subfrmGruppeSPC"
+                    GUID = Begin
+                        0xbae37495b2d61e48b4bd1ce518a57fd3
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =223
+                    Left =9621
+                    Top =4981
+                    Width =2492
+                    Height =2388
+                    TabIndex =12
+                    Name ="Frame243"
+                    ControlSource ="IDUmfangSPCGruppe"
+                    GUID = Begin
+                        0xefb13c5578292843888fd41fa5a89e90
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =9741
+                            Top =4861
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label244"
+                            Caption ="Berechnung für"
+                            GUID = Begin
+                                0x159dc22ca47bcf45bb4bc4044912a8ae
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9848
+                            Top =5235
+                            OptionValue =1
+                            Name ="Option245"
+                            GUID = Begin
+                                0x93d056dc52dc9b41982375e8072d0ac6
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10078
+                                    Top =5207
+                                    Width =1635
+                                    Height =240
+                                    Name ="Label246"
+                                    Caption ="Einzelelektrolyseur"
+                                    GUID = Begin
+                                        0xac89b8613a5cd14592b7a59797a99fe0
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9848
+                            Top =6114
+                            OptionValue =3
+                            Name ="Option247"
+                            GUID = Begin
+                                0x0b95322817806a4a850dbf404ed39648
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10077
+                                    Top =6114
+                                    Width =1695
+                                    Height =240
+                                    Name ="Label248"
+                                    Caption ="Mehrere Elektrolyseure"
+                                    GUID = Begin
+                                        0x4e4079613a64814697ce10782990448b
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9883
+                            Top =6941
+                            OptionValue =2
+                            Name ="Option249"
+                            GUID = Begin
+                                0x1cb738619942e3469d838eb038c364db
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10113
+                                    Top =6913
+                                    Width =1590
+                                    Height =240
+                                    Name ="Label250"
+                                    Caption ="Alle Elektrolyseure"
+                                    GUID = Begin
+                                        0xc4b54de7d08a1041988875d97a0e8738
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =9656
+                    Top =7714
+                    Width =2492
+                    Height =913
+                    TabIndex =13
+                    Name ="Frame251"
+                    ControlSource ="IDDarstellungSPCGruppe"
+                    GUID = Begin
+                        0x13e991febe28ce46adb582f2d51fceec
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =9881
+                            Top =7594
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label252"
+                            Caption ="Ergebnisse als"
+                            GUID = Begin
+                                0x46dfe485f2352c49806a58fda3abd83e
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9947
+                            Top =7952
+                            OptionValue =1
+                            Name ="Option253"
+                            GUID = Begin
+                                0x1c392826b1dd9640a1ee002b3067de27
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10177
+                                    Top =7924
+                                    Width =780
+                                    Height =240
+                                    Name ="Label254"
+                                    Caption ="Diagramm"
+                                    GUID = Begin
+                                        0xa4f8ffab33a21f4fab84460474ea49bd
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9947
+                            Top =8282
+                            OptionValue =2
+                            Name ="Option255"
+                            GUID = Begin
+                                0x62f6c433fd1e7645af53207e3aef1eb3
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10177
+                                    Top =8254
+                                    Width =600
+                                    Height =240
+                                    Name ="Label256"
+                                    Caption ="Tabelle"
+                                    GUID = Begin
+                                        0xdf065910a3aa4649b00a71982036708f
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =9621
+                    Top =2487
+                    Width =2492
+                    Height =913
+                    TabIndex =14
+                    Name ="Frame257"
+                    ControlSource ="IDBasisUnfuerSPCGruppe"
+                    GUID = Begin
+                        0x0ed57ba98734384292d6b466780b4f91
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =9793
+                            Top =2374
+                            Width =1455
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label258"
+                            Caption ="Table Un"
+                            GUID = Begin
+                                0xa838b7ad92ef8b48838013622cd02bbe
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9912
+                            Top =2725
+                            OptionValue =1
+                            Name ="Option259"
+                            GUID = Begin
+                                0x6e5d02d6b89e7947bb2c6869a2b3cb8b
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10142
+                                    Top =2697
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label260"
+                                    Caption ="Groups"
+                                    GUID = Begin
+                                        0x697a37c16bf1714180d89d947c988459
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9912
+                            Top =3055
+                            OptionValue =2
+                            Name ="Option261"
+                            GUID = Begin
+                                0x461e17ed90393b4a9722b3f7ff9a0ea1
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10142
+                                    Top =3027
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label262"
+                                    Caption ="All Elements per Electrol."
+                                    GUID = Begin
+                                        0x4516331538c06a419263c0de7fde0cce
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =9621
+                    Top =3734
+                    Width =2492
+                    Height =913
+                    TabIndex =15
+                    Name ="Frame263"
+                    ControlSource ="IDBasisCEfuerSPCGruppe"
+                    GUID = Begin
+                        0x8ec277e1ac829e4cb8e42a6f36184c2e
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =9838
+                            Top =3619
+                            Width =1365
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label264"
+                            Caption ="Basis CE"
+                            GUID = Begin
+                                0x88343267c6173d45a7239b029e526963
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9912
+                            Top =3972
+                            OptionValue =1
+                            Name ="Option265"
+                            GUID = Begin
+                                0x618e548e65bb8446a67946997122be41
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10142
+                                    Top =3944
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label266"
+                                    Caption ="Anodic Balance Group"
+                                    GUID = Begin
+                                        0xe46c839526ef19488e5ac56aed11f3fc
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9912
+                            Top =4302
+                            OptionValue =2
+                            Name ="Option267"
+                            GUID = Begin
+                                0xab9f89e78079374bae4a6ddf66e4a48a
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10142
+                                    Top =4274
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label268"
+                                    Caption ="NaOH Prod. Group"
+                                    GUID = Begin
+                                        0xacb63942b9478c4d8512ee76d0337f4d
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    BorderWidth =3
+                    OverlapFlags =93
+                    Left =12607
+                    Top =2151
+                    Width =2690
+                    Height =7494
+                    Name ="Box269"
+                    GUID = Begin
+                        0x1beb952aea24bc49813b26e11d86be35
+                    End
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12586
+                    Top =1587
+                    Width =2715
+                    Height =330
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12632256
+                    Name ="Label270"
+                    Caption ="Elements"
+                    GUID = Begin
+                        0xb65501997f2c524e8b96ce637ab7a394
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =12833
+                    Top =8841
+                    Width =2271
+                    Height =576
+                    TabIndex =16
+                    Name ="Command271"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0xe36eba8a7e864145857fa68c9889e8fa
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =12685
+                    Top =4981
+                    Width =2492
+                    Height =2388
+                    TabIndex =17
+                    Name ="Frame273"
+                    ControlSource ="IDUmfangSPCElement"
+                    GUID = Begin
+                        0x1a4f96305ed4354b8f0eabf1f8c0efc2
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =12805
+                            Top =4861
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label274"
+                            Caption ="Berechnung für"
+                            GUID = Begin
+                                0x07f5f84c2f97af43a075b6817e9bda5a
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12912
+                            Top =5235
+                            OptionValue =1
+                            Name ="Option275"
+                            GUID = Begin
+                                0x938dc3b69786044584cd4fd0399d446a
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13142
+                                    Top =5207
+                                    Width =1635
+                                    Height =240
+                                    Name ="Label276"
+                                    Caption ="Einzelelektrolyseur"
+                                    GUID = Begin
+                                        0x1ebcfe444c5e2342b4a0f5fb95ad0299
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12912
+                            Top =6114
+                            OptionValue =3
+                            Name ="Option277"
+                            GUID = Begin
+                                0x95b51d3897bb394ca4d5d63a7ef3dda2
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13141
+                                    Top =6114
+                                    Width =1695
+                                    Height =240
+                                    Name ="Label278"
+                                    Caption ="Mehrere Elektrolyseure"
+                                    GUID = Begin
+                                        0x7705025a59bd0946935882b598208221
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12947
+                            Top =6941
+                            OptionValue =2
+                            Name ="Option279"
+                            GUID = Begin
+                                0x91ce49b3cf625344aa8ee459e68614af
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13177
+                                    Top =6913
+                                    Width =1590
+                                    Height =240
+                                    Name ="Label280"
+                                    Caption ="Alle Elektrolyseure"
+                                    GUID = Begin
+                                        0xdc8f2a38db26b44faec515fe07ec6e59
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =12720
+                    Top =7714
+                    Width =2492
+                    Height =913
+                    TabIndex =18
+                    Name ="Frame281"
+                    ControlSource ="IDDarstellungSPCElement"
+                    GUID = Begin
+                        0x39b2bcdc36fa5642bb5a8c67609adeb0
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =12945
+                            Top =7594
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label282"
+                            Caption ="Ergebnisse als"
+                            GUID = Begin
+                                0xd89741ae63e5624b879b36c9433a83bd
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =13011
+                            Top =7952
+                            OptionValue =1
+                            Name ="Option283"
+                            GUID = Begin
+                                0x0eb34dd08bf46d4e9e81782cb2d8a483
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13241
+                                    Top =7924
+                                    Width =780
+                                    Height =240
+                                    Name ="Label284"
+                                    Caption ="Diagramm"
+                                    GUID = Begin
+                                        0xa337c53ccd354b45994bce3850fdf4a3
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =13011
+                            Top =8282
+                            OptionValue =2
+                            Name ="Option285"
+                            GUID = Begin
+                                0xde702d4a39ad984cb2815b98e44fb55f
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13241
+                                    Top =8254
+                                    Width =600
+                                    Height =240
+                                    Name ="Label286"
+                                    Caption ="Tabelle"
+                                    GUID = Begin
+                                        0x87ab47222cdb3941941239cc97405cf9
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =12685
+                    Top =2487
+                    Width =2492
+                    Height =913
+                    TabIndex =19
+                    Name ="Frame287"
+                    ControlSource ="IDBasisUnfuerSPCElement"
+                    GUID = Begin
+                        0xf1d22edbfca2f24692cf2890dccfba2b
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =12857
+                            Top =2374
+                            Width =1455
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label288"
+                            Caption ="Table Un"
+                            GUID = Begin
+                                0xe59cbb5b7278d94d9c8dfb9d80f4b9b5
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12976
+                            Top =2725
+                            OptionValue =1
+                            Name ="Option289"
+                            GUID = Begin
+                                0xa599e3357f4ec74d8a2f617896e7ddee
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13206
+                                    Top =2697
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label290"
+                                    Caption ="Individual Elements"
+                                    GUID = Begin
+                                        0xd1b923ef2235c54b85cf2810d0465deb
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12976
+                            Top =3055
+                            OptionValue =2
+                            Name ="Option291"
+                            GUID = Begin
+                                0x70355ba5880c904188ce33af8ca19b1c
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13206
+                                    Top =3027
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label292"
+                                    Caption ="All Elements per Electrol."
+                                    GUID = Begin
+                                        0x027c7084cd5afc4198380daf0d6203fe
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =12685
+                    Top =3734
+                    Width =2492
+                    Height =913
+                    TabIndex =20
+                    Name ="Frame293"
+                    ControlSource ="IDBasisCEfuerSPCElement"
+                    GUID = Begin
+                        0xc3463ebedad6e54986d6918b883dda73
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =12902
+                            Top =3619
+                            Width =1365
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label294"
+                            Caption ="Basis CE"
+                            GUID = Begin
+                                0x44519e223dc18b429be65e3f30d41e8f
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12976
+                            Top =3972
+                            OptionValue =1
+                            Name ="Option295"
+                            GUID = Begin
+                                0x0cea25c8cbe00a45b08b9104da13cdc7
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13206
+                                    Top =3944
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label296"
+                                    Caption ="Anodic Balance Electrol."
+                                    GUID = Begin
+                                        0xd894f9b1f5a6bb419649cffa6fad3858
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12976
+                            Top =4302
+                            OptionValue =2
+                            Name ="Option297"
+                            GUID = Begin
+                                0xfc957e76f33ad545a244ce55753ac390
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13206
+                                    Top =4274
+                                    Width =1875
+                                    Height =240
+                                    Name ="Label298"
+                                    Caption ="NaOH Prod. Electrolyzers"
+                                    GUID = Begin
+                                        0xf8d4a00912592c4495ef01c876f5df1b
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3389
+                    Top =1590
+                    Width =2760
+                    Height =330
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12632256
+                    Name ="Label299"
+                    Caption ="Train"
+                    FontName ="Microsoft Sans Serif"
+                    GUID = Begin
+                        0xc4bf61af3f3abd45b93995d88b57e2c9
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    BorderWidth =3
+                    OverlapFlags =93
+                    Left =3402
+                    Top =2154
+                    Width =2735
+                    Height =7494
+                    Name ="Box300"
+                    GUID = Begin
+                        0xa9b1b6befb259e4cbdcd3f574d4640aa
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =3516
+                    Top =7717
+                    Width =2522
+                    Height =913
+                    TabIndex =21
+                    Name ="Frame301"
+                    ControlSource ="IDDarstellungSPCGesamtanlage"
+                    GUID = Begin
+                        0x01f08cd77cf4464eafc7c473354fb018
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =3741
+                            Top =7597
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label302"
+                            Caption ="Ergebnisse als"
+                            GUID = Begin
+                                0x926b2bd45a1d3a48adb85e2797b1e3cc
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =3807
+                            Top =7955
+                            OptionValue =1
+                            Name ="Option303"
+                            GUID = Begin
+                                0x9f95e8bd7fe36a4a96634e932516004d
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =4037
+                                    Top =7927
+                                    Width =780
+                                    Height =240
+                                    Name ="Label304"
+                                    Caption ="Diagramm"
+                                    GUID = Begin
+                                        0xe9e35f22dfba0643890701986966ba1c
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =3807
+                            Top =8285
+                            OptionValue =2
+                            Name ="Option305"
+                            GUID = Begin
+                                0xca4eb04c0587c44f9d241ea335861118
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =4037
+                                    Top =8257
+                                    Width =600
+                                    Height =240
+                                    Name ="Label306"
+                                    Caption ="Tabelle"
+                                    GUID = Begin
+                                        0x0833c5381e002a49a2602d452935cda9
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3629
+                    Top =8844
+                    Width =2256
+                    Height =576
+                    TabIndex =22
+                    Name ="Command307"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x7ab1a0b922c4604ba99abda5f7aebc34
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl218_Click()
+    KorrekturfaktorenAktualisieren
+    If Me!Frame219.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCGesamtanlage"
+    ElseIf Me!Frame219.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCGesamtanlage"
+    End If
+    DoCmd.Close acForm, "Energieverbrauch"
+End Sub
+
+
+Private Sub Command241_Click()
+    KorrekturfaktorenAktualisieren
+    If Me!Frame257.Value = 1 And Me!Frame263.Value = 1 And Me!Frame243.Value = 1 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCGruppe"
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 1 And Me!Frame243.Value = 1 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCGruppe"
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 2 And Me!Frame243.Value = 1 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCGruppe2"
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 2 And Me!Frame243.Value = 1 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCGruppe2"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 1 And Me!Frame243.Value = 1 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCGruppe3"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 1 And Me!Frame243.Value = 1 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCGruppe3"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 2 And Me!Frame243.Value = 1 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCGruppe4"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 2 And Me!Frame243.Value = 1 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCGruppe4"
+    
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 1 And Me!Frame243.Value = 3 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereGruppen"
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 1 And Me!Frame243.Value = 3 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereGruppen"
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 2 And Me!Frame243.Value = 3 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereGruppen2"
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 2 And Me!Frame243.Value = 3 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereGruppen2"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 1 And Me!Frame243.Value = 3 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereGruppen3"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 1 And Me!Frame243.Value = 3 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereGruppen3"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 2 And Me!Frame243.Value = 3 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereGruppen4"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 2 And Me!Frame243.Value = 3 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereGruppen4"
+    
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 1 And Me!Frame243.Value = 2 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleGruppen"
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 1 And Me!Frame243.Value = 2 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleGruppen"
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 2 And Me!Frame243.Value = 2 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleGruppen2"
+    ElseIf Me!Frame257.Value = 1 And Me!Frame263.Value = 2 And Me!Frame243.Value = 2 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleGruppen2"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 1 And Me!Frame243.Value = 2 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleGruppen3"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 1 And Me!Frame243.Value = 2 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleGruppen3"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 2 And Me!Frame243.Value = 2 And Me!Frame251.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleGruppen4"
+    ElseIf Me!Frame257.Value = 2 And Me!Frame263.Value = 2 And Me!Frame243.Value = 2 And Me!Frame251.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleGruppen4"
+      
+    End If
+    DoCmd.Close acForm, "Energieverbrauch"
+
+End Sub
+
+Private Sub Command271_Click()
+    KorrekturfaktorenAktualisieren
+    If Me!Frame287.Value = 1 And Me!Frame293.Value = 1 And Me!Frame273.Value = 1 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCElement"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 1 And Me!Frame273.Value = 1 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCElement"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 1 And Me!Frame273.Value = 3 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereElemente"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 1 And Me!Frame273.Value = 3 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereElemente"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 2 And Me!Frame273.Value = 3 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereElemente2"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 2 And Me!Frame273.Value = 3 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereElemente2"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 1 And Me!Frame273.Value = 3 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereElemente3"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 1 And Me!Frame273.Value = 3 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereElemente3"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 2 And Me!Frame273.Value = 3 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereElemente4"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 2 And Me!Frame273.Value = 3 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereElemente4"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 2 And Me!Frame273.Value = 1 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCElement2"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 2 And Me!Frame273.Value = 1 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCElement2"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 1 And Me!Frame273.Value = 1 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCElement3"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 1 And Me!Frame273.Value = 1 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCElement3"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 2 And Me!Frame273.Value = 1 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCElement4"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 2 And Me!Frame273.Value = 1 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCElement4"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 1 And Me!Frame273.Value = 2 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleElemente"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 1 And Me!Frame273.Value = 2 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleElemente"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 2 And Me!Frame273.Value = 2 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleElemente2"
+    ElseIf Me!Frame287.Value = 1 And Me!Frame293.Value = 2 And Me!Frame273.Value = 2 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleElemente2"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 1 And Me!Frame273.Value = 2 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleElemente3"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 1 And Me!Frame273.Value = 2 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleElemente3"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 2 And Me!Frame273.Value = 2 And Me!Frame281.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleElemente4"
+    ElseIf Me!Frame287.Value = 2 And Me!Frame293.Value = 2 And Me!Frame273.Value = 2 And Me!Frame281.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleElemente4"
+    End If
+    DoCmd.Close acForm, "Energieverbrauch"
+
+End Sub
+
+Private Sub Command307_Click()
+    KorrekturfaktorenAktualisieren
+    If Me!Frame301.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleTeilanlagen"
+    ElseIf Me!Frame301.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleTeilanlagen"
+    End If
+    DoCmd.Close acForm, "Energieverbrauch"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GewSprache = 1 Then
+        
+        Text0.Caption = "Energieverbrauch"
+        
+        Bezeichnungsfeld215.Caption = "Gesamtanlage"
+        Label220.Caption = "Ergebnisse als"
+        Label222.Caption = "Diagramm"
+        Label225.Caption = "Tabelle"
+        Befehl218.Caption = "Ergebnisse Anzeigen"
+        
+        Label299.Caption = "Teilanlage"
+        Label302.Caption = "Ergebnisse als"
+        Label304.Caption = "Diagramm"
+        Label306.Caption = "Tabelle"
+        Command307.Caption = "Ergebnisse Anzeigen"
+        
+        
+        Bezeichnungsfeld203.Caption = "Elektrolyseure"
+        Label227.Caption = "Tabelle Un"
+        Label229.Caption = "Elektrolyseure"
+        Label232.Caption = "Alle Elemente pro El."
+        Label234.Caption = "Basis CE"
+        Label236.Caption = "Anod. Bil. Elektrolyseur"
+        Label238.Caption = "NaOH Prod. Elektrolyseur"
+        Bezeichnungsfeld228.Caption = "Berechnung für"
+        Bezeichnungsfeld231.Caption = "Einzel-Elektrolyseur"
+        Bezeichnungsfeld322.Caption = "Mehrere Elektrolyseure"
+        Bezeichnungsfeld233.Caption = "Alle Elektrolyseure"
+        Bezeichnungsfeld221.Caption = "Ergebnisse als"
+        Bezeichnungsfeld224.Caption = "Diagramm"
+        Bezeichnungsfeld226.Caption = "Tabelle"
+        Befehl204.Caption = "Ergebnisse anzeigen"
+
+        Label240.Caption = "Gruppen"
+        Label258.Caption = "Tabelle Un"
+        Label260.Caption = "Alle Elemente pro Elektrol."
+        Label262.Caption = "Gruppe"
+        Label264.Caption = "Basis CE"
+        Label266.Caption = "Anod. Bil. Gruppe"
+        Label268.Caption = "NaOH Prod. Gruppe"
+        Label244.Caption = "Berechnung für"
+        Label246.Caption = "Einzelne Gruppe"
+        Label248.Caption = "Mehrere Gruppen"
+        Label250.Caption = "Alle Gruppen"
+        Label252.Caption = "Ergebnisse als"
+        Label254.Caption = "Diagramm"
+        Label256.Caption = "Tabelle"
+        Command241.Caption = "Ergebnisse anzeigen"
+
+        Label270.Caption = "Elemente"
+        Label288.Caption = "Tabelle Un"
+        Label290.Caption = "Alle Elemente pro Elektrol."
+        Label292.Caption = "Elements"
+        Label294.Caption = "Basis CE"
+        Label296.Caption = "Anod. Bil. Element"
+        Label298.Caption = "NaOH Prod. Element"
+        Label274.Caption = "Berechnung für"
+        Label276.Caption = "Einzelne Elemente"
+        Label278.Caption = "Mehrere Elemente"
+        Label280.Caption = "Alle Elemente"
+        Label282.Caption = "Ergebnisse als"
+        Label284.Caption = "Diagramm"
+        Label286.Caption = "Tabelle"
+        Command271.Caption = "Ergebnisse anzeigen"
+        
+        Schaltfläche29.Caption = "Hauptmenu"
+        
+    Else
+        
+        Text0.Caption = "Power Consumption"
+        
+        Bezeichnungsfeld215.Caption = "Total Plant"
+        Label220.Caption = "Results as"
+        Label222.Caption = "Chart"
+        Label225.Caption = "Table"
+        Befehl218.Caption = "Display Results"
+        
+        Label299.Caption = "Train"
+        Label302.Caption = "Results as"
+        Label304.Caption = "Chart"
+        Label306.Caption = "Table"
+        Command307.Caption = "Display Results"
+        
+        Bezeichnungsfeld203.Caption = "Electrolyzers"
+        Label227.Caption = "Table Un"
+        Label229.Caption = "Electrolyzers"
+        Label232.Caption = "All Elements per Electrol."
+        Label234.Caption = "Basis CE"
+        Label236.Caption = "Anod. Bal. Electrolyzer"
+        Label238.Caption = "NaOH Prod. Electrolyzer"
+        Bezeichnungsfeld228.Caption = "Calculation for"
+        Bezeichnungsfeld231.Caption = "Individual Electrolyzer"
+        Bezeichnungsfeld322.Caption = "Several Electrolyzers"
+        Bezeichnungsfeld233.Caption = "All Electrolyzers"
+        Bezeichnungsfeld221.Caption = "Results as"
+        Bezeichnungsfeld224.Caption = "Chart"
+        Bezeichnungsfeld226.Caption = "Table"
+        Befehl204.Caption = "Display Results"
+        
+        Label240.Caption = "Groups"
+        Label258.Caption = "Table Un"
+        Label260.Caption = "All Elements per Electrol."
+        Label262.Caption = "Groups"
+        Label264.Caption = "Basis CE"
+        Label266.Caption = "Anodic Bal. Group"
+        Label268.Caption = "NaOH Prod. Group"
+        Label244.Caption = "Calculation for"
+        Label246.Caption = "Individual Group"
+        Label248.Caption = "Several Groups"
+        Label250.Caption = "All Groups"
+        Label252.Caption = "Results as"
+        Label254.Caption = "Chart"
+        Label256.Caption = "Table"
+        Command241.Caption = "Display Results"
+
+        Label270.Caption = "Elements"
+        Label288.Caption = "Table Un"
+        Label290.Caption = "All Elements per Electrol."
+        Label292.Caption = "Individual Element"
+        Label294.Caption = "Basis CE"
+        Label296.Caption = "Anodic Bal. Element"
+        Label298.Caption = "NaOH Prod. Element"
+        Label274.Caption = "Calculation for"
+        Label276.Caption = "Individual Element"
+        Label278.Caption = "Several Elements"
+        Label280.Caption = "All Elements"
+        Label282.Caption = "Results as"
+        Label284.Caption = "Chart"
+        Label286.Caption = "Table"
+        Command271.Caption = "Display Results"
+                
+        Schaltfläche29.Caption = "Main Menu"
+        
+    End If
+
+
+End Sub
+
+Private Sub Befehl191_Click()
+On Error GoTo Err_Befehl191_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+    KorrekturfaktorenAktualisieren
+
+    stDocName = "frmDiagrammSPCElektrolyseur"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Energieverbrauch"
+
+Exit_Befehl191_Click:
+    Exit Sub
+
+Err_Befehl191_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl191_Click
+    
+End Sub
+Private Sub Befehl204_Click()
+
+    KorrekturfaktorenAktualisieren
+    If Me!Frame226.Value = 1 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 1 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCElektrolyseur"
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 1 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCElektrolyseur"
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 1 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCElektrolyseur2"
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 1 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCElektrolyseur2"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 1 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCElektrolyseur3"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 1 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCElektrolyseur3"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 1 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCElektrolyseur4"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 1 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCElektrolyseur4"
+        
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 3 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereElektrolyseure"
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 3 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereElektrolyseure"
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 3 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereElektrolyseure2"
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 3 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereElektrolyseure2"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 3 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereElektrolyseure3"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 3 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereElektrolyseure3"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 3 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCMehrereElektrolyseure4"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 3 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCMehrereElektrolyseure4"
+        
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 2 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleElektrolyseure"
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 2 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleElektrolyseure"
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 2 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleElektrolyseure2"
+    ElseIf Me!Frame226.Value = 1 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 2 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleElektrolyseure2"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 2 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleElektrolyseure3"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 1 And Me!Rahmen227.Value = 2 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleElektrolyseure3"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 2 And Me!Rahmen220.Value = 1 Then
+        DoCmd.OpenForm "frmDiagrammSPCAlleElektrolyseure4"
+    ElseIf Me!Frame226.Value = 2 And Me!Frame233.Value = 2 And Me!Rahmen227.Value = 2 And Me!Rahmen220.Value = 2 Then
+        DoCmd.OpenForm "frmTabelleSPCAlleElektrolyseure4"
+    
+    End If
+    DoCmd.Close acForm, "Energieverbrauch"
+
+    
+End Sub
+
+Private Sub Schaltfläche29_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "Energieverbrauch"
+End Sub

@@ -1,0 +1,4 @@
+SELECT DISTINCTROW Count(qryMembranstatistikDOLAktiv2.[Ausschalt Datum]) AS ElementePassiv, qryMembranstatistikDOLAktiv2.Membrantyp, qryMembranstatistikDOLAktiv2.[Membran Nr], Count(qryMembranstatistikDOLAktiv2.[Membran Nr]) AS ElementeGesamt, Count([Einschalt Datum])-Count([Ausschalt Datum]) AS ElementeAktiv, Sum(IIf([Ausschalt Datum],[Ausschalt Datum]-[Einschalt Datum],0)) AS PassiveDOL, Sum(IIf(IsNull([Ausschalt Datum]),Date()-[Einschalt Datum],0)) AS AktiveDOL, Sum(IIf([Ausschalt Datum],[Ausschalt Datum]-[Einschalt Datum],0)+IIf(IsNull([Ausschalt Datum]),Date()-[Einschalt Datum],0)) AS GesamtDOL
+FROM qryMembranstatistikDOLAktiv2
+GROUP BY qryMembranstatistikDOLAktiv2.Membrantyp, qryMembranstatistikDOLAktiv2.[Membran Nr]
+HAVING (((Sum(IIf(IsNull([Ausschalt Datum]),Date()-[Einschalt Datum],0)))<>0));

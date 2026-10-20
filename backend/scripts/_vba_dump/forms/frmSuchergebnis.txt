@@ -1,0 +1,1139 @@
+Version =17
+VersionRequired =17
+Checksum =122913175
+Begin Form
+    AutoCenter = NotDefault
+    OrderByOn = NotDefault
+    GridX =5
+    GridY =5
+    Width =24944
+    ItemSuffix =158
+    Top =930
+    Right =14880
+    Bottom =6750
+    OrderBy ="tblSuchergebnis.[Anoden Nr]"
+    RecSrcDt = Begin
+        0x11dc342eb893e240
+    End
+    RecordSource ="tblSuchergebnis"
+    Caption ="Montage"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0xc60100006e040000960200006e040000000000006f5a0000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a6574203420506c75732028436f70792032290000000000 ,
+        0x0004010494004000037700060200090000000000000001000901580201000100 ,
+        0x5802040000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000006010000020000000000000000000000010040004d5355444f034850 ,
+        0x204c617365724a6574203420506c75730000000000000000000000000000e401 ,
+        0x0000000000003c0100000000040064000a000000
+    End
+    PrtDevNames = Begin
+        0x080011002d00000057494e53504f4f4c004850204c617365724a657420342050 ,
+        0x6c75732028436f7079203229005c5c53686c6e61615c73686c30313900000000 ,
+        0x00000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =1247
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =340
+                    Top =113
+                    Width =2370
+                    Height =405
+                    FontSize =14
+                    ForeColor =16777215
+                    Name ="Text8"
+                    Caption ="Suchergebnis"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Top =675
+                    Width =570
+                    Height =465
+                    Name ="Text10"
+                    Caption ="Cell no."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =2494
+                    Top =680
+                    Width =795
+                    Height =450
+                    Name ="Text12"
+                    Caption ="Anode no."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =3288
+                    Top =680
+                    Width =915
+                    Height =450
+                    Name ="Text14"
+                    Caption ="Cathode no."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =5329
+                    Top =680
+                    Width =1011
+                    Height =465
+                    Name ="Text16"
+                    Caption ="Membrane type"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =4195
+                    Top =680
+                    Width =1125
+                    Height =465
+                    Name ="Text18"
+                    Caption ="Membrane no."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =21770
+                    Top =680
+                    Width =915
+                    Height =465
+                    Name ="Text22"
+                    Caption ="Assembly date"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =566
+                    Top =680
+                    Width =780
+                    Height =465
+                    Name ="Text24"
+                    Caption ="Electro-lyser"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =1360
+                    Top =680
+                    Width =465
+                    Height =465
+                    Name ="Text26"
+                    Caption ="Pos."
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =3061
+                    Top =113
+                    Width =1596
+                    Height =456
+                    Name ="Schaltfläche27"
+                    Caption ="Main Menu"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =6349
+                    Top =680
+                    Width =1140
+                    Height =465
+                    Name ="Text32"
+                    Caption ="Commis. date"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    TextFontFamily =0
+                    Left =13266
+                    Top =226
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    TabIndex =1
+                    BackColor =12632256
+                    Name ="Feld28"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =8503
+                    Top =680
+                    Width =570
+                    Height =465
+                    Name ="Text51"
+                    Caption ="DOL"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =1814
+                    Top =680
+                    Width =690
+                    Height =465
+                    Name ="Bezeichnungsfeld92"
+                    Caption ="Group"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =7483
+                    Top =680
+                    Width =1020
+                    Height =465
+                    Name ="Bezeichnungsfeld95"
+                    Caption ="Decommis.date"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =9077
+                    Top =680
+                    Width =3390
+                    Height =465
+                    Name ="Label123"
+                    Caption ="Reason for decommission"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =12465
+                    Top =675
+                    Width =1020
+                    Height =465
+                    Name ="Label122"
+                    Caption ="Anode coating"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =15533
+                    Top =680
+                    Width =1020
+                    Height =465
+                    Name ="Label121"
+                    Caption ="Cathode coating"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =18595
+                    Top =680
+                    Width =1590
+                    Height =465
+                    Name ="Label120"
+                    Caption ="Membrane"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =13492
+                    Top =680
+                    Width =1035
+                    Height =465
+                    Name ="Label137"
+                    Caption ="Anode electrode"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =16560
+                    Top =675
+                    Width =1020
+                    Height =465
+                    Name ="Label134"
+                    Caption ="Cathode electrode"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =20182
+                    Top =680
+                    Width =1590
+                    Height =465
+                    Name ="Label143"
+                    Caption ="Remarks"
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =14513
+                    Top =680
+                    Width =1005
+                    Height =465
+                    Name ="Label148"
+                    Caption ="Anode shell"
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =17574
+                    Top =680
+                    Width =1020
+                    Height =465
+                    Name ="Label150"
+                    Caption ="Cathode shell"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =4988
+                    Top =113
+                    Width =1596
+                    Height =456
+                    TabIndex =2
+                    Name ="Befehl154"
+                    Caption ="Search"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Datensatz suchen"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =22903
+                    Top =680
+                    Width =1245
+                    Height =465
+                    Name ="Bezeichnungsfeld155"
+                    Caption ="Disassembly date"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1031
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =340
+                    Top =113
+                    Width =2370
+                    Height =405
+                    FontSize =14
+                    Name ="Text71"
+                    Caption ="Suchergebnis"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    TextFontFamily =0
+                    Left =13266
+                    Top =113
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    BackColor =12632256
+                    Name ="Feld74"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Top =566
+                    Width =555
+                    Height =465
+                    Name ="Text76"
+                    Caption ="Cell no."
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =2381
+                    Top =566
+                    Width =900
+                    Height =450
+                    Name ="Text77"
+                    Caption ="Anode "
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =3288
+                    Top =566
+                    Width =915
+                    Height =450
+                    Name ="Text78"
+                    Caption ="Cathode "
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =5329
+                    Top =566
+                    Width =1026
+                    Height =465
+                    Name ="Text79"
+                    Caption ="Membrane type"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =4195
+                    Top =566
+                    Width =1125
+                    Height =465
+                    Name ="Text80"
+                    Caption ="Membrane no."
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =21770
+                    Top =566
+                    Width =915
+                    Height =465
+                    Name ="Text82"
+                    Caption ="Assembly date"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =566
+                    Top =566
+                    Width =780
+                    Height =465
+                    Name ="Text83"
+                    Caption ="Electro-lyser"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =1360
+                    Top =566
+                    Width =465
+                    Height =450
+                    Name ="Text84"
+                    Caption ="Pos."
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =223
+                    TextAlign =1
+                    Left =6349
+                    Top =566
+                    Width =1140
+                    Height =465
+                    Name ="Text85"
+                    Caption ="Commis. date"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =7483
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Text86"
+                    Caption ="Decommis.date"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =9075
+                    Top =570
+                    Width =3390
+                    Height =450
+                    Name ="Text88"
+                    Caption ="Reason for decommission"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =8503
+                    Top =566
+                    Width =570
+                    Height =450
+                    Name ="Text89"
+                    Caption ="DOL"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =1814
+                    Top =566
+                    Width =570
+                    Height =450
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Group"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =18595
+                    Top =566
+                    Width =1590
+                    Height =450
+                    Name ="Label119"
+                    Caption ="Membrane"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =20182
+                    Top =566
+                    Width =1590
+                    Height =450
+                    Name ="Label142"
+                    Caption ="Remarks"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =12472
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Label144"
+                    Caption ="Anode coating"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =13492
+                    Top =566
+                    Width =1035
+                    Height =465
+                    Name ="Label145"
+                    Caption ="Anode electrode"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =15533
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Label146"
+                    Caption ="Cathode coating"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =16554
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Label147"
+                    Caption ="Cathode electrode"
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =14513
+                    Top =566
+                    Width =1005
+                    Height =465
+                    Name ="Label149"
+                    Caption ="Anode shell"
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =17574
+                    Top =566
+                    Width =1020
+                    Height =465
+                    Name ="Label151"
+                    Caption ="Cathode shell"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =22903
+                    Top =566
+                    Width =1245
+                    Height =465
+                    Name ="Bezeichnungsfeld156"
+                    Caption ="Disassembly date"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =2381
+                    Width =907
+                    ColumnWidth =1005
+                    TabIndex =4
+                    Name ="Anode no."
+                    ControlSource ="Anoden Nr"
+                    EventProcPrefix ="Anode_no_"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =3289
+                    Width =907
+                    ColumnWidth =1170
+                    TabIndex =5
+                    Name ="Cathode no."
+                    ControlSource ="Kathoden Nr"
+                    EventProcPrefix ="Cathode_no_"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =5329
+                    Width =1021
+                    ColumnWidth =1080
+                    TabIndex =7
+                    Name ="Membrane type"
+                    ControlSource ="Membrantyp"
+                    EventProcPrefix ="Membrane_type"
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =4196
+                    Width =1134
+                    ColumnWidth =1164
+                    TabIndex =6
+                    Name ="Membrane no."
+                    ControlSource ="Membran Nr"
+                    EventProcPrefix ="Membrane_no_"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =6349
+                    Width =1137
+                    ColumnWidth =1056
+                    TabIndex =8
+                    Name ="Commis."
+                    ControlSource ="Einschalt Datum"
+                    EventProcPrefix ="Commis_"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =7483
+                    Width =1026
+                    ColumnWidth =1032
+                    TabIndex =9
+                    Name ="Decomis."
+                    ControlSource ="Ausschalt Datum"
+                    EventProcPrefix ="Decomis_"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =2
+                    Width =567
+                    ColumnWidth =756
+                    Name ="Cell no."
+                    ControlSource ="Element Nr"
+                    EventProcPrefix ="Cell_no_"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =9070
+                    Width =3390
+                    TabIndex =11
+                    Name ="Reason for decommis."
+                    ControlSource ="Abschaltgrund"
+                    EventProcPrefix ="Reason_for_decommis_"
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =8503
+                    Width =567
+                    TabIndex =10
+                    Name ="DOL"
+                    ControlSource ="=[Ausschalt Datum]-[Einschalt Datum]"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =567
+                    Width =794
+                    TabIndex =1
+                    Name ="Electrolyser"
+                    ControlSource ="Elektrolyseur"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =1361
+                    Width =454
+                    ColumnWidth =900
+                    TabIndex =2
+                    Name ="Position"
+                    ControlSource ="Position"
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =1814
+                    Width =561
+                    TabIndex =3
+                    Name ="Group"
+                    ControlSource ="Gruppe"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =21770
+                    Width =1155
+                    TabIndex =20
+                    Name ="Assembly date"
+                    ControlSource ="Montage Datum"
+                    EventProcPrefix ="Assembly_date"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =12472
+                    Width =1020
+                    TabIndex =12
+                    Name ="Anode coating"
+                    ControlSource ="Anode coating"
+                    EventProcPrefix ="Anode_coating"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =15533
+                    Width =1020
+                    TabIndex =15
+                    Name ="Cathode coating"
+                    ControlSource ="Cathode coating"
+                    EventProcPrefix ="Cathode_coating"
+                End
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =18595
+                    Width =1605
+                    TabIndex =18
+                    Name ="Info membrane"
+                    ControlSource ="Info membrane"
+                    EventProcPrefix ="Info_membrane"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =13492
+                    Width =1035
+                    TabIndex =13
+                    Name ="Anode electrode"
+                    ControlSource ="Anode electrode"
+                    EventProcPrefix ="Anode_electrode"
+                End
+                Begin TextBox
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =16554
+                    Width =1020
+                    TabIndex =16
+                    Name ="Cathode electrode"
+                    ControlSource ="Cathode electrode"
+                    EventProcPrefix ="Cathode_electrode"
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =14513
+                    Width =1005
+                    TabIndex =14
+                    Name ="Anode shell"
+                    ControlSource ="Anode shell"
+                    EventProcPrefix ="Anode_shell"
+                End
+                Begin TextBox
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =17574
+                    Width =1020
+                    TabIndex =17
+                    Name ="Cathode shell"
+                    ControlSource ="Cathode shell"
+                    EventProcPrefix ="Cathode_shell"
+                End
+                Begin TextBox
+                    OverlapFlags =247
+                    TextAlign =1
+                    Left =20182
+                    Width =1605
+                    TabIndex =19
+                    Name ="Text141"
+                    ControlSource ="Remarks"
+                End
+                Begin TextBox
+                    OverlapFlags =247
+                    TextAlign =2
+                    Left =22903
+                    Width =1155
+                    TabIndex =21
+                    Name ="Text157"
+                    ControlSource =" Demontage Datum"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =566
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12925
+                    Top =113
+                    Width =1597
+                    Height =227
+                    Name ="Feld80"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+                Begin PageBreak
+                    OverlapFlags =85
+                    Name ="Seitenumbruch70"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Suchergebnis"
+        Text10.Caption = "Elem. Nr."
+        Text24.Caption = "Elektro-lyseur"
+        Text26.Caption = "Pos."
+        Bezeichnungsfeld92.Caption = "Gruppe"
+        Text12.Caption = "Anode Nr."
+        Text14.Caption = "Kathode Nr."
+        Text18.Caption = "Membran Nr."
+        Text16.Caption = "Membran-typ"
+        Text32.Caption = "Inbetriebn.-datum"
+        Bezeichnungsfeld95.Caption = "Abschalt-datum"
+        Text51.Caption = "DOL"
+        Label123.Caption = "Abschaltgrund"
+        Label122.Caption = "Anoden-Coating"
+        Label137.Caption = "Anoden-Elektrode"
+        Label148.Caption = "Anoden-Wanne"
+        Label121.Caption = "Kathoden-Coating"
+        Label134.Caption = "Kathoden-Elektrode"
+        Label150.Caption = "Kathoden-Wanne"
+        Label120.Caption = "Membrane"
+        Label143.Caption = "Bemerkungen"
+        Text22.Caption = "Montage-datum"
+        Bezeichnungsfeld155.Caption = "Demontage-datum"
+        Schaltfläche27.Caption = "Hauptmenu"
+        Befehl154.Caption = "Suchübersicht"
+        
+        Text71.Caption = "Suchergebnis"
+        Text76.Caption = "Elem. Nr."
+        Text83.Caption = "Elektro-lyseur"
+        Text84.Caption = "Pos."
+        Bezeichnungsfeld93.Caption = "Gruppe"
+        Text77.Caption = "Anode Nr."
+        Text78.Caption = "Kathode Nr."
+        Text80.Caption = "Membran Nr."
+        Text79.Caption = "Membran-typ"
+        Text85.Caption = "Inbetriebn.-datum"
+        Text86.Caption = "Abschalt-datum"
+        Text89.Caption = "DOL"
+        Text88.Caption = "Abschaltgrund"
+        Label144.Caption = "Anoden-Coating"
+        Label145.Caption = "Anoden-Elektrode"
+        Label149.Caption = "Anoden-Wanne"
+        Label146.Caption = "Kathoden-Coating"
+        Label147.Caption = "Kathoden-Elektrode"
+        Label151.Caption = "Kathoden-Wanne"
+        Label119.Caption = "Membrane"
+        Label142.Caption = "Bemerkungen"
+        Text22.Caption = "Montage-datum"
+        Bezeichnungsfeld156.Caption = "Demontage-datum"
+    Else
+        Text8.Caption = "Search Result"
+        Text10.Caption = "Cell No."
+        Text24.Caption = "Electro-lyser"
+        Text26.Caption = "Pos"
+        Bezeichnungsfeld92.Caption = "Group"
+        Text12.Caption = "Anode No."
+        Text14.Caption = "Cathode No."
+        Text18.Caption = "Membrane No."
+        Text16.Caption = "Membrane type"
+        Text32.Caption = "Commiss. date"
+        Bezeichnungsfeld95.Caption = "Decommiss. date"
+        Text51.Caption = "DOL"
+        Label123.Caption = "Reason for Decommissioning"
+        Label122.Caption = "Anode Coating"
+        Label137.Caption = "Anode Electrode"
+        Label148.Caption = "Anode Shell"
+        Text22.Caption = "Assembly Date"
+        Label143.Caption = "Remarks"
+        Label120.Caption = "Membrane"
+        Label150.Caption = "Cathode Shell"
+        Label134.Caption = "Cathode Electrode"
+        Label121.Caption = "Cathode Coating"
+        Label148.Caption = "Anode Shell"
+        Bezeichnungsfeld155.Caption = "Disassembly Date"
+        
+        Text71.Caption = "Search Result"
+        Text76.Caption = "Cell No."
+        Text83.Caption = "Electro-lyser"
+        Text84.Caption = "Pos"
+        Bezeichnungsfeld93.Caption = "Group"
+        Text77.Caption = "Anode No."
+        Text78.Caption = "Cathode No."
+        Text80.Caption = "Membrane No."
+        Text79.Caption = "Membrane type"
+        Text85.Caption = "Commiss. date"
+        Text86.Caption = "Decommiss. date"
+        Text89.Caption = "DOL"
+        Text88.Caption = "Reason for Decommissioning"
+        Label144.Caption = "Anode Coating"
+        Label145.Caption = "Anode Electrode"
+        Label149.Caption = "Anode Shell"
+        Label142.Caption = "Remarks"
+        Label119.Caption = "Membrane"
+        Label151.Caption = "Cathode Shell"
+        Label147.Caption = "Cathode Electrode"
+        Label146.Caption = "Cathode Coating"
+        Text82.Caption = "Assembly Date"
+        Bezeichnungsfeld156.Caption = "Disassembly Date"
+        
+        Schaltfläche27.Caption = "Main Menu"
+        Befehl154.Caption = "Search"
+    End If
+End Sub
+
+Private Sub Schaltfläche27_Click()
+On Error GoTo Err_Schaltfläche27_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Header"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "frmSuchergebnis"
+
+Exit_Schaltfläche27_Click:
+    Exit Sub
+
+Err_Schaltfläche27_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche27_Click
+    
+End Sub
+
+
+
+Private Sub Schaltfläche40_Click()
+On Error GoTo Err_Schaltfläche40_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Montage"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche40_Click:
+    Exit Sub
+
+Err_Schaltfläche40_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche40_Click
+    
+End Sub
+
+
+Private Sub Schaltfläche42_Click()
+On Error GoTo Err_Schaltfläche42_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Elemente mit Mehrfachposition"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche42_Click:
+    Exit Sub
+
+Err_Schaltfläche42_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche42_Click
+    
+End Sub
+
+Private Sub Schaltfläche43_Click()
+On Error GoTo Err_Schaltfläche43_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Header"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche43_Click:
+    Exit Sub
+
+Err_Schaltfläche43_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche43_Click
+    
+End Sub
+
+
+
+Private Sub Schaltfläche46_Click()
+On Error GoTo Err_Schaltfläche46_Click
+
+    Dim DocName As String
+    Dim MyForm As Form
+
+    DocName = "Montage"
+    Set MyForm = Screen.ActiveForm
+    DoCmd.SelectObject A_FORM, DocName, True
+    DoCmd.PrintOut
+    DoCmd.SelectObject A_FORM, MyForm.Name, False
+
+Exit_Schaltfläche46_Click:
+    Exit Sub
+
+Err_Schaltfläche46_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche46_Click
+    
+End Sub
+
+
+
+Private Sub Befehl154_Click()
+On Error GoTo Err_Befehl154_Click
+
+    DoCmd.OpenForm "Suchübersicht"
+    DoCmd.Close acForm, "frmSuchergebnis"
+
+Exit_Befehl154_Click:
+    Exit Sub
+
+Err_Befehl154_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl154_Click
+    
+End Sub

@@ -1,0 +1,1316 @@
+Version =19
+VersionRequired =19
+Checksum =124393442
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    PictureAlignment =5
+    PictureSizeMode =1
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =7653
+    DatasheetFontHeight =10
+    ItemSuffix =91
+    Left =1530
+    Top =2760
+    Right =8970
+    Bottom =7395
+    DatasheetGridlinesColor =12632256
+    PaintPalette = Begin
+        0x000359000000000000ccff0005cdff000aceff000fcfff0014d0ff001ad1ff00 ,
+        0x1fd2ff0024d3ff0029d4ff002ed5ff0034d6ff0039d7ff003ed8ff0043d9ff00 ,
+        0x48daff004edbff0053dcff0058ddff005ddeff0062dfff0068e0ff006de1ff00 ,
+        0x72e2ff0077e3ff007ce4ff0082e6ff0087e7ff008ce8ff0091e9ff0096eaff00 ,
+        0x9cebff00a1ecff00a6edff00abeeff00b0efff00b6f0ff00bbf1ff00c0f2ff00 ,
+        0xc5f3ff00caf4ff00cccccc00cfcfcf00d0f5ff00d1d1d100d4d4d400d5f6ff00 ,
+        0xd6d6d600d9d9d900daf7ff00dbdbdb00dedede00dff8ff00e0e0e000e3e3e300 ,
+        0xe4f9ff00e5e5e500e8e8e800eafaff00ebebeb00ededed00effbff00f0f0f000 ,
+        0xf2f2f200f4fcff00f5f5f500f7f7f700f9fdff00fafafa00fcfcfc00ffffff00 ,
+        0x800000000080000080800000000080008000800000808000c0c0c000c0dcc000 ,
+        0xa6caf000fffbf000a0a0a40080808000ff00000000ff0000ffff00000000ff00 ,
+        0xff00ff0000ffff0000000000
+    End
+    RecSrcDt = Begin
+        0x6b841cef3ee8e240
+    End
+    RecordSource ="tblMontagedatenFormat"
+    Caption ="subfrmMontagedatenFormat"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c003402033f8002010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            BackStyle =0
+            BorderWidth =1
+            Width =850
+            Height =850
+        End
+        Begin Line
+            BorderWidth =1
+            Width =1701
+        End
+        Begin Image
+            SpecialEffect =1
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =1
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =1
+            BorderWidth =3
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BorderColor =12632256
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =1
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin ListBox
+            SpecialEffect =1
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin Subform
+            SpecialEffect =1
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =1
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="Arial"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            Name ="Formularkopf"
+            GUID = Begin
+                0xac7960fa72546341945fcb9366acca37
+            End
+        End
+        Begin Section
+            Height =4560
+            BackColor =-2147483633
+            Name ="Detailbereich"
+            GUID = Begin
+                0xb8a0d89e5f976640a86784ed90acbf80
+            End
+            Begin
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2267
+                    Top =340
+                    Name ="Check10"
+                    ControlSource ="ElementNrAnzeigen"
+                    GUID = Begin
+                        0xed6f70c20f7aa74ab47c3acb2892dd11
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =285
+                            Top =285
+                            Width =1695
+                            Height =255
+                            Name ="Label11"
+                            Caption ="Element Nr."
+                            GUID = Begin
+                                0x6c9ad8b983bc444e87a0740fac6f3a94
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2891
+                    Top =283
+                    Width =741
+                    TabIndex =1
+                    Name ="Text12"
+                    ControlSource ="ElementNrBreite"
+                    GUID = Begin
+                        0x0d4c8ae334c6cc4395d99024848059da
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =2040
+                    Width =765
+                    Height =225
+                    Name ="Label14"
+                    Caption ="Anzeigen"
+                    GUID = Begin
+                        0x407c0ea20d4f484d8c7cb581780fabd1
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2902
+                    Width =735
+                    Height =225
+                    Name ="Label15"
+                    Caption ="Breite"
+                    GUID = Begin
+                        0xe3fabb1ee4fbfd468970eef99d9464c0
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2267
+                    Top =680
+                    TabIndex =2
+                    Name ="Check16"
+                    ControlSource ="ElektrolyseurAnzeigen"
+                    GUID = Begin
+                        0x186b910f5b80484986770fac13cb52d9
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =285
+                            Top =630
+                            Width =1695
+                            Height =255
+                            Name ="Label17"
+                            Caption ="Elektrolyseur"
+                            GUID = Begin
+                                0x76beb03113e09a4e9b77a836f038f2b0
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2898
+                    Top =630
+                    Width =741
+                    TabIndex =3
+                    Name ="Text18"
+                    ControlSource ="ElektrolyseurBreite"
+                    GUID = Begin
+                        0xd67a7a8cc41e4b4bb1abe7f362c4ea43
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2267
+                    Top =963
+                    TabIndex =4
+                    Name ="Check19"
+                    ControlSource ="PosAnzeigen"
+                    GUID = Begin
+                        0xee35761432af2e4e96ffb12a56eaf17d
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =283
+                            Top =963
+                            Width =1695
+                            Height =255
+                            Name ="Label20"
+                            Caption ="Position"
+                            GUID = Begin
+                                0xe9af0c95bfac2047817a076485e10908
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2898
+                    Top =960
+                    Width =741
+                    TabIndex =5
+                    Name ="Text21"
+                    ControlSource ="PosBreite"
+                    GUID = Begin
+                        0x764ce554875fe348b7492b678205786d
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2267
+                    Top =1303
+                    TabIndex =6
+                    Name ="Check22"
+                    ControlSource ="GruppeAnzeigen"
+                    GUID = Begin
+                        0xf12e2b7bae774d48ac96c53251fd6de6
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =292
+                            Top =1262
+                            Width =1695
+                            Height =255
+                            Name ="Label23"
+                            Caption ="Gruppe"
+                            GUID = Begin
+                                0x40089465d3a7d3409737a04faab88af2
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2898
+                    Top =1260
+                    Width =741
+                    TabIndex =7
+                    Name ="Text24"
+                    ControlSource ="GruppeBreite"
+                    GUID = Begin
+                        0xd98c730d1ab37b49a799d1222105c6ce
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2267
+                    Top =1644
+                    TabIndex =8
+                    Name ="Check25"
+                    ControlSource ="AnodeNrAnzeigen"
+                    GUID = Begin
+                        0xf9168c1a9603f34aa1832597f24f9b27
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =292
+                            Top =1592
+                            Width =1695
+                            Height =255
+                            Name ="Label26"
+                            Caption ="Anode Nr."
+                            GUID = Begin
+                                0x858720564bb49146a596206e4688c3cd
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2898
+                    Top =1590
+                    Width =741
+                    TabIndex =9
+                    Name ="Text27"
+                    ControlSource ="AnodeNrBreite"
+                    GUID = Begin
+                        0x5c5fb27ef293404f883c315c47e1216d
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2267
+                    Top =1984
+                    TabIndex =10
+                    Name ="Check28"
+                    ControlSource ="KathodeNrAnzeigen"
+                    GUID = Begin
+                        0xc955200cf0b6b8438ba7eb0e443194f4
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =292
+                            Top =1922
+                            Width =1695
+                            Height =255
+                            Name ="Label29"
+                            Caption ="Kathode Nr."
+                            GUID = Begin
+                                0xf3ea7853f97b5644ace514eb3f14dbfe
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2898
+                    Top =1920
+                    Width =741
+                    TabIndex =11
+                    Name ="Text30"
+                    ControlSource ="KathodeNrBreite"
+                    GUID = Begin
+                        0xb38f8a9c827b2745bcccb88283c68d57
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2267
+                    Top =2324
+                    TabIndex =12
+                    Name ="Check31"
+                    ControlSource ="GenerationAnzeigen"
+                    GUID = Begin
+                        0xd96c66f8a2b1d24ea7a3f5a97082ad8d
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =292
+                            Top =2267
+                            Width =1695
+                            Height =255
+                            Name ="Label32"
+                            Caption ="Generation"
+                            GUID = Begin
+                                0xfe3f8e52522c214eb6ad836605bc3420
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2898
+                    Top =2265
+                    Width =741
+                    TabIndex =13
+                    Name ="Text33"
+                    ControlSource ="GenerationBreite"
+                    GUID = Begin
+                        0x35666836bacec942a26956415af90119
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2260
+                    Top =2662
+                    TabIndex =14
+                    Name ="Check34"
+                    ControlSource ="MembranNrAnzeigen"
+                    GUID = Begin
+                        0x24f2cb6da11f3548983025f00cad70ef
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =285
+                            Top =2610
+                            Width =1695
+                            Height =255
+                            Name ="Label35"
+                            Caption ="Membran Nr."
+                            GUID = Begin
+                                0x8d85f2359b876f4f9d35d7b8d31054ed
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2898
+                    Top =2610
+                    Width =741
+                    TabIndex =15
+                    Name ="Text36"
+                    ControlSource ="MembranNrBreite"
+                    GUID = Begin
+                        0x2a36f2304fa42148ac2ddd60b14adc1a
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2260
+                    Top =3334
+                    TabIndex =16
+                    Name ="Check37"
+                    ControlSource ="ElektrodenAbstandAnzeigen"
+                    GUID = Begin
+                        0x371b5ad6d2237a42a54eeb3a7b6364cf
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =285
+                            Top =3287
+                            Width =1695
+                            Height =255
+                            Name ="Label38"
+                            Caption ="Elektrodenabstand"
+                            GUID = Begin
+                                0xcf3fadb1650ee14ebd32d0f5a896d3de
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2891
+                    Top =3285
+                    Width =741
+                    TabIndex =17
+                    Name ="Text39"
+                    ControlSource ="ElektrodenAbstandBreite"
+                    GUID = Begin
+                        0x4b6f0d803ee968419c75218aea529380
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2260
+                    Top =3674
+                    TabIndex =18
+                    Name ="Check40"
+                    ControlSource ="MontagedatumAnzeigen"
+                    GUID = Begin
+                        0xfb2546d9e9c71c4296d51b7c47d32bef
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =285
+                            Top =3617
+                            Width =1695
+                            Height =255
+                            Name ="Label41"
+                            Caption ="Montagedatum"
+                            GUID = Begin
+                                0xef354954086bd04f899afb8e97ef9c98
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2891
+                    Top =3615
+                    Width =741
+                    TabIndex =19
+                    Name ="Text42"
+                    ControlSource ="MontagedatumBreite"
+                    GUID = Begin
+                        0x29810f9b6b6ece448f904b2fbb211796
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2260
+                    Top =3958
+                    TabIndex =20
+                    Name ="Check43"
+                    ControlSource ="InbetriebnahmeDatumAnzeigen"
+                    GUID = Begin
+                        0xc05158db5d5dfe44ab90c2c07a266073
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =285
+                            Top =3962
+                            Width =1695
+                            Height =255
+                            Name ="Label44"
+                            Caption ="Inbetriebnahmedatum"
+                            GUID = Begin
+                                0xe7b11aa32f45b043bac782caf6ea3479
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2891
+                    Top =3960
+                    Width =741
+                    TabIndex =21
+                    Name ="Text45"
+                    ControlSource ="InbetriebnahmeDatumBreite"
+                    GUID = Begin
+                        0xe1b8ad11c0884b4da97127be9c4be60b
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5950
+                    Top =335
+                    TabIndex =22
+                    Name ="Check46"
+                    ControlSource ="AbschaltdatumAnzeigen"
+                    GUID = Begin
+                        0xb69af668bc19264e9796a9b78dea1fdb
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3975
+                            Top =287
+                            Width =1695
+                            Height =255
+                            Name ="Label47"
+                            Caption ="Abschaltdatum"
+                            GUID = Begin
+                                0x4cb4ca83068478459bc666780cc0684e
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6581
+                    Top =285
+                    Width =741
+                    TabIndex =23
+                    Name ="Text48"
+                    ControlSource ="AbschaltdatumBreite"
+                    GUID = Begin
+                        0x96c37e2fb3f9954fa98df1e70007ee77
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =685
+                    TabIndex =24
+                    Name ="Check49"
+                    ControlSource ="DOLAnzeigen"
+                    GUID = Begin
+                        0x8e4f7170ab6a45448ca65d57b9042371
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3977
+                            Top =630
+                            Width =1695
+                            Height =255
+                            Name ="Label50"
+                            Caption ="DOL"
+                            GUID = Begin
+                                0x2dc059e84b06214e98d4e044c6cb7665
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6583
+                    Top =628
+                    Width =741
+                    TabIndex =25
+                    Name ="Text51"
+                    ControlSource ="DOLBreite"
+                    GUID = Begin
+                        0x3f24cab736db4745bfde07ea669cd8b7
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =5730
+                    Width =765
+                    Height =225
+                    Name ="Label52"
+                    Caption ="Anzeigen"
+                    GUID = Begin
+                        0x83a8aa6c2a1a1749805d249a21eed9fd
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6592
+                    Width =735
+                    Height =225
+                    Name ="Label53"
+                    Caption ="Breite"
+                    GUID = Begin
+                        0x42e79d2062ea33438e91d00a9abc9df0
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =1025
+                    TabIndex =26
+                    Name ="Check54"
+                    ControlSource ="DemontagedatumAnzeigen"
+                    GUID = Begin
+                        0xd85b638fce09ec4a842f1cbbb51c2c04
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3977
+                            Top =975
+                            Width =1695
+                            Height =255
+                            Name ="Label55"
+                            Caption ="Demontagedatum"
+                            GUID = Begin
+                                0xd06f811cd20ecb448618da7ca925c9d5
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =975
+                    Width =741
+                    TabIndex =27
+                    Name ="Text56"
+                    ControlSource ="DemontagedatumBreite"
+                    GUID = Begin
+                        0x106c0a641cada54bb362d02b16cbacc6
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =1308
+                    TabIndex =28
+                    Name ="Check57"
+                    ControlSource ="AbschaltgrundAnzeigen"
+                    GUID = Begin
+                        0x2b323b654594dc4188fb5b89b76329a6
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3975
+                            Top =1308
+                            Width =1695
+                            Height =255
+                            Name ="Label58"
+                            Caption ="Abschaltgrund"
+                            GUID = Begin
+                                0x7355758e75c68f4c81863aa59646210e
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =1305
+                    Width =741
+                    TabIndex =29
+                    Name ="Text59"
+                    ControlSource ="AbschaltgrundBreite"
+                    GUID = Begin
+                        0xecda7898cfd53f41bc04fbcdaef6a537
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =1648
+                    TabIndex =30
+                    Name ="Check60"
+                    ControlSource ="BemerkungenAnzeigen"
+                    GUID = Begin
+                        0x78da10fb89b6744b9922d628dc8f96cc
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3984
+                            Top =1607
+                            Width =1695
+                            Height =255
+                            Name ="Label61"
+                            Caption ="Bemerkungen"
+                            GUID = Begin
+                                0xb1733adb2b28c4458a486de5b66c7a09
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =1605
+                    Width =741
+                    TabIndex =31
+                    Name ="Text62"
+                    ControlSource ="BemerkungenBreite"
+                    GUID = Begin
+                        0x7d32f0ad81b0ec41b558a262ecf02d88
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =1989
+                    TabIndex =32
+                    Name ="Check63"
+                    ControlSource ="AnodencoatingAnzeigen"
+                    GUID = Begin
+                        0x6f709d8f775f544d8b4117f840153f71
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3984
+                            Top =1937
+                            Width =1695
+                            Height =255
+                            Name ="Label64"
+                            Caption ="Anodencoating"
+                            GUID = Begin
+                                0x7308e94983392249b459cc785db16462
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =1935
+                    Width =741
+                    TabIndex =33
+                    Name ="Text65"
+                    ControlSource ="AnodencoatingBreite"
+                    GUID = Begin
+                        0x935421ea800a274c801e033da88666b8
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =2329
+                    TabIndex =34
+                    Name ="Check66"
+                    ControlSource ="AnodenelektrodeAnzeigen"
+                    GUID = Begin
+                        0x91bf7802b0a9844abe9320a421afc4df
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3984
+                            Top =2267
+                            Width =1695
+                            Height =255
+                            Name ="Label67"
+                            Caption ="Anodenelektrode"
+                            GUID = Begin
+                                0x765994247393ea4da00f804389a82e39
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =2265
+                    Width =741
+                    TabIndex =35
+                    Name ="Text68"
+                    ControlSource ="AnodenelektrodeBreite"
+                    GUID = Begin
+                        0x03cf6a84424f4b458280aaaf7cedb7db
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =2669
+                    TabIndex =36
+                    Name ="Check69"
+                    ControlSource ="AnodenwanneAnzeigen"
+                    GUID = Begin
+                        0x01db682d5529134384c8dfde9ec447ec
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3984
+                            Top =2612
+                            Width =1695
+                            Height =255
+                            Name ="Label70"
+                            Caption ="Anodenwanne"
+                            GUID = Begin
+                                0xff0ce05118577246a2fd23f45dd6616a
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =2610
+                    Width =741
+                    TabIndex =37
+                    Name ="Text71"
+                    ControlSource ="AnodenwanneBreite"
+                    GUID = Begin
+                        0x4e069c9351fa614ebe4d1b8f4a72c174
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =3009
+                    TabIndex =38
+                    Name ="Check72"
+                    ControlSource ="KathodencoatingAnzeigen"
+                    GUID = Begin
+                        0xf258a23e5eddb449a5ca29565c44f467
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3984
+                            Top =2957
+                            Width =1695
+                            Height =255
+                            Name ="Label73"
+                            Caption ="Kathodencoating"
+                            GUID = Begin
+                                0x04af6bfc4decd245866594a8ef1c068f
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =2955
+                    Width =741
+                    TabIndex =39
+                    Name ="Text74"
+                    ControlSource ="KathodencoatingBreite"
+                    GUID = Begin
+                        0x16fc092ae62d32458e1de6cf8612b3ac
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =3349
+                    TabIndex =40
+                    Name ="Check75"
+                    ControlSource ="KathodenelektrodeAnzeigen"
+                    GUID = Begin
+                        0xb525ebf3ccdbdd48b7321e0ac0854d0d
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3984
+                            Top =3302
+                            Width =1695
+                            Height =255
+                            Name ="Label76"
+                            Caption ="Kathodenelektrode"
+                            GUID = Begin
+                                0x1565199769b9984ea540ec957b3210fd
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =3300
+                    Width =741
+                    TabIndex =41
+                    Name ="Text77"
+                    ControlSource ="KathodenelektrodeBreite"
+                    GUID = Begin
+                        0xfa8c6218fd1d2148a02f6eb2be7dc697
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =3689
+                    TabIndex =42
+                    Name ="Check78"
+                    ControlSource ="KathodenwanneAnzeigen"
+                    GUID = Begin
+                        0x4e732865be50804fabfe5f5eebf53e39
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3984
+                            Top =3632
+                            Width =1695
+                            Height =255
+                            Name ="Label79"
+                            Caption ="Kathodenwanne"
+                            GUID = Begin
+                                0xb7a5dd8975a15c4c8511183e0d3bead7
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =3630
+                    Width =741
+                    TabIndex =43
+                    Name ="Text80"
+                    ControlSource ="KathodenwanneBreite"
+                    GUID = Begin
+                        0xb3112963e86ca94798c472db602f78cf
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =5959
+                    Top =3973
+                    TabIndex =44
+                    Name ="Check81"
+                    ControlSource ="MembranAnzeigen"
+                    GUID = Begin
+                        0xe262a4f4869f9a4a8b6fae2f2999bbf4
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3984
+                            Top =3977
+                            Width =1695
+                            Height =255
+                            Name ="Label82"
+                            Caption ="Membran"
+                            GUID = Begin
+                                0x300e60a9939f2245ac803bf2cdfec759
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =3975
+                    Width =741
+                    TabIndex =45
+                    Name ="Text83"
+                    ControlSource ="MembranBreite"
+                    GUID = Begin
+                        0x26681ba18880384d90ace2cd0e237431
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =6590
+                    Top =4320
+                    Width =741
+                    TabIndex =46
+                    Name ="Text86"
+                    ControlSource ="Feldabstand"
+                    GUID = Begin
+                        0xfad605863950f2429b0b9aa6e7f4c168
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3982
+                    Top =4320
+                    Width =1710
+                    Height =225
+                    Name ="Label87"
+                    Caption ="Feldabstand"
+                    GUID = Begin
+                        0xf293d985b3dcdd4a8ebd235ea42e80af
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =85
+                    Left =2260
+                    Top =3007
+                    TabIndex =47
+                    Name ="Check88"
+                    ControlSource ="MembrantypAnzeigen"
+                    GUID = Begin
+                        0xd2fbaec1171b8c47a601be8c8d68f800
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =285
+                            Top =2955
+                            Width =1695
+                            Height =255
+                            Name ="Label89"
+                            Caption ="Membrantyp"
+                            GUID = Begin
+                                0x5acdd5b1ca3b734da2c11d84947ce7cc
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =2898
+                    Top =2955
+                    Width =741
+                    TabIndex =48
+                    Name ="Text90"
+                    ControlSource ="MembrantypBreite"
+                    GUID = Begin
+                        0x822d90a92eea124984985af9ccffdb47
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            Name ="Formularfuß"
+            GUID = Begin
+                0xe58bb0530be9434eaf8fe6d92d3ea58d
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    If GetIDGewSprache() = 1 Then
+        Label14.Caption = "Anzeigen"
+        Label15.Caption = "Breite"
+        Label11.Caption = "Element-Nr."
+        Label17.Caption = "Elektrolyseur"
+        Label20.Caption = "Position"
+        Label23.Caption = "Gruppe"
+        Label26.Caption = "Anode Nr."
+        Label29.Caption = "Kathode Nr."
+        Label32.Caption = "Zellengeneration"
+        Label35.Caption = "Membran-Nr."
+        Label89.Caption = "Membrantyp"
+        Label38.Caption = "Elektrodenabstand"
+        Label41.Caption = "Montagedatum"
+        Label44.Caption = "Inbetriebnahmedatum"
+        
+        Label52.Caption = "Anzeigen"
+        Label53.Caption = "Breite"
+        Label47.Caption = "Abschaltdatum"
+        Label50.Caption = "Days on line"
+        Label55.Caption = "Demontagedatum"
+        Label58.Caption = "Abschaltgrund"
+        Label61.Caption = "Bemerkungen"
+        Label64.Caption = "Anodencoating"
+        Label67.Caption = "Anodenelektrode"
+        Label70.Caption = "Anodenwanne"
+        Label73.Caption = "Kathodencoating"
+        Label76.Caption = "Kathodenelektrode"
+        Label79.Caption = "Kathodenwanne"
+        Label82.Caption = "Membran"
+        Label87.Caption = "Feldabstand"
+
+    Else
+    
+        Label14.Caption = "Display"
+        Label15.Caption = "Width"
+        Label11.Caption = "Element No."
+        Label17.Caption = "Electrolyser"
+        Label20.Caption = "Position"
+        Label23.Caption = "Group"
+        Label26.Caption = "Anode No."
+        Label29.Caption = "Cathode No."
+        Label32.Caption = "Cell generation"
+        Label35.Caption = "Membrane No."
+        Label89.Caption = "Membrane Type"
+        Label38.Caption = "Electrode Gap"
+        Label41.Caption = "Assembly Date"
+        Label44.Caption = "Commissioning Date"
+        
+        Label52.Caption = "Display"
+        Label53.Caption = "Width"
+        Label47.Caption = "Decommissioning date"
+        Label50.Caption = "Days on line"
+        Label55.Caption = "Disassembly date"
+        Label58.Caption = "Reason for decomm."
+        Label61.Caption = "Remarks"
+        Label64.Caption = "Anode Coating"
+        Label67.Caption = "Anode electrode"
+        Label70.Caption = "Anoden pan"
+        Label73.Caption = "Cathode coating"
+        Label76.Caption = "Cathode electrode"
+        Label79.Caption = "Cathode pan"
+        Label82.Caption = "Membrane"
+        Label87.Caption = "Field distance"
+        
+    End If
+
+End Sub

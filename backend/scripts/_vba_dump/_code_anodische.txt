@@ -1,0 +1,741 @@
+CodeBehindForm
+
+Attribute VB_GlobalNameSpace = False
+
+Attribute VB_Creatable = True
+
+Attribute VB_PredeclaredId = True
+
+Attribute VB_Exposed = False
+
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+
+Private Sub Befehl205_Click()
+
+    
+
+    KorrekturfaktorenAktualisieren
+
+    If Me!Rahmen302.Value = 1 And Me!Rahmen250.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEGesamtanlage"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen302.Value = 1 And Me!Rahmen250.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEGesamtanlage"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen302.Value = 2 And Me!Rahmen250.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEGesamtanlageNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen302.Value = 2 And Me!Rahmen250.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEGesamtanlageNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    End If
+
+
+
+End Sub
+
+
+
+Private Sub Befehl211_Click()
+
+    KorrekturfaktorenAktualisieren
+
+    If (Me!Rahmen280.Value = 1) And (Me!Rahmen292.Value = 1) And (Me!Rahmen274.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammCEElektrolyseur"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 1) And (Me!Rahmen292.Value = 1) And (Me!Rahmen274.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleCEElektrolyseur"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 1) And (Me!Rahmen292.Value = 3) And (Me!Rahmen274.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammCeMehrereElektrolyseure"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 1) And (Me!Rahmen292.Value = 3) And (Me!Rahmen274.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleCeMehrereElektrolyseure"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 1) And (Me!Rahmen292.Value = 2) And (Me!Rahmen274.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammCeAlleElektrolyseure"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 1) And (Me!Rahmen292.Value = 2) And (Me!Rahmen274.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleCeAlleElektrolyseure"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 2) And (Me!Rahmen292.Value = 1) And (Me!Rahmen274.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammCEElektrolyseurNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 2) And (Me!Rahmen292.Value = 1) And (Me!Rahmen274.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleCEElektrolyseurNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 2) And (Me!Rahmen292.Value = 3) And (Me!Rahmen274.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammCeMehrereElektrolyseureNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 2) And (Me!Rahmen292.Value = 3) And (Me!Rahmen274.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleCeMehrereElektrolyseureNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 2) And (Me!Rahmen292.Value = 2) And (Me!Rahmen274.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammCeAlleElektrolyseureNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf (Me!Rahmen280.Value = 2) And (Me!Rahmen292.Value = 2) And (Me!Rahmen274.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleCeAlleElektrolyseureNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    End If
+
+End Sub
+
+
+
+
+
+Private Sub Befehl217_Click()
+
+    DoCmd.OpenForm "frmTabelleEingabeCEElektrolyseurNaOH"
+
+    DoCmd.Close acForm, "Anodische Bilanz"
+
+    
+
+End Sub
+
+
+
+Private Sub Befehl225_Click()
+
+    KorrekturfaktorenAktualisieren
+
+    If Me!Rahmen308.Value = 1 And Me!Rahmen286.Value = 1 And Me!Rahmen268.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCETeilanlage"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen308.Value = 1 And Me!Rahmen286.Value = 1 And Me!Rahmen268.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCETeilanlage"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen308.Value = 1 And Me!Rahmen286.Value = 2 And Me!Rahmen268.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEAlleTeilanlagen"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen308.Value = 1 And Me!Rahmen286.Value = 2 And Me!Rahmen268.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEAlleTeilanlagen"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen308.Value = 2 And Me!Rahmen286.Value = 1 And Me!Rahmen268.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCETeilanlageNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen308.Value = 2 And Me!Rahmen286.Value = 1 And Me!Rahmen268.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCETeilanlageNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen308.Value = 2 And Me!Rahmen286.Value = 2 And Me!Rahmen268.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEAlleTeilanlagenNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen308.Value = 2 And Me!Rahmen286.Value = 2 And Me!Rahmen268.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEAlleTeilanlagenNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    
+
+    End If
+
+End Sub
+
+
+
+Private Sub Befehl235_Click()
+
+    KorrekturfaktorenAktualisieren
+
+    If Me!Rahmen237.Value = 1 And Me!Rahmen321.Value = 1 And Me!Rahmen256.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEGruppe"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 1 And Me!Rahmen321.Value = 1 And Me!Rahmen256.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEGruppe"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 1 And Me!Rahmen321.Value = 3 And Me!Rahmen256.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEMehrereGruppen"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 1 And Me!Rahmen321.Value = 3 And Me!Rahmen256.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEMehrereGruppen"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 1 And Me!Rahmen321.Value = 2 And Me!Rahmen256.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEAlleGruppen"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 1 And Me!Rahmen321.Value = 2 And Me!Rahmen256.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEAlleGruppen"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 2 And Me!Rahmen321.Value = 1 And Me!Rahmen256.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEGruppe2"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 2 And Me!Rahmen321.Value = 1 And Me!Rahmen256.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEGruppeNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 2 And Me!Rahmen321.Value = 3 And Me!Rahmen256.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEMehrereGruppenNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 2 And Me!Rahmen321.Value = 3 And Me!Rahmen256.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEMehrereGruppenNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 2 And Me!Rahmen321.Value = 2 And Me!Rahmen256.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEAlleGruppenNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen237.Value = 2 And Me!Rahmen321.Value = 2 And Me!Rahmen256.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEAlleGruppenNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+
+
+
+
+    End If
+
+End Sub
+
+
+
+Private Sub Befehl236_Click()
+
+    KorrekturfaktorenAktualisieren
+
+    If Me!Rahmen244.Value = 1 And Me!Rahmen331.Value = 1 And Me!Rahmen262.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEElement"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 1 And Me!Rahmen331.Value = 1 And Me!Rahmen262.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEElement"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 1 And Me!Rahmen331.Value = 3 And Me!Rahmen262.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEMehrereElemente"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 1 And Me!Rahmen331.Value = 3 And Me!Rahmen262.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEMehrereElemente"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 1 And Me!Rahmen331.Value = 2 And Me!Rahmen262.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEAlleElemente"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 1 And Me!Rahmen331.Value = 2 And Me!Rahmen262.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEAlleElemente"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 2 And Me!Rahmen331.Value = 1 And Me!Rahmen262.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEElementNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 2 And Me!Rahmen331.Value = 1 And Me!Rahmen262.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEElementNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 2 And Me!Rahmen331.Value = 3 And Me!Rahmen262.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEMehrereElementeNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 2 And Me!Rahmen331.Value = 3 And Me!Rahmen262.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEMehrereElementeNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 2 And Me!Rahmen331.Value = 2 And Me!Rahmen262.Value = 1 Then
+
+        DoCmd.OpenForm "frmDiagrammCEAlleElementeNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+    ElseIf Me!Rahmen244.Value = 2 And Me!Rahmen331.Value = 2 And Me!Rahmen262.Value = 2 Then
+
+        DoCmd.OpenForm "frmTabelleCEAlleElementeNaOH"
+
+        DoCmd.Close acForm, "Anodische Bilanz"
+
+
+
+    End If
+
+    
+
+End Sub
+
+
+
+Private Sub Befehl298_Click()
+
+
+
+    DoCmd.OpenForm "frmTabelleEingabeCETeilanlageNaOH"
+
+    DoCmd.Close acForm, "Anodische Bilanz"
+
+    
+
+End Sub
+
+
+
+Private Sub Befehl299_Click()
+
+    DoCmd.OpenForm "frmTabelleEingabeCEGruppeNaOH"
+
+    DoCmd.Close acForm, "Anodische Bilanz"
+
+End Sub
+
+
+
+Private Sub Befehl300_Click()
+
+    DoCmd.OpenForm "frmTabelleEingabeCEElementNaOH"
+
+    DoCmd.Close acForm, "Anodische Bilanz"
+
+End Sub
+
+
+
+Private Sub Befehl301_Click()
+
+    DoCmd.OpenForm "frmTabelleEingabeCEGesamtanlageNaOH"
+
+    DoCmd.Close acForm, "Anodische Bilanz"
+
+End Sub
+
+
+
+Private Sub Form_Open(Cancel As Integer)
+
+    If GetIDGewSprache() = 1 Then
+
+    
+
+        Text0.Caption = "Stromausbeute"
+
+        
+
+        Bezeichnungsfeld216.Caption = "Dateneingabe"
+
+        Bezeichnungsfeld218.Caption = "CE aus NaOH Produktion"
+
+        Befehl301.Caption = "Gesamtanlage"
+
+        Befehl298.Caption = "Teilanlagen"
+
+        Befehl217.Caption = "Elektrolyseure"
+
+        Befehl299.Caption = "Gruppen"
+
+        Befehl300.Caption = "Elemente"
+
+        
+
+        Bezeichnungsfeld203.Caption = "Gesamtanlage"
+
+        Bezeichnungsfeld303.Caption = "Basis"
+
+        Bezeichnungsfeld305.Caption = "Anod. Bil. Elektrolyseure"
+
+        Bezeichnungsfeld307.Caption = "NaOH Prod. Gesamtanlage"
+
+        Bezeichnungsfeld251.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld253.Caption = "Diagramm"
+
+        Bezeichnungsfeld255.Caption = "Tabelle"
+
+        Befehl205.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Bezeichnungsfeld219.Caption = "Teilanlagen"
+
+        Bezeichnungsfeld309.Caption = "Basis"
+
+        Bezeichnungsfeld311.Caption = "Anod. Bil. Elektrolyseure"
+
+        Bezeichnungsfeld313.Caption = "NaOH Prod. Teilanlage"
+
+        Bezeichnungsfeld287.Caption = "Berechnung für"
+
+        Bezeichnungsfeld289.Caption = "Einzelne Teilanlage"
+
+        Bezeichnungsfeld291.Caption = "Alle Teilanlagen"
+
+        Bezeichnungsfeld269.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld271.Caption = "Diagramm"
+
+        Bezeichnungsfeld273.Caption = "Tabelle"
+
+        Befehl225.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Bezeichnungsfeld147.Caption = "Elektrolyseure"
+
+        Bezeichnungsfeld281.Caption = "Basis"
+
+        Bezeichnungsfeld283.Caption = "Anod. Bil. Elektrolyseur"
+
+        Bezeichnungsfeld285.Caption = "NaOH Prod. Elektrolyseur"
+
+        Bezeichnungsfeld293.Caption = "Berechnung für"
+
+        Bezeichnungsfeld295.Caption = "Einzelnen Elektrolyseur"
+
+        Bezeichnungsfeld316.Caption = "Mehrere Elektrolyseure"
+
+        Bezeichnungsfeld297.Caption = "Alle Elektrolyseure"
+
+        Bezeichnungsfeld275.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld277.Caption = "Diagramm"
+
+        Bezeichnungsfeld279.Caption = "Tabelle"
+
+        Befehl211.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Bezeichnungsfeld230.Caption = "Gruppen"
+
+        Bezeichnungsfeld238.Caption = "Basis"
+
+        Bezeichnungsfeld241.Caption = "Anod. Bilanz Gruppe"
+
+        Bezeichnungsfeld243.Caption = "NaOH Prod. Gruppe"
+
+        Bezeichnungsfeld322.Caption = "Berechnung für"
+
+        Bezeichnungsfeld324.Caption = "Einzelne Gruppe"
+
+        Bezeichnungsfeld326.Caption = "Mehrere Gruppen"
+
+        Bezeichnungsfeld328.Caption = "Alle Gruppen"
+
+        Bezeichnungsfeld257.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld259.Caption = "Diagramm"
+
+        Bezeichnungsfeld261.Caption = "Tabelle"
+
+        Befehl235.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Bezeichnungsfeld231.Caption = "Elemente"
+
+        Bezeichnungsfeld245.Caption = "Basis"
+
+        Bezeichnungsfeld247.Caption = "Anod. Bilanz Element"
+
+        Bezeichnungsfeld249.Caption = "NaOH Prod. Element"
+
+        Bezeichnungsfeld332.Caption = "Berechnung für"
+
+        Bezeichnungsfeld334.Caption = "Einzelnes Element"
+
+        Bezeichnungsfeld336.Caption = "Mehrere Elemente"
+
+        Bezeichnungsfeld338.Caption = "Alle Elemente"
+
+        Bezeichnungsfeld263.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld265.Caption = "Diagramm"
+
+        Bezeichnungsfeld267.Caption = "Tabelle"
+
+        Befehl236.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Schaltfläche29.Caption = "Hauptmenu"
+
+        
+
+    Else
+
+        Text0.Caption = "Current Efficiency"
+
+        
+
+        Bezeichnungsfeld216.Caption = "Data Input"
+
+        Bezeichnungsfeld218.Caption = "CE from NaOH Production"
+
+        Befehl301.Caption = "Total Plant"
+
+        Befehl298.Caption = "Trains"
+
+        Befehl217.Caption = "Electrolyzers"
+
+        Befehl299.Caption = "Groups"
+
+        Befehl300.Caption = "Elements"
+
+        
+
+        Bezeichnungsfeld203.Caption = "Total Plant"
+
+        Bezeichnungsfeld251.Caption = "Results as"
+
+        Bezeichnungsfeld303.Caption = "Basis"
+
+        Bezeichnungsfeld305.Caption = "Anod. Bal. Electrolyzers"
+
+        Bezeichnungsfeld307.Caption = "NaOH Prod. Tot. Plant"
+
+        Bezeichnungsfeld253.Caption = "Chart"
+
+        Bezeichnungsfeld255.Caption = "Table"
+
+        Befehl205.Caption = "Display Results"
+
+        
+
+        Bezeichnungsfeld219.Caption = "Train"
+
+        Bezeichnungsfeld309.Caption = "Basis"
+
+        Bezeichnungsfeld311.Caption = "Anod. Bal. Electrolyzers"
+
+        Bezeichnungsfeld313.Caption = "NaOH Prod. Train"
+
+        Bezeichnungsfeld287.Caption = "Calculation for"
+
+        Bezeichnungsfeld289.Caption = "Individual Train"
+
+        Bezeichnungsfeld291.Caption = "All Trains"
+
+        Bezeichnungsfeld269.Caption = "Results as"
+
+        Bezeichnungsfeld271.Caption = "Chart"
+
+        Bezeichnungsfeld273.Caption = "Table"
+
+        Befehl225.Caption = "Display Results"
+
+        
+
+        Bezeichnungsfeld147.Caption = "Electrolyzers"
+
+        Bezeichnungsfeld281.Caption = "Basis"
+
+        Bezeichnungsfeld283.Caption = "Anod. Bal. Electrolyzer"
+
+        Bezeichnungsfeld285.Caption = "NaOH Prod. Electrolyzer"
+
+        Bezeichnungsfeld293.Caption = "Calculation for"
+
+        Bezeichnungsfeld295.Caption = "Individual Electrolyzer"
+
+        Bezeichnungsfeld316.Caption = "Various Elektrolyseurs"
+
+        Bezeichnungsfeld297.Caption = "All Electrolyzers"
+
+        Bezeichnungsfeld275.Caption = "Results as"
+
+        Bezeichnungsfeld277.Caption = "Chart"
+
+        Bezeichnungsfeld279.Caption = "Table"
+
+        Befehl211.Caption = "Display Results"
+
+        
+
+        Bezeichnungsfeld230.Caption = "Groups"
+
+        Bezeichnungsfeld238.Caption = "Basis"
+
+        Bezeichnungsfeld241.Caption = "Anod. Balance Group"
+
+        Bezeichnungsfeld243.Caption = "NaOH Prod. Group"
+
+        Bezeichnungsfeld322.Caption = "Calculation for"
+
+        Bezeichnungsfeld324.Caption = "Individual Group"
+
+        Bezeichnungsfeld326.Caption = "Several Groups"
+
+        Bezeichnungsfeld328.Caption = "All Groups"
+
+        Bezeichnungsfeld257.Caption = "Results as"
+
+        Bezeichnungsfeld259.Caption = "Chart"
+
+        Bezeichnungsfeld261.Caption = "Table"
+
+        Befehl235.Caption = "Display Results"
+
+        
+
+        Bezeichnungsfeld231.Caption = "Elements"
+
+        Bezeichnungsfeld245.Caption = "Basis"
+
+        Bezeichnungsfeld247.Caption = "Anod. Balance Element"
+
+        Bezeichnungsfeld249.Caption = "NaOH Prod. Element"
+
+        Bezeichnungsfeld332.Caption = "Calculation for"
+
+        Bezeichnungsfeld334.Caption = "Individual Element"
+
+        Bezeichnungsfeld336.Caption = "Several Elements"
+
+        Bezeichnungsfeld338.Caption = "All Elements"
+
+        Bezeichnungsfeld263.Caption = "Results as"
+
+        Bezeichnungsfeld265.Caption = "Chart"
+
+        Bezeichnungsfeld267.Caption = "Table"
+
+        Befehl236.Caption = "Display Results"
+
+        
+
+        Schaltfläche29.Caption = "Main Menu"
+
+        
+
+    End If
+
+
+
+End Sub
+
+
+
+Private Sub Befehl184_Click()
+
+End Sub
+
+
+
+Private Sub Schaltfläche29_Click()
+
+    DoCmd.OpenForm "Header"
+
+    DoCmd.Close acForm, "Anodische Bilanz"
+
+End Sub

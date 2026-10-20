@@ -1,0 +1,253 @@
+Version =19
+VersionRequired =19
+Checksum =-122992724
+Begin Form
+    AllowFilters = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    OrderByOn = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    RecordLocks =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =26003
+    DatasheetFontHeight =10
+    ItemSuffix =32
+    Top =390
+    Right =13635
+    Bottom =8640
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x7cd6846e9ebbe240
+    End
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000642f0000ae1b000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x4850203530303000000000000000000000000000000000000000000000000000 ,
+        0x000464009400de00031f000002000900f604f802000001000201fcff02000100 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000020000000000000000000000000000002b00000088effbfd01000100 ,
+        0x02000100000001000000000000002e00000000000e0084030000040087007a02 ,
+        0x7a001300730407000000b00401000000b10402000000b4040b000100d6040e00 ,
+        0x0100b20404000000700405000100d70402010000d80403010000da0404010000 ,
+        0xd90405010000db0406010000dc0407010000dd0408010000de0409010000df04 ,
+        0x0a010000e0040b010000e1040c010000e2040d01000000000000000000000000 ,
+        0x0900070001000700010064000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000002b00000000000000
+    End
+    PrtDevNames = Begin
+        0x080011001900010057494e53504f4f4c0048502035303030005c5c53484c4e30 ,
+        0x325c4850353030305249000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin TextBox
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1633
+            BackColor =12632256
+            Name ="Formularkopf"
+            Begin
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =115
+                    Top =170
+                    Width =7822
+                    Height =627
+                    FontSize =14
+                    FontWeight =700
+                    Name ="Bezeichnungsfeld19"
+                    Caption ="Standardized Voltages Single Elements"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =120
+                    Top =570
+                    Width =7815
+                    Height =210
+                    Name ="Bezeichnungsfeld22"
+                    Caption ="Basis: Single Element Voltage Measurement; t An, t Cath, c NaOH Electrolyzer "
+                End
+                Begin Subform
+                    Enabled = NotDefault
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =115
+                    Top =907
+                    Width =7815
+                    Height =360
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10091
+                    Top =737
+                    Width =1926
+                    Height =576
+                    FontSize =10
+                    FontWeight =600
+                    TabIndex =1
+                    Name ="Befehl11"
+                    Caption ="Standardized\015\012Voltage"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10091
+                    Top =113
+                    Width =1926
+                    Height =576
+                    FontSize =10
+                    FontWeight =600
+                    TabIndex =2
+                    Name ="Befehl25"
+                    Caption ="Update Display"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =3
+                    Left =8050
+                    Top =170
+                    Width =1875
+                    Height =1095
+                    TabIndex =3
+                    Name ="subfrmDatumVerteilungElektrolyseurUN"
+                    SourceObject ="Form.subfrmDatumVerteilungElektrolyseurUN"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =-2147483633
+            Name ="Seitenkopf"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7086
+            BackColor =12632256
+            Name ="Detailbereich"
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =113
+                    Top =113
+                    Width =12345
+                    Height =6810
+                    Name ="subfrmDiagrammVerteilungUN"
+                    SourceObject ="Form.subfrmDiagrammVerteilungUN"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =-2147483633
+            Name ="Seitenfuß"
+        End
+        Begin FormFooter
+            CanGrow = NotDefault
+            Height =1133
+            BackColor =12632256
+            Name ="Formularfuß"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Befehl11_Click()
+    DoCmd.OpenForm "frmMenuStatistik"
+    DoCmd.Close acForm, "frmDiagrammVerteilungUN"
+End Sub
+
+Private Sub Befehl25_Click()
+    'DoCmd.OpenQuery "qryVerteilungUN"
+    KorrekturfaktorenAktualisieren
+    subfrmDiagrammVerteilungUN.Requery
+    subfrmDiagrammVerteilungUN!OLEUngebunden0.Requery
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    If GetIDGewSprache() = 1 Then
+        Bezeichnungsfeld19.Caption = "Einzelelementspannungen Elektrolyseur"
+        Bezeichnungsfeld22.Caption = "Basis: Tabelle alle Elemente pro Elektrolyseur"
+        Befehl25.Caption = "Anzeige aktualisieren"
+        Befehl11.Caption = "Statistik"
+    Else
+        Bezeichnungsfeld19.Caption = "Single Element Voltages Electrolyzer"
+        Bezeichnungsfeld22.Caption = "Basis: Table all Elements per Electrolyzer"
+        Befehl25.Caption = "Update Display"
+        Befehl11.Caption = "Statistics"
+    End If
+ 
+End Sub

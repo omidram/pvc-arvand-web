@@ -1,0 +1,4 @@
+SELECT DISTINCTROW Count(qryAnodenrecoatingDOL2.[Ausschalt Datum]) AS ElementePassiv, Count(qryAnodenrecoatingDOL2.[Membran Nr]) AS ElementeGesamt, Count([Einschalt Datum])-Count([Ausschalt Datum]) AS ElementeAktiv, Sum(IIf([Ausschalt Datum],[Ausschalt Datum]-[Einschalt Datum],0)) AS PassiveDOL, Sum(IIf(IsNull([Ausschalt Datum]),Date()-[Einschalt Datum],0)) AS AktiveDOL, Sum(IIf([Ausschalt Datum],[Ausschalt Datum]-[Einschalt Datum],0)+IIf(IsNull([Ausschalt Datum]),Date()-[Einschalt Datum],0)) AS GesamtDOL, qryAnodenrecoatingDOL2.[Anoden Nr]
+FROM qryAnodenrecoatingDOL2
+GROUP BY qryAnodenrecoatingDOL2.[Anoden Nr]
+HAVING (((Sum(IIf([Ausschalt Datum],[Ausschalt Datum]-[Einschalt Datum],0)+IIf(IsNull([Ausschalt Datum]),Date()-[Einschalt Datum],0)))>(Select SucheAnodenrecoating From tblGewDaten)));

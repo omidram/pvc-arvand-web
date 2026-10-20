@@ -1,0 +1,845 @@
+Version =19
+VersionRequired =19
+Checksum =-123706012
+Begin Form
+    PopUp = NotDefault
+    Modal = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    DataEntry = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    BorderStyle =3
+    GridX =5
+    GridY =5
+    Width =6689
+    ItemSuffix =233
+    Left =4290
+    Top =750
+    Right =10980
+    Bottom =9120
+    RecSrcDt = Begin
+        0x757b225d5488e140
+    End
+    OnOpen ="[Event Procedure]"
+    OnClose ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x010400059c00340203ff8007010009009a0b34086400010001002c0102000100 ,
+        0x2c01010000004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c0027000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =8390
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0xd8abddd06bee6d43a777089e80f0cd5a
+            End
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =3992
+                    Top =7590
+                    Width =2034
+                    Height =561
+                    FontSize =8
+                    FontWeight =400
+                    Name ="Schaltfläche29"
+                    Caption ="Anolyte Analysis"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Microsoft Sans Serif"
+                    GUID = Begin
+                        0xaa392acf1116284da1f555783e976e3b
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =3
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =570
+                    Top =3180
+                    Width =5567
+                    Height =4206
+                    Name ="Rechteck129"
+                    GUID = Begin
+                        0x1ba650022af7b54e939560c58b3aafc2
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =690
+                    Top =7595
+                    Width =2256
+                    Height =576
+                    FontSize =8
+                    FontWeight =400
+                    TabIndex =1
+                    Name ="Befehl184"
+                    Caption ="Read Data from File"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Microsoft Sans Serif"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0xff2f618055f1b64ca936413b4720668b
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    SpecialEffect =0
+                    Left =685
+                    Top =5679
+                    Width =5325
+                    Height =1560
+                    TabIndex =2
+                    Name ="subfrmInfoEingeleseneAnalysen"
+                    SourceObject ="Form.subfrmInfoEingeleseneAnalysen"
+                    GUID = Begin
+                        0x053f27e172c11b45bef012b830659cab
+                    End
+                End
+                Begin Label
+                    OverlapFlags =223
+                    Left =683
+                    Top =4435
+                    Width =2494
+                    Height =227
+                    Name ="Bezeichnungsfeld204"
+                    Caption ="Eingelesene Daten"
+                    GUID = Begin
+                        0x9f8eb0c321c61c4f8f3b3d53f564f260
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    SpecialEffect =0
+                    Left =685
+                    Top =3525
+                    Width =5325
+                    Height =1800
+                    TabIndex =3
+                    Name ="subfrmInfoDateienAnalysen"
+                    SourceObject ="Form.subfrmInfoDateienAnalysen"
+                    GUID = Begin
+                        0xcc7337425ff4104bbfd10566ffcbd7f9
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =223
+                            Left =685
+                            Top =3285
+                            Width =2145
+                            Height =240
+                            Name ="subfrmInfoDateienUElementeBeschriftung"
+                            Caption ="Gefundene Dateien"
+                            GUID = Begin
+                                0xa2962b0c3339214cb408f52c4d00d4af
+                            End
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =3
+                    Left =570
+                    Top =120
+                    Width =5550
+                    Height =1470
+                    TabIndex =4
+                    Name ="subfrmVerzeichnisAnalysen"
+                    SourceObject ="Form.subfrmVerzeichnisAnalysen"
+                    GUID = Begin
+                        0x2942bb4e123d324ab650c8501c8d6d45
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    Left =570
+                    Top =1815
+                    Width =2841
+                    Height =1273
+                    TabIndex =5
+                    Name ="Frame224"
+                    DefaultValue ="1"
+                    GUID = Begin
+                        0xa0d9dd396db7ae4d9a3fa72af53e2ea2
+                    End
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =690
+                            Top =1695
+                            Width =1800
+                            Height =240
+                            BackColor =12632256
+                            Name ="Label225"
+                            Caption ="Analysen einlesen für"
+                            GUID = Begin
+                                0x6dbffef98d3b184a928eb011f20f5623
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =87
+                            Left =756
+                            Top =2053
+                            OptionValue =1
+                            Name ="Option227"
+                            GUID = Begin
+                                0x25b2c1d6861ffc43a35a19a05d3f9573
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =986
+                                    Top =2025
+                                    Width =1500
+                                    Height =240
+                                    Name ="Label228"
+                                    Caption ="Reinstsole"
+                                    GUID = Begin
+                                        0x42efb6639f042c4f8a1a8ae6c9dc2bf3
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =87
+                            Left =756
+                            Top =2383
+                            OptionValue =2
+                            Name ="Option229"
+                            GUID = Begin
+                                0x1ef0dd3e71d34040a027a87518abcdb6
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =986
+                                    Top =2355
+                                    Width =1500
+                                    Height =240
+                                    Name ="Label230"
+                                    Caption ="Anolyt"
+                                    GUID = Begin
+                                        0xb9c8a874aa8f1d489ad2de5a32842181
+                                    End
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =87
+                            Left =756
+                            Top =2713
+                            OptionValue =3
+                            Name ="Option231"
+                            GUID = Begin
+                                0xc56a36638708804aad1bc7d999a875fd
+                            End
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =986
+                                    Top =2685
+                                    Width =1500
+                                    Height =240
+                                    Name ="Label232"
+                                    Caption ="Chlor"
+                                    GUID = Begin
+                                        0x254fa7b8bf807943887832b35f029c0f
+                                    End
+                                End
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+Private Sub Form_Close()
+    Dim dbs As Database
+    Set dbs = CurrentDb
+    dbs.Execute (" Delete * From tblInfoEingeleseneAnalysen ")
+    dbs.Execute (" Delete * From tblInfoDateienAnalysen ")
+    'dbs.Execute (" Delete * From tblInfoAnalysenUElement ")
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Me.Caption = "Analysen aus Datei einlesen"
+        Label225.Caption = "Einzulesende Analysen"
+        Label228.Caption = "Reinstsole"
+        Label230.Caption = "Anolyt"
+        Label232.Caption = " Chlor"
+        Befehl184.Caption = "Analysen Einlesen"
+        subfrmInfoDateienUElementeBeschriftung.Caption = "Gefundene Dateien"
+        Bezeichnungsfeld204.Caption = "Eingelesene Daten"
+        Schaltfläche29.Caption = "Beenden"
+    Else
+        Me.Caption = "Import Analyses from File"
+        Label225.Caption = "Analyses to be imported"
+        Label228.Caption = "Pure Brine"
+        Label230.Caption = "Anolyte"
+        Label232.Caption = " Chlorine"
+        Befehl184.Caption = "Import Analyses"
+        subfrmInfoDateienUElementeBeschriftung.Caption = "Files Found"
+        Bezeichnungsfeld204.Caption = "Transferred Data"
+        Schaltfläche29.Caption = "Close"
+    End If
+
+End Sub
+
+Private Sub Befehl184_Click()
+    If Frame224.Value = 1 Then
+        AnalysenReinstsoleEinlesen
+    ElseIf Frame224.Value = 2 Then
+        AnalysenAnolytEinlesen
+    ElseIf Frame224.Value = 3 Then
+        AnalysenChlorEinlesen
+    End If
+    
+End Sub
+
+
+Private Sub Schaltfläche29_Click()
+    DoCmd.Close acForm, "frmAnalysenEinlesen"
+End Sub
+Private Sub AnalysenReinstsoleEinlesen()
+    Dim db, dbs As Database
+    Dim td As TableDef
+    Dim rst1, rst2, rst3, rst4, rst5, rst6, rst7, rst8, rst9, rst10, rst11, rst12 As DAO.Recordset
+    Dim Einlesedatei As Variant
+    Dim i, neueID, AnzahlElemente, IDDateiformat As Long
+    Dim fld As DAO.Field
+    Dim GewVerzeichnisAnalysen, GewDateinameAnalysen, strDateiname As String
+    
+    
+    Set dbs = CurrentDb
+    
+    'Set rst1 = CurrentDb.OpenRecordset("Select * From tblDateinamenUElement", dbOpenDynaset)
+    'Set rst3 = CurrentDb.OpenRecordset("Select * From [Analyse Anolyt]", dbOpenDynaset)
+    'Set rst4 = CurrentDb.OpenRecordset("Select * From Normierung", dbOpenDynaset)
+    
+    'Anzahl der einzulesenden Einzelelementspannungen aus Tabelle tblGewDaten ermitteln
+    'Set rst11 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY AnzahlUElemente")
+    'AnzahlElemente = rst11!AnzahlUElemente
+    'rst11.Close
+    
+    'Sprache ermitteln
+    Set rst12 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst12!IDSprache
+    rst12.Close
+        
+    dbs.Execute (" Delete * From tblInfoEingeleseneAnalysen ")
+    dbs.Execute (" Delete * From tblInfoDateienAnalysen ")
+    subfrmInfoDateienAnalysen.Requery
+    subfrmInfoEingeleseneAnalysen.Requery
+    Set rst5 = CurrentDb.OpenRecordset("Select * From tblInfoDateienAnalysen")
+    Set rst6 = CurrentDb.OpenRecordset("Select * From tblInfoEingeleseneAnalysen")
+    
+    ' Verzeichnis für die Datei mit Analysen einlesen
+    Set rst7 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY VerzeichnisAnalysen")
+    GewVerzeichnisAnalysen = rst7!VerzeichnisAnalysen
+    GewDateinameAnalysen = rst7!DateinameAnalysenReinstsole
+    rst7.Close
+    
+    'Prüfen, ob Datei vorhanden ist
+    strDateiname = GewVerzeichnisAnalysen & "\" & GewDateinameAnalysen
+    If FileExist(strDateiname) Then
+        rst5.AddNew
+        With rst5
+            '!Elektrolyseur = rst1!Elektrolyseur
+            !Datei = strDateiname
+            '!Dateiname = rst1!Dateiname
+            '!Dateityp = rst1!Dateityp
+        End With
+        rst5.Update
+        subfrmInfoDateienAnalysen.Requery
+    End If
+        
+    If (rst5.EOF And rst5.BOF) Then
+        If GewSprache = 1 Then
+            MsgBox "Keine Dateien gefunden", vbInformation, "Hinweis"
+        Else
+            MsgBox "No files found", vbInformation, "Remark"
+        End If
+        rst5.Close
+        'rst1.Close
+        Exit Sub
+    Else
+        rst5.MoveFirst
+        'rst1.Close
+    End If
+    
+    'Einlesen der Reinstsoleanalysen aus der gefundenen Datei
+    Einlesedatei = strDateiname
+    'Debug.Print Einlesedatei
+    dbs.Execute (" Delete * From tblEingeleseneAnalysenReinstsole ")
+    DoCmd.TransferSpreadsheet acImport, acSpreadsheetTypeExcel97, "tblEingeleseneAnalysenReinstsole", Einlesedatei, True
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblEingeleseneAnalysenReinstsole Where Description = 'Puurpekel stroomefficiëntie' ", dbOpenDynaset)
+        
+    If rst2.BOF And rst2.EOF Then
+        Exit Sub
+    End If
+        
+    rst2.MoveFirst
+        
+    Do Until rst2.EOF
+        'Vor Einlesen prüfen ob Daten bereits vorhanden sind
+        Set rst8 = CurrentDb.OpenRecordset(" SELECT * FROM [Analyse pure brine] WHERE" & _
+        "((([Analyse pure brine].Elektrolyseur)='" & rst2!Klantref & "')" & _
+        "AND (([Analyse pure brine].Datum)=" & Format$(CDate(rst2!Datum), "\#m\/d\/yy\#") & ")" & _
+        ") ")
+
+        '  Set rst3 = CurrentDb.OpenRecordset(" SELECT * FROM tblAnodeninstandhaltung WHERE" & _
+        '  "((([tblAnodeninstandhaltung!Anoden Nr])='" & rst2![Anoden Nr] & "')" & _
+        '  "AND ((tblAnodeninstandhaltung!Versanddatum)=" & Format$(CDate(rst2!Versanddatum), "\#m\/d\/yy\#") & ")" & _
+        '   ") ")
+
+
+        If Not (rst8.BOF And rst8.EOF) Then
+        '    If GewSprache = 1 Then
+        '        MsgBox "Die Daten für Elektrolyseur " & rst5!Elektrolyseur & " vom " & rst2!Datum & " um " & _
+        '        rst2!Zeit & " sind bereits vorhanden." & vbCrLf & vbCrLf & _
+        '        "Diese Daten werden nicht eingelesen.", vbInformation, "Hinweis"
+        '    Else
+        '        MsgBox "Data for electrolyser " & rst5!Elektrolyseur & " from " & rst2!Datum & " at " & _
+        '        rst2!Zeit & " already existing." & vbCrLf & vbCrLf & _
+        '        "These data will not be transferred.", vbInformation, "Remark"
+        '    End If
+        Else
+            'Datensatz in Tabelle Analyse Anolyt anlegen
+            With rst8
+                .AddNew
+                !Elektrolyseur = rst2!Klantref
+                !Datum = rst2!Datum
+                '!Zeit = rst2!Zeit
+                ![NaClO3 Pb] = rst2![NaClO3(g/l)]
+                ![Na2SO4 Pb] = rst2![Na2SO4(g/l)]
+                ![NaOCl Pb] = rst2![HOCL(mg/l)] / 1000
+                ![HCl Pb] = rst2![HCl(mg/l)] / 1000
+                .Update
+            End With
+            
+            
+            'Datensatz in Infotabelle für eingelesene Analysen anlegen
+            With rst6
+                .AddNew
+                !Elektrolyseur = rst2!Klantref
+                !Datum = rst2!Datum
+                '!Zeit = rst2!Zeit
+                .Update
+            End With
+            
+        End If
+        subfrmInfoEingeleseneAnalysen.Requery
+        rst8.Close
+        rst2.MoveNext
+    Loop
+    rst2.Close
+    
+    If GewSprache = 1 Then
+        MsgBox "Einlesen der Reinstsoleanalysen abgeschlossen."
+    Else
+        MsgBox "Reading of pure brine analyses from file completed."
+    End If
+End Sub
+
+Private Sub AnalysenAnolytEinlesen()
+    Dim db, dbs As Database
+    Dim td As TableDef
+    Dim rst1, rst2, rst3, rst4, rst5, rst6, rst7, rst8, rst9, rst10, rst11, rst12 As DAO.Recordset
+    Dim Einlesedatei As Variant
+    Dim i, neueID, AnzahlElemente, IDDateiformat As Long
+    Dim fld As DAO.Field
+    Dim GewVerzeichnisAnalysen, GewDateinameAnalysen, strDateiname As String
+    
+    
+    Set dbs = CurrentDb
+    
+    'Set rst1 = CurrentDb.OpenRecordset("Select * From tblDateinamenUElement", dbOpenDynaset)
+    'Set rst3 = CurrentDb.OpenRecordset("Select * From [Analyse Anolyt]", dbOpenDynaset)
+    'Set rst4 = CurrentDb.OpenRecordset("Select * From Normierung", dbOpenDynaset)
+    
+    'Anzahl der einzulesenden Einzelelementspannungen aus Tabelle tblGewDaten ermitteln
+    'Set rst11 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY AnzahlUElemente")
+    'AnzahlElemente = rst11!AnzahlUElemente
+    'rst11.Close
+    
+    'Sprache ermitteln
+    Set rst12 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst12!IDSprache
+    rst12.Close
+        
+    dbs.Execute (" Delete * From tblInfoEingeleseneAnalysen ")
+    dbs.Execute (" Delete * From tblInfoDateienAnalysen ")
+    subfrmInfoDateienAnalysen.Requery
+    subfrmInfoEingeleseneAnalysen.Requery
+    Set rst5 = CurrentDb.OpenRecordset("Select * From tblInfoDateienAnalysen")
+    Set rst6 = CurrentDb.OpenRecordset("Select * From tblInfoEingeleseneAnalysen")
+    
+    ' Verzeichnis für die Datei mit Analysen einlesen
+    Set rst7 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY VerzeichnisAnalysen")
+    GewVerzeichnisAnalysen = rst7!VerzeichnisAnalysen
+    GewDateinameAnalysen = rst7!DateinameAnalysenAnolyt
+    rst7.Close
+    
+    'Prüfen, ob Datei vorhanden ist
+
+        strDateiname = GewVerzeichnisAnalysen & "\" & GewDateinameAnalysen
+        If FileExist(strDateiname) Then
+            rst5.AddNew
+            With rst5
+                '!Elektrolyseur = rst1!Elektrolyseur
+                !Datei = strDateiname
+                '!Dateiname = rst1!Dateiname
+                '!Dateityp = rst1!Dateityp
+            End With
+            rst5.Update
+            subfrmInfoDateienAnalysen.Requery
+        End If
+        
+
+    If (rst5.EOF And rst5.BOF) Then
+        If GewSprache = 1 Then
+            MsgBox "Keine Dateien gefunden", vbInformation, "Hinweis"
+        Else
+            MsgBox "No files found", vbInformation, "Remark"
+        End If
+        rst5.Close
+        'rst1.Close
+        Exit Sub
+    Else
+        rst5.MoveFirst
+        'rst1.Close
+    End If
+    
+    'Einlesen der Anolytanalysen aus der gefundenen Datei
+   
+   
+    
+    Einlesedatei = strDateiname
+    'Debug.Print Einlesedatei
+    dbs.Execute (" Delete * From tblEingeleseneAnalysenAnolyt ")
+    DoCmd.TransferSpreadsheet acImport, acSpreadsheetTypeExcel97, "tblEingeleseneAnalysenAnolyt", Einlesedatei, True
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblEingeleseneAnalysenAnolyt Where Description = 'Anoliet (SCA 6601)' ", dbOpenDynaset)
+        
+    If rst2.BOF And rst2.EOF Then
+        Exit Sub
+    End If
+        
+    rst2.MoveFirst
+        
+    Do Until rst2.EOF
+        'Vor Einlesen prüfen ob Daten bereits vorhanden sind
+        Set rst8 = CurrentDb.OpenRecordset(" SELECT * FROM [Analyse Anolyt] WHERE" & _
+        "((([Analyse Anolyt].Elektrolyseur)='" & rst2!Klantref & "')" & _
+        "AND (([Analyse Anolyt].Datum)=" & Format$(CDate(rst2!Datum), "\#m\/d\/yy\#") & ")" & _
+        ") ")
+
+        '  Set rst3 = CurrentDb.OpenRecordset(" SELECT * FROM tblAnodeninstandhaltung WHERE" & _
+        '  "((([tblAnodeninstandhaltung!Anoden Nr])='" & rst2![Anoden Nr] & "')" & _
+        '  "AND ((tblAnodeninstandhaltung!Versanddatum)=" & Format$(CDate(rst2!Versanddatum), "\#m\/d\/yy\#") & ")" & _
+        '   ") ")
+
+
+        If Not (rst8.BOF And rst8.EOF) Then
+        '    If GewSprache = 1 Then
+        '        MsgBox "Die Daten für Elektrolyseur " & rst5!Elektrolyseur & " vom " & rst2!Datum & " um " & _
+        '        rst2!Zeit & " sind bereits vorhanden." & vbCrLf & vbCrLf & _
+        '        "Diese Daten werden nicht eingelesen.", vbInformation, "Hinweis"
+        '    Else
+        '        MsgBox "Data for electrolyser " & rst5!Elektrolyseur & " from " & rst2!Datum & " at " & _
+        '        rst2!Zeit & " already existing." & vbCrLf & vbCrLf & _
+        '        "These data will not be transferred.", vbInformation, "Remark"
+        '    End If
+        Else
+            'Datensatz in Tabelle Analyse Anolyt anlegen
+            With rst8
+                .AddNew
+                !Elektrolyseur = rst2!Klantref
+                !Datum = rst2!Datum
+                '!Zeit = rst2!Zeit
+                ![NaClO3 An] = rst2![NaClO3(g/l)]
+                ![Na2SO4 An] = rst2![Na2SO4(g/l)]
+                ![NaOCl An] = rst2![HOCL(mg/l)] / 1000
+                ![HCl An] = rst2![HCl(mg/l)] / 1000
+                .Update
+            End With
+            
+            
+            'Datensatz in Infotabelle für eingelesene Analysen anlegen
+            With rst6
+                .AddNew
+                !Elektrolyseur = rst2!Klantref
+                !Datum = rst2!Datum
+                '!Zeit = rst2!Zeit
+                .Update
+            End With
+            
+        End If
+        subfrmInfoEingeleseneAnalysen.Requery
+        rst8.Close
+        rst2.MoveNext
+    Loop
+    rst2.Close
+    
+    If GewSprache = 1 Then
+        MsgBox "Einlesen der Anolytanalysen abgeschlossen."
+    Else
+        MsgBox "Reading of anolyte analyses from file completed."
+    End If
+End Sub
+
+Private Sub AnalysenChlorEinlesen()
+    Dim db, dbs As Database
+    Dim td As TableDef
+    Dim rst1, rst2, rst3, rst4, rst5, rst6, rst7, rst8, rst9, rst10, rst11, rst12 As DAO.Recordset
+    Dim Einlesedatei As Variant
+    Dim i, neueID, AnzahlElemente, IDDateiformat As Long
+    Dim fld As DAO.Field
+    Dim GewVerzeichnisAnalysen, GewDateinameAnalysen, strDateiname As String
+    
+    
+    Set dbs = CurrentDb
+    
+    'Set rst1 = CurrentDb.OpenRecordset("Select * From tblDateinamenUElement", dbOpenDynaset)
+    'Set rst3 = CurrentDb.OpenRecordset("Select * From [Analyse Anolyt]", dbOpenDynaset)
+    'Set rst4 = CurrentDb.OpenRecordset("Select * From Normierung", dbOpenDynaset)
+    
+    'Anzahl der einzulesenden Einzelelementspannungen aus Tabelle tblGewDaten ermitteln
+    'Set rst11 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY AnzahlUElemente")
+    'AnzahlElemente = rst11!AnzahlUElemente
+    'rst11.Close
+    
+    'Sprache ermitteln
+    Set rst12 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst12!IDSprache
+    rst12.Close
+        
+    dbs.Execute (" Delete * From tblInfoEingeleseneAnalysen ")
+    dbs.Execute (" Delete * From tblInfoDateienAnalysen ")
+    subfrmInfoDateienAnalysen.Requery
+    subfrmInfoEingeleseneAnalysen.Requery
+    Set rst5 = CurrentDb.OpenRecordset("Select * From tblInfoDateienAnalysen")
+    Set rst6 = CurrentDb.OpenRecordset("Select * From tblInfoEingeleseneAnalysen")
+    
+    ' Verzeichnis für die Datei mit Analysen einlesen
+    Set rst7 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY VerzeichnisAnalysen")
+    GewVerzeichnisAnalysen = rst7!VerzeichnisAnalysen
+    GewDateinameAnalysen = rst7!DateinameAnalysenChlor
+    rst7.Close
+    
+    'Prüfen, ob Datei vorhanden ist
+
+        strDateiname = GewVerzeichnisAnalysen & "\" & GewDateinameAnalysen
+        If FileExist(strDateiname) Then
+            rst5.AddNew
+            With rst5
+                '!Elektrolyseur = rst1!Elektrolyseur
+                !Datei = strDateiname
+                '!Dateiname = rst1!Dateiname
+                '!Dateityp = rst1!Dateityp
+            End With
+            rst5.Update
+            subfrmInfoDateienAnalysen.Requery
+        End If
+        
+
+    If (rst5.EOF And rst5.BOF) Then
+        If GewSprache = 1 Then
+            MsgBox "Keine Dateien gefunden", vbInformation, "Hinweis"
+        Else
+            MsgBox "No files found", vbInformation, "Remark"
+        End If
+        rst5.Close
+        'rst1.Close
+        Exit Sub
+    Else
+        rst5.MoveFirst
+        'rst1.Close
+    End If
+    
+    'Einlesen der Anolytanalysen aus der gefundenen Datei
+   
+   
+    
+    Einlesedatei = strDateiname
+    'Debug.Print Einlesedatei
+    dbs.Execute (" Delete * From tblEingeleseneAnalysenChlor ")
+    DoCmd.TransferSpreadsheet acImport, acSpreadsheetTypeExcel97, "tblEingeleseneAnalysenChlor", Einlesedatei, True
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblEingeleseneAnalysenChlor Where Description = 'Moist Chlorine' ", dbOpenDynaset)
+        
+    If rst2.BOF And rst2.EOF Then
+        Exit Sub
+    End If
+        
+    rst2.MoveFirst
+        
+    Do Until rst2.EOF
+        'Vor Einlesen prüfen ob Daten bereits vorhanden sind
+        Set rst8 = CurrentDb.OpenRecordset(" SELECT * FROM [Analyse Chlorgas] WHERE" & _
+        "((([Analyse Chlorgas].Elektrolyseur)='" & rst2!Klantref & "')" & _
+        "AND (([Analyse Chlorgas].Datum)=" & Format$(CDate(rst2!Datum), "\#m\/d\/yy\#") & ")" & _
+        ") ")
+
+        '  Set rst3 = CurrentDb.OpenRecordset(" SELECT * FROM tblAnodeninstandhaltung WHERE" & _
+        '  "((([tblAnodeninstandhaltung!Anoden Nr])='" & rst2![Anoden Nr] & "')" & _
+        '  "AND ((tblAnodeninstandhaltung!Versanddatum)=" & Format$(CDate(rst2!Versanddatum), "\#m\/d\/yy\#") & ")" & _
+        '   ") ")
+
+
+        If Not (rst8.BOF And rst8.EOF) Then
+        '    If GewSprache = 1 Then
+        '        MsgBox "Die Daten für Elektrolyseur " & rst5!Elektrolyseur & " vom " & rst2!Datum & " um " & _
+        '        rst2!Zeit & " sind bereits vorhanden." & vbCrLf & vbCrLf & _
+        '        "Diese Daten werden nicht eingelesen.", vbInformation, "Hinweis"
+        '    Else
+        '        MsgBox "Data for electrolyser " & rst5!Elektrolyseur & " from " & rst2!Datum & " at " & _
+        '        rst2!Zeit & " already existing." & vbCrLf & vbCrLf & _
+        '        "These data will not be transferred.", vbInformation, "Remark"
+        '    End If
+        Else
+            'Datensatz in Tabelle Analyse Anolyt anlegen
+            With rst8
+                .AddNew
+                !Elektrolyseur = rst2!Klantref
+                !Datum = rst2!Datum
+                '!Zeit = rst2!Zeit
+                ![Cl2 + CO2 Cl] = rst2![Cl2+CO2(Vol%)]
+                ![O2 Cl] = rst2![O2(Vol%)]
+                ![H2 Cl] = rst2![H2(Vol%)]
+                ![N2 Cl] = rst2![N2(Vol%)]
+                .Update
+            End With
+            
+            
+            'Datensatz in Infotabelle für eingelesene Analysen anlegen
+            With rst6
+                .AddNew
+                !Elektrolyseur = rst2!Klantref
+                !Datum = rst2!Datum
+                '!Zeit = rst2!Zeit
+                .Update
+            End With
+            
+        End If
+        subfrmInfoEingeleseneAnalysen.Requery
+        rst8.Close
+        rst2.MoveNext
+    Loop
+    rst2.Close
+    
+    If GewSprache = 1 Then
+        MsgBox "Einlesen der Chloranalysen abgeschlossen."
+    Else
+        MsgBox "Reading of chlorine analyses from file completed."
+    End If
+End Sub

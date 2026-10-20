@@ -1,0 +1,320 @@
+Version =19
+VersionRequired =19
+Checksum =-122992705
+Begin Form
+    PopUp = NotDefault
+    Modal = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =6009
+    ItemSuffix =118
+    Left =1365
+    Top =2400
+    Right =7410
+    Bottom =9075
+    RecSrcDt = Begin
+        0x20a5ff9a1821e340
+    End
+    RecordSource ="qryInspektionsbefunde2"
+    Caption ="Abschaltungen"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x010400059c003402033f8000010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c0027000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =453
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0x3b137c5d8481b34f9a747a45bdc1e9d6
+            End
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1020
+                    Top =113
+                    Width =4535
+                    Height =227
+                    Name ="Bezeichnungsfeld109"
+                    Caption ="Inspektionsgrund"
+                    GUID = Begin
+                        0x97c5ed8359f3254392ee5f4d0c414749
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =113
+                    Width =794
+                    Height =227
+                    Name ="Bezeichnungsfeld110"
+                    Caption ="Code"
+                    GUID = Begin
+                        0xe0310449ea26c44b97220ee92acbce98
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =453
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            GUID = Begin
+                0x71d144b5fd20d840b8019ef478d4f6b7
+            End
+            Begin
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1020
+                    Top =113
+                    Width =4535
+                    Height =227
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Inspektionsgrund"
+                    GUID = Begin
+                        0x49c39a218165d3438134e677085c1a35
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =113
+                    Width =794
+                    Height =227
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Code"
+                    GUID = Begin
+                        0x4416a65c3cb43640ba4e0e6078c97ebd
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =226
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x52bd8e4b01c1d5428a3c79dc02994e0f
+            End
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Width =794
+                    Height =226
+                    Name ="Datum"
+                    ControlSource ="Code"
+                    Format ="General Number"
+                    GUID = Begin
+                        0x3ea72dd51433594eb88514d7c8d16f74
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1020
+                    Width =4535
+                    Height =226
+                    TabIndex =1
+                    Name ="t An"
+                    ControlSource ="Inspektionsgrund"
+                    Format ="Fixed"
+                    EventProcPrefix ="t_An"
+                    GUID = Begin
+                        0x3444f7681580444b8c2ae25e696b9525
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =576
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            GUID = Begin
+                0x8919e3a88445b14281a66550c4dac6c2
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =3855
+                    Top =120
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                    GUID = Begin
+                        0xfb7ce4c08ebf5f4d8feee571353403fa
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =680
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0xef20319b7abe1f46b070de5258259f62
+            End
+            Begin
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =2145
+                    Top =225
+                    Width =1341
+                    Height =336
+                    FontSize =8
+                    FontWeight =400
+                    Name ="Befehl115"
+                    Caption ="OK"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Tahoma"
+                    GUID = Begin
+                        0xb0981a8dc1f96f42b2de86e1e7edaaad
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl115_Click()
+    'DoCmd.OpenForm "frmZellenverwaltung"
+    DoCmd.Close acForm, "frmInspektionsberichtBefunde"
+    Forms.frmInspektionsbericht.subfrmInspektionsberichtBefunde.Requery
+
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+
+    If GetIDGewSprache() = 1 Then
+  
+        Me.Caption = "Inspektionsbefunde"
+        Bezeichnungsfeld110.Caption = "Code"
+        Bezeichnungsfeld93.Caption = "Code"
+        Bezeichnungsfeld109.Caption = "Inspektionsbefund"
+        Bezeichnungsfeld68.Caption = "Inspektionsbefund"
+        
+        Befehl115.Caption = "OK"
+        
+    Else
+        
+        Me.Caption = "Findings During Inspection"
+        Bezeichnungsfeld110.Caption = "Code"
+        Bezeichnungsfeld93.Caption = "Code"
+        Bezeichnungsfeld109.Caption = "Finding"
+        Bezeichnungsfeld68.Caption = "Finding"
+        
+        Befehl115.Caption = "OK"
+        
+    End If
+
+
+End Sub

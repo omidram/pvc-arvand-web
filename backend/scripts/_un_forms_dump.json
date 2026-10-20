@@ -1,0 +1,5859 @@
+{
+  "Betriebsdaten": {
+    "ok": true,
+    "recordsource": "tblGewDaten",
+    "count": 119,
+    "controls": [
+      {
+        "name": "Rechteck17",
+        "type": 101,
+        "left": 226,
+        "top": 113,
+        "width": 14971,
+        "height": 1576
+      },
+      {
+        "name": "Schaltfläche29",
+        "type": 104,
+        "caption": "Menue",
+        "left": 12130,
+        "top": 1020,
+        "width": 1824,
+        "height": 561
+      },
+      {
+        "name": "Rechteck83",
+        "type": 101,
+        "left": 6365,
+        "top": 2388,
+        "width": 2705,
+        "height": 6342
+      },
+      {
+        "name": "Rechteck95",
+        "type": 101,
+        "left": 12490,
+        "top": 2395,
+        "width": 2705,
+        "height": 6342
+      },
+      {
+        "name": "Schaltfläche98",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 6576,
+        "top": 7937,
+        "width": 2271,
+        "height": 576
+      },
+      {
+        "name": "Rechteck110",
+        "type": 101,
+        "left": 9411,
+        "top": 2388,
+        "width": 2720,
+        "height": 6342
+      },
+      {
+        "name": "Bezeichnungsfeld111",
+        "type": 100,
+        "caption": "Groups",
+        "left": 9411,
+        "top": 1927,
+        "width": 2730,
+        "height": 345
+      },
+      {
+        "name": "Befehl112",
+        "type": 104,
+        "caption": "Group selected by electrolyser a. date",
+        "left": 11338,
+        "top": 9750,
+        "width": 2046,
+        "height": 576
+      },
+      {
+        "name": "Text84",
+        "type": 100,
+        "caption": "Electrolyzers\r\n ",
+        "left": 6349,
+        "top": 1927,
+        "width": 2730,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld115",
+        "type": 100,
+        "caption": "Elements",
+        "left": 12472,
+        "top": 1927,
+        "width": 2730,
+        "height": 345
+      },
+      {
+        "name": "Befehl129",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 9637,
+        "top": 7937,
+        "width": 2271,
+        "height": 576
+      },
+      {
+        "name": "subfrmStdVoltage2",
+        "type": 112,
+        "sourceobject": "subfrmStdVoltage2",
+        "left": 7370,
+        "top": 1020,
+        "width": 4665,
+        "height": 570
+      },
+      {
+        "name": "Befehl169",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 12699,
+        "top": 7937,
+        "width": 2271,
+        "height": 568
+      },
+      {
+        "name": "Bezeichnungsfeld175",
+        "type": 100,
+        "caption": "Standardized Voltage",
+        "left": 453,
+        "top": 226,
+        "width": 6591,
+        "height": 469
+      },
+      {
+        "name": "subfrmAuswertungszeitraum",
+        "type": 112,
+        "sourceobject": "subfrmAuswertungszeitraum",
+        "left": 7370,
+        "top": 226,
+        "width": 6585,
+        "height": 570
+      },
+      {
+        "name": "Bezeichnungsfeld192",
+        "type": 100,
+        "caption": "Data Input",
+        "left": 453,
+        "top": 793,
+        "width": 6585,
+        "height": 795
+      },
+      {
+        "name": "Bezeichnungsfeld193",
+        "type": 100,
+        "caption": "Total Plant\r\n ",
+        "left": 226,
+        "top": 1927,
+        "width": 2730,
+        "height": 345
+      },
+      {
+        "name": "Rechteck194",
+        "type": 101,
+        "left": 226,
+        "top": 2381,
+        "width": 2735,
+        "height": 6342
+      },
+      {
+        "name": "Bezeichnungsfeld195",
+        "type": 100,
+        "caption": "Train\r\n ",
+        "left": 3288,
+        "top": 1927,
+        "width": 2730,
+        "height": 345
+      },
+      {
+        "name": "Rechteck196",
+        "type": 101,
+        "left": 3288,
+        "top": 2381,
+        "width": 2720,
+        "height": 6342
+      },
+      {
+        "name": "Befehl197",
+        "type": 104,
+        "caption": "Groups",
+        "left": 3741,
+        "top": 1133,
+        "width": 1236,
+        "height": 456
+      },
+      {
+        "name": "Befehl198",
+        "type": 104,
+        "caption": "Single Elements",
+        "left": 4975,
+        "top": 1133,
+        "width": 2046,
+        "height": 456
+      },
+      {
+        "name": "Rahmen213",
+        "type": 107,
+        "controlsource": "IDBasisUNElektrolyseur",
+        "left": 6462,
+        "top": 2614,
+        "width": 2486,
+        "height": 943
+      },
+      {
+        "name": "Bezeichnungsfeld214",
+        "type": 100,
+        "caption": "Voltages",
+        "left": 6588,
+        "top": 2490,
+        "width": 1800,
+        "height": 240
+      },
+      {
+        "name": "Option216",
+        "type": 105,
+        "left": 6648,
+        "top": 2852,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld217",
+        "type": 100,
+        "caption": "Electrolyzer voltage",
+        "left": 6878,
+        "top": 2824,
+        "width": 1965,
+        "height": 240
+      },
+      {
+        "name": "Option218",
+        "type": 105,
+        "left": 6648,
+        "top": 3182,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld219",
+        "type": 100,
+        "caption": "Sum Single Elements",
+        "left": 6878,
+        "top": 3154,
+        "width": 1965,
+        "height": 240
+      },
+      {
+        "name": "Rahmen220",
+        "type": 107,
+        "controlsource": "IDDarstellungUNElektrolyseur",
+        "left": 6462,
+        "top": 6809,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Bezeichnungsfeld221",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 6687,
+        "top": 6689,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option223",
+        "type": 105,
+        "left": 6753,
+        "top": 7047,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld224",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 6983,
+        "top": 7019,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option225",
+        "type": 105,
+        "left": 6753,
+        "top": 7377,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld226",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 6983,
+        "top": 7349,
+        "width": 600,
+        "height": 240
+      },
+      {
+        "name": "Rahmen227",
+        "type": 107,
+        "controlsource": "IDUmfangUNElektrolyseur",
+        "left": 6462,
+        "top": 3855,
+        "width": 2492,
+        "height": 2613
+      },
+      {
+        "name": "Bezeichnungsfeld228",
+        "type": 100,
+        "caption": "Berechnung für",
+        "left": 6582,
+        "top": 3735,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option230",
+        "type": 105,
+        "left": 6689,
+        "top": 4109,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld231",
+        "type": 100,
+        "caption": "Einzelelektrolyseur",
+        "left": 6919,
+        "top": 4081,
+        "width": 1635,
+        "height": 240
+      },
+      {
+        "name": "Option321",
+        "type": 105,
+        "left": 6689,
+        "top": 4988,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld322",
+        "type": 100,
+        "caption": "Mehrere Elektrolyseure",
+        "left": 6918,
+        "top": 4988,
+        "width": 1695,
+        "height": 240
+      },
+      {
+        "name": "Option232",
+        "type": 105,
+        "left": 6689,
+        "top": 6037,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld233",
+        "type": 100,
+        "caption": "Alle Elektrolyseure",
+        "left": 6919,
+        "top": 6009,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "subfrmElektrolyseurUN",
+        "type": 112,
+        "sourceobject": "subfrmElektrolyseurUN",
+        "left": 6689,
+        "top": 4422,
+        "width": 1815,
+        "height": 450
+      },
+      {
+        "name": "Rahmen236",
+        "type": 107,
+        "controlsource": "IDBasisUNTeilanlage",
+        "left": 3401,
+        "top": 2618,
+        "width": 2501,
+        "height": 943
+      },
+      {
+        "name": "Bezeichnungsfeld237",
+        "type": 100,
+        "caption": "Voltages",
+        "left": 3527,
+        "top": 2494,
+        "width": 1800,
+        "height": 240
+      },
+      {
+        "name": "Option238",
+        "type": 105,
+        "left": 3587,
+        "top": 2856,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld239",
+        "type": 100,
+        "caption": "Electrolyzer voltage",
+        "left": 3817,
+        "top": 2828,
+        "width": 1980,
+        "height": 240
+      },
+      {
+        "name": "Option240",
+        "type": 105,
+        "left": 3587,
+        "top": 3186,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld241",
+        "type": 100,
+        "caption": "Sum Single Elements",
+        "left": 3817,
+        "top": 3158,
+        "width": 1980,
+        "height": 240
+      },
+      {
+        "name": "Rahmen242",
+        "type": 107,
+        "controlsource": "IDUmfangUNTeilanlage",
+        "left": 3401,
+        "top": 3861,
+        "width": 2492,
+        "height": 2608
+      },
+      {
+        "name": "Bezeichnungsfeld243",
+        "type": 100,
+        "caption": "Berechnung für",
+        "left": 3521,
+        "top": 3741,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option244",
+        "type": 105,
+        "left": 3587,
+        "top": 4099,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld245",
+        "type": 100,
+        "caption": "Einzelne Teilanlage",
+        "left": 3817,
+        "top": 4071,
+        "width": 1635,
+        "height": 240
+      },
+      {
+        "name": "Option246",
+        "type": 105,
+        "left": 3628,
+        "top": 6037,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld247",
+        "type": 100,
+        "caption": "Alle Teilanlagen",
+        "left": 3858,
+        "top": 6009,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Rahmen248",
+        "type": 107,
+        "controlsource": "IDDarstellungUNTeilanlage",
+        "left": 3401,
+        "top": 6809,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Bezeichnungsfeld249",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 3626,
+        "top": 6689,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option250",
+        "type": 105,
+        "left": 3692,
+        "top": 7047,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld251",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 3922,
+        "top": 7019,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option252",
+        "type": 105,
+        "left": 3692,
+        "top": 7377,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld253",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 3922,
+        "top": 7349,
+        "width": 600,
+        "height": 240
+      },
+      {
+        "name": "Befehl254",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 3514,
+        "top": 7937,
+        "width": 2271,
+        "height": 576
+      },
+      {
+        "name": "Eingebettet255",
+        "type": 112,
+        "sourceobject": "subfrmTeilanlageUN",
+        "left": 3628,
+        "top": 4422,
+        "width": 1815,
+        "height": 450
+      },
+      {
+        "name": "Schaltfläche85",
+        "type": 104,
+        "caption": "All Elements",
+        "left": 2040,
+        "top": 1133,
+        "width": 1716,
+        "height": 456
+      },
+      {
+        "name": "Schaltfläche72",
+        "type": 104,
+        "caption": "Electrolyzers",
+        "left": 453,
+        "top": 1133,
+        "width": 1581,
+        "height": 456
+      },
+      {
+        "name": "Rahmen256",
+        "type": 107,
+        "controlsource": "IDBasisUNGesamtanlage",
+        "left": 340,
+        "top": 2618,
+        "width": 2501,
+        "height": 943
+      },
+      {
+        "name": "Bezeichnungsfeld257",
+        "type": 100,
+        "caption": "Voltages",
+        "left": 466,
+        "top": 2494,
+        "width": 1800,
+        "height": 240
+      },
+      {
+        "name": "Option258",
+        "type": 105,
+        "left": 526,
+        "top": 2856,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld259",
+        "type": 100,
+        "caption": "Electrolyzer voltage",
+        "left": 756,
+        "top": 2828,
+        "width": 1965,
+        "height": 240
+      },
+      {
+        "name": "Option260",
+        "type": 105,
+        "left": 526,
+        "top": 3186,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld261",
+        "type": 100,
+        "caption": "Sum Single Elements",
+        "left": 756,
+        "top": 3158,
+        "width": 1965,
+        "height": 240
+      },
+      {
+        "name": "Rahmen268",
+        "type": 107,
+        "controlsource": "IDDarstellungUNGesamtanlage",
+        "left": 340,
+        "top": 6783,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Bezeichnungsfeld269",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 565,
+        "top": 6689,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option270",
+        "type": 105,
+        "left": 631,
+        "top": 7047,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld271",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 861,
+        "top": 7019,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option272",
+        "type": 105,
+        "left": 631,
+        "top": 7377,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld273",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 861,
+        "top": 7349,
+        "width": 600,
+        "height": 240
+      },
+      {
+        "name": "Befehl274",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 453,
+        "top": 7937,
+        "width": 2256,
+        "height": 576
+      },
+      {
+        "name": "Rahmen275",
+        "type": 107,
+        "controlsource": "IDBasisUNGruppe",
+        "left": 9525,
+        "top": 2618,
+        "width": 2501,
+        "height": 943
+      },
+      {
+        "name": "Bezeichnungsfeld276",
+        "type": 100,
+        "caption": "Data",
+        "left": 9636,
+        "top": 2490,
+        "width": 1815,
+        "height": 240
+      },
+      {
+        "name": "Option277",
+        "type": 105,
+        "left": 9711,
+        "top": 2856,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld278",
+        "type": 100,
+        "caption": "Electrolyzer voltage",
+        "left": 9941,
+        "top": 2828,
+        "width": 1965,
+        "height": 240
+      },
+      {
+        "name": "Option279",
+        "type": 105,
+        "left": 9711,
+        "top": 3186,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld280",
+        "type": 100,
+        "caption": "Sum Single Elements",
+        "left": 9941,
+        "top": 3158,
+        "width": 1965,
+        "height": 240
+      },
+      {
+        "name": "Rahmen281",
+        "type": 107,
+        "controlsource": "IDUmfangUNGruppe",
+        "left": 9525,
+        "top": 3861,
+        "width": 2507,
+        "height": 2611
+      },
+      {
+        "name": "Bezeichnungsfeld282",
+        "type": 100,
+        "caption": "Berechnung für",
+        "left": 9645,
+        "top": 3741,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option283",
+        "type": 105,
+        "left": 9751,
+        "top": 4109,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld284",
+        "type": 100,
+        "caption": "Einzelne Gruppe",
+        "left": 9981,
+        "top": 4081,
+        "width": 1635,
+        "height": 240
+      },
+      {
+        "name": "Option335",
+        "type": 105,
+        "left": 9751,
+        "top": 5016,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld336",
+        "type": 100,
+        "caption": "Mehrere Gruppen",
+        "left": 9981,
+        "top": 4988,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Option285",
+        "type": 105,
+        "left": 9751,
+        "top": 6037,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld286",
+        "type": 100,
+        "caption": "Alle Gruppen",
+        "left": 9981,
+        "top": 6009,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Rahmen287",
+        "type": 107,
+        "controlsource": "IDDarstellungUNGruppe",
+        "left": 9524,
+        "top": 6809,
+        "width": 2507,
+        "height": 913
+      },
+      {
+        "name": "Bezeichnungsfeld288",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 9749,
+        "top": 6689,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option289",
+        "type": 105,
+        "left": 9815,
+        "top": 7047,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld290",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 10045,
+        "top": 7019,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option291",
+        "type": 105,
+        "left": 9815,
+        "top": 7377,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld292",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 10045,
+        "top": 7349,
+        "width": 600,
+        "height": 240
+      },
+      {
+        "name": "Eingebettet293",
+        "type": 112,
+        "sourceobject": "subfrmGruppeUN",
+        "left": 9751,
+        "top": 4422,
+        "width": 1815,
+        "height": 450
+      },
+      {
+        "name": "Rahmen294",
+        "type": 107,
+        "controlsource": "IDBasisUNElement",
+        "left": 12585,
+        "top": 2622,
+        "width": 2501,
+        "height": 943
+      },
+      {
+        "name": "Bezeichnungsfeld295",
+        "type": 100,
+        "caption": "Data",
+        "left": 12696,
+        "top": 2494,
+        "width": 1815,
+        "height": 240
+      },
+      {
+        "name": "Option296",
+        "type": 105,
+        "left": 12771,
+        "top": 2860,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld297",
+        "type": 100,
+        "caption": "Electrolyzer voltage",
+        "left": 13001,
+        "top": 2832,
+        "width": 1965,
+        "height": 240
+      },
+      {
+        "name": "Option298",
+        "type": 105,
+        "left": 12771,
+        "top": 3190,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld299",
+        "type": 100,
+        "caption": "Sum Single Elements",
+        "left": 13001,
+        "top": 3162,
+        "width": 1965,
+        "height": 240
+      },
+      {
+        "name": "Rahmen300",
+        "type": 107,
+        "controlsource": "IDUmfangUNElement",
+        "left": 12585,
+        "top": 3861,
+        "width": 2507,
+        "height": 2611
+      },
+      {
+        "name": "Bezeichnungsfeld301",
+        "type": 100,
+        "caption": "Berechnung für",
+        "left": 12705,
+        "top": 3741,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option302",
+        "type": 105,
+        "left": 12699,
+        "top": 4109,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld303",
+        "type": 100,
+        "caption": "Einzelnes Element",
+        "left": 12929,
+        "top": 4081,
+        "width": 1635,
+        "height": 240
+      },
+      {
+        "name": "Option331",
+        "type": 105,
+        "left": 12699,
+        "top": 4988,
+        "width": 455,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld332",
+        "type": 100,
+        "caption": "Mehrere Elemente",
+        "left": 12929,
+        "top": 4988,
+        "width": 1635,
+        "height": 240
+      },
+      {
+        "name": "Option304",
+        "type": 105,
+        "left": 12699,
+        "top": 6037,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld305",
+        "type": 100,
+        "caption": "Alle Elemente",
+        "left": 12929,
+        "top": 6009,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Rahmen306",
+        "type": 107,
+        "controlsource": "IDDarstellungUNElement",
+        "left": 12585,
+        "top": 6809,
+        "width": 2507,
+        "height": 913
+      },
+      {
+        "name": "Bezeichnungsfeld307",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 12810,
+        "top": 6689,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option308",
+        "type": 105,
+        "left": 12876,
+        "top": 7047,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld309",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 13106,
+        "top": 7019,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option310",
+        "type": 105,
+        "left": 12876,
+        "top": 7377,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld311",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 13106,
+        "top": 7349,
+        "width": 600,
+        "height": 240
+      }
+    ]
+  },
+  "UnCE": {
+    "ok": true,
+    "recordsource": "",
+    "count": 9,
+    "controls": [
+      {
+        "name": "Text0",
+        "type": 100,
+        "caption": "Un / CE",
+        "left": 1133,
+        "top": 226,
+        "width": 7590,
+        "height": 1260
+      },
+      {
+        "name": "Schaltfläche29",
+        "type": 104,
+        "caption": "Menue",
+        "left": 4320,
+        "top": 6015,
+        "width": 2034,
+        "height": 561
+      },
+      {
+        "name": "Rechteck105",
+        "type": 101,
+        "left": 1133,
+        "top": 2616,
+        "width": 2495,
+        "height": 4191
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "Electrolyzer",
+        "left": 1135,
+        "top": 1815,
+        "width": 2490,
+        "height": 570
+      },
+      {
+        "name": "Befehl211",
+        "type": 104,
+        "caption": "Graph",
+        "left": 1360,
+        "top": 4195,
+        "width": 2046,
+        "height": 576
+      },
+      {
+        "name": "subfrmUnCE1",
+        "type": 112,
+        "sourceobject": "subfrmUnCE1",
+        "left": 1360,
+        "top": 2948,
+        "width": 2040,
+        "height": 1140
+      },
+      {
+        "name": "subfrmAuswertungszeitraum",
+        "type": 112,
+        "sourceobject": "subfrmAuswertungszeitraum",
+        "left": 1700,
+        "top": 793,
+        "width": 6435,
+        "height": 525
+      },
+      {
+        "name": "Command222",
+        "type": 104,
+        "caption": "Graph",
+        "left": 1365,
+        "top": 6015,
+        "width": 2046,
+        "height": 576
+      },
+      {
+        "name": "Label223",
+        "type": 100,
+        "caption": "All Electrolyzers",
+        "left": 1365,
+        "top": 5550,
+        "width": 2040,
+        "height": 330
+      }
+    ]
+  },
+  "Energieverbrauch": {
+    "ok": true,
+    "recordsource": "tblGewDaten",
+    "count": 110,
+    "controls": [
+      {
+        "name": "Text0",
+        "type": 100,
+        "caption": "Power Consumption",
+        "left": 340,
+        "top": 113,
+        "width": 14955,
+        "height": 1260
+      },
+      {
+        "name": "Schaltfläche29",
+        "type": 104,
+        "caption": "Menue",
+        "left": 12926,
+        "top": 566,
+        "width": 2034,
+        "height": 561
+      },
+      {
+        "name": "Rechteck202",
+        "type": 101,
+        "left": 6463,
+        "top": 2154,
+        "width": 2690,
+        "height": 7494
+      },
+      {
+        "name": "Bezeichnungsfeld203",
+        "type": 100,
+        "caption": "Electrolyzers",
+        "left": 6463,
+        "top": 1587,
+        "width": 2730,
+        "height": 330
+      },
+      {
+        "name": "Befehl204",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 6689,
+        "top": 8844,
+        "width": 2271,
+        "height": 576
+      },
+      {
+        "name": "subfrmSPC1",
+        "type": 112,
+        "sourceobject": "subfrmSPC1",
+        "left": 6881,
+        "top": 5544,
+        "width": 2055,
+        "height": 450
+      },
+      {
+        "name": "subfrmAuswertungszeitraum",
+        "type": 112,
+        "sourceobject": "subfrmAuswertungszeitraum",
+        "left": 558,
+        "top": 692,
+        "width": 6435,
+        "height": 525
+      },
+      {
+        "name": "Bezeichnungsfeld215",
+        "type": 100,
+        "caption": "Total Plant",
+        "left": 340,
+        "top": 1587,
+        "width": 2715,
+        "height": 330
+      },
+      {
+        "name": "Rechteck216",
+        "type": 101,
+        "left": 340,
+        "top": 2154,
+        "width": 2720,
+        "height": 7494
+      },
+      {
+        "name": "Befehl218",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 567,
+        "top": 8844,
+        "width": 2256,
+        "height": 576
+      },
+      {
+        "name": "Rahmen227",
+        "type": 107,
+        "controlsource": "IDUmfangSPCElectrolyseur",
+        "left": 6541,
+        "top": 4984,
+        "width": 2492,
+        "height": 2388
+      },
+      {
+        "name": "Bezeichnungsfeld228",
+        "type": 100,
+        "caption": "Berechnung für",
+        "left": 6661,
+        "top": 4864,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option230",
+        "type": 105,
+        "left": 6768,
+        "top": 5238,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld231",
+        "type": 100,
+        "caption": "Einzelelektrolyseur",
+        "left": 6998,
+        "top": 5210,
+        "width": 1635,
+        "height": 240
+      },
+      {
+        "name": "Option321",
+        "type": 105,
+        "left": 6768,
+        "top": 6117,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld322",
+        "type": 100,
+        "caption": "Mehrere Elektrolyseure",
+        "left": 6997,
+        "top": 6117,
+        "width": 1695,
+        "height": 240
+      },
+      {
+        "name": "Option232",
+        "type": 105,
+        "left": 6803,
+        "top": 6944,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld233",
+        "type": 100,
+        "caption": "Alle Elektrolyseure",
+        "left": 7033,
+        "top": 6916,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Rahmen220",
+        "type": 107,
+        "controlsource": "IDDarstellungSPCElektrolyseur",
+        "left": 6576,
+        "top": 7717,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Bezeichnungsfeld221",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 6801,
+        "top": 7597,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option223",
+        "type": 105,
+        "left": 6867,
+        "top": 7955,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld224",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 7097,
+        "top": 7927,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option225",
+        "type": 105,
+        "left": 6867,
+        "top": 8285,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld226",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 7097,
+        "top": 8257,
+        "width": 600,
+        "height": 240
+      },
+      {
+        "name": "Frame219",
+        "type": 107,
+        "controlsource": "IDDarstellungSPCGesamtanlage",
+        "left": 454,
+        "top": 7717,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Label220",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 679,
+        "top": 7597,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option221",
+        "type": 105,
+        "left": 745,
+        "top": 7955,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label222",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 975,
+        "top": 7927,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option224",
+        "type": 105,
+        "left": 745,
+        "top": 8285,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label225",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 975,
+        "top": 8257,
+        "width": 600,
+        "height": 240
+      },
+      {
+        "name": "Frame226",
+        "type": 107,
+        "controlsource": "IDBasisUnfuerSPCElektrolyseur",
+        "left": 6541,
+        "top": 2490,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Label227",
+        "type": 100,
+        "caption": "Table Un",
+        "left": 6713,
+        "top": 2377,
+        "width": 1455,
+        "height": 240
+      },
+      {
+        "name": "Option228",
+        "type": 105,
+        "left": 6832,
+        "top": 2728,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label229",
+        "type": 100,
+        "caption": "Electrolyzers",
+        "left": 7062,
+        "top": 2700,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Option231",
+        "type": 105,
+        "left": 6832,
+        "top": 3058,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label232",
+        "type": 100,
+        "caption": "All Elements per Electrol.",
+        "left": 7062,
+        "top": 3030,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Frame233",
+        "type": 107,
+        "controlsource": "IDBasisCEfuerSPCElektrolyseur",
+        "left": 6541,
+        "top": 3737,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Label234",
+        "type": 100,
+        "caption": "Basis CE",
+        "left": 6758,
+        "top": 3622,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Option235",
+        "type": 105,
+        "left": 6832,
+        "top": 3975,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label236",
+        "type": 100,
+        "caption": "Anodic Balance Electrol.",
+        "left": 7062,
+        "top": 3947,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Option237",
+        "type": 105,
+        "left": 6832,
+        "top": 4305,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label238",
+        "type": 100,
+        "caption": "NaOH Prod. Electrolyzers",
+        "left": 7062,
+        "top": 4277,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Box239",
+        "type": 101,
+        "left": 9543,
+        "top": 2151,
+        "width": 2690,
+        "height": 7494
+      },
+      {
+        "name": "Label240",
+        "type": 100,
+        "caption": "Groups",
+        "left": 9525,
+        "top": 1587,
+        "width": 2715,
+        "height": 330
+      },
+      {
+        "name": "Command241",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 9769,
+        "top": 8841,
+        "width": 2271,
+        "height": 576
+      },
+      {
+        "name": "subfrmGruppeSPC",
+        "type": 112,
+        "sourceobject": "subfrmGruppeSPC",
+        "left": 9961,
+        "top": 5541,
+        "width": 2055,
+        "height": 450
+      },
+      {
+        "name": "Frame243",
+        "type": 107,
+        "controlsource": "IDUmfangSPCGruppe",
+        "left": 9621,
+        "top": 4981,
+        "width": 2492,
+        "height": 2388
+      },
+      {
+        "name": "Label244",
+        "type": 100,
+        "caption": "Berechnung für",
+        "left": 9741,
+        "top": 4861,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option245",
+        "type": 105,
+        "left": 9848,
+        "top": 5235,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label246",
+        "type": 100,
+        "caption": "Einzelelektrolyseur",
+        "left": 10078,
+        "top": 5207,
+        "width": 1635,
+        "height": 240
+      },
+      {
+        "name": "Option247",
+        "type": 105,
+        "left": 9848,
+        "top": 6114,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label248",
+        "type": 100,
+        "caption": "Mehrere Elektrolyseure",
+        "left": 10077,
+        "top": 6114,
+        "width": 1695,
+        "height": 240
+      },
+      {
+        "name": "Option249",
+        "type": 105,
+        "left": 9883,
+        "top": 6941,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label250",
+        "type": 100,
+        "caption": "Alle Elektrolyseure",
+        "left": 10113,
+        "top": 6913,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Frame251",
+        "type": 107,
+        "controlsource": "IDDarstellungSPCGruppe",
+        "left": 9656,
+        "top": 7714,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Label252",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 9881,
+        "top": 7594,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option253",
+        "type": 105,
+        "left": 9947,
+        "top": 7952,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label254",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 10177,
+        "top": 7924,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option255",
+        "type": 105,
+        "left": 9947,
+        "top": 8282,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label256",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 10177,
+        "top": 8254,
+        "width": 600,
+        "height": 240
+      },
+      {
+        "name": "Frame257",
+        "type": 107,
+        "controlsource": "IDBasisUnfuerSPCGruppe",
+        "left": 9621,
+        "top": 2487,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Label258",
+        "type": 100,
+        "caption": "Table Un",
+        "left": 9793,
+        "top": 2374,
+        "width": 1455,
+        "height": 240
+      },
+      {
+        "name": "Option259",
+        "type": 105,
+        "left": 9912,
+        "top": 2725,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label260",
+        "type": 100,
+        "caption": "Groups",
+        "left": 10142,
+        "top": 2697,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Option261",
+        "type": 105,
+        "left": 9912,
+        "top": 3055,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label262",
+        "type": 100,
+        "caption": "All Elements per Electrol.",
+        "left": 10142,
+        "top": 3027,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Frame263",
+        "type": 107,
+        "controlsource": "IDBasisCEfuerSPCGruppe",
+        "left": 9621,
+        "top": 3734,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Label264",
+        "type": 100,
+        "caption": "Basis CE",
+        "left": 9838,
+        "top": 3619,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Option265",
+        "type": 105,
+        "left": 9912,
+        "top": 3972,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label266",
+        "type": 100,
+        "caption": "Anodic Balance Group",
+        "left": 10142,
+        "top": 3944,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Option267",
+        "type": 105,
+        "left": 9912,
+        "top": 4302,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label268",
+        "type": 100,
+        "caption": "NaOH Prod. Group",
+        "left": 10142,
+        "top": 4274,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Box269",
+        "type": 101,
+        "left": 12607,
+        "top": 2151,
+        "width": 2690,
+        "height": 7494
+      },
+      {
+        "name": "Label270",
+        "type": 100,
+        "caption": "Elements",
+        "left": 12586,
+        "top": 1587,
+        "width": 2715,
+        "height": 330
+      },
+      {
+        "name": "Command271",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 12833,
+        "top": 8841,
+        "width": 2271,
+        "height": 576
+      },
+      {
+        "name": "Frame273",
+        "type": 107,
+        "controlsource": "IDUmfangSPCElement",
+        "left": 12685,
+        "top": 4981,
+        "width": 2492,
+        "height": 2388
+      },
+      {
+        "name": "Label274",
+        "type": 100,
+        "caption": "Berechnung für",
+        "left": 12805,
+        "top": 4861,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option275",
+        "type": 105,
+        "left": 12912,
+        "top": 5235,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label276",
+        "type": 100,
+        "caption": "Einzelelektrolyseur",
+        "left": 13142,
+        "top": 5207,
+        "width": 1635,
+        "height": 240
+      },
+      {
+        "name": "Option277",
+        "type": 105,
+        "left": 12912,
+        "top": 6114,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label278",
+        "type": 100,
+        "caption": "Mehrere Elektrolyseure",
+        "left": 13141,
+        "top": 6114,
+        "width": 1695,
+        "height": 240
+      },
+      {
+        "name": "Option279",
+        "type": 105,
+        "left": 12947,
+        "top": 6941,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label280",
+        "type": 100,
+        "caption": "Alle Elektrolyseure",
+        "left": 13177,
+        "top": 6913,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Frame281",
+        "type": 107,
+        "controlsource": "IDDarstellungSPCElement",
+        "left": 12720,
+        "top": 7714,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Label282",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 12945,
+        "top": 7594,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option283",
+        "type": 105,
+        "left": 13011,
+        "top": 7952,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label284",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 13241,
+        "top": 7924,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option285",
+        "type": 105,
+        "left": 13011,
+        "top": 8282,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label286",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 13241,
+        "top": 8254,
+        "width": 600,
+        "height": 240
+      },
+      {
+        "name": "Frame287",
+        "type": 107,
+        "controlsource": "IDBasisUnfuerSPCElement",
+        "left": 12685,
+        "top": 2487,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Label288",
+        "type": 100,
+        "caption": "Table Un",
+        "left": 12857,
+        "top": 2374,
+        "width": 1455,
+        "height": 240
+      },
+      {
+        "name": "Option289",
+        "type": 105,
+        "left": 12976,
+        "top": 2725,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label290",
+        "type": 100,
+        "caption": "Individual Elements",
+        "left": 13206,
+        "top": 2697,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Option291",
+        "type": 105,
+        "left": 12976,
+        "top": 3055,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label292",
+        "type": 100,
+        "caption": "All Elements per Electrol.",
+        "left": 13206,
+        "top": 3027,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Frame293",
+        "type": 107,
+        "controlsource": "IDBasisCEfuerSPCElement",
+        "left": 12685,
+        "top": 3734,
+        "width": 2492,
+        "height": 913
+      },
+      {
+        "name": "Label294",
+        "type": 100,
+        "caption": "Basis CE",
+        "left": 12902,
+        "top": 3619,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Option295",
+        "type": 105,
+        "left": 12976,
+        "top": 3972,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label296",
+        "type": 100,
+        "caption": "Anodic Balance Electrol.",
+        "left": 13206,
+        "top": 3944,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Option297",
+        "type": 105,
+        "left": 12976,
+        "top": 4302,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label298",
+        "type": 100,
+        "caption": "NaOH Prod. Electrolyzers",
+        "left": 13206,
+        "top": 4274,
+        "width": 1875,
+        "height": 240
+      },
+      {
+        "name": "Label299",
+        "type": 100,
+        "caption": "Train",
+        "left": 3389,
+        "top": 1590,
+        "width": 2760,
+        "height": 330
+      },
+      {
+        "name": "Box300",
+        "type": 101,
+        "left": 3402,
+        "top": 2154,
+        "width": 2735,
+        "height": 7494
+      },
+      {
+        "name": "Frame301",
+        "type": 107,
+        "controlsource": "IDDarstellungSPCGesamtanlage",
+        "left": 3516,
+        "top": 7717,
+        "width": 2522,
+        "height": 913
+      },
+      {
+        "name": "Label302",
+        "type": 100,
+        "caption": "Ergebnisse als",
+        "left": 3741,
+        "top": 7597,
+        "width": 1350,
+        "height": 240
+      },
+      {
+        "name": "Option303",
+        "type": 105,
+        "left": 3807,
+        "top": 7955,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label304",
+        "type": 100,
+        "caption": "Diagramm",
+        "left": 4037,
+        "top": 7927,
+        "width": 780,
+        "height": 240
+      },
+      {
+        "name": "Option305",
+        "type": 105,
+        "left": 3807,
+        "top": 8285,
+        "width": 260,
+        "height": 240
+      },
+      {
+        "name": "Label306",
+        "type": 100,
+        "caption": "Tabelle",
+        "left": 4037,
+        "top": 8257,
+        "width": 600,
+        "height": 240
+      },
+      {
+        "name": "Command307",
+        "type": 104,
+        "caption": "Display Results",
+        "left": 3629,
+        "top": 8844,
+        "width": 2256,
+        "height": 576
+      }
+    ]
+  },
+  "Current": {
+    "ok": false,
+    "error": "(-2147352567, 'Exception occurred.', (0, None, \"The form name 'Current' is misspelled or refers to a form that doesn't exist.\", None, -1, -2146826186), None)"
+  },
+  "frmTabelleUnMehrereElektrolyseure2": {
+    "ok": true,
+    "recordsource": "qryUnElektrolyseure2",
+    "count": 41,
+    "controls": [
+      {
+        "name": "Text10",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 113,
+        "top": 1585,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Text12",
+        "type": 100,
+        "caption": "Date",
+        "left": 1473,
+        "top": 1585,
+        "width": 690,
+        "height": 240
+      },
+      {
+        "name": "Text14",
+        "type": 100,
+        "caption": "Time",
+        "left": 2380,
+        "top": 1585,
+        "width": 480,
+        "height": 240
+      },
+      {
+        "name": "Text16",
+        "type": 100,
+        "caption": " I total [kA]",
+        "left": 2947,
+        "top": 1360,
+        "width": 690,
+        "height": 465
+      },
+      {
+        "name": "Text18",
+        "type": 100,
+        "caption": "i\r\n[kA/m²]",
+        "left": 3630,
+        "top": 1362,
+        "width": 690,
+        "height": 450
+      },
+      {
+        "name": "Text20",
+        "type": 100,
+        "caption": "Cc [%]",
+        "left": 4422,
+        "top": 1360,
+        "width": 375,
+        "height": 465
+      },
+      {
+        "name": "Text22",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 4988,
+        "top": 1360,
+        "width": 495,
+        "height": 465
+      },
+      {
+        "name": "Text24",
+        "type": 100,
+        "caption": "t Ka [°C]",
+        "left": 5669,
+        "top": 1360,
+        "width": 495,
+        "height": 465
+      },
+      {
+        "name": "Text26",
+        "type": 100,
+        "caption": "tm [°C]",
+        "left": 6465,
+        "top": 1362,
+        "width": 465,
+        "height": 450
+      },
+      {
+        "name": "Text35",
+        "type": 100,
+        "caption": "Um [V]",
+        "left": 7029,
+        "top": 1360,
+        "width": 390,
+        "height": 465
+      },
+      {
+        "name": "Text37",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 7710,
+        "top": 1360,
+        "width": 390,
+        "height": 465
+      },
+      {
+        "name": "Schaltfläche67",
+        "type": 104,
+        "caption": "Standardized Voltage",
+        "left": 10998,
+        "top": 793,
+        "width": 1806,
+        "height": 576
+      },
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standarized Voltage Several Electrolysers",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 121,
+        "top": 793,
+        "width": 7815,
+        "height": 360
+      },
+      {
+        "name": "Befehl73",
+        "type": 104,
+        "caption": "Update Display",
+        "left": 10998,
+        "top": 113,
+        "width": 1806,
+        "height": 576
+      },
+      {
+        "name": "subfrmElektrolyseureUnCeSpc",
+        "type": 112,
+        "sourceobject": "subfrmElektrolyseureUnCeSpc",
+        "left": 8050,
+        "top": 113,
+        "width": 2760,
+        "height": 1020
+      },
+      {
+        "name": "Bezeichnungsfeld76",
+        "type": 100,
+        "caption": "Basis: Tabelle Un Elektrolyseure",
+        "left": 226,
+        "top": 453,
+        "width": 7597,
+        "height": 227
+      },
+      {
+        "name": "Text41",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 113,
+        "top": 678,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Text42",
+        "type": 100,
+        "caption": "Date",
+        "left": 1473,
+        "top": 678,
+        "width": 690,
+        "height": 240
+      },
+      {
+        "name": "Text43",
+        "type": 100,
+        "caption": "Time",
+        "left": 2380,
+        "top": 678,
+        "width": 480,
+        "height": 240
+      },
+      {
+        "name": "Text44",
+        "type": 100,
+        "caption": " I total [kA]",
+        "left": 2947,
+        "top": 453,
+        "width": 690,
+        "height": 465
+      },
+      {
+        "name": "Text45",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 3623,
+        "top": 453,
+        "width": 690,
+        "height": 465
+      },
+      {
+        "name": "Text46",
+        "type": 100,
+        "caption": "Cc [%]",
+        "left": 4422,
+        "top": 453,
+        "width": 375,
+        "height": 465
+      },
+      {
+        "name": "Text47",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 4988,
+        "top": 453,
+        "width": 495,
+        "height": 465
+      },
+      {
+        "name": "Text48",
+        "type": 100,
+        "caption": "t Ka [°C]",
+        "left": 5669,
+        "top": 453,
+        "width": 495,
+        "height": 465
+      },
+      {
+        "name": "Text49",
+        "type": 100,
+        "caption": "tm [°C]",
+        "left": 6360,
+        "top": 450,
+        "width": 450,
+        "height": 465
+      },
+      {
+        "name": "Text51",
+        "type": 100,
+        "caption": "Um [V]",
+        "left": 7029,
+        "top": 455,
+        "width": 390,
+        "height": 465
+      },
+      {
+        "name": "Text52",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 7710,
+        "top": 455,
+        "width": 390,
+        "height": 465
+      },
+      {
+        "name": "Feld66",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 8617,
+        "top": 113,
+        "width": 1142,
+        "height": 347
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "left": 113,
+        "top": 0,
+        "width": 1140,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 1360,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "Zeit",
+        "type": 109,
+        "controlsource": "Zeit",
+        "left": 2380,
+        "top": 0,
+        "width": 570,
+        "height": 255
+      },
+      {
+        "name": "I Gesamt",
+        "type": 109,
+        "controlsource": "I Gesamt",
+        "left": 3061,
+        "top": 0,
+        "width": 573,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "i",
+        "left": 3741,
+        "top": 0,
+        "width": 465,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "left": 4308,
+        "top": 0,
+        "width": 573,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "left": 4988,
+        "top": 0,
+        "width": 558,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "left": 5669,
+        "top": 0,
+        "width": 573,
+        "height": 255
+      },
+      {
+        "name": "tm",
+        "type": 109,
+        "controlsource": "tm",
+        "left": 6349,
+        "top": 0,
+        "width": 585,
+        "height": 255
+      },
+      {
+        "name": "Feld36",
+        "type": 109,
+        "controlsource": "Um",
+        "left": 7029,
+        "top": 0,
+        "width": 558,
+        "height": 255
+      },
+      {
+        "name": "Feld38",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 7710,
+        "top": 0,
+        "width": 558,
+        "height": 255
+      },
+      {
+        "name": "Feld80",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 8050,
+        "top": 113,
+        "width": 1747,
+        "height": 227
+      }
+    ]
+  },
+  "frmTabelleUnMehrereGruppen": {
+    "ok": true,
+    "recordsource": "qryUnMehrereGruppen",
+    "count": 23,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage of Several Groups",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Update Display",
+        "left": 10544,
+        "top": 113,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 10544,
+        "top": 793,
+        "width": 1821,
+        "height": 576
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Membrane Type",
+        "left": 5230,
+        "top": 1360,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Group",
+        "left": 2040,
+        "top": 1360,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3312,
+        "top": 1367,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "Number",
+        "left": 4245,
+        "top": 1360,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 6931,
+        "top": 1360,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 793,
+        "width": 7815,
+        "height": 360
+      },
+      {
+        "name": "Bezeichnungsfeld110",
+        "type": 100,
+        "caption": "Basis: Table Un all Elements per Electrolyzer",
+        "left": 226,
+        "top": 453,
+        "width": 7597,
+        "height": 227
+      },
+      {
+        "name": "subfrmGruppenUN",
+        "type": 112,
+        "sourceobject": "subfrmGruppenUN",
+        "left": 8163,
+        "top": 113,
+        "width": 2205,
+        "height": 1140
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 10318,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Membrane Type",
+        "left": 5329,
+        "top": 907,
+        "width": 1425,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Group",
+        "left": 2025,
+        "top": 915,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "Number",
+        "left": 4260,
+        "top": 915,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 6916,
+        "top": 907,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Gruppe",
+        "left": 2154,
+        "top": 0,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "Anzahl von Element Nr",
+        "left": 4322,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Membrantyp",
+        "left": 5329,
+        "top": 0,
+        "width": 1380,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un Mittel",
+        "left": 6916,
+        "top": 0,
+        "width": 1050,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnMehrereGruppen2": {
+    "ok": true,
+    "recordsource": "qryUnMehrereGruppen2",
+    "count": 23,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage of Several Groups",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Update Display",
+        "left": 10544,
+        "top": 113,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 10544,
+        "top": 793,
+        "width": 1821,
+        "height": 576
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Membrane Type",
+        "left": 5230,
+        "top": 1360,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Group",
+        "left": 2040,
+        "top": 1360,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3312,
+        "top": 1367,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "Number",
+        "left": 4245,
+        "top": 1360,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 6931,
+        "top": 1360,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 793,
+        "width": 7815,
+        "height": 360
+      },
+      {
+        "name": "Bezeichnungsfeld110",
+        "type": 100,
+        "caption": "Basis: Table Un Groups",
+        "left": 210,
+        "top": 450,
+        "width": 7635,
+        "height": 225
+      },
+      {
+        "name": "subfrmGruppenUN",
+        "type": 112,
+        "sourceobject": "subfrmGruppenUN",
+        "left": 8163,
+        "top": 113,
+        "width": 2205,
+        "height": 1140
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 10318,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Membrane Type",
+        "left": 5329,
+        "top": 907,
+        "width": 1425,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Group",
+        "left": 2025,
+        "top": 915,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "Number",
+        "left": 4260,
+        "top": 915,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 6916,
+        "top": 907,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Gruppe",
+        "left": 2154,
+        "top": 0,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "n",
+        "left": 4322,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Membrantyp",
+        "left": 5329,
+        "top": 0,
+        "width": 1380,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 6916,
+        "top": 0,
+        "width": 1050,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnMehrereElemente": {
+    "ok": true,
+    "recordsource": "qryUnElemente",
+    "count": 32,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage Element",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 675
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Update Display",
+        "left": 11565,
+        "top": 113,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized Voltage",
+        "left": 11565,
+        "top": 793,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5102,
+        "top": 1474,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld102",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld103",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 1474,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 1133,
+        "top": 1474,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 1481,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4308,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8390,
+        "top": 1474,
+        "width": 1260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld111",
+        "type": 100,
+        "caption": "Position",
+        "left": 2370,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 907,
+        "width": 7830,
+        "height": 360
+      },
+      {
+        "name": "Bezeichnungsfeld114",
+        "type": 100,
+        "caption": "Basis: Single Element Voltage Measurement; t An, T Cath, c NaOH Electrolyzer Average",
+        "left": 218,
+        "top": 566,
+        "width": 7590,
+        "height": 210
+      },
+      {
+        "name": "subfrmElektrolyseurUnElemente",
+        "type": 112,
+        "sourceobject": "subfrmElektrolyseurUnElemente",
+        "left": 8050,
+        "top": 113,
+        "width": 3390,
+        "height": 1125
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 10318,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5102,
+        "top": 907,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld68",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld85",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 907,
+        "width": 915,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 1133,
+        "top": 907,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4308,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8385,
+        "top": 900,
+        "width": 1260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld108",
+        "type": 100,
+        "caption": "Position",
+        "left": 2385,
+        "top": 900,
+        "width": 810,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "left": 1135,
+        "top": 0,
+        "width": 1140,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "i",
+        "left": 4307,
+        "top": 0,
+        "width": 810,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "left": 5210,
+        "top": 0,
+        "width": 1230,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "left": 6571,
+        "top": 0,
+        "width": 780,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "left": 7490,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 8376,
+        "top": 0,
+        "width": 1275,
+        "height": 255
+      },
+      {
+        "name": "Position",
+        "type": 109,
+        "controlsource": "Position",
+        "left": 2387,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnMehrereElemente2": {
+    "ok": true,
+    "recordsource": "qryUnElemente2",
+    "count": 32,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage Element",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 675
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Update Display",
+        "left": 11565,
+        "top": 113,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized Voltage",
+        "left": 11565,
+        "top": 793,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5102,
+        "top": 1474,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld102",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld103",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 1474,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 1133,
+        "top": 1474,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 1481,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4308,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8390,
+        "top": 1474,
+        "width": 1260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld111",
+        "type": 100,
+        "caption": "Position",
+        "left": 2370,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 907,
+        "width": 7830,
+        "height": 360
+      },
+      {
+        "name": "Bezeichnungsfeld114",
+        "type": 100,
+        "caption": "Basis: Single Element Voltage Measurement; t An, T Cath, c NaOH Electrolyzer Average",
+        "left": 218,
+        "top": 566,
+        "width": 7590,
+        "height": 210
+      },
+      {
+        "name": "subfrmElektrolyseurUnElemente",
+        "type": 112,
+        "sourceobject": "subfrmElektrolyseurUnElemente",
+        "left": 8050,
+        "top": 113,
+        "width": 3390,
+        "height": 1125
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 10318,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5102,
+        "top": 907,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld68",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld85",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 907,
+        "width": 915,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 1133,
+        "top": 907,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4308,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8385,
+        "top": 900,
+        "width": 1260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld108",
+        "type": 100,
+        "caption": "Position",
+        "left": 2385,
+        "top": 900,
+        "width": 810,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "left": 1135,
+        "top": 0,
+        "width": 1140,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "i",
+        "left": 4307,
+        "top": 0,
+        "width": 810,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "left": 5210,
+        "top": 0,
+        "width": 1230,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "left": 6571,
+        "top": 0,
+        "width": 780,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "left": 7490,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 8376,
+        "top": 0,
+        "width": 1275,
+        "height": 255
+      },
+      {
+        "name": "Position",
+        "type": 109,
+        "controlsource": "Position",
+        "left": 2387,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnElektrolyseur2": {
+    "ok": true,
+    "recordsource": "qryUnElektrolyseur2",
+    "count": 27,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage Electrolyzer",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 9297,
+        "top": 113,
+        "width": 2061,
+        "height": 561
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 4989,
+        "top": 1360,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld102",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6463,
+        "top": 1360,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld103",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7370,
+        "top": 1360,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 1927,
+        "top": 1367,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3184,
+        "top": 1367,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4087,
+        "top": 1360,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8277,
+        "top": 1360,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 793,
+        "width": 7815,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld110",
+        "type": 100,
+        "caption": "Basis: Table Un Electrolyzers",
+        "left": 226,
+        "top": 453,
+        "width": 7597,
+        "height": 227
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 10204,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5100,
+        "top": 900,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld68",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld85",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 907,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 2040,
+        "top": 914,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4185,
+        "top": 915,
+        "width": 915,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8385,
+        "top": 900,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "left": 2154,
+        "top": 0,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "i",
+        "left": 4202,
+        "top": 0,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "left": 5210,
+        "top": 0,
+        "width": 1230,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "left": 6571,
+        "top": 0,
+        "width": 780,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "left": 7490,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 8376,
+        "top": 0,
+        "width": 1050,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnAlleElektrolyseure2": {
+    "ok": true,
+    "recordsource": "qryUnAlleElektrolyseure2",
+    "count": 39,
+    "controls": [
+      {
+        "name": "Text10",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 113,
+        "top": 1585,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Text12",
+        "type": 100,
+        "caption": "Date",
+        "left": 1473,
+        "top": 1585,
+        "width": 690,
+        "height": 240
+      },
+      {
+        "name": "Text14",
+        "type": 100,
+        "caption": "Time",
+        "left": 2380,
+        "top": 1585,
+        "width": 480,
+        "height": 240
+      },
+      {
+        "name": "Text16",
+        "type": 100,
+        "caption": " I total [kA]",
+        "left": 2947,
+        "top": 1360,
+        "width": 690,
+        "height": 465
+      },
+      {
+        "name": "Text18",
+        "type": 100,
+        "caption": "i\r\n[kA/m²]",
+        "left": 3630,
+        "top": 1362,
+        "width": 690,
+        "height": 450
+      },
+      {
+        "name": "Text20",
+        "type": 100,
+        "caption": "Cc [%]",
+        "left": 4422,
+        "top": 1360,
+        "width": 375,
+        "height": 465
+      },
+      {
+        "name": "Text22",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 4988,
+        "top": 1360,
+        "width": 495,
+        "height": 465
+      },
+      {
+        "name": "Text24",
+        "type": 100,
+        "caption": "t Ka [°C]",
+        "left": 5669,
+        "top": 1360,
+        "width": 495,
+        "height": 465
+      },
+      {
+        "name": "Text26",
+        "type": 100,
+        "caption": "tm [°C]",
+        "left": 6465,
+        "top": 1362,
+        "width": 465,
+        "height": 450
+      },
+      {
+        "name": "Text35",
+        "type": 100,
+        "caption": "Um [V]",
+        "left": 7029,
+        "top": 1360,
+        "width": 390,
+        "height": 465
+      },
+      {
+        "name": "Text37",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 7710,
+        "top": 1360,
+        "width": 390,
+        "height": 465
+      },
+      {
+        "name": "Schaltfläche67",
+        "type": 104,
+        "caption": "Standardized Voltage",
+        "left": 9751,
+        "top": 113,
+        "width": 1806,
+        "height": 576
+      },
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standarized Voltage of all Electrolysers",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 121,
+        "top": 793,
+        "width": 7815,
+        "height": 360
+      },
+      {
+        "name": "Bezeichnungsfeld76",
+        "type": 100,
+        "caption": "Basis: Tabelle Un Elektrolyseure",
+        "left": 226,
+        "top": 453,
+        "width": 7597,
+        "height": 227
+      },
+      {
+        "name": "Text41",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 113,
+        "top": 678,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Text42",
+        "type": 100,
+        "caption": "Date",
+        "left": 1473,
+        "top": 678,
+        "width": 690,
+        "height": 240
+      },
+      {
+        "name": "Text43",
+        "type": 100,
+        "caption": "Time",
+        "left": 2380,
+        "top": 678,
+        "width": 480,
+        "height": 240
+      },
+      {
+        "name": "Text44",
+        "type": 100,
+        "caption": " I total [kA]",
+        "left": 2947,
+        "top": 453,
+        "width": 690,
+        "height": 465
+      },
+      {
+        "name": "Text45",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 3623,
+        "top": 453,
+        "width": 690,
+        "height": 465
+      },
+      {
+        "name": "Text46",
+        "type": 100,
+        "caption": "Cc [%]",
+        "left": 4422,
+        "top": 453,
+        "width": 375,
+        "height": 465
+      },
+      {
+        "name": "Text47",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 4988,
+        "top": 453,
+        "width": 495,
+        "height": 465
+      },
+      {
+        "name": "Text48",
+        "type": 100,
+        "caption": "t Ka [°C]",
+        "left": 5669,
+        "top": 453,
+        "width": 495,
+        "height": 465
+      },
+      {
+        "name": "Text49",
+        "type": 100,
+        "caption": "tm [°C]",
+        "left": 6360,
+        "top": 450,
+        "width": 450,
+        "height": 465
+      },
+      {
+        "name": "Text51",
+        "type": 100,
+        "caption": "Um [V]",
+        "left": 7029,
+        "top": 455,
+        "width": 390,
+        "height": 465
+      },
+      {
+        "name": "Text52",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 7710,
+        "top": 455,
+        "width": 390,
+        "height": 465
+      },
+      {
+        "name": "Feld66",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 8617,
+        "top": 113,
+        "width": 1142,
+        "height": 347
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "left": 113,
+        "top": 0,
+        "width": 1140,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 1360,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "Zeit",
+        "type": 109,
+        "controlsource": "Zeit",
+        "left": 2380,
+        "top": 0,
+        "width": 570,
+        "height": 255
+      },
+      {
+        "name": "I Gesamt",
+        "type": 109,
+        "controlsource": "I Gesamt",
+        "left": 3061,
+        "top": 0,
+        "width": 573,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "i",
+        "left": 3741,
+        "top": 0,
+        "width": 465,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "left": 4308,
+        "top": 0,
+        "width": 573,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "left": 4988,
+        "top": 0,
+        "width": 558,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "left": 5669,
+        "top": 0,
+        "width": 573,
+        "height": 255
+      },
+      {
+        "name": "tm",
+        "type": 109,
+        "controlsource": "tm",
+        "left": 6349,
+        "top": 0,
+        "width": 585,
+        "height": 255
+      },
+      {
+        "name": "Feld36",
+        "type": 109,
+        "controlsource": "Um",
+        "left": 7029,
+        "top": 0,
+        "width": 558,
+        "height": 255
+      },
+      {
+        "name": "Feld38",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 7710,
+        "top": 0,
+        "width": 558,
+        "height": 255
+      },
+      {
+        "name": "Feld80",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 8050,
+        "top": 113,
+        "width": 1747,
+        "height": 227
+      }
+    ]
+  },
+  "frmTabelleUnGesamtanlage2": {
+    "ok": true,
+    "recordsource": "qryUnGesamtanlage2",
+    "count": 25,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage Train",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Menue",
+        "left": 8163,
+        "top": 113,
+        "width": 2031,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 10318,
+        "top": 113,
+        "width": 2061,
+        "height": 561
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 4989,
+        "top": 1360,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld102",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6463,
+        "top": 1360,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld103",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7370,
+        "top": 1360,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3184,
+        "top": 1367,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4087,
+        "top": 1360,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8277,
+        "top": 1360,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 793,
+        "width": 7815,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld110",
+        "type": 100,
+        "caption": "Basis: Table Un all Elements per Electrolyzer",
+        "left": 210,
+        "top": 450,
+        "width": 7635,
+        "height": 225
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 11111,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5100,
+        "top": 900,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld68",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld85",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 907,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4185,
+        "top": 915,
+        "width": 915,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8385,
+        "top": 900,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "Mittelwert von i",
+        "left": 4202,
+        "top": 0,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Mittelwert von Cc",
+        "left": 5210,
+        "top": 0,
+        "width": 1230,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "Mittelwert von t An",
+        "left": 6571,
+        "top": 0,
+        "width": 780,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "Mittelwert von t Ka",
+        "left": 7490,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Mittelwert von Un",
+        "left": 8376,
+        "top": 0,
+        "width": 1050,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnGruppe2": {
+    "ok": true,
+    "recordsource": "qryUnGruppe2",
+    "count": 22,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage all Groups",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Menue",
+        "left": 8163,
+        "top": 113,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 10091,
+        "top": 113,
+        "width": 1821,
+        "height": 576
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Membrane Type",
+        "left": 5230,
+        "top": 1360,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Group",
+        "left": 2040,
+        "top": 1360,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3312,
+        "top": 1367,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "Number",
+        "left": 4245,
+        "top": 1360,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 6931,
+        "top": 1360,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 793,
+        "width": 7815,
+        "height": 360
+      },
+      {
+        "name": "Bezeichnungsfeld110",
+        "type": 100,
+        "caption": "Basis: Table Un Gruppen",
+        "left": 226,
+        "top": 453,
+        "width": 7597,
+        "height": 227
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 10318,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Membrane Type",
+        "left": 5329,
+        "top": 907,
+        "width": 1425,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Group",
+        "left": 2025,
+        "top": 915,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "Number",
+        "left": 4260,
+        "top": 915,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 6916,
+        "top": 907,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Gruppe",
+        "left": 2154,
+        "top": 0,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "n",
+        "left": 4322,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Membrantyp",
+        "left": 5329,
+        "top": 0,
+        "width": 1380,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 6916,
+        "top": 0,
+        "width": 1050,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnElement2": {
+    "ok": true,
+    "recordsource": "qryUnElement2",
+    "count": 32,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage Single Element",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 675
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Update Display",
+        "left": 11565,
+        "top": 113,
+        "width": 1701,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized Voltage",
+        "left": 11565,
+        "top": 793,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5102,
+        "top": 1474,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld102",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld103",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 1474,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 1133,
+        "top": 1474,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 1481,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4308,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8390,
+        "top": 1474,
+        "width": 1260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld111",
+        "type": 100,
+        "caption": "Position",
+        "left": 2370,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 907,
+        "width": 7830,
+        "height": 360
+      },
+      {
+        "name": "Bezeichnungsfeld114",
+        "type": 100,
+        "caption": "Basis: Table Un Elements",
+        "left": 210,
+        "top": 570,
+        "width": 7605,
+        "height": 210
+      },
+      {
+        "name": "subfrmElektrolyseurUnElement",
+        "type": 112,
+        "sourceobject": "subfrmElektrolyseurUnElement",
+        "left": 8163,
+        "top": 113,
+        "width": 3150,
+        "height": 525
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 10318,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5102,
+        "top": 907,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld68",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld85",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 907,
+        "width": 915,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 1133,
+        "top": 907,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4308,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8385,
+        "top": 900,
+        "width": 1260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld108",
+        "type": 100,
+        "caption": "Position",
+        "left": 2385,
+        "top": 900,
+        "width": 810,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "left": 1135,
+        "top": 0,
+        "width": 1140,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "i",
+        "left": 4307,
+        "top": 0,
+        "width": 810,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "left": 5210,
+        "top": 0,
+        "width": 1230,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "left": 6571,
+        "top": 0,
+        "width": 780,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "left": 7490,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 8376,
+        "top": 0,
+        "width": 1275,
+        "height": 255
+      },
+      {
+        "name": "Position",
+        "type": 109,
+        "controlsource": "Position",
+        "left": 2387,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnTeilanlage2": {
+    "ok": true,
+    "recordsource": "qryUnTeilanlage2",
+    "count": 28,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage Train",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Menue",
+        "left": 8163,
+        "top": 113,
+        "width": 2031,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 10318,
+        "top": 113,
+        "width": 2061,
+        "height": 561
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 4989,
+        "top": 1360,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld102",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6463,
+        "top": 1360,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld103",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7370,
+        "top": 1360,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Train",
+        "left": 1905,
+        "top": 1365,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3184,
+        "top": 1367,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4087,
+        "top": 1360,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8277,
+        "top": 1360,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 793,
+        "width": 7815,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld110",
+        "type": 100,
+        "caption": "Basis: Table Un all Elements per Electrolyzer",
+        "left": 210,
+        "top": 450,
+        "width": 7635,
+        "height": 225
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 11111,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5100,
+        "top": 900,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld68",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld85",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 907,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Train",
+        "left": 2025,
+        "top": 915,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4185,
+        "top": 915,
+        "width": 915,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8385,
+        "top": 900,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Teilanlagenbezeichnung",
+        "left": 2034,
+        "top": 0,
+        "width": 1140,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "Mittelwert von i",
+        "left": 4202,
+        "top": 0,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Mittelwert von Cc",
+        "left": 5210,
+        "top": 0,
+        "width": 1230,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "Mittelwert von t An",
+        "left": 6571,
+        "top": 0,
+        "width": 780,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "Mittelwert von t Ka",
+        "left": 7490,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Mittelwert von Un",
+        "left": 8376,
+        "top": 0,
+        "width": 1050,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnAlleGruppen2": {
+    "ok": true,
+    "recordsource": "qryUnAlleGruppen2",
+    "count": 22,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage all Groups",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Menue",
+        "left": 8163,
+        "top": 113,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 10091,
+        "top": 113,
+        "width": 1821,
+        "height": 576
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Membrane Type",
+        "left": 5230,
+        "top": 1360,
+        "width": 1590,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Group",
+        "left": 2040,
+        "top": 1360,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3312,
+        "top": 1367,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "Number",
+        "left": 4245,
+        "top": 1360,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 6931,
+        "top": 1360,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 793,
+        "width": 7815,
+        "height": 360
+      },
+      {
+        "name": "Bezeichnungsfeld110",
+        "type": 100,
+        "caption": "Basis: Table Un Groups",
+        "left": 226,
+        "top": 453,
+        "width": 7597,
+        "height": 227
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 10318,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Membrane Type",
+        "left": 5329,
+        "top": 907,
+        "width": 1425,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Group",
+        "left": 2025,
+        "top": 915,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "Number",
+        "left": 4260,
+        "top": 915,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 6916,
+        "top": 907,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Gruppe",
+        "left": 2154,
+        "top": 0,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "n",
+        "left": 4322,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Membrantyp",
+        "left": 5329,
+        "top": 0,
+        "width": 1380,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 6916,
+        "top": 0,
+        "width": 1050,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnAlleElemente2": {
+    "ok": true,
+    "recordsource": "qryUnAlleElemente2",
+    "count": 31,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage of all Elements",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 675
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Menue",
+        "left": 10091,
+        "top": 113,
+        "width": 1596,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized Voltage",
+        "left": 8155,
+        "top": 113,
+        "width": 1716,
+        "height": 576
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5102,
+        "top": 1474,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld102",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld103",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 1474,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 1133,
+        "top": 1474,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 1481,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4308,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8390,
+        "top": 1474,
+        "width": 1260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld111",
+        "type": 100,
+        "caption": "Position",
+        "left": 2370,
+        "top": 1474,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 907,
+        "width": 7830,
+        "height": 360
+      },
+      {
+        "name": "Bezeichnungsfeld114",
+        "type": 100,
+        "caption": "Basis: Table Un Elements",
+        "left": 210,
+        "top": 570,
+        "width": 7605,
+        "height": 210
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 10318,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5102,
+        "top": 907,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld68",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld85",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 907,
+        "width": 915,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Electrolyser",
+        "left": 1133,
+        "top": 907,
+        "width": 1140,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4308,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8385,
+        "top": 900,
+        "width": 1260,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld108",
+        "type": 100,
+        "caption": "Position",
+        "left": 2385,
+        "top": 900,
+        "width": 810,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "left": 1135,
+        "top": 0,
+        "width": 1140,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "i",
+        "left": 4307,
+        "top": 0,
+        "width": 810,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "left": 5210,
+        "top": 0,
+        "width": 1230,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "left": 6571,
+        "top": 0,
+        "width": 780,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "left": 7490,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un",
+        "left": 8376,
+        "top": 0,
+        "width": 1275,
+        "height": 255
+      },
+      {
+        "name": "Position",
+        "type": 109,
+        "controlsource": "Position",
+        "left": 2387,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "frmTabelleUnAlleTeilanlagen2": {
+    "ok": true,
+    "recordsource": "qryUnAlleTeilanlagen2",
+    "count": 28,
+    "controls": [
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standardized Voltage Train",
+        "left": 120,
+        "top": 120,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Hauptmenue",
+        "type": 104,
+        "caption": "Menue",
+        "left": 8163,
+        "top": 113,
+        "width": 2031,
+        "height": 576
+      },
+      {
+        "name": "Befehl89",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 10318,
+        "top": 113,
+        "width": 2061,
+        "height": 561
+      },
+      {
+        "name": "Bezeichnungsfeld101",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 4989,
+        "top": 1360,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld102",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6463,
+        "top": 1360,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld103",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7370,
+        "top": 1360,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld104",
+        "type": 100,
+        "caption": "Train",
+        "left": 1905,
+        "top": 1365,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld105",
+        "type": 100,
+        "caption": "Date",
+        "left": 3184,
+        "top": 1367,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld106",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4087,
+        "top": 1360,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld107",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8277,
+        "top": 1360,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 793,
+        "width": 7815,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld110",
+        "type": 100,
+        "caption": "Basis: Table Un all Elements per Electrolyzer",
+        "left": 210,
+        "top": 450,
+        "width": 7635,
+        "height": 225
+      },
+      {
+        "name": "Feld49",
+        "type": 109,
+        "controlsource": "=Date()",
+        "left": 11111,
+        "top": 226,
+        "width": 1116,
+        "height": 345
+      },
+      {
+        "name": "Bezeichnungsfeld66",
+        "type": 100,
+        "caption": "Cath. Conc [%]",
+        "left": 5100,
+        "top": 900,
+        "width": 1365,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld68",
+        "type": 100,
+        "caption": "t An [°C]",
+        "left": 6576,
+        "top": 907,
+        "width": 825,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld85",
+        "type": 100,
+        "caption": "t Ca. [°C]",
+        "left": 7483,
+        "top": 907,
+        "width": 885,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld92",
+        "type": 100,
+        "caption": "Train",
+        "left": 2025,
+        "top": 915,
+        "width": 1155,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld93",
+        "type": 100,
+        "caption": "Date",
+        "left": 3297,
+        "top": 914,
+        "width": 795,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld94",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "left": 4185,
+        "top": 915,
+        "width": 915,
+        "height": 240
+      },
+      {
+        "name": "Bezeichnungsfeld100",
+        "type": 100,
+        "caption": "Un [V]",
+        "left": 8385,
+        "top": 900,
+        "width": 1035,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Teilanlagenbezeichnung",
+        "left": 2034,
+        "top": 0,
+        "width": 1140,
+        "height": 255
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "left": 3283,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "Mittelwert von i",
+        "left": 4202,
+        "top": 0,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Mittelwert von Cc",
+        "left": 5210,
+        "top": 0,
+        "width": 1230,
+        "height": 255
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "Mittelwert von t An",
+        "left": 6571,
+        "top": 0,
+        "width": 780,
+        "height": 255
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "Mittelwert von t Ka",
+        "left": 7490,
+        "top": 0,
+        "width": 795,
+        "height": 255
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Mittelwert von Un",
+        "left": 8376,
+        "top": 0,
+        "width": 1050,
+        "height": 255
+      },
+      {
+        "name": "Feld47",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "left": 9637,
+        "top": 113,
+        "width": 1701,
+        "height": 255
+      }
+    ]
+  },
+  "subfrmSPC1": {
+    "ok": true,
+    "recordsource": "SELECT DISTINCTROW tblGewDaten.IDiRef, tblGewDaten.IDElektrolyseurUnCeSpcElektrolyseur FROM tblGewDaten;",
+    "count": 1,
+    "controls": [
+      {
+        "name": "Kombinationsfeld10",
+        "type": 111,
+        "controlsource": "IDElektrolyseurUnCeSpcElektrolyseur",
+        "rowsource": "SELECT DISTINCTROW [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichnung].[Bezeichnung] FROM [tblElektrolyseurbezeichnung];",
+        "left": 170,
+        "top": 56,
+        "width": 1641,
+        "height": 300
+      }
+    ]
+  },
+  "subfrmUN1": {
+    "ok": false,
+    "error": "(-2147352567, 'Exception occurred.', (0, None, \"The form name 'subfrmUN1' is misspelled or refers to a form that doesn't exist.\", None, -1, -2146826186), None)"
+  }
+}

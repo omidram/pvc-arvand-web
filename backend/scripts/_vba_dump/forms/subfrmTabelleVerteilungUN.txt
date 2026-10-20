@@ -1,0 +1,129 @@
+Version =17
+VersionRequired =17
+Checksum =-122846199
+Begin Form
+    OrderByOn = NotDefault
+    GridX =5
+    GridY =5
+    Width =2381
+    RowHeight =240
+    ItemSuffix =32
+    Top =1095
+    Right =5550
+    Bottom =5760
+    RecSrcDt = Begin
+        0x48c608dcbabbe240
+    End
+    RecordSource ="qryTabelleVerteilungUn"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextAlign =3
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin OptionButton
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin CheckBox
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin TextBox
+            SpecialEffect =2
+            LabelAlign =3
+            TextAlign =2
+            Width =798
+            Height =255
+            LabelX =-113
+        End
+        Begin ListBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =1417
+            LabelX =-236
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin FormHeader
+            Height =353
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =113
+                    Top =113
+                    Width =919
+                    Height =240
+                    Name ="Text13"
+                    Caption ="Position"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1133
+                    Top =113
+                    Width =1155
+                    Height =240
+                    Name ="Text15"
+                    Caption ="UNi [V]"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    Left =113
+                    Width =903
+                    ColumnWidth =825
+                    Name ="Position"
+                    ControlSource ="Position"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    Left =1133
+                    Width =1143
+                    ColumnWidth =720
+                    TabIndex =1
+                    Name ="Ui"
+                    ControlSource ="Ui"
+                    Format ="Standard"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =340
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End

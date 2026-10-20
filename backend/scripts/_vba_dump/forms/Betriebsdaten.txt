@@ -1,0 +1,1855 @@
+Version =19
+VersionRequired =19
+Checksum =123706001
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =19515
+    ItemSuffix =337
+    Top =324
+    Right =11856
+    Bottom =7248
+    RecSrcDt = Begin
+        0x28a5523f1d6de240
+    End
+    RecordSource ="tblGewDaten"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x3702000089050000960200008905000000000000e52f0000e71b000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c4850354b5f37313534365f50434c00000000000000 ,
+        0x010418009c00b80303ff800702000900000000006400010001002c0102000100 ,
+        0x2c01010000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742035303030205365726965732050434c2036000000 ,
+        0x000000000000040032002e018603789c654fcb2e8341183d67a6ed288a05ad48 ,
+        0x45dd2f11112f6081451fa078804a5c9aef6bb44d88205db2a88d5d130fe009b0 ,
+        0xf006dec203d8b95f66fe5423f12dce393933df9c3995caff31c436afe8a9c426 ,
+        0xdc0193284875a75ada2ac2c549c02502ea37649272471d67dd503a58779461da ,
+        0x864d43f24667a8879409d69bb6b64899a34c5167a94bf4ebd3ccc2538131045e ,
+        0x6ff146e0208e98863b0d39e513ca31f58c72ce70321f5df1dfd3203ceff21192 ,
+        0xa43e433eb1ff06f9808c505fa0ef902fe800254d291ac95073d441da148b901e ,
+        0x6a1fb597b551cabdb1cbcc419c9131eaad753751cfa108b3113e21e083f59820 ,
+        0xac416b1a0bbfcadbb1b67dfdd78eb7edcbb6ed1f7d453fec0a378d5df52017b6 ,
+        0xbc1635cc3305eda47451ba7d548c99a8e71e9defecf37f00a4d5459500000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08002600400001004850204c617365724a657420353030302053657269657320 ,
+        0x50434c2036005c5c5355444f505330325c4850354b5f37313534365f50434c00 ,
+        0x6870356b5f373135343600
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =15882
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin Rectangle
+                    SpecialEffect =1
+                    OverlapFlags =93
+                    Left =226
+                    Top =113
+                    Width =14971
+                    Height =1576
+                    BackColor =12632256
+                    Name ="Rechteck17"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =12130
+                    Top =1020
+                    Width =1824
+                    Height =561
+                    Name ="Schaltfläche29"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =6365
+                    Top =2388
+                    Width =2705
+                    Height =6342
+                    Name ="Rechteck83"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =12490
+                    Top =2395
+                    Width =2705
+                    Height =6342
+                    Name ="Rechteck95"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6576
+                    Top =7937
+                    Width =2271
+                    Height =576
+                    TabIndex =3
+                    Name ="Schaltfläche98"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =9411
+                    Top =2388
+                    Width =2720
+                    Height =6342
+                    Name ="Rechteck110"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9411
+                    Top =1927
+                    Width =2730
+                    Height =345
+                    FontSize =12
+                    FontWeight =600
+                    BackColor =12632256
+                    BorderColor =8388608
+                    Name ="Bezeichnungsfeld111"
+                    Caption ="Groups"
+                End
+                Begin CommandButton
+                    Visible = NotDefault
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =11338
+                    Top =9750
+                    Width =2046
+                    Height =576
+                    FontSize =8
+                    TabIndex =4
+                    Name ="Befehl112"
+                    Caption ="Group selected by electrolyser a. date"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6349
+                    Top =1927
+                    Width =2730
+                    Height =345
+                    FontSize =12
+                    FontWeight =600
+                    BackColor =12632256
+                    BorderColor =8388608
+                    Name ="Text84"
+                    Caption ="Electrolyzers\015\012 "
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12472
+                    Top =1927
+                    Width =2730
+                    Height =345
+                    FontSize =12
+                    FontWeight =600
+                    BackColor =12632256
+                    BorderColor =8388608
+                    Name ="Bezeichnungsfeld115"
+                    Caption ="Elements"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =9637
+                    Top =7937
+                    Width =2271
+                    Height =576
+                    TabIndex =5
+                    Name ="Befehl129"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =3
+                    Left =7370
+                    Top =1020
+                    Width =4665
+                    Height =570
+                    TabIndex =6
+                    Name ="subfrmStdVoltage2"
+                    SourceObject ="Form.subfrmStdVoltage2"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =12699
+                    Top =7937
+                    Width =2271
+                    Height =568
+                    TabIndex =7
+                    Name ="Befehl169"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =453
+                    Top =226
+                    Width =6591
+                    Height =469
+                    FontSize =18
+                    FontWeight =700
+                    Name ="Bezeichnungsfeld175"
+                    Caption ="Standardized Voltage"
+                    FontName ="Arial"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    SpecialEffect =3
+                    Left =7370
+                    Top =226
+                    Width =6585
+                    Height =570
+                    TabIndex =8
+                    BorderColor =12632256
+                    Name ="subfrmAuswertungszeitraum"
+                    SourceObject ="Form.subfrmAuswertungszeitraum"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =453
+                    Top =793
+                    Width =6585
+                    Height =795
+                    FontSize =12
+                    FontWeight =600
+                    BackColor =12632256
+                    BorderColor =8388608
+                    Name ="Bezeichnungsfeld192"
+                    Caption ="Data Input"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =1927
+                    Width =2730
+                    Height =345
+                    FontSize =12
+                    FontWeight =600
+                    BackColor =12632256
+                    BorderColor =8388608
+                    Name ="Bezeichnungsfeld193"
+                    Caption ="Total Plant\015\012 "
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =226
+                    Top =2381
+                    Width =2735
+                    Height =6342
+                    Name ="Rechteck194"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3288
+                    Top =1927
+                    Width =2730
+                    Height =345
+                    FontSize =12
+                    FontWeight =600
+                    BackColor =12632256
+                    BorderColor =8388608
+                    Name ="Bezeichnungsfeld195"
+                    Caption ="Train\015\012 "
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =3288
+                    Top =2381
+                    Width =2720
+                    Height =6342
+                    Name ="Rechteck196"
+                End
+                Begin CommandButton
+                    OverlapFlags =223
+                    Left =3741
+                    Top =1133
+                    Width =1236
+                    Height =456
+                    TabIndex =9
+                    Name ="Befehl197"
+                    Caption ="Groups"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4975
+                    Top =1133
+                    Width =2046
+                    Height =456
+                    TabIndex =10
+                    Name ="Befehl198"
+                    Caption ="Single Elements"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =6462
+                    Top =2614
+                    Width =2486
+                    Height =943
+                    TabIndex =11
+                    Name ="Rahmen213"
+                    ControlSource ="IDBasisUNElektrolyseur"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =6588
+                            Top =2490
+                            Width =1800
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld214"
+                            Caption ="Voltages"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6648
+                            Top =2852
+                            OptionValue =1
+                            Name ="Option216"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =6878
+                                    Top =2824
+                                    Width =1965
+                                    Height =240
+                                    Name ="Bezeichnungsfeld217"
+                                    Caption ="Electrolyzer voltage"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6648
+                            Top =3182
+                            OptionValue =2
+                            Name ="Option218"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =6878
+                                    Top =3154
+                                    Width =1965
+                                    Height =240
+                                    Name ="Bezeichnungsfeld219"
+                                    Caption ="Sum Single Elements"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =6462
+                    Top =6809
+                    Width =2492
+                    Height =913
+                    TabIndex =12
+                    Name ="Rahmen220"
+                    ControlSource ="IDDarstellungUNElektrolyseur"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =6687
+                            Top =6689
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld221"
+                            Caption ="Ergebnisse als"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6753
+                            Top =7047
+                            OptionValue =1
+                            Name ="Option223"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =6983
+                                    Top =7019
+                                    Width =780
+                                    Height =240
+                                    Name ="Bezeichnungsfeld224"
+                                    Caption ="Diagramm"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6753
+                            Top =7377
+                            OptionValue =2
+                            Name ="Option225"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =6983
+                                    Top =7349
+                                    Width =600
+                                    Height =240
+                                    Name ="Bezeichnungsfeld226"
+                                    Caption ="Tabelle"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =223
+                    Left =6462
+                    Top =3855
+                    Width =2492
+                    Height =2613
+                    TabIndex =13
+                    Name ="Rahmen227"
+                    ControlSource ="IDUmfangUNElektrolyseur"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =6582
+                            Top =3735
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld228"
+                            Caption ="Berechnung für"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6689
+                            Top =4109
+                            OptionValue =1
+                            Name ="Option230"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =6919
+                                    Top =4081
+                                    Width =1635
+                                    Height =240
+                                    Name ="Bezeichnungsfeld231"
+                                    Caption ="Einzelelektrolyseur"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6689
+                            Top =4988
+                            OptionValue =3
+                            Name ="Option321"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =6918
+                                    Top =4988
+                                    Width =1695
+                                    Height =240
+                                    Name ="Bezeichnungsfeld322"
+                                    Caption ="Mehrere Elektrolyseure"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =6689
+                            Top =6037
+                            OptionValue =2
+                            Name ="Option232"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =6919
+                                    Top =6009
+                                    Width =1590
+                                    Height =240
+                                    Name ="Bezeichnungsfeld233"
+                                    Caption ="Alle Elektrolyseure"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =6689
+                    Top =4422
+                    Width =1815
+                    Height =450
+                    TabIndex =14
+                    Name ="subfrmElektrolyseurUN"
+                    SourceObject ="Form.subfrmElektrolyseurUN"
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =3401
+                    Top =2618
+                    Width =2501
+                    Height =943
+                    TabIndex =15
+                    Name ="Rahmen236"
+                    ControlSource ="IDBasisUNTeilanlage"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =3527
+                            Top =2494
+                            Width =1800
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld237"
+                            Caption ="Voltages"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =3587
+                            Top =2856
+                            OptionValue =1
+                            Name ="Option238"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =3817
+                                    Top =2828
+                                    Width =1980
+                                    Height =240
+                                    Name ="Bezeichnungsfeld239"
+                                    Caption ="Electrolyzer voltage"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =3587
+                            Top =3186
+                            OptionValue =2
+                            Name ="Option240"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =3817
+                                    Top =3158
+                                    Width =1980
+                                    Height =240
+                                    Name ="Bezeichnungsfeld241"
+                                    Caption ="Sum Single Elements"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =223
+                    Left =3401
+                    Top =3861
+                    Width =2492
+                    Height =2608
+                    TabIndex =16
+                    Name ="Rahmen242"
+                    ControlSource ="IDUmfangUNTeilanlage"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =3521
+                            Top =3741
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld243"
+                            Caption ="Berechnung für"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =3587
+                            Top =4099
+                            OptionValue =1
+                            Name ="Option244"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =3817
+                                    Top =4071
+                                    Width =1635
+                                    Height =240
+                                    Name ="Bezeichnungsfeld245"
+                                    Caption ="Einzelne Teilanlage"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =3628
+                            Top =6037
+                            OptionValue =2
+                            Name ="Option246"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =3858
+                                    Top =6009
+                                    Width =1590
+                                    Height =240
+                                    Name ="Bezeichnungsfeld247"
+                                    Caption ="Alle Teilanlagen"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =3401
+                    Top =6809
+                    Width =2492
+                    Height =913
+                    TabIndex =17
+                    Name ="Rahmen248"
+                    ControlSource ="IDDarstellungUNTeilanlage"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =3626
+                            Top =6689
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld249"
+                            Caption ="Ergebnisse als"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =3692
+                            Top =7047
+                            OptionValue =1
+                            Name ="Option250"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =3922
+                                    Top =7019
+                                    Width =780
+                                    Height =240
+                                    Name ="Bezeichnungsfeld251"
+                                    Caption ="Diagramm"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =3692
+                            Top =7377
+                            OptionValue =2
+                            Name ="Option252"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =3922
+                                    Top =7349
+                                    Width =600
+                                    Height =240
+                                    Name ="Bezeichnungsfeld253"
+                                    Caption ="Tabelle"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3514
+                    Top =7937
+                    Width =2271
+                    Height =576
+                    TabIndex =18
+                    Name ="Befehl254"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =3628
+                    Top =4422
+                    Width =1815
+                    Height =450
+                    TabIndex =19
+                    Name ="Eingebettet255"
+                    SourceObject ="Form.subfrmTeilanlageUN"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =2040
+                    Top =1133
+                    Width =1716
+                    Height =456
+                    TabIndex =2
+                    Name ="Schaltfläche85"
+                    Caption ="All Elements"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =453
+                    Top =1133
+                    Width =1581
+                    Height =456
+                    TabIndex =1
+                    Name ="Schaltfläche72"
+                    Caption ="Electrolyzers"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =340
+                    Top =2618
+                    Width =2501
+                    Height =943
+                    TabIndex =20
+                    Name ="Rahmen256"
+                    ControlSource ="IDBasisUNGesamtanlage"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =466
+                            Top =2494
+                            Width =1800
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld257"
+                            Caption ="Voltages"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =526
+                            Top =2856
+                            OptionValue =1
+                            Name ="Option258"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =756
+                                    Top =2828
+                                    Width =1965
+                                    Height =240
+                                    Name ="Bezeichnungsfeld259"
+                                    Caption ="Electrolyzer voltage"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =526
+                            Top =3186
+                            OptionValue =2
+                            Name ="Option260"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =756
+                                    Top =3158
+                                    Width =1965
+                                    Height =240
+                                    Name ="Bezeichnungsfeld261"
+                                    Caption ="Sum Single Elements"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =340
+                    Top =6783
+                    Width =2492
+                    Height =913
+                    TabIndex =21
+                    Name ="Rahmen268"
+                    ControlSource ="IDDarstellungUNGesamtanlage"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =565
+                            Top =6689
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld269"
+                            Caption ="Ergebnisse als"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =631
+                            Top =7047
+                            OptionValue =1
+                            Name ="Option270"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =861
+                                    Top =7019
+                                    Width =780
+                                    Height =240
+                                    Name ="Bezeichnungsfeld271"
+                                    Caption ="Diagramm"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =631
+                            Top =7377
+                            OptionValue =2
+                            Name ="Option272"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =861
+                                    Top =7349
+                                    Width =600
+                                    Height =240
+                                    Name ="Bezeichnungsfeld273"
+                                    Caption ="Tabelle"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =453
+                    Top =7937
+                    Width =2256
+                    Height =576
+                    TabIndex =22
+                    Name ="Befehl274"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =9525
+                    Top =2618
+                    Width =2501
+                    Height =943
+                    TabIndex =23
+                    Name ="Rahmen275"
+                    ControlSource ="IDBasisUNGruppe"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =9636
+                            Top =2490
+                            Width =1815
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld276"
+                            Caption ="Data"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9711
+                            Top =2856
+                            OptionValue =1
+                            Name ="Option277"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =9941
+                                    Top =2828
+                                    Width =1965
+                                    Height =240
+                                    Name ="Bezeichnungsfeld278"
+                                    Caption ="Electrolyzer voltage"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9711
+                            Top =3186
+                            OptionValue =2
+                            Name ="Option279"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =9941
+                                    Top =3158
+                                    Width =1965
+                                    Height =240
+                                    Name ="Bezeichnungsfeld280"
+                                    Caption ="Sum Single Elements"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =223
+                    Left =9525
+                    Top =3861
+                    Width =2507
+                    Height =2611
+                    TabIndex =24
+                    Name ="Rahmen281"
+                    ControlSource ="IDUmfangUNGruppe"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =9645
+                            Top =3741
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld282"
+                            Caption ="Berechnung für"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9751
+                            Top =4109
+                            OptionValue =1
+                            Name ="Option283"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =9981
+                                    Top =4081
+                                    Width =1635
+                                    Height =240
+                                    Name ="Bezeichnungsfeld284"
+                                    Caption ="Einzelne Gruppe"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9751
+                            Top =5016
+                            OptionValue =3
+                            Name ="Option335"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =9981
+                                    Top =4988
+                                    Width =1590
+                                    Height =240
+                                    Name ="Bezeichnungsfeld336"
+                                    Caption ="Mehrere Gruppen"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9751
+                            Top =6037
+                            OptionValue =2
+                            Name ="Option285"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =9981
+                                    Top =6009
+                                    Width =1590
+                                    Height =240
+                                    Name ="Bezeichnungsfeld286"
+                                    Caption ="Alle Gruppen"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =9524
+                    Top =6809
+                    Width =2507
+                    Height =913
+                    TabIndex =25
+                    Name ="Rahmen287"
+                    ControlSource ="IDDarstellungUNGruppe"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =9749
+                            Top =6689
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld288"
+                            Caption ="Ergebnisse als"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9815
+                            Top =7047
+                            OptionValue =1
+                            Name ="Option289"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10045
+                                    Top =7019
+                                    Width =780
+                                    Height =240
+                                    Name ="Bezeichnungsfeld290"
+                                    Caption ="Diagramm"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =9815
+                            Top =7377
+                            OptionValue =2
+                            Name ="Option291"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =10045
+                                    Top =7349
+                                    Width =600
+                                    Height =240
+                                    Name ="Bezeichnungsfeld292"
+                                    Caption ="Tabelle"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =9751
+                    Top =4422
+                    Width =1815
+                    Height =450
+                    TabIndex =26
+                    Name ="Eingebettet293"
+                    SourceObject ="Form.subfrmGruppeUN"
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =12585
+                    Top =2622
+                    Width =2501
+                    Height =943
+                    TabIndex =27
+                    Name ="Rahmen294"
+                    ControlSource ="IDBasisUNElement"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =12696
+                            Top =2494
+                            Width =1815
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld295"
+                            Caption ="Data"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12771
+                            Top =2860
+                            OptionValue =1
+                            Name ="Option296"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13001
+                                    Top =2832
+                                    Width =1965
+                                    Height =240
+                                    Name ="Bezeichnungsfeld297"
+                                    Caption ="Electrolyzer voltage"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12771
+                            Top =3190
+                            OptionValue =2
+                            Name ="Option298"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13001
+                                    Top =3162
+                                    Width =1965
+                                    Height =240
+                                    Name ="Bezeichnungsfeld299"
+                                    Caption ="Sum Single Elements"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =12585
+                    Top =3861
+                    Width =2507
+                    Height =2611
+                    TabIndex =28
+                    Name ="Rahmen300"
+                    ControlSource ="IDUmfangUNElement"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =12705
+                            Top =3741
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld301"
+                            Caption ="Berechnung für"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12699
+                            Top =4109
+                            OptionValue =1
+                            Name ="Option302"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =12929
+                                    Top =4081
+                                    Width =1635
+                                    Height =240
+                                    Name ="Bezeichnungsfeld303"
+                                    Caption ="Einzelnes Element"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12699
+                            Top =4988
+                            Width =455
+                            Height =255
+                            OptionValue =3
+                            Name ="Option331"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =12929
+                                    Top =4988
+                                    Width =1635
+                                    Height =240
+                                    Name ="Bezeichnungsfeld332"
+                                    Caption ="Mehrere Elemente"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12699
+                            Top =6037
+                            OptionValue =2
+                            Name ="Option304"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =12929
+                                    Top =6009
+                                    Width =1590
+                                    Height =240
+                                    Name ="Bezeichnungsfeld305"
+                                    Caption ="Alle Elemente"
+                                End
+                            End
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    SpecialEffect =3
+                    OverlapFlags =215
+                    Left =12585
+                    Top =6809
+                    Width =2507
+                    Height =913
+                    TabIndex =29
+                    Name ="Rahmen306"
+                    ControlSource ="IDDarstellungUNElement"
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =12810
+                            Top =6689
+                            Width =1350
+                            Height =240
+                            BackColor =12632256
+                            Name ="Bezeichnungsfeld307"
+                            Caption ="Ergebnisse als"
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12876
+                            Top =7047
+                            OptionValue =1
+                            Name ="Option308"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13106
+                                    Top =7019
+                                    Width =780
+                                    Height =240
+                                    Name ="Bezeichnungsfeld309"
+                                    Caption ="Diagramm"
+                                End
+                            End
+                        End
+                        Begin OptionButton
+                            OverlapFlags =215
+                            Left =12876
+                            Top =7377
+                            OptionValue =2
+                            Name ="Option310"
+                            Begin
+                                Begin Label
+                                    OverlapFlags =247
+                                    Left =13106
+                                    Top =7349
+                                    Width =600
+                                    Height =240
+                                    Name ="Bezeichnungsfeld311"
+                                    Caption ="Tabelle"
+                                End
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Schaltfläche104_Click()
+On Error GoTo Err_Schaltfläche104_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "DiaGesamtElek"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche104_Click:
+    Exit Sub
+
+Err_Schaltfläche104_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche104_Click
+    
+End Sub
+
+Private Sub Befehl169_Click()
+    KorrekturfaktorenAktualisieren
+    If (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 1) And (Me!Rahmen306.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnElement"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 1) And (Me!Rahmen306.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnElement"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 3) And (Me!Rahmen306.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnMehrereElemente"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 3) And (Me!Rahmen306.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnMehrereElemente"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 2) And (Me!Rahmen306.Value = 1) Then
+        If GetIDGewSprache() = 1 Then
+            MsgBox "Darstellung in Diagramm nicht möglich", vbInformation, "Hinweis"
+        Else
+            MsgBox "Presentation of results in chart not possible", vbInformation, "Remark"
+        End If
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 2) And (Me!Rahmen306.Value = 2) Then
+        DoCmd.OpenForm "Gesamt Normierung"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 1) And (Me!Rahmen306.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnElement2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 1) And (Me!Rahmen306.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnElement2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 3) And (Me!Rahmen306.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnMehrereElemente2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 3) And (Me!Rahmen306.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnMehrereElemente2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 2) And (Me!Rahmen306.Value = 1) Then
+        If GetIDGewSprache() = 1 Then
+            MsgBox "Darstellung in Diagramm nicht möglich", vbInformation, "Hinweis"
+        Else
+            MsgBox "Presentation of results in chart not possible", vbInformation, "Remark"
+        End If
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 2) And (Me!Rahmen306.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnAlleElemente2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    
+    End If
+End Sub
+
+Private Sub Befehl197_Click()
+    DoCmd.OpenForm "frmEingabeUnGruppe"
+    DoCmd.Close acForm, "Betriebsdaten"
+End Sub
+
+Private Sub Befehl198_Click()
+    DoCmd.OpenForm "frmEingabeUnElement"
+    DoCmd.Close acForm, "Betriebsdaten"
+End Sub
+
+Private Sub Befehl254_Click()
+    KorrekturfaktorenAktualisieren
+    If (Me!Rahmen236.Value = 1) And (Me!Rahmen242.Value = 1) And (Me!Rahmen248.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnTeilanlage"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen236.Value = 1) And (Me!Rahmen242.Value = 1) And (Me!Rahmen248.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnTeilanlage"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen236.Value = 1) And (Me!Rahmen242.Value = 2) And (Me!Rahmen248.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUNAlleTeilanlagen"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen236.Value = 1) And (Me!Rahmen242.Value = 2) And (Me!Rahmen248.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnAlleTeilanlagen"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen236.Value = 2) And (Me!Rahmen242.Value = 1) And (Me!Rahmen248.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnTeilanlage2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen236.Value = 2) And (Me!Rahmen242.Value = 1) And (Me!Rahmen248.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnTeilanlage2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen236.Value = 2) And (Me!Rahmen242.Value = 2) And (Me!Rahmen248.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnAlleTeilanlagen2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen236.Value = 2) And (Me!Rahmen242.Value = 2) And (Me!Rahmen248.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnAlleTeilanlagen2"
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    End If
+
+End Sub
+
+Private Sub Befehl274_Click()
+    KorrekturfaktorenAktualisieren
+    If (Me!Rahmen256.Value = 1) And (Me!Rahmen268.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnGesamtanlage"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen256.Value = 1) And (Me!Rahmen268.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnGesamtanlage"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen256.Value = 2) And (Me!Rahmen268.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnGesamtanlage2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen256.Value = 2) And (Me!Rahmen268.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnGesamtanlage2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    End If
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Bezeichnungsfeld175.Caption = "Normierte Spannung"
+        
+        Bezeichnungsfeld193.Caption = "Gesamtanlage"
+        Bezeichnungsfeld257.Caption = "Verwendete Tabelle"
+        Bezeichnungsfeld259.Caption = "Elektrolyseure"
+        Bezeichnungsfeld261.Caption = "Alle Elemente pro Elektrol."
+        Bezeichnungsfeld269.Caption = "Ergebnisse als"
+        Bezeichnungsfeld271.Caption = "Diagramm"
+        Bezeichnungsfeld273.Caption = "Tabelle"
+        Befehl274.Caption = "Ergebnisse anzeigen"
+        
+        Bezeichnungsfeld195.Caption = "Teilanlage"
+        Bezeichnungsfeld237.Caption = "Verwendete Tabelle"
+        Bezeichnungsfeld239.Caption = "Elektrolyseure"
+        Bezeichnungsfeld241.Caption = "Alle Elemente pro Elektrol."
+        Bezeichnungsfeld243.Caption = "Berechnung für"
+        Bezeichnungsfeld245.Caption = "Einzelne Teilanlage"
+        Bezeichnungsfeld247.Caption = "Alle Teilanlagen"
+        Bezeichnungsfeld249.Caption = "Ergebnisse als"
+        Bezeichnungsfeld251.Caption = "Diagramm"
+        Bezeichnungsfeld253.Caption = "Tabelle"
+        Schaltfläche98.Caption = "Ergebnisse anzeigen"
+        
+        
+        Befehl254.Caption = "Ergebnisse anzeigen"
+        
+        Text84.Caption = "Elektrolyseure"
+        Bezeichnungsfeld214.Caption = "Verwendete Tabelle"
+        Bezeichnungsfeld217.Caption = "Elektrolyseure"
+        Bezeichnungsfeld219.Caption = "Alle Elemente pro Elektrol."
+        Bezeichnungsfeld228.Caption = "Berechnung für"
+        Bezeichnungsfeld231.Caption = "Einzel-Elektrolyseur"
+        Bezeichnungsfeld322.Caption = "Mehrere Elektrolyseure"
+        Bezeichnungsfeld233.Caption = "Alle Elektrolyseure"
+        Bezeichnungsfeld221.Caption = "Ergebnisse als"
+        Bezeichnungsfeld224.Caption = "Diagramm"
+        Bezeichnungsfeld226.Caption = "Tabelle"
+        Schaltfläche98.Caption = "Ergebnisse anzeigen"
+        
+        Bezeichnungsfeld111.Caption = "Gruppen"
+        Bezeichnungsfeld276.Caption = "Verwendete Tabelle"
+        Bezeichnungsfeld278.Caption = "Alle Elemente pro Elektrol."
+        Bezeichnungsfeld280.Caption = "Gruppen"
+        Bezeichnungsfeld282.Caption = "Berechnung für"
+        Bezeichnungsfeld284.Caption = "Einzelne Gruppe"
+        Bezeichnungsfeld336.Caption = "Mehrere Gruppen"
+        Bezeichnungsfeld286.Caption = "Alle Gruppen"
+        Bezeichnungsfeld288.Caption = "Ergebnisse als"
+        Bezeichnungsfeld290.Caption = "Diagramm"
+        Bezeichnungsfeld292.Caption = "Tabelle"
+        Befehl129.Caption = "Ergebnisse anzeigen"
+        
+        Bezeichnungsfeld115.Caption = "Elemente"
+        Bezeichnungsfeld295.Caption = "Verwendete Tabelle"
+        Bezeichnungsfeld297.Caption = "Alle Elemente pro Elektrol."
+        Bezeichnungsfeld299.Caption = "Einzelne Elemente"
+        Bezeichnungsfeld301.Caption = "Berechnung für"
+        Bezeichnungsfeld303.Caption = "Individuelles Element"
+        Bezeichnungsfeld332.Caption = "Mehrere Elemente"
+        Bezeichnungsfeld305.Caption = "Alle Elemente"
+        Bezeichnungsfeld307.Caption = "Ergebnisse als"
+        Bezeichnungsfeld309.Caption = "Diagramm"
+        Bezeichnungsfeld311.Caption = "Tabelle"
+        Befehl169.Caption = "Ergebnisse anzeigen"
+        
+        Befehl112.Caption = "Gruppe nach El. und Dat."
+        
+        Bezeichnungsfeld192.Caption = "Dateneingabe"
+        Schaltfläche72.Caption = "Elektrolyseure"
+        Schaltfläche85.Caption = "Alle Elemente"
+        Befehl197.Caption = "Gruppen"
+        Befehl198.Caption = "Einzelne Elemente"
+        
+        Schaltfläche29.Caption = "Hauptmenu"
+        
+    Else
+        Bezeichnungsfeld175.Caption = "Standardized Voltage"
+        
+        Bezeichnungsfeld193.Caption = "Total Plant"
+        Bezeichnungsfeld257.Caption = "Used Table"
+        Bezeichnungsfeld259.Caption = "Electrolyzers"
+        Bezeichnungsfeld261.Caption = "All Elements per Electrol."
+        Bezeichnungsfeld269.Caption = "Results as"
+        Bezeichnungsfeld271.Caption = "Chart"
+        Bezeichnungsfeld273.Caption = "Table"
+        Befehl274.Caption = "Display Results"
+        
+        Bezeichnungsfeld195.Caption = "Train"
+        Bezeichnungsfeld237.Caption = "Used Table"
+        Bezeichnungsfeld239.Caption = "Electrolyzers"
+        Bezeichnungsfeld241.Caption = "All Elements per Electrol."
+        Bezeichnungsfeld243.Caption = "Calculation for"
+        Bezeichnungsfeld245.Caption = "Individual Train"
+        Bezeichnungsfeld247.Caption = "All Trains"
+        Bezeichnungsfeld249.Caption = "Results as"
+        Bezeichnungsfeld251.Caption = "Chart"
+        Bezeichnungsfeld253.Caption = "Table"
+        Befehl254.Caption = "Display Results"
+        
+        Text84.Caption = "Electrolyzers"
+        Bezeichnungsfeld214.Caption = "Used Table"
+        Bezeichnungsfeld217.Caption = "Electrolyzers"
+        Bezeichnungsfeld219.Caption = "All Elements per Electrol."
+        Bezeichnungsfeld228.Caption = "Calculation for"
+        Bezeichnungsfeld231.Caption = "Individual Electrolyzer"
+        Bezeichnungsfeld322.Caption = "Several Electrolyzers"
+        Bezeichnungsfeld233.Caption = "All Electrolysers"
+        Bezeichnungsfeld221.Caption = "Results as"
+        Bezeichnungsfeld224.Caption = "Chart"
+        Bezeichnungsfeld226.Caption = "Table"
+        Schaltfläche98.Caption = "Display results"
+        
+        Bezeichnungsfeld111.Caption = "Groups"
+        Bezeichnungsfeld276.Caption = "Used Table"
+        Bezeichnungsfeld278.Caption = "All Elements per Electrol."
+        Bezeichnungsfeld280.Caption = "Groups"
+        Bezeichnungsfeld282.Caption = "Calculation for"
+        Bezeichnungsfeld284.Caption = "Individual Group"
+        Bezeichnungsfeld336.Caption = "Several Groups"
+        Bezeichnungsfeld286.Caption = "All Groups"
+        Bezeichnungsfeld288.Caption = "Results as"
+        Bezeichnungsfeld290.Caption = "Chart"
+        Bezeichnungsfeld292.Caption = "Table"
+        Befehl129.Caption = "Display Results"
+        
+        Bezeichnungsfeld115.Caption = "Elements"
+        Bezeichnungsfeld295.Caption = "Used Table"
+        Bezeichnungsfeld297.Caption = "All Elements per Electrol."
+        Bezeichnungsfeld299.Caption = "Individual Element"
+        Bezeichnungsfeld301.Caption = "Calculation for"
+        Bezeichnungsfeld303.Caption = "Individual Element"
+        Bezeichnungsfeld332.Caption = "Several Elements"
+        Bezeichnungsfeld305.Caption = "All Elements"
+        Bezeichnungsfeld307.Caption = "Results as"
+        Bezeichnungsfeld309.Caption = "Chart"
+        Bezeichnungsfeld311.Caption = "Table"
+        Befehl169.Caption = "Display results"
+        
+        
+      
+       
+        Befehl112.Caption = "Group Selected by El. and Date"
+        
+        Bezeichnungsfeld192.Caption = "Data Input"
+        Schaltfläche72.Caption = "Electrolyzers"
+        Schaltfläche85.Caption = "All Elements"
+        Befehl197.Caption = "Groups"
+        Befehl198.Caption = "Single Elements"
+        
+        Schaltfläche29.Caption = "Main Menu"
+    End If
+
+End Sub
+
+Private Sub Schaltfläche29_Click()
+On Error GoTo Err_Schaltfläche29_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Header"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "Betriebsdaten"
+
+Exit_Schaltfläche29_Click:
+    Exit Sub
+
+Err_Schaltfläche29_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche29_Click
+    
+End Sub
+
+Private Sub Schaltfläche72_Click()
+On Error GoTo Err_Schaltfläche72_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Datenerfassung Elektrolyseure"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "Betriebsdaten"
+
+Exit_Schaltfläche72_Click:
+    Exit Sub
+
+Err_Schaltfläche72_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche72_Click
+    
+End Sub
+
+Private Sub Schaltfläche85_Click()
+On Error GoTo Err_Schaltfläche85_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Datenerfassung Elemente"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "Betriebsdaten"
+
+Exit_Schaltfläche85_Click:
+    Exit Sub
+
+Err_Schaltfläche85_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche85_Click
+    
+End Sub
+
+Private Sub Schaltfläche88_Click()
+On Error GoTo Err_Schaltfläche88_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "DiaPos"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche88_Click:
+    Exit Sub
+
+Err_Schaltfläche88_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche88_Click
+    
+End Sub
+
+Private Sub Schaltfläche98_Click()
+    KorrekturfaktorenAktualisieren
+    If (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 1) And (Me!Rahmen220.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUn"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 1) And (Me!Rahmen220.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnElektrolyseur"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 2) And (Me!Rahmen220.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUNAlleElektrolyseure"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 2) And (Me!Rahmen220.Value = 2) Then
+        DoCmd.OpenForm "NormElekGes"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 3) And (Me!Rahmen220.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnMehrereElektrolyseure"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 3) And (Me!Rahmen220.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnElektrolyseure"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 1) And (Me!Rahmen220.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnElektrolyseur2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 1) And (Me!Rahmen220.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnElektrolyseur2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 3) And (Me!Rahmen220.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnMehrereElektrolyseure2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 3) And (Me!Rahmen220.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnMehrereElektrolyseure2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 2) And (Me!Rahmen220.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnAlleElektrolyseure2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 2) And (Me!Rahmen220.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnAlleElektrolyseure2"
+        DoCmd.Close acForm, "Betriebsdaten"
+    End If
+
+End Sub
+
+Private Sub Befehl113_Click()
+On Error GoTo Err_Befehl113_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Norm(Um)MittelDatum"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Befehl113_Click:
+    Exit Sub
+
+Err_Befehl113_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl113_Click
+    
+End Sub
+
+Private Sub Befehl129_Click()
+    KorrekturfaktorenAktualisieren
+    If (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 1) And (Me!Rahmen287.Value = 1) Then
+        DoCmd.OpenForm "DiaGruppe"
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 1) And (Me!Rahmen287.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnGruppe"
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 3) And (Me!Rahmen287.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUNMehrereGruppen"
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 3) And (Me!Rahmen287.Value = 2) Then
+        DoCmd.OpenForm "frmDiagrammUNMehrereGruppen"
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 2) And (Me!Rahmen287.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUNAlleGruppen"
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 2) And (Me!Rahmen287.Value = 2) Then
+        DoCmd.OpenForm "ListGrGes"
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 1) And (Me!Rahmen287.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnGruppe2"
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 1) And (Me!Rahmen287.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnGruppe2"
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 3) And (Me!Rahmen287.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnMehrereGruppen2"
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 3) And (Me!Rahmen287.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnMehrereGruppen2"
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 2) And (Me!Rahmen287.Value = 1) Then
+        DoCmd.OpenForm "frmDiagrammUnAlleGruppen2"
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 2) And (Me!Rahmen287.Value = 2) Then
+        DoCmd.OpenForm "frmTabelleUnAlleGruppen2"
+    End If
+    DoCmd.Close acForm, "Betriebsdaten"
+
+End Sub

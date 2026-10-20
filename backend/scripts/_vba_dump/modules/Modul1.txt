@@ -1,0 +1,296 @@
+Option Compare Database
+Option Explicit
+
+Public GewSprache As Long
+Public GewAnlagentyp As Long
+Public GewClOAnalyse As Long
+Public GewNaClinNaOHAnalyse As Long
+Public GewFeinNaOHAnalyse As Long
+Public GewiRef As Double
+Public GewFlaeche As Double
+Public GewcKorrektur As Double
+Public GewtKorrektur As Double
+Public GewAnsaeurung As Long
+Public GewAKF As Double
+Public GewVerzeichnisUElemente As String
+Public GewTemperaturkorrekturElement As Long
+Public GewTemperaturkorrekturGruppe As Long
+
+Public Sub Initialisierung()
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblBasisdaten ORDER BY Anlagentyp")
+    GewAnlagentyp = rst1!Anlagentyp
+    rst1.Close
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY VerzeichnisUElemente")
+    GewVerzeichnisUElemente = rst1!VerzeichnisUElemente
+    rst1.Close
+    KorrekturfaktorenAktualisieren
+End Sub
+
+Public Sub KorrekturfaktorenAktualisieren()
+    GewiRef = AktiRef()
+    GewtKorrektur = AkttKorrektur()
+    GewcKorrektur = AktcKorrektur()
+    GewAKF = AktAKF()
+    GewClOAnalyse = AktOClAnalyse()
+    GewAnsaeurung = AktAnsaeurung()
+    GewTemperaturkorrekturElement = AktTemperaturkorrekturElement()
+    GewTemperaturkorrekturGruppe = AktTemperaturkorrekturGruppe()
+End Sub
+
+Public Function GetGewIRef()
+    GetGewIRef = GewiRef
+End Function
+Public Function GetGewcKorrektur()
+    GetGewcKorrektur = GewcKorrektur
+End Function
+Public Function GetGewtKorrektur()
+    GetGewtKorrektur = GewtKorrektur
+End Function
+
+Public Function GetGewAKF()
+    GetGewAKF = GewAKF
+End Function
+
+Public Function VAnolytBer(VPureBrine, CNa2SO4PureBrine, CNa2SO4Anolyt) As Double
+ If (IsNull(VPureBrine) = True) Or (IsNull(CNa2SO4PureBrine) = True) Or (IsNull(CNa2SO4Anolyt) = True) Then
+     VAnolytBer = -1
+ Else
+    VAnolytBer = VPureBrine * (CNa2SO4PureBrine / CNa2SO4Anolyt)
+ End If
+End Function
+Public Function EtaNaClO3Ber(CNaClO3Anolyt, VAnolyt, CNaClO3PureBrine, VPureBrine, n, i) As Double
+If (IsNull(CNaClO3Anolyt) = True) Or (IsNull(VAnolyt) = True) Or (IsNull(CNaClO3PureBrine) = True) Or (IsNull(VPureBrine) = True) Or (IsNull(n) = True) Or (IsNull(i) = True) Then
+    EtaNaClO3Ber = -1
+Else
+    EtaNaClO3Ber = ((CNaClO3Anolyt * VAnolyt) - (CNaClO3PureBrine * VPureBrine)) / (n * i * 0.662) * 100
+End If
+End Function
+Public Function EtaNaOClBer(CNaClOAnolyt, VAnolyt, n, i) As Double
+If (IsNull(CNaClOAnolyt) = True) Or (IsNull(VAnolyt) = True) Or (IsNull(n) = True) Or (IsNull(i) = True) Then
+    EtaNaOClBer = -1
+Else
+    If GewClOAnalyse = 1 Then
+        EtaNaOClBer = (CNaClOAnolyt * VAnolyt) / (n * i * 1.38869) * 100
+    Else
+        EtaNaOClBer = (CNaClOAnolyt * VAnolyt) / (n * i * 0.98) * 100
+    End If
+End If
+End Function
+Public Function EtaHClBer(CHClPureBrine, VPureBrine, CHClAnolyt, VAnolyt, n, i) As Double
+If GewAnsaeurung <> 1 Then
+    EtaHClBer = 0
+Else
+    If (IsNull(CHClPureBrine) = True) Or (IsNull(VPureBrine) = True) Or (IsNull(CHClAnolyt) = True) Or (IsNull(VAnolyt) = True) Or (IsNull(n) = True) Or (IsNull(i) = True) Then
+        EtaHClBer = -1
+    Else
+        EtaHClBer = ((CHClPureBrine * VPureBrine) - (CHClAnolyt * VAnolyt)) / (n * i * 1.36) * 100
+    End If
+End If
+End Function
+
+Public Function EtaAlkaliBer(CNaOHPureBrine, VPureBrine, n, i) As Double
+If (IsNull(CNaOHPureBrine) = True) Or (IsNull(VPureBrine) = True) Or (IsNull(n) = True) Or (IsNull(i) = True) Then
+    EtaAlkaliBer = -1
+Else
+    EtaAlkaliBer = (CNaOHPureBrine * VPureBrine) / (n * i * 1.4923) * 100
+End If
+End Function
+
+Public Function EtaNa2CO3Ber(CNa2CO3PureBrine, VPureBrine, n, i) As Double
+If (IsNull(CNa2CO3PureBrine) = True) Or (IsNull(VPureBrine) = True) Or (IsNull(n) = True) Or (IsNull(i)) Then
+    EtaNa2CO3Ber = -1
+Else
+    EtaNa2CO3Ber = (CNa2CO3PureBrine * VPureBrine) / (n * i * 1.978) * 100
+End If
+End Function
+
+Public Function EtaO2Ber(YO2, YCl2, EtaNaClO3, EtaNaClO) As Double
+If (IsNull(YO2) = True) Or (IsNull(YCl2) = True) Or (IsNull(EtaNaClO3) = True) Or (IsNull(EtaNaClO) = True) Then
+    EtaO2Ber = -1
+Else
+    EtaO2Ber = 2 * (YO2 - 0.18 + GewAKF) / (YCl2 + 2 * YO2) * (100 - EtaNaClO3 - EtaNaClO)
+End If
+End Function
+
+Public Function EtaMembraneBer(EtaO2, EtaNaClO3, EtaNaClO, EtaHCl, EtaNa2CO3, EtaAlkali) As Double
+If (IsNull(EtaO2) = True) Or (IsNull(EtaNaClO3) = True) Or (IsNull(EtaNaClO) = True) Or (IsNull(EtaHCl) = True) Or (IsNull(EtaNa2CO3) = True) Or (IsNull(EtaAlkali) = True) Then
+    EtaMembraneBer = -1
+Else
+    EtaMembraneBer = 100 - EtaO2 - EtaNaClO3 - EtaNaClO - EtaHCl + EtaNa2CO3 + EtaAlkali
+End If
+End Function
+
+Public Function SPCBer(Un, CE) As Double
+If (IsNull(Un) = True) Or (IsNull(CE) = True) Then
+    SPCBer = -1
+Else
+    SPCBer = Un * 100000 / (1.4923 * CE)
+End If
+End Function
+
+Public Function UnBer(U, i, t, c) As Double
+If (IsNull(U) = True) Or (IsNull(i) = True) Or (IsNull(t) = True) Or (IsNull(c) = True) Then
+     UnBer = -1
+Else
+    UnBer = 2.42 + (GewiRef / i) * (U - 2.42) - (90 - t) * GewtKorrektur + (32 - c) * GewcKorrektur
+End If
+End Function
+
+Public Function UnBerVgl(U, i, t, c) As Single
+If (IsNull(U) = True) Or (IsNull(i) = True) Or (IsNull(t) = True) Or (IsNull(c) = True) Then
+     UnBerVgl = -1
+Else
+    UnBerVgl = 2.42 + (3 / i) * (U - 2.42) - (90 - t) * 0.01 + (32 - c) * 0.02
+End If
+End Function
+Public Function AktiRef()
+    Dim rst1 As DAO.Recordset
+    Dim rst2 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblUnKorrekturfaktoren ORDER BY iRef")
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDiRef")
+    Do Until rst1.EOF
+        If rst1!ID = rst2!IDiRef Then
+            AktiRef = rst1!iRef
+        End If
+        rst1.MoveNext
+    Loop
+    rst1.Close
+    rst2.Close
+End Function
+Public Function AkttKorrektur()
+    Dim rst1 As DAO.Recordset
+    Dim rst2 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblUnKorrekturfaktoren ORDER BY iRef")
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDiRef")
+    Do Until rst1.EOF
+        If rst1!ID = rst2!IDiRef Then
+            AkttKorrektur = rst1!tKorrektur
+        End If
+        rst1.MoveNext
+    Loop
+    rst1.Close
+    rst2.Close
+End Function
+Public Function AktcKorrektur()
+    Dim rst1 As DAO.Recordset
+    Dim rst2 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblUnKorrekturfaktoren ORDER BY iRef")
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDiRef")
+    Do Until rst1.EOF
+        If rst1!ID = rst2!IDiRef Then
+            AktcKorrektur = rst1!cKorrektur
+        End If
+        rst1.MoveNext
+    Loop
+    rst1.Close
+    rst2.Close
+End Function
+Public Function AktAKF()
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDiRef")
+    AktAKF = rst1!AnodischerKorrekturfaktor
+    rst1.Close
+End Function
+
+Public Function AktOClAnalyse()
+    Dim rst2 As DAO.Recordset
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDiRef")
+    AktOClAnalyse = rst2!IDClOAnalyse
+    rst2.Close
+End Function
+
+Public Function AktAnsaeurung()
+    Dim rst2 As DAO.Recordset
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDiRef")
+    AktAnsaeurung = rst2!IDAnsaeurung
+    rst2.Close
+End Function
+Public Function AktTemperaturkorrekturElement()
+    Dim rst2 As DAO.Recordset
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDTemperaturkorrekturElement")
+    AktTemperaturkorrekturElement = rst2!IDTemperaturkorrekturElement
+    rst2.Close
+End Function
+Public Function AktTemperaturkorrekturGruppe()
+    Dim rst2 As DAO.Recordset
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDTemperaturkorrekturGruppe")
+    AktTemperaturkorrekturGruppe = rst2!IDTemperaturkorrekturGruppe
+    rst2.Close
+End Function
+Public Function TempKorrElement(tm, Um, Ui) As Double
+If (IsNull(tm) = True) Or (IsNull(Um) = True) Or (IsNull(Ui) = True) Then
+    TempKorrElement = -1
+ElseIf GewTemperaturkorrekturElement = 1 Then
+    TempKorrElement = tm - (Um - Ui) * 30
+Else
+    TempKorrElement = tm
+End If
+End Function
+Public Function TempKorrGruppe()
+    TempKorrGruppe = -1
+End Function
+
+Public Function FileExist(Dateiname$) As Boolean
+    On Error GoTo Fehler:
+    FileExist = Dir$(Dateiname) <> ""
+    Exit Function
+Fehler:
+    FileExist = False
+    Resume Next
+End Function
+
+Public Function GetIDGewSprache() As Long
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    GetIDGewSprache = GewSprache
+End Function
+
+Public Function GetIDAnolyttemperaturMessen() As Long
+    Dim i As Long
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDAnolyttemperaturMessen")
+    i = rst1!IDAnolyttemperaturMessen
+    rst1.Close
+    GetIDAnolyttemperaturMessen = i
+End Function
+
+Public Function GetTemperaturkorrekturAnolyt() As Double
+    Dim z As Double
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY TemperaturkorrekturAnolyt")
+    z = rst1!TemperaturkorrekturAnolyt
+    rst1.Close
+    GetTemperaturkorrekturAnolyt = z
+End Function
+Public Function GetGewFlaeche() As Double
+    Dim z As Double
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY Flaeche")
+    z = rst1!Flaeche
+    rst1.Close
+    GetGewFlaeche = z
+End Function
+
+Public Function GetIDReserveplaetzeEinlesen() As Long
+    Dim i As Long
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDReserveplaetzeEinlesen")
+    i = rst1!IDReserveplaetzeEinlesen
+    rst1.Close
+    GetIDReserveplaetzeEinlesen = i
+End Function
+
+Public Function GetIDAnalysenGrenzwerteAnzeigen() As Long
+    Dim i As Long
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDAnalysenGrenzwerteAnzeigen")
+    i = rst1!IDAnalysenGrenzwerteAnzeigen
+    rst1.Close
+    GetIDAnalysenGrenzwerteAnzeigen = i
+End Function

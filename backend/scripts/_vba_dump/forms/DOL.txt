@@ -1,0 +1,423 @@
+Version =17
+VersionRequired =17
+Checksum =122868186
+Begin Form
+    OrderByOn = NotDefault
+    TabularFamily =0
+    GridX =5
+    GridY =5
+    Width =9070
+    ItemSuffix =47
+    Left =720
+    Top =750
+    Right =10080
+    Bottom =9030
+    OrderBy ="[ABF3 Gesamt].[Element Nr]"
+    RecSrcDt = Begin
+        0x2ce1cf2bb687e140
+    End
+    RecordSource ="ABF3 Gesamt"
+    Caption ="DOL"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextFontFamily =0
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            TextFontFamily =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            TextFontFamily =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            TextFontFamily =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =909
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    BackStyle =0
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =261
+                    Top =266
+                    Width =744
+                    Height =360
+                    FontSize =14
+                    ForeColor =8355711
+                    Name ="Text7"
+                    Caption ="DOL"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =1360
+                    Top =113
+                    Width =1491
+                    Height =456
+                    Name ="Schaltfläche27"
+                    Caption ="Menue"
+                    OnClick ="Hauptmenue"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7823
+                    Top =226
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    TabIndex =1
+                    BackColor =12632256
+                    Name ="Feld28"
+                    ControlSource ="=Date()"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =3061
+                    Top =113
+                    Width =1596
+                    Height =456
+                    TabIndex =2
+                    Name ="Schaltfläche23"
+                    Caption ="Search"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    BackStyle =0
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =226
+                    Top =226
+                    Width =804
+                    Height =360
+                    FontSize =14
+                    ForeColor =16777215
+                    Name ="Text8"
+                    Caption ="DOL"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =680
+                    Width =1236
+                    Height =228
+                    Name ="Text36"
+                    Caption ="Element Nr"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1581
+                    Top =681
+                    Width =1128
+                    Height =228
+                    Name ="Text37"
+                    Caption ="Anoden Nr"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2822
+                    Top =681
+                    Width =1248
+                    Height =228
+                    Name ="Text38"
+                    Caption ="Kathoden Nr"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4416
+                    Top =681
+                    Width =1248
+                    Height =228
+                    Name ="Text39"
+                    Caption ="Membrantyp"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5890
+                    Top =681
+                    Width =1548
+                    Height =228
+                    Name ="Text40"
+                    Caption ="Montage Datum"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7704
+                    Top =681
+                    Width =792
+                    Height =228
+                    Name ="Text41"
+                    Caption ="DOL"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1021
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1005
+                    Top =225
+                    Width =2640
+                    Height =450
+                    FontSize =14
+                    FontWeight =600
+                    Name ="Text22"
+                    Caption ="DOL"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =232
+                    Top =792
+                    Width =1236
+                    Height =228
+                    Name ="Text24"
+                    Caption ="Element Nr"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1587
+                    Top =793
+                    Width =1128
+                    Height =228
+                    Name ="Text25"
+                    Caption ="Anoden Nr"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2828
+                    Top =793
+                    Width =1248
+                    Height =228
+                    Name ="Text26"
+                    Caption ="Kathoden Nr"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4422
+                    Top =793
+                    Width =1248
+                    Height =228
+                    Name ="Text27"
+                    Caption ="Membrantyp"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5896
+                    Top =793
+                    Width =1548
+                    Height =228
+                    Name ="Text28"
+                    Caption ="Montage Datum"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7710
+                    Top =793
+                    Width =792
+                    Height =228
+                    Name ="Text29"
+                    Caption ="DOL"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7823
+                    Top =226
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    BackColor =12632256
+                    Name ="Feld32"
+                    ControlSource ="=Date()"
+                End
+            End
+        End
+        Begin Section
+            Height =240
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =340
+                    Width =912
+                    ColumnWidth =1170
+                    Name ="Element Nr"
+                    ControlSource ="Element Nr"
+                    EventProcPrefix ="Element_Nr"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1700
+                    Width =912
+                    ColumnWidth =1185
+                    TabIndex =1
+                    Name ="Anoden Nr"
+                    ControlSource ="Anoden Nr"
+                    EventProcPrefix ="Anoden_Nr"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2948
+                    Width =1020
+                    ColumnWidth =1320
+                    TabIndex =2
+                    Name ="Kathoden Nr"
+                    ControlSource ="Kathoden Nr"
+                    EventProcPrefix ="Kathoden_Nr"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4535
+                    Width =1020
+                    TabIndex =3
+                    Name ="Membrantyp"
+                    ControlSource ="Membrantyp"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6122
+                    Width =1116
+                    ColumnWidth =1425
+                    TabIndex =4
+                    Name ="Montage Datum"
+                    ControlSource ="Montage Datum"
+                    EventProcPrefix ="Montage_Datum"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7710
+                    Width =792
+                    ColumnWidth =1635
+                    TabIndex =5
+                    Name ="Summe von DOL"
+                    ControlSource ="Summe von DOL"
+                    EventProcPrefix ="Summe_von_DOL"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6462
+                    Top =113
+                    Name ="Feld35"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Schaltfläche21_Click()
+On Error GoTo Err_Schaltfläche21_Click
+
+
+    DoCmd.PrintOut
+
+Exit_Schaltfläche21_Click:
+    Exit Sub
+
+Err_Schaltfläche21_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche21_Click
+    
+End Sub
+
+Private Sub Schaltfläche23_Click()
+    DoCmd.OpenForm "Suchübersicht"
+
+End Sub

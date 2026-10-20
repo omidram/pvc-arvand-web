@@ -1,0 +1,501 @@
+Version =17
+VersionRequired =17
+Checksum =122771745
+Begin Form
+    OrderByOn = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =11457
+    ItemSuffix =55
+    Left =765
+    Top =255
+    Right =12510
+    Bottom =7260
+    RecSrcDt = Begin
+        0x96604abad5b9e240
+    End
+    RecordSource ="tblEingabeUnGruppe"
+    Caption ="frmEingabeGruppen"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0xa0050000a0050000a0050000a005000000000000c12c00000916000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a657420364c202850434c29000000000000000000000000 ,
+        0x00041800940084010307000001000100f604f802000001000100fcff00000100 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000001005802010000020100ff00 ,
+        0x00000100005f02000001003b0002030000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000020000008fc9 ,
+        0xd3f8010000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000001a00010001000700 ,
+        0xf802f604000000000000000000000001005802020000fcff0000000000000000
+    End
+    PrtDevNames = Begin
+        0x080011002600010057494e53504f4f4c004850204c617365724a657420364c20 ,
+        0x2850434c29005c5c53686966746d616e5c756d625f636870726f5f6870000000 ,
+        0x00000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextAlign =3
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin CheckBox
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin TextBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin ListBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =1417
+            LabelX =-236
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin Subform
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1360
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =115
+                    Top =113
+                    Width =7815
+                    Height =570
+                    FontSize =14
+                    Name ="Text13"
+                    Caption ="Input Standardized Voltage Group"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =8503
+                    Top =113
+                    Height =576
+                    FontSize =8
+                    Name ="Befehl46"
+                    Caption ="Standardized\015\012Voltage"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =798
+                    Width =7815
+                    Height =360
+                    TabIndex =1
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                End
+            End
+        End
+        Begin Section
+            Height =5641
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1697
+                    Top =793
+                    Width =870
+                    TabIndex =1
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =906
+                            Top =793
+                            Width =678
+                            Height =240
+                            Name ="Text17"
+                            Caption ="Date:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1697
+                    Top =1245
+                    Width =690
+                    TabIndex =2
+                    Name ="Zeit"
+                    ControlSource ="Zeit"
+                    Format ="Short Time"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1019
+                            Top =1245
+                            Width =565
+                            Height =240
+                            Name ="Text19"
+                            Caption ="Time:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1697
+                    Top =1927
+                    Width =918
+                    ColumnWidth =1020
+                    TabIndex =3
+                    Name ="I Gesamt"
+                    ControlSource ="I Gesamt"
+                    Format ="Standard"
+                    EventProcPrefix ="I_Gesamt"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =680
+                            Top =1927
+                            Width =904
+                            Height =240
+                            Name ="Text21"
+                            Caption ="I Total:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1697
+                    Top =2379
+                    Width =918
+                    ColumnWidth =810
+                    TabIndex =4
+                    Name ="Cc"
+                    ControlSource ="Cc"
+                    Format ="Standard"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =697
+                            Top =2379
+                            Width =887
+                            Height =240
+                            Name ="Text23"
+                            Caption ="Cc:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1698
+                    Top =2834
+                    Width =915
+                    ColumnWidth =675
+                    TabIndex =5
+                    Name ="t An"
+                    ControlSource ="t An"
+                    Format ="Standard"
+                    EventProcPrefix ="t_An"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1020
+                            Top =2834
+                            Width =565
+                            Height =240
+                            Name ="Text25"
+                            Caption ="t An:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1698
+                    Top =3288
+                    Width =918
+                    ColumnWidth =675
+                    TabIndex =6
+                    Name ="t Ka"
+                    ControlSource ="t Ka"
+                    Format ="Standard"
+                    EventProcPrefix ="t_Ka"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1020
+                            Top =3288
+                            Width =565
+                            Height =240
+                            Name ="Text27"
+                            Caption ="t Ka:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1696
+                    Top =226
+                    Width =1710
+                    Height =330
+                    ColumnWidth =1320
+                    FontSize =12
+                    FontWeight =700
+                    Name ="Elektrolyseur"
+                    ControlSource ="Gruppe"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =340
+                            Top =226
+                            Width =1243
+                            Height =240
+                            Name ="Text15"
+                            Caption ="Group:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1693
+                    Top =3741
+                    Width =915
+                    TabIndex =7
+                    Name ="Feld39"
+                    ControlSource ="U Gesamt"
+                    Format ="Standard"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =453
+                            Top =3741
+                            Width =1127
+                            Height =240
+                            Name ="Text40"
+                            Caption ="U Total:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1700
+                    Top =4195
+                    Width =915
+                    TabIndex =8
+                    Name ="Feld43"
+                    ControlSource ="n"
+                    Format ="Standard"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Top =4200
+                            Width =1590
+                            Height =240
+                            Name ="Text44"
+                            Caption ="No. of Elements:"
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2834
+                    Top =1927
+                    Width =570
+                    Height =210
+                    Name ="Bezeichnungsfeld47"
+                    Caption ="[kA]"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2835
+                    Top =2385
+                    Width =765
+                    Height =210
+                    Name ="Bezeichnungsfeld48"
+                    Caption ="[% w/w]"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2834
+                    Top =2834
+                    Width =570
+                    Height =210
+                    Name ="Bezeichnungsfeld49"
+                    Caption ="[°C]"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2834
+                    Top =3288
+                    Width =570
+                    Height =210
+                    Name ="Bezeichnungsfeld50"
+                    Caption ="[°C]"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2834
+                    Top =3741
+                    Width =570
+                    Height =210
+                    Name ="Bezeichnungsfeld51"
+                    Caption ="[V]"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2834
+                    Top =4194
+                    Width =570
+                    Height =210
+                    Name ="Bezeichnungsfeld52"
+                    Caption ="[/]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl46_Click()
+On Error GoTo Err_Befehl46_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Betriebsdaten"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "frmEingabeUnGruppe"
+
+Exit_Befehl46_Click:
+    Exit Sub
+
+Err_Befehl46_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl46_Click
+    
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text13.Caption = "Dateneingabe Normierte Spannung Gruppe"
+        Text15.Caption = "Gruppe:"
+        Text17.Caption = "Datum:"
+        Text19.Caption = "Zeit:"
+        Text21.Caption = "I gesamt:"
+        Text23.Caption = "NaOH:"
+        Text25.Caption = "t An:"
+        Text27.Caption = "t Ka:"
+        Text40.Caption = "U gesamt:"
+        Text44.Caption = "Anzahl Elemente:"
+        Befehl46.Caption = "Normierte Spannung"
+        
+    Else
+        Text13.Caption = "Input Standardized Voltage Group"
+        Text15.Caption = "Gruppe:"
+        Text17.Caption = "Date:"
+        Text19.Caption = "Time:"
+        Text21.Caption = "I total:"
+        Text23.Caption = "NaOH:"
+        Text25.Caption = "t An:"
+        Text27.Caption = "t Ca:"
+        Text40.Caption = "U total:"
+        Text44.Caption = "No. of Elements:"
+        Befehl46.Caption = "Standardized Voltage"
+    
+    End If
+
+
+End Sub

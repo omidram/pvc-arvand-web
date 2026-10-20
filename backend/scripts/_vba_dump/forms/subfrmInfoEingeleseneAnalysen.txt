@@ -1,0 +1,254 @@
+Version =19
+VersionRequired =19
+Checksum =-122771766
+Begin Form
+    NavigationButtons = NotDefault
+    ScrollBars =2
+    BorderStyle =0
+    GridX =5
+    GridY =5
+    Width =9751
+    ItemSuffix =70
+    Left =1320
+    Top =510
+    Right =6375
+    Bottom =2040
+    RecSrcDt = Begin
+        0x70fd9368931de340
+    End
+    RecordSource ="tblInfoEingeleseneAnalysen"
+    Caption =" "
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x130b0000dc080000890500008905000000000000bf280000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a657420344c000000000000000000000000000000000000 ,
+        0x0a0306004400d300030700000200090000000000000001000100fcff00000100 ,
+        0x000000002000000080c993f00300000002000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000001a00330300000100040000ff000200000001000001002c010000 ,
+        0x020100000400000000000000000e000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000002000464f4e545306000c53 ,
+        0x00000000
+    End
+    PrtDevNames = Begin
+        0x170008001f0001004850204c617365724a657420344c00485050434c3545004c ,
+        0x5054313a00000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =340
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0x612ab81ecd3e7848b1e275c3652a9267
+            End
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =113
+                    Width =1140
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld55"
+                    Caption ="Electrolyzer"
+                    GUID = Begin
+                        0xbbf93c0c149ad74ab7b15e4b325328d0
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1369
+                    Top =113
+                    Width =1470
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld56"
+                    Caption ="Date"
+                    GUID = Begin
+                        0x5022ba0eedccd04497089811b7011a8d
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2948
+                    Top =113
+                    Width =1590
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld57"
+                    Caption ="Time"
+                    GUID = Begin
+                        0x5a40078a30fe254faea24a63ac035821
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0xf3347aaa39d7034b87d2dad89a632cf5
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =233
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x79461c9b4851394d973d147c9be91ac7
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Width =1142
+                    Height =233
+                    Name ="Text63"
+                    ControlSource ="Elektrolyseur"
+                    GUID = Begin
+                        0x3c393a269974f442b66f7ea376ff8de0
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1369
+                    Width =1460
+                    Height =226
+                    TabIndex =1
+                    Name ="Text64"
+                    ControlSource ="Datum"
+                    GUID = Begin
+                        0xc0b54be3288b4e4794e395b231e1ff80
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2948
+                    Width =1579
+                    Height =220
+                    TabIndex =2
+                    Name ="Text65"
+                    ControlSource ="Zeit"
+                    GUID = Begin
+                        0x2c6dca39ebc4264cbfbfe29ec04ad595
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0x0719656cfd72a64b99b75e3c820b5705
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0x565f6b5244695747b2def1c6da7e629c
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Bezeichnungsfeld55.Caption = "Elektrolyseur"
+        Bezeichnungsfeld56.Caption = "Datum"
+        Bezeichnungsfeld57.Caption = "Zeit"
+        
+    Else
+        Bezeichnungsfeld55.Caption = "Electrolyzer"
+        Bezeichnungsfeld56.Caption = "Date"
+        Bezeichnungsfeld57.Caption = "Time"
+        
+    End If
+
+End Sub

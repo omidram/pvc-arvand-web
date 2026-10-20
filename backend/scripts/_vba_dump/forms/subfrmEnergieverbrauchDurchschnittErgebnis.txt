@@ -1,0 +1,1482 @@
+Version =19
+VersionRequired =19
+Checksum =123706006
+Begin Form
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =17688
+    ItemSuffix =164
+    Left =-165
+    Top =-15
+    Right =17580
+    Bottom =7410
+    RecSrcDt = Begin
+        0x8f1f52f3efcee240
+    End
+    RecordSource ="qrySPCDurchschnittUN1CE1"
+    Caption ="Analysedaten Anolyt"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c4850354b5f37313534365f50434c00000000000000 ,
+        0x010418009c00b803033f80020100090000000000640001000700580202000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742035303030205365726965732050434c2036000000 ,
+        0x000000000000040032002e018603789c654fcb2e8341183d67a6ed288a05ad48 ,
+        0x45dd2f11112f6081451fa078804a5c9aef6bb44d88205db2a88d5d130fe009b0 ,
+        0xf006dec203d8b95f66fe5423f12dce393933df9c3995caff31c436afe8a9c426 ,
+        0xdc0193284875a75ada2ac2c549c02502ea37649272471d67dd503a58779461da ,
+        0x864d43f24667a8879409d69bb6b64899a34c5167a94bf4ebd3ccc2538131045e ,
+        0x6ff146e0208e98863b0d39e513ca31f58c72ce70321f5df1dfd3203ceff21192 ,
+        0xa43e433eb1ff06f9808c505fa0ef902fe800254d291ac95073d441da148b901e ,
+        0x6a1fb597b551cabdb1cbcc419c9131eaad753751cfa108b3113e21e083f59820 ,
+        0xac416b1a0bbfcadbb1b67dfdd78eb7edcbb6ed1f7d453fec0a378d5df52017b6 ,
+        0xbc1635cc3305eda47451ba7d548c99a8e71e9defecf37f00a4d5459500000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08002600400001004850204c617365724a657420353030302053657269657320 ,
+        0x50434c2036005c5c5355444f505330325c4850354b5f37313534365f50434c00 ,
+        0x6870356b5f373135343600
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1133
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0xdd6f4d05b8e7884195868021f9be1bb0
+            End
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =680
+                    Width =1695
+                    Height =240
+                    Name ="Text10"
+                    Caption ="Electrolyser"
+                    GUID = Begin
+                        0x7814572cd3e8184d9e5e920175e42ef3
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1927
+                    Top =677
+                    Width =795
+                    Height =240
+                    Name ="Text12"
+                    Caption ="Data"
+                    GUID = Begin
+                        0xc684c494b18f754abdf89bdee0c9eb5a
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3077
+                    Top =340
+                    Width =2940
+                    Height =240
+                    Name ="Text14"
+                    Caption ="i [kA/m²]"
+                    GUID = Begin
+                        0xe87cbc391bd67c428b7ba64360877ad6
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13265
+                    Top =340
+                    Width =4080
+                    Height =240
+                    Name ="Bezeichnungsfeld65"
+                    Caption ="SPC [kWh / t NaOH]"
+                    GUID = Begin
+                        0xa5e7ae3d6d9c9f4aaa170565dae0fe20
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6236
+                    Top =340
+                    Width =3285
+                    Height =240
+                    Name ="Bezeichnungsfeld67"
+                    Caption ="Un [V]"
+                    GUID = Begin
+                        0x3d2f35b064f41d4695e6f4d866811d0d
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9751
+                    Top =340
+                    Width =3285
+                    Height =240
+                    Name ="Bezeichnungsfeld86"
+                    Caption ="CE [%]"
+                    GUID = Begin
+                        0xb1e4f62f79d0e34aa8f99122f2a2db4b
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3067
+                    Top =677
+                    Width =465
+                    Height =240
+                    Name ="Label101"
+                    Caption ="Min."
+                    GUID = Begin
+                        0x5c3f96296bd2da4abd9b0b29db22a35d
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3628
+                    Top =680
+                    Width =660
+                    Height =240
+                    Name ="Label104"
+                    Caption ="Max."
+                    GUID = Begin
+                        0x5c62ff5b882f0f4cbed982431728b812
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6236
+                    Top =680
+                    Width =690
+                    Height =240
+                    Name ="Label108"
+                    Caption ="Min."
+                    GUID = Begin
+                        0xba2fba549e766a41b16caa9b0155b6dc
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9735
+                    Top =675
+                    Width =690
+                    Height =240
+                    Name ="Label114"
+                    Caption ="Min."
+                    GUID = Begin
+                        0xd7bbd4fd81528344954f4bd814b0169a
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13257
+                    Top =680
+                    Width =915
+                    Height =240
+                    Name ="Label115"
+                    Caption ="Min."
+                    GUID = Begin
+                        0x2d4858ac89886a4aaeca24bd98f4883c
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4422
+                    Top =680
+                    Width =555
+                    Height =240
+                    Name ="Label138"
+                    Caption ="Avg."
+                    GUID = Begin
+                        0xb45e1b27a9f9b941b623f2824a088a5d
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5102
+                    Top =680
+                    Width =915
+                    Height =240
+                    Name ="Label139"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0x91888b655a7fec4a921af50d70fa012f
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7029
+                    Top =680
+                    Width =675
+                    Height =240
+                    Name ="Label140"
+                    Caption ="Max."
+                    GUID = Begin
+                        0x9e93a4021be0b045949cb9b55a1e0ed8
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =14293
+                    Top =680
+                    Width =900
+                    Height =240
+                    Name ="Label141"
+                    Caption ="Max."
+                    GUID = Begin
+                        0x51b47f91e425f54bb522ec365d596871
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =15313
+                    Top =680
+                    Width =855
+                    Height =240
+                    Name ="Label142"
+                    Caption ="Average"
+                    GUID = Begin
+                        0xe7b743e792efa347937cdbd45997dc8a
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =16334
+                    Top =680
+                    Width =1035
+                    Height =240
+                    Name ="Label143"
+                    Caption ="Std.Dev."
+                    GUID = Begin
+                        0xe33860b72f9bd34ab446bb50592b3aff
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7823
+                    Top =680
+                    Width =675
+                    Height =240
+                    Name ="Label145"
+                    Caption ="Avg."
+                    GUID = Begin
+                        0xff956047dc96d8438309b4a948793190
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8617
+                    Top =680
+                    Width =885
+                    Height =240
+                    Name ="Label146"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0xe275552aa168524c97bd053f3582cc13
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10544
+                    Top =680
+                    Width =675
+                    Height =240
+                    Name ="Label154"
+                    Caption ="Max."
+                    GUID = Begin
+                        0xc93155a78dbc9f4e917432b15bb6d93e
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11338
+                    Top =680
+                    Width =705
+                    Height =240
+                    Name ="Label155"
+                    Caption ="Avg."
+                    GUID = Begin
+                        0xaba9ac25ef6a9c4195eee36f878e72c3
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12120
+                    Top =675
+                    Width =915
+                    Height =240
+                    Name ="Label163"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0x5503f2b46d123e4082520270e3a798ad
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1360
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            GUID = Begin
+                0x9f74ee7a337e2047a6ad57c4c4afa17f
+            End
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =16327
+                    Top =113
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                    GUID = Begin
+                        0xdca855b52e98ff44b05f664b69b9413a
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13266
+                    Top =907
+                    Width =900
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Min."
+                    GUID = Begin
+                        0x28308a687bbfdf4d80e3c2776a5c8d57
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6236
+                    Top =566
+                    Width =3300
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Un [V]"
+                    GUID = Begin
+                        0x0fca9fb849d72544ac5dea954119f982
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9751
+                    Top =566
+                    Width =3285
+                    Height =240
+                    Name ="Bezeichnungsfeld85"
+                    Caption ="CE [%]"
+                    GUID = Begin
+                        0xc3f74c5fde68c24abe5bc5478d96b1ca
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =914
+                    Width =1695
+                    Height =240
+                    Name ="Bezeichnungsfeld92"
+                    Caption ="Electrolyser"
+                    GUID = Begin
+                        0xa11ebba635b0544bb66fab95465e1217
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1905
+                    Top =900
+                    Width =810
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Data"
+                    GUID = Begin
+                        0x9bc30c5101d3c14994b42e6e3e3c2236
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4422
+                    Top =907
+                    Width =570
+                    Height =240
+                    Name ="Bezeichnungsfeld94"
+                    Caption ="Avg."
+                    GUID = Begin
+                        0xcc4e6a967def34439fb0caed9286bab5
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3045
+                    Top =915
+                    Width =585
+                    Height =240
+                    Name ="Label102"
+                    Caption ="Min."
+                    GUID = Begin
+                        0xb7b3a2aaafcc8b4fa5ed50e9e785f0cd
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3741
+                    Top =907
+                    Width =570
+                    Height =240
+                    Name ="Label105"
+                    Caption ="Max."
+                    GUID = Begin
+                        0xee5bfebcfcd10e4e840281862bed5a01
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3061
+                    Top =566
+                    Width =2955
+                    Height =240
+                    Name ="Label109"
+                    Caption ="i (kA/m²)"
+                    GUID = Begin
+                        0x785e2fc645ad9a48b3d8cb05a99de1e7
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6236
+                    Top =907
+                    Width =690
+                    Height =240
+                    Name ="Label112"
+                    Caption ="Min."
+                    GUID = Begin
+                        0xd0166a33d38c0c49b41fff49425e4cb0
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9735
+                    Top =900
+                    Width =705
+                    Height =240
+                    Name ="Label116"
+                    Caption ="Min."
+                    GUID = Begin
+                        0x7cbfee2414ffc6449256f9f58d519651
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13266
+                    Top =566
+                    Width =4095
+                    Height =240
+                    Name ="Label117"
+                    Caption ="SPC [kWh/t NaOH]"
+                    GUID = Begin
+                        0xb3050bd66f4dd64ca505d1a971b35478
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =14294
+                    Top =907
+                    Width =900
+                    Height =240
+                    Name ="Label131"
+                    Caption ="Max."
+                    GUID = Begin
+                        0xf75fb8f417e3ee40b67e00796d6de599
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =15314
+                    Top =907
+                    Width =900
+                    Height =240
+                    Name ="Label132"
+                    Caption ="Average"
+                    GUID = Begin
+                        0xaaf8625f29d1c149988608365e7590b7
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =16328
+                    Top =907
+                    Width =1035
+                    Height =240
+                    Name ="Label135"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0x084a2da556029644b5b6e66e6b710159
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5102
+                    Top =907
+                    Width =885
+                    Height =240
+                    Name ="Label144"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0x275fd8815e2b5047b149d4c972ae7b13
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7030
+                    Top =907
+                    Width =675
+                    Height =240
+                    Name ="Label147"
+                    Caption ="Max."
+                    GUID = Begin
+                        0x0645b6c94e4ad1459fb17c2e5c585516
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7824
+                    Top =907
+                    Width =675
+                    Height =240
+                    Name ="Label148"
+                    Caption ="Avg."
+                    GUID = Begin
+                        0x4c5a10ccc91d2540bfca4985b646fcc5
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8617
+                    Top =907
+                    Width =915
+                    Height =240
+                    Name ="Label149"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0xbbf7eda73b7a14458fefac94426dc456
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10544
+                    Top =907
+                    Width =675
+                    Height =240
+                    Name ="Label156"
+                    Caption ="Max."
+                    GUID = Begin
+                        0xccbe4c0b5e80c646ba0d5ee07e770aa7
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11338
+                    Top =907
+                    Width =690
+                    Height =240
+                    Name ="Label157"
+                    Caption ="Avg."
+                    GUID = Begin
+                        0x7fad2bb492201344aa083b25df21e6fa
+                    End
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12132
+                    Top =907
+                    Width =900
+                    Height =240
+                    Name ="Label162"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0x5793a375909d8f4f8d84d77b8904be98
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =340
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x587315757872224bac879ae3939e9045
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Width =1695
+                    Name ="Elektrolyseur"
+                    ControlSource ="Elektrolyseur"
+                    GUID = Begin
+                        0x398ea08f15fe76459a53760d5f68b749
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1936
+                    Width =780
+                    TabIndex =1
+                    Name ="Datum"
+                    ControlSource ="CountOfi"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x08ec0194560cc147993a74e8c0b21212
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4422
+                    Width =570
+                    TabIndex =2
+                    Name ="i"
+                    ControlSource ="AvgOfi"
+                    Format ="Standard"
+                    GUID = Begin
+                        0xab725a8958f62445b38f9b6635982458
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13266
+                    Width =900
+                    TabIndex =3
+                    Name ="VAnolyt"
+                    ControlSource ="MinOfEnergieverbrauch"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0xe78492f75ee3eb458c25258b3824ac5a
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6236
+                    Width =690
+                    TabIndex =4
+                    Name ="Feld27"
+                    ControlSource ="MinOfUn"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x79dd233aa12053458c83bb237ed69384
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9751
+                    Width =675
+                    TabIndex =5
+                    Name ="Text64"
+                    ControlSource ="MinOfCE"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0xdf158bde4b5c5c488bd9d7245143fbaa
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3061
+                    Width =570
+                    TabIndex =6
+                    Name ="Text103"
+                    ControlSource ="MinOfi"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x917f1aad225a0249b183512b6f6d0db6
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3741
+                    Width =570
+                    TabIndex =7
+                    Name ="Text106"
+                    ControlSource ="MaxOfi"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x0b4b53e9a3b89e4cb14a8ac6bc7bc853
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5102
+                    Width =675
+                    TabIndex =8
+                    Name ="Text107"
+                    ControlSource ="StDevOfi"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x6c8213cd5fa39c429c5007969775fcbf
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7030
+                    Width =675
+                    TabIndex =9
+                    Name ="Text111"
+                    ControlSource ="MaxOfUn"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x4acbb865f203a247bb1713a7587b1d37
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10544
+                    Width =675
+                    TabIndex =10
+                    Name ="Text113"
+                    ControlSource ="MaxOfCE"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0x7d6a6da121a5724b8d1d125aee6e8155
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =14287
+                    Width =900
+                    TabIndex =11
+                    Name ="Text118"
+                    ControlSource ="MaxOfEnergieverbrauch"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x8441d8a686c58c4bb11d94658f1f7735
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =15307
+                    Width =900
+                    TabIndex =12
+                    Name ="Text133"
+                    ControlSource ="AvgOfEnergieverbrauch"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0xb688b716bd89b74a9cac60fe942ae68c
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =16335
+                    Width =885
+                    TabIndex =13
+                    Name ="Text134"
+                    ControlSource ="StDevOfEnergieverbrauch"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x1509d714128ec04dbf326c308cd4c63f
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7824
+                    Width =675
+                    TabIndex =14
+                    Name ="Text150"
+                    ControlSource ="AvgOfUn"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x8227ea6b3e64cb4d83714ba677e6ca0e
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8617
+                    Width =795
+                    TabIndex =15
+                    Name ="Text151"
+                    ControlSource ="StDevOfUn"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0xa1da3f8d40f19744bfd8d36d3ffe6520
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11338
+                    Width =690
+                    TabIndex =16
+                    Name ="Text158"
+                    ControlSource ="AvgOfCE"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0x41a8507f4b10944eaa037bc6e2c7eff8
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12132
+                    Width =690
+                    TabIndex =17
+                    Name ="Text160"
+                    ControlSource ="StDevOfCE"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0x8669a7b7656c204990c1c6824c311d1e
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =453
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            GUID = Begin
+                0x3e296ce537a0a8479a3d96976f6b57d8
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =15533
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                    GUID = Begin
+                        0xc5bac22f7663f541acefb96529d94c54
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =743
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0x120b2f43cac2f84eafb964ab7fd788b9
+            End
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =120
+                    Width =1725
+                    Height =240
+                    Name ="Label119"
+                    Caption ="Total Plant"
+                    GUID = Begin
+                        0xf89ec7cee0620640830a14312b0bc51b
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1939
+                    Top =113
+                    Width =780
+                    Name ="Text120"
+                    ControlSource ="=Sum([CountOfi])"
+                    Format ="Standard"
+                    GUID = Begin
+                        0xaeb841a7f04f8840adb832fc77f5de7c
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3072
+                    Top =113
+                    Width =555
+                    TabIndex =1
+                    Name ="Text121"
+                    ControlSource ="=Min([MinOfi])"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x10f129494f51d94c8da3e904bbbb984e
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4422
+                    Top =113
+                    Width =570
+                    TabIndex =2
+                    Name ="Text122"
+                    ControlSource ="=Avg([AvgOfi])"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x7b87f9a036afd64481fddacacb5b1b87
+                    End
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5102
+                    Top =113
+                    Width =675
+                    TabIndex =3
+                    Name ="Text123"
+                    ControlSource ="=Avg([StDevOfi])"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x2fdf5d0178f92f409a1e2481c4b0179e
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6122
+                    Top =113
+                    Width =690
+                    TabIndex =4
+                    Name ="Text124"
+                    ControlSource ="=Min([MinOfUn])"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x9497914a30a273468d448e58adb1c33d
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6916
+                    Top =113
+                    Width =675
+                    TabIndex =5
+                    Name ="Text125"
+                    ControlSource ="=Max([MaxOfUn])"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x27dfb01486b8644487f75f1a21af2aa5
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9751
+                    Top =113
+                    Width =675
+                    TabIndex =6
+                    Name ="Text126"
+                    ControlSource ="=Min([MinOfCE])"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0x5d0fae1994255b47adc6b44d124743ff
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10544
+                    Top =113
+                    Width =675
+                    TabIndex =7
+                    Name ="Text127"
+                    ControlSource ="=Max([MaxOfCE])"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0x0f3ff640ef7f1546acbddb05b00c9618
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13266
+                    Top =113
+                    Width =900
+                    TabIndex =8
+                    Name ="Text128"
+                    ControlSource ="=Min([MinOfEnergieverbrauch])"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x83b18d44cbe5094d9c0d496fa66db35f
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =14287
+                    Top =113
+                    Width =900
+                    TabIndex =9
+                    Name ="Text129"
+                    ControlSource ="=Max([MaxOfEnergieverbrauch])"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x1bf92a2f6d0c7a41941ef5919466acf5
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3741
+                    Top =113
+                    Width =570
+                    TabIndex =10
+                    Name ="Text130"
+                    ControlSource ="=Max([MaxOfi])"
+                    Format ="Standard"
+                    GUID = Begin
+                        0xe132f076396efe43b4c005ab077c2c87
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =15307
+                    Top =113
+                    Width =915
+                    TabIndex =11
+                    Name ="Text136"
+                    ControlSource ="=Avg([AvgOfEnergieverbrauch])"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x8cbbd0d92dfb5b4aa61cfae37f4c3fc7
+                    End
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =16335
+                    Top =113
+                    Width =885
+                    TabIndex =12
+                    Name ="Text137"
+                    ControlSource ="=Avg([StDevOfEnergieverbrauch])"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0xd937620bf3f4f34a8d3fd4c2071c955f
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7710
+                    Top =113
+                    Width =675
+                    TabIndex =13
+                    Name ="Text152"
+                    ControlSource ="=Avg([AvgOfUn])"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0x6e0b4a21c2632748be490c65da3038df
+                    End
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8503
+                    Top =113
+                    Width =795
+                    TabIndex =14
+                    Name ="Text153"
+                    ControlSource ="=Avg([StDevOfUn])"
+                    Format ="Fixed"
+                    StatusBarText ="g/l"
+                    GUID = Begin
+                        0xe6d9d16aa26cea4e94e954ae18f1548c
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11338
+                    Top =113
+                    Width =690
+                    TabIndex =15
+                    Name ="Text159"
+                    ControlSource ="=Avg([AvgOfCE])"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0x86c151e49901bc40ad9158f32bb23fb3
+                    End
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12132
+                    Top =113
+                    Width =690
+                    TabIndex =16
+                    Name ="Text161"
+                    ControlSource ="=Avg([StDevOfCE])"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0xe1250eba41f6ef4b9019d94836c920ae
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl89_Click()
+    DoCmd.OpenForm "Energieverbrauch"
+    DoCmd.Close acForm, "frmTabelleSPCAlleElektrolyseure"
+
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+  Dim rst1 As DAO.Recordset
+   
+    If GetIDGewSprache = 1 Then
+        
+        Text10.Caption = "Elekrolyseur"
+        Bezeichnungsfeld92.Caption = "Elektroyseur"
+        Text12.Caption = "Daten"
+        Bezeichnungsfeld93.Caption = "Daten"
+        
+        Text14.Caption = "i [kA/m²]"
+        Label109.Caption = "i [kA/m²]"
+        Label101.Caption = "Min."
+        Label104.Caption = "Max."
+        Label138.Caption = "Mittel"
+        Label139.Caption = "Std. Abw."
+        Label102.Caption = "Min."
+        Label105.Caption = "Max."
+        Bezeichnungsfeld94.Caption = "Mittel"
+        Label144.Caption = "Std. Abw."
+        
+        Bezeichnungsfeld67.Caption = "Un [V]"
+        Bezeichnungsfeld68.Caption = "Un [V]"
+        Label108.Caption = "Min."
+        Label140.Caption = "Max."
+        Label145.Caption = "Mittel"
+        Label146.Caption = "Std. Abw."
+        Label112.Caption = "Min."
+        Label147.Caption = "Max."
+        Label148.Caption = "Mittel"
+        Label149.Caption = "Std. Abw."
+        
+        Bezeichnungsfeld86.Caption = "CE [%]"
+        Bezeichnungsfeld85.Caption = "CE [%]"
+        Label114.Caption = "Min."
+        Label154.Caption = "Max."
+        Label155.Caption = "Mittel"
+        Label163.Caption = "Std. Abw."
+        Label116.Caption = "Min."
+        Label156.Caption = "Max."
+        Label157.Caption = "Mittel"
+        Label162.Caption = "Std. Abw."
+        
+        Bezeichnungsfeld65.Caption = "SPC [kWh/t NaOH]"
+        Label117.Caption = "SPC [kWh/t NaOH]"
+        Label115.Caption = "Min."
+        Label141.Caption = "Max."
+        Label142.Caption = "Mittel"
+        Label143.Caption = "Std. Abw."
+        Bezeichnungsfeld66.Caption = "Min."
+        Label131.Caption = "Max."
+        Label132.Caption = "Mittel"
+        Label135.Caption = "Std. Abw."
+        
+        Label119.Caption = "Gesamtanlage"
+     
+     Else
+        
+        Text10.Caption = "Electrolyzer"
+        Bezeichnungsfeld92.Caption = "Electrolyzer"
+        Text12.Caption = "Records"
+        Bezeichnungsfeld93.Caption = "Records"
+        
+        Text14.Caption = "i [kA/m²]"
+        Label109.Caption = "i [kA/m²]"
+        Label101.Caption = "Min."
+        Label104.Caption = "Max."
+        Label138.Caption = "Avg."
+        Label139.Caption = "Std. Dev."
+        Label102.Caption = "Min."
+        Label105.Caption = "Max."
+        Bezeichnungsfeld94.Caption = "Avg."
+        Label144.Caption = "Std. Dev."
+        
+        Bezeichnungsfeld67.Caption = "Un [V]"
+        Bezeichnungsfeld68.Caption = "Un [V]"
+        Label108.Caption = "Min."
+        Label140.Caption = "Max."
+        Label145.Caption = "Avg."
+        Label146.Caption = "Std. Dev."
+        Label112.Caption = "Min."
+        Label147.Caption = "Max."
+        Label148.Caption = "Avg."
+        Label149.Caption = "Std. Dev."
+        
+        Bezeichnungsfeld86.Caption = "CE [%]"
+        Bezeichnungsfeld85.Caption = "CE [%]"
+        Label114.Caption = "Min."
+        Label154.Caption = "Max."
+        Label155.Caption = "Avg."
+        Label163.Caption = "Std. Dev."
+        Label116.Caption = "Min."
+        Label156.Caption = "Max."
+        Label157.Caption = "Avg."
+        Label162.Caption = "Std. Dev."
+        
+        Bezeichnungsfeld65.Caption = "SPC [kWh/t NaOH]"
+        Label117.Caption = "SPC [kWh/t NaOH]"
+        Label115.Caption = "Min."
+        Label141.Caption = "Max."
+        Label142.Caption = "Avg."
+        Label143.Caption = "Std. Dev."
+        Bezeichnungsfeld66.Caption = "Min."
+        Label131.Caption = "Max."
+        Label132.Caption = "Avg."
+        Label135.Caption = "Std. Dev."
+        
+        Label119.Caption = "Total Plant"
+        
+     End If
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "frmTabelleSPCAlleElektrolyseure"
+End Sub

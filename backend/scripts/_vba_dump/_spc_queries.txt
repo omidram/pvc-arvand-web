@@ -1,0 +1,221 @@
+=== qrySPCAlleElektrolyseure
+SELECT qryCEAlleElektrolyseure.Elektrolyseur, qryCEAlleElektrolyseure.Datum, qryUnAlleElektrolyseure.i, SPCBer([qryUnAlleElektrolyseure]![Un],[qryCEAlleElektrolyseure]![µNaOH]) AS Energieverbrauch, qryUnAlleElektrolyseure.Un, qryCEAlleElektrolyseure.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEAlleElektrolyseure INNER JOIN qryUnAlleElektrolyseure ON (qryCEAlleElektrolyseure.Datum = qryUnAlleElektrolyseure.Datum) AND (qryCEAlleElektrolyseure.Elektrolyseur = qryUnAlleElektrolyseure.Elektrolyseur);
+
+=== qrySPCAlleElektrolyseure2
+SELECT qryCEAlleElektrolyseureNaOH.Elektrolyseur, qryCEAlleElektrolyseureNaOH.Datum, qryUnAlleElektrolyseure.i, SPCBer([qryUnAlleElektrolyseure]![Un],[qryCEAlleElektrolyseureNaOH]![CE]) AS Energieverbrauch, qryUnAlleElektrolyseure.Un, qryCEAlleElektrolyseureNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnAlleElektrolyseure INNER JOIN qryCEAlleElektrolyseureNaOH ON (qryUnAlleElektrolyseure.Datum = qryCEAlleElektrolyseureNaOH.Datum) AND (qryUnAlleElektrolyseure.Elektrolyseur = qryCEAlleElektrolyseureNaOH.Elektrolyseur);
+
+=== qrySPCAlleElektrolyseure3
+SELECT qryCEAlleElektrolyseure.Elektrolyseur, qryCEAlleElektrolyseure.Datum, qryUnAlleElektrolyseure2.i, SPCBer([qryUnAlleElektrolyseure2]![Un],[qryCEAlleElektrolyseure]![µNaOH]) AS Energieverbrauch, qryUnAlleElektrolyseure2.Un, qryCEAlleElektrolyseure.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnAlleElektrolyseure2 INNER JOIN qryCEAlleElektrolyseure ON (qryUnAlleElektrolyseure2.Datum = qryCEAlleElektrolyseure.Datum) AND (qryUnAlleElektrolyseure2.Elektrolyseur = qryCEAlleElektrolyseure.Elektrolyseur);
+
+=== qrySPCAlleElektrolyseure4
+SELECT qryCEAlleElektrolyseureNaOH.Elektrolyseur, qryCEAlleElektrolyseureNaOH.Datum, qryUnAlleElektrolyseure2.i, SPCBer([qryUnAlleElektrolyseure2]![Un],[qryCEAlleElektrolyseureNaOH]![CE]) AS Energieverbrauch, qryUnAlleElektrolyseure2.Un, qryCEAlleElektrolyseureNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnAlleElektrolyseure2 INNER JOIN qryCEAlleElektrolyseureNaOH ON (qryUnAlleElektrolyseure2.Elektrolyseur = qryCEAlleElektrolyseureNaOH.Elektrolyseur) AND (qryUnAlleElektrolyseure2.Datum = qryCEAlleElektrolyseureNaOH.Datum);
+
+=== qrySPCAlleElektrolyseureUN1CE1
+SELECT qryUnAlleElektrolyseure.Elektrolyseur, qryUnAlleElektrolyseure.Datum, qryUnAlleElektrolyseure.i, SPCBer([qryUnAlleElektrolyseure]![Un],[qryCEAlleElektrolyseure]![µNaOH]) AS Energieverbrauch, qryUnAlleElektrolyseure.Un, qryCEAlleElektrolyseure.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnAlleElektrolyseure INNER JOIN qryCEAlleElektrolyseure ON (qryUnAlleElektrolyseure.Datum = qryCEAlleElektrolyseure.Datum) AND (qryUnAlleElektrolyseure.Elektrolyseur = qryCEAlleElektrolyseure.Elektrolyseur)
+
+ORDER BY qryUnAlleElektrolyseure.Elektrolyseur, qryUnAlleElektrolyseure.Datum;
+
+=== qrySPCAlleElemente
+SELECT [Gesamt Normierung Zeitraum].Elektrolyseur, [Gesamt Normierung Zeitraum].Position, qryCEAlleElemente.Bezeichnung, [Gesamt Normierung Zeitraum].Datum, [Gesamt Normierung Zeitraum].i, SPCBer([Gesamt Normierung Zeitraum]![Un],[qryCEAlleElemente]![µNaOH]) AS Energieverbrauch, [Gesamt Normierung Zeitraum].Un, qryCEAlleElemente.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM [Gesamt Normierung Zeitraum] INNER JOIN qryCEAlleElemente ON ([Gesamt Normierung Zeitraum].Position = qryCEAlleElemente.Position) AND ([Gesamt Normierung Zeitraum].Datum = qryCEAlleElemente.Datum) AND ([Gesamt Normierung Zeitraum].Elektrolyseur = qryCEAlleElemente.Elektrolyseur);
+
+=== qrySPCAlleElemente2
+SELECT [Gesamt Normierung Zeitraum].Elektrolyseur, [Gesamt Normierung Zeitraum].Position, qryCEAlleElementeNaOH.Bezeichnung, [Gesamt Normierung Zeitraum].Datum, [Gesamt Normierung Zeitraum].i, SPCBer([Gesamt Normierung Zeitraum]![Un],[qryCEAlleElementeNaOH]![CE]) AS Energieverbrauch, [Gesamt Normierung Zeitraum].Un, GetGewIRef() AS iRefSPC
+
+FROM [Gesamt Normierung Zeitraum] INNER JOIN qryCEAlleElementeNaOH ON ([Gesamt Normierung Zeitraum].Position = qryCEAlleElementeNaOH.Position) AND ([Gesamt Normierung Zeitraum].Datum = qryCEAlleElementeNaOH.Datum) AND ([Gesamt Normierung Zeitraum].Elektrolyseur = qryCEAlleElementeNaOH.Elektrolyseur);
+
+=== qrySPCAlleElemente3
+SELECT [Gesamt Normierung Zeitraum].Elektrolyseur, [Gesamt Normierung Zeitraum].Position, qryCEAlleElementeNaOH.Bezeichnung, [Gesamt Normierung Zeitraum].Datum, [Gesamt Normierung Zeitraum].i, SPCBer([Gesamt Normierung Zeitraum]![Un],[qryCEAlleElementeNaOH]![CE]) AS Energieverbrauch, [Gesamt Normierung Zeitraum].Un, qryCEAlleElementeNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM [Gesamt Normierung Zeitraum] INNER JOIN qryCEAlleElementeNaOH ON ([Gesamt Normierung Zeitraum].Position = qryCEAlleElementeNaOH.Position) AND ([Gesamt Normierung Zeitraum].Datum = qryCEAlleElementeNaOH.Datum) AND ([Gesamt Normierung Zeitraum].Elektrolyseur = qryCEAlleElementeNaOH.Elektrolyseur);
+
+=== qrySPCAlleElemente4
+SELECT qryUnAlleElemente2.Elektrolyseur, qryUnAlleElemente2.Position, qryCEAlleElementeNaOH.Bezeichnung, qryUnAlleElemente2.Datum, qryUnAlleElemente2.i, SPCBer([qryUnAlleElemente2]![Un],[qryCEAlleElementeNaOH]![CE]) AS Energieverbrauch, qryUnAlleElemente2.Un, GetGewIRef() AS iRefSPC
+
+FROM qryUnAlleElemente2 INNER JOIN qryCEAlleElementeNaOH ON (qryUnAlleElemente2.Datum = qryCEAlleElementeNaOH.Datum) AND (qryUnAlleElemente2.Position = qryCEAlleElementeNaOH.Position) AND (qryUnAlleElemente2.Elektrolyseur = qryCEAlleElementeNaOH.Elektrolyseur);
+
+=== qrySPCAlleGruppen
+SELECT qryCEAlleGruppen.Gruppe, qryCEAlleGruppen.Datum, ListGr2.[Mittelwert von i] AS [i Mittel], SPCBer([ListGr2]![Mittelwert von Un],[qryCEAlleGruppen]![µNaOH]) AS Energieverbrauch, ListGr2.[Mittelwert von Un] AS [Un Mittel], qryCEAlleGruppen.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEAlleGruppen INNER JOIN ListGr2 ON (qryCEAlleGruppen.Datum = ListGr2.Datum) AND (qryCEAlleGruppen.Gruppe = ListGr2.Gruppe);
+
+=== qrySPCAlleGruppen2
+SELECT qryCEAlleGruppenNaOH.Gruppe, qryCEAlleGruppenNaOH.Datum, ListGr2.[Mittelwert von i] AS [i Mittel], SPCBer([ListGr2]![Mittelwert von Un],[qryCEAlleGruppenNaOH]![CE]) AS Energieverbrauch, ListGr2.[Mittelwert von Un] AS [Un Mittel], qryCEAlleGruppenNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEAlleGruppenNaOH INNER JOIN ListGr2 ON (qryCEAlleGruppenNaOH.Datum = ListGr2.Datum) AND (qryCEAlleGruppenNaOH.Gruppe = ListGr2.Gruppe);
+
+=== qrySPCAlleGruppen3
+SELECT qryCEAlleGruppen.Gruppe, qryCEAlleGruppen.Datum, qryUnAlleGruppen2.i AS [i Mittel], SPCBer([qryUnAlleGruppen2]![Un],[qryCEAlleGruppen]![µNaOH]) AS Energieverbrauch, qryUnAlleGruppen2.Un AS [Un Mittel], qryCEAlleGruppen.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnAlleGruppen2 INNER JOIN qryCEAlleGruppen ON (qryUnAlleGruppen2.Datum = qryCEAlleGruppen.Datum) AND (qryUnAlleGruppen2.Gruppe = qryCEAlleGruppen.Gruppe);
+
+=== qrySPCAlleGruppen4
+SELECT qryCEAlleGruppenNaOH.Gruppe, qryCEAlleGruppenNaOH.Datum, qryUnAlleGruppen2.i AS [i Mittel], SPCBer([qryUnAlleGruppen2]![Un],[qryCEAlleGruppenNaOH]![CE]) AS Energieverbrauch, qryUnAlleGruppen2.Un AS [Un Mittel], qryCEAlleGruppenNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEAlleGruppenNaOH INNER JOIN qryUnAlleGruppen2 ON (qryCEAlleGruppenNaOH.Datum = qryUnAlleGruppen2.Datum) AND (qryCEAlleGruppenNaOH.Gruppe = qryUnAlleGruppen2.Gruppe);
+
+=== qrySPCAlleTeilanlagen
+SELECT qryCEAlleTeilanlagen.Teilanlagenbezeichnung, qryCEAlleTeilanlagen.Datum, Avg(SPCBer([qryUnAlleTeilanlagen]![Mittelwert von Un],[qryCEAlleTeilanlagen]![Mittelwert von µNaOH])) AS Energieverbrauch, Avg(qryUnAlleTeilanlagen.[Mittelwert von i]) AS iGes, Avg(qryUnAlleTeilanlagen.[Mittelwert von Un]) AS UnGes, Avg(qryCEAlleTeilanlagen.[Mittelwert von µNaOH]) AS CEGes, Avg(GetGewIRef()) AS iRefSPC
+
+FROM qryCEAlleTeilanlagen INNER JOIN qryUnAlleTeilanlagen ON (qryCEAlleTeilanlagen.Datum = qryUnAlleTeilanlagen.Datum) AND (qryCEAlleTeilanlagen.Teilanlagenbezeichnung = qryUnAlleTeilanlagen.Teilanlagenbezeichnung)
+
+GROUP BY qryCEAlleTeilanlagen.Teilanlagenbezeichnung, qryCEAlleTeilanlagen.Datum;
+
+=== qrySPCDurchschnittUN1CE1
+SELECT qrySPCDurchschnittUN1CE1a.Elektrolyseur, Count(qrySPCDurchschnittUN1CE1a.i) AS CountOfi, Max(qrySPCDurchschnittUN1CE1a.i) AS MaxOfi, Min(qrySPCDurchschnittUN1CE1a.i) AS MinOfi, StDev(qrySPCDurchschnittUN1CE1a.i) AS StDevOfi, Avg(qrySPCDurchschnittUN1CE1a.i) AS AvgOfi, Avg(qrySPCDurchschnittUN1CE1a.Energieverbrauch) AS AvgOfEnergieverbrauch, StDev(qrySPCDurchschnittUN1CE1a.Energieverbrauch) AS StDevOfEnergieverbrauch, Min(qrySPCDurchschnittUN1CE1a.Energieverbrauch) AS MinOfEnergieverbrauch, Max(qrySPCDurchschnittUN1CE1a.Energieverbrauch) AS MaxOfEnergieverbrauch, StDev(qrySPCDurchschnittUN1CE1a.Un) AS StDevOfUn, Avg(qrySPCDurchschnittUN1CE1a.Un) AS AvgOfUn, Min(qrySPCDurchschnittUN1CE1a.Un) AS MinOfUn, Max(qrySPCDurchschnittUN1CE1a.Un) AS MaxOfUn, Avg(qrySPCDurchschnittUN1CE1a.CE) AS AvgOfCE, Min(qrySPCDurchschnittUN1CE1a.CE) AS MinOfCE, StDev(qrySPCDurchschnittUN1CE1a.CE) AS StDevOfCE, Max(qrySPCDurchschnittUN1CE1a.CE) AS MaxOfCE, Avg(qrySPCDurchschnittUN1CE1a.iRefSPC) AS AvgOfiRefSPC
+
+FROM qrySPCDurchschnittUN1CE1a
+
+GROUP BY qrySPCDurchschnittUN1CE1a.Elektrolyseur;
+
+=== qrySPCDurchschnittUN1CE1a
+SELECT qryUnAlleElektrolyseure.Elektrolyseur, qryUnAlleElektrolyseure.i, SPCBer([qryUnAlleElektrolyseure]![Un],[qryCEAlleElektrolyseure]![µNaOH]) AS Energieverbrauch, qryUnAlleElektrolyseure.Un, qryCEAlleElektrolyseure.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnAlleElektrolyseure INNER JOIN qryCEAlleElektrolyseure ON (qryUnAlleElektrolyseure.Datum = qryCEAlleElektrolyseure.Datum) AND (qryUnAlleElektrolyseure.Elektrolyseur = qryCEAlleElektrolyseure.Elektrolyseur);
+
+=== qrySPCElektrolyseur
+SELECT qryCEElektrolyseur.Elektrolyseur, qryCEElektrolyseur.Datum, qryUnElektrolyseur.i, SPCBer([qryUnElektrolyseur]![Un],[qryCEElektrolyseur]![µNaOH]) AS Energieverbrauch, qryUnElektrolyseur.Un, qryCEElektrolyseur.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnElektrolyseur INNER JOIN qryCEElektrolyseur ON (qryUnElektrolyseur.Datum = qryCEElektrolyseur.Datum) AND (qryUnElektrolyseur.Elektrolyseur = qryCEElektrolyseur.Elektrolyseur);
+
+=== qrySPCElektrolyseur2
+SELECT qryCEElektrolyseurNaOH.Elektrolyseur, qryCEElektrolyseurNaOH.Datum, qryUnElektrolyseur.i AS Expr1, SPCBer([qryUnElektrolyseur]![Un],[qryCEElektrolyseurNaOH]![CE]) AS Energieverbrauch, qryUnElektrolyseur.Un AS Expr2, qryCEElektrolyseurNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnElektrolyseur INNER JOIN qryCEElektrolyseurNaOH ON (qryUnElektrolyseur.Datum = qryCEElektrolyseurNaOH.Datum) AND (qryUnElektrolyseur.Elektrolyseur = qryCEElektrolyseurNaOH.Elektrolyseur);
+
+=== qrySPCElektrolyseur3
+SELECT qryCEElektrolyseur.Elektrolyseur, qryCEElektrolyseur.Datum, qryUnElektrolyseur2.i, SPCBer([qryUnElektrolyseur2]![Un],[qryCEElektrolyseur]![µNaOH]) AS Energieverbrauch, qryUnElektrolyseur2.Un, qryCEElektrolyseur.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEElektrolyseur INNER JOIN qryUnElektrolyseur2 ON (qryCEElektrolyseur.Datum = qryUnElektrolyseur2.Datum) AND (qryCEElektrolyseur.Elektrolyseur = qryUnElektrolyseur2.Elektrolyseur)
+
+ORDER BY qryCEElektrolyseur.Elektrolyseur, qryCEElektrolyseur.Datum;
+
+=== qrySPCElektrolyseur4
+SELECT qryCEElektrolyseurNaOH.Elektrolyseur, qryCEElektrolyseurNaOH.Datum, qryUnElektrolyseur2.i, SPCBer([qryUnElektrolyseur2]![Un],[qryCEElektrolyseurNaOH]![CE]) AS Energieverbrauch, qryUnElektrolyseur2.Un, qryCEElektrolyseurNaOH.CE AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEElektrolyseurNaOH INNER JOIN qryUnElektrolyseur2 ON (qryCEElektrolyseurNaOH.Datum = qryUnElektrolyseur2.Datum) AND (qryCEElektrolyseurNaOH.Elektrolyseur = qryUnElektrolyseur2.Elektrolyseur);
+
+=== qrySPCElement
+SELECT qryUnElement.Elektrolyseur, qryUnElement.Position, qryCEElement.Bezeichnung, qryUnElement.Datum, qryUnElement.i, SPCBer([qryUnElement]![Un],[qryCEElement]![µNaOH]) AS Energieverbrauch, qryUnElement.Un, qryCEElement.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnElement INNER JOIN qryCEElement ON (qryUnElement.Position = qryCEElement.Position) AND (qryUnElement.Datum = qryCEElement.Datum) AND (qryUnElement.Elektrolyseur = qryCEElement.Elektrolyseur);
+
+=== qrySPCElement2
+SELECT qryUnElement.Elektrolyseur, qryUnElement.Position, qryCEElementNaOH.Bezeichnung, qryUnElement.Datum, qryUnElement.i, SPCBer([qryUnElement]![Un],[qryCEElementNaOH]![CE]) AS Energieverbrauch, qryUnElement.Un, qryCEElementNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnElement INNER JOIN qryCEElementNaOH ON (qryUnElement.Position = qryCEElementNaOH.Position) AND (qryUnElement.Datum = qryCEElementNaOH.Datum) AND (qryUnElement.Elektrolyseur = qryCEElementNaOH.Elektrolyseur);
+
+=== qrySPCElement3
+SELECT qryUnElement2.Elektrolyseur, qryUnElement2.Position, qryCEElement.Bezeichnung, qryUnElement2.Datum, qryUnElement2.i, SPCBer([qryUnElement2]![Un],[qryCEElement]![µNaOH]) AS Energieverbrauch, qryUnElement2.Un, qryCEElement.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEElement INNER JOIN qryUnElement2 ON (qryCEElement.Datum = qryUnElement2.Datum) AND (qryCEElement.Position = qryUnElement2.Position) AND (qryCEElement.Elektrolyseur = qryUnElement2.Elektrolyseur);
+
+=== qrySPCElement4
+SELECT qryUnElement2.Elektrolyseur, qryUnElement2.Position, qryCEElementNaOH.Bezeichnung, qryUnElement2.Datum, qryUnElement2.i, SPCBer([qryUnElement2]![Un],[qryCEElementNaOH]![CE]) AS Energieverbrauch, qryUnElement2.Un, qryCEElementNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnElement2 INNER JOIN qryCEElementNaOH ON (qryUnElement2.Datum = qryCEElementNaOH.Datum) AND (qryUnElement2.Position = qryCEElementNaOH.Position) AND (qryUnElement2.Elektrolyseur = qryCEElementNaOH.Elektrolyseur);
+
+=== qrySPCGesamtanlage
+SELECT qryCEGesamtanlage.Datum, Avg(SPCBer([qryUnGesamtanlage]![Mittelwert von Un],[qryCEGesamtanlage]![Mittelwert von µNaOH])) AS Energieverbrauch, Avg(qryUnGesamtanlage.[Mittelwert von i]) AS iGes, Avg(qryUnGesamtanlage.[Mittelwert von Un]) AS UnGes, Avg(qryCEGesamtanlage.[Mittelwert von µNaOH]) AS CEGes, Avg(GetGewIRef()) AS iRefSPC
+
+FROM qryUnGesamtanlage INNER JOIN qryCEGesamtanlage ON qryUnGesamtanlage.Datum = qryCEGesamtanlage.Datum
+
+GROUP BY qryCEGesamtanlage.Datum;
+
+=== qrySPCGruppe
+SELECT qryCEGruppe.Gruppe, qryCEGruppe.Datum, UnGruppen.[i Mittel], SPCBer([UnGruppen]![Un Mittel],[qryCEGruppe]![µNaOH]) AS Energieverbrauch, UnGruppen.[Un Mittel], qryCEGruppe.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM UnGruppen INNER JOIN qryCEGruppe ON (UnGruppen.Gruppe = qryCEGruppe.Gruppe) AND (UnGruppen.Datum = qryCEGruppe.Datum);
+
+=== qrySPCGruppe2
+SELECT qryCEGruppeNaOH.Gruppe, qryCEGruppeNaOH.Datum, UnGruppen.[i Mittel], SPCBer([UnGruppen]![Un Mittel],[qryCEGruppeNaOH]![CE]) AS Energieverbrauch, UnGruppen.[Un Mittel], qryCEGruppeNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM UnGruppen INNER JOIN qryCEGruppeNaOH ON (UnGruppen.Gruppe = qryCEGruppeNaOH.Gruppe) AND (UnGruppen.Datum = qryCEGruppeNaOH.Datum);
+
+=== qrySPCGruppe3
+SELECT qryCEGruppe.Gruppe, qryCEGruppe.Datum, qryUnGruppe2.i AS [i Mittel], SPCBer([qryUnGruppe2]![Un],[qryCEGruppe]![µNaOH]) AS Energieverbrauch, qryUnGruppe2.Un AS [Un Mittel], qryCEGruppe.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnGruppe2 INNER JOIN qryCEGruppe ON (qryUnGruppe2.Datum = qryCEGruppe.Datum) AND (qryUnGruppe2.Gruppe = qryCEGruppe.Gruppe);
+
+=== qrySPCGruppe4
+SELECT qryCEGruppeNaOH.Gruppe, qryCEGruppeNaOH.Datum, qryUnGruppe2.i AS [i Mittel], SPCBer([qryUnGruppe2]![Un],[qryCEGruppeNaOH]![CE]) AS Energieverbrauch, qryUnGruppe2.Un AS [Un Mittel], qryCEGruppeNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEGruppe, qryUnGruppe2 INNER JOIN qryCEGruppeNaOH ON (qryUnGruppe2.Datum = qryCEGruppeNaOH.Datum) AND (qryUnGruppe2.Gruppe = qryCEGruppeNaOH.Gruppe);
+
+=== qrySPCMehrereElektrolyseure
+SELECT qryCEMehrereElektrolyseure.Elektrolyseur, qryCEMehrereElektrolyseure.Datum, qryUnElektrolyseure.i, SPCBer([qryUnElektrolyseure]![Un],[qryCEMehrereElektrolyseure]![µNaOH]) AS Energieverbrauch, qryUnElektrolyseure.Un, qryCEMehrereElektrolyseure.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEMehrereElektrolyseure INNER JOIN qryUnElektrolyseure ON (qryCEMehrereElektrolyseure.Datum = qryUnElektrolyseure.Datum) AND (qryCEMehrereElektrolyseure.Elektrolyseur = qryUnElektrolyseure.Elektrolyseur);
+
+=== qrySPCMehrereElektrolyseure2
+SELECT qryCEMehrereElektrolyseureNaOH.Elektrolyseur, qryCEMehrereElektrolyseureNaOH.Datum, qryUnElektrolyseure.i, SPCBer([qryUnElektrolyseure]![Un],[qryCEMehrereElektrolyseureNaOH]![CE]) AS Energieverbrauch, qryUnElektrolyseure.Un, qryCEMehrereElektrolyseureNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnElektrolyseure INNER JOIN qryCEMehrereElektrolyseureNaOH ON (qryUnElektrolyseure.Datum = qryCEMehrereElektrolyseureNaOH.Datum) AND (qryUnElektrolyseure.Elektrolyseur = qryCEMehrereElektrolyseureNaOH.Elektrolyseur);
+
+=== qrySPCMehrereElektrolyseure3
+SELECT qryCEMehrereElektrolyseure.Elektrolyseur, qryCEMehrereElektrolyseure.Datum, qryUnElektrolyseure2.i, SPCBer([qryUnElektrolyseure2]![Un],[qryCEMehrereElektrolyseure]![µNaOH]) AS Energieverbrauch, qryUnElektrolyseure2.Un, qryCEMehrereElektrolyseure.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEMehrereElektrolyseure INNER JOIN qryUnElektrolyseure2 ON (qryCEMehrereElektrolyseure.Datum = qryUnElektrolyseure2.Datum) AND (qryCEMehrereElektrolyseure.Elektrolyseur = qryUnElektrolyseure2.Elektrolyseur);
+
+=== qrySPCMehrereElektrolyseure4
+SELECT qryCEAlleElektrolyseureNaOH.Elektrolyseur, qryCEAlleElektrolyseureNaOH.Datum, qryUnAlleElektrolyseure2.i, SPCBer([qryUnAlleElektrolyseure2]![Un],[qryCEAlleElektrolyseureNaOH]![CE]) AS Energieverbrauch, qryUnAlleElektrolyseure2.Un, qryCEAlleElektrolyseureNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEAlleElektrolyseureNaOH INNER JOIN qryUnAlleElektrolyseure2 ON (qryCEAlleElektrolyseureNaOH.Elektrolyseur = qryUnAlleElektrolyseure2.Elektrolyseur) AND (qryCEAlleElektrolyseureNaOH.Datum = qryUnAlleElektrolyseure2.Datum);
+
+=== qrySPCMehrereElektrolyseureUN1CE1
+SELECT qryUnAlleElektrolyseure.Elektrolyseur, qryUnAlleElektrolyseure.Datum, qryUnAlleElektrolyseure.i, SPCBer([qryUnAlleElektrolyseure]![Un],[qryCEAlleElektrolyseure]![µNaOH]) AS Energieverbrauch, qryUnAlleElektrolyseure.Un, qryCEAlleElektrolyseure.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM tblGewElektrolyseureUnCeSpc INNER JOIN (qryUnAlleElektrolyseure INNER JOIN qryCEAlleElektrolyseure ON (qryUnAlleElektrolyseure.Datum = qryCEAlleElektrolyseure.Datum) AND (qryUnAlleElektrolyseure.Elektrolyseur = qryCEAlleElektrolyseure.Elektrolyseur)) ON tblGewElektrolyseureUnCeSpc.Bezeichnung = qryUnAlleElektrolyseure.Elektrolyseur
+
+ORDER BY qryUnAlleElektrolyseure.Elektrolyseur, qryUnAlleElektrolyseure.Datum;
+
+=== qrySPCMehrereElemente
+SELECT qryUnElemente.Elektrolyseur, qryUnElemente.Position, qryCEMehrereElemente.Bezeichnung, qryUnElemente.Datum, qryUnElemente.i, SPCBer([qryUnElemente]![Un],[qryCEMehrereElemente]![µNaOH]) AS Energieverbrauch, qryUnElemente.Un, qryCEMehrereElemente.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnElemente INNER JOIN qryCEMehrereElemente ON (qryUnElemente.Datum = qryCEMehrereElemente.Datum) AND (qryUnElemente.Position = qryCEMehrereElemente.Position) AND (qryUnElemente.Elektrolyseur = qryCEMehrereElemente.Elektrolyseur);
+
+=== qrySPCMehrereElemente2
+SELECT qryUnElemente.Elektrolyseur, qryUnElemente.Position, qryCEMehrereElementeNaOH.Bezeichnung, qryUnElemente.Datum, qryUnElemente.i, SPCBer([qryUnElemente]![Un],[qryCEMehrereElementeNaOH]![CE]) AS Energieverbrauch, qryUnElemente.Un, GetGewIRef() AS iRefSPC
+
+FROM qryUnElemente INNER JOIN qryCEMehrereElementeNaOH ON (qryUnElemente.Datum = qryCEMehrereElementeNaOH.Datum) AND (qryUnElemente.Position = qryCEMehrereElementeNaOH.Position) AND (qryUnElemente.Elektrolyseur = qryCEMehrereElementeNaOH.Elektrolyseur);
+
+=== qrySPCMehrereElemente3
+SELECT qryUnElemente2.Elektrolyseur, qryUnElemente2.Position, qryCEMehrereElemente.Bezeichnung, qryUnElemente2.Datum, qryUnElemente2.i, SPCBer([qryUnElemente2]![Un],[qryCEMehrereElemente]![µNaOH]) AS Energieverbrauch, qryUnElemente2.Un, GetGewIRef() AS iRefSPC
+
+FROM qryUnElemente2 INNER JOIN qryCEMehrereElemente ON (qryUnElemente2.Datum = qryCEMehrereElemente.Datum) AND (qryUnElemente2.Position = qryCEMehrereElemente.Position) AND (qryUnElemente2.Elektrolyseur = qryCEMehrereElemente.Elektrolyseur);
+
+=== qrySPCMehrereElemente4
+SELECT qryUnElemente2.Elektrolyseur, qryUnElemente2.Position, qryCEMehrereElementeNaOH.Bezeichnung, qryUnElemente2.Datum, qryUnElemente2.i, SPCBer([qryUnElemente2]![Un],[qryCEMehrereElementeNaOH]![CE]) AS Energieverbrauch, qryUnElemente2.Un, GetGewIRef() AS iRefSPC
+
+FROM qryUnElemente2 INNER JOIN qryCEMehrereElementeNaOH ON (qryUnElemente2.Datum = qryCEMehrereElementeNaOH.Datum) AND (qryUnElemente2.Position = qryCEMehrereElementeNaOH.Position) AND (qryUnElemente2.Elektrolyseur = qryCEMehrereElementeNaOH.Elektrolyseur);
+
+=== qrySPCMehrereGruppen
+SELECT qryCEMehrereGruppen.Gruppe, qryCEMehrereGruppen.Datum, qryUnMehrereGruppen.AvgOfi AS [i Mittel], SPCBer([qryUnMehrereGruppen]![Mittelwert von Un],[qryCEMehrereGruppen]![µNaOH]) AS Energieverbrauch, qryUnMehrereGruppen.[Mittelwert von Un] AS [Un Mittel], qryCEMehrereGruppen.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnMehrereGruppen INNER JOIN qryCEMehrereGruppen ON (qryUnMehrereGruppen.Datum = qryCEMehrereGruppen.Datum) AND (qryUnMehrereGruppen.Gruppe = qryCEMehrereGruppen.Gruppe);
+
+=== qrySPCMehrereGruppen2
+SELECT qryCEMehrereGruppenNaOH.Gruppe, qryCEMehrereGruppenNaOH.Datum, qryUnMehrereGruppen.AvgOfi AS [i Mittel], SPCBer([qryUnMehrereGruppen]![Mittelwert von Un],[qryCEMehrereGruppenNaOH]![CE]) AS Energieverbrauch, qryUnMehrereGruppen.[Mittelwert von Un] AS [Un Mittel], qryCEMehrereGruppenNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnMehrereGruppen INNER JOIN qryCEMehrereGruppenNaOH ON (qryUnMehrereGruppen.Datum = qryCEMehrereGruppenNaOH.Gruppe) AND (qryUnMehrereGruppen.Gruppe = qryCEMehrereGruppenNaOH.Datum);
+
+=== qrySPCMehrereGruppen3
+SELECT qryCEMehrereGruppen.Gruppe, qryCEMehrereGruppen.Datum, qryUnMehrereGruppen2.i AS [i Mittel], qryCEMehrereGruppen.µNaOH, SPCBer([qryUnMehrereGruppen2]![Un],[qryCEMehrereGruppen]![µNaOH]) AS Energieverbrauch, qryUnMehrereGruppen2.Un AS [Un Mittel], qryCEMehrereGruppen.µNaOH AS CE, GetGewIRef() AS iRefSPC
+
+FROM qryUnMehrereGruppen2 INNER JOIN qryCEMehrereGruppen ON (qryUnMehrereGruppen2.Datum = qryCEMehrereGruppen.Datum) AND (qryUnMehrereGruppen2.Gruppe = qryCEMehrereGruppen.Gruppe);
+
+=== qrySPCMehrereGruppen4
+SELECT qryCEMehrereGruppenNaOH.Gruppe, qryCEMehrereGruppenNaOH.Datum, qryUnMehrereGruppen2.i AS [i Mittel], SPCBer([qryUnMehrereGruppen2]![Un],[qryCEMehrereGruppenNaOH]![CE]) AS Energieverbrauch, qryUnMehrereGruppen2.Un AS [Un Mittel], qryCEMehrereGruppenNaOH.CE, GetGewIRef() AS iRefSPC
+
+FROM qryCEMehrereGruppenNaOH INNER JOIN qryUnMehrereGruppen2 ON (qryCEMehrereGruppenNaOH.Gruppe = qryUnMehrereGruppen2.Gruppe) AND (qryCEMehrereGruppenNaOH.Datum = qryUnMehrereGruppen2.Datum);

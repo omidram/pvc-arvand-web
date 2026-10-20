@@ -1,0 +1,268 @@
+Version =19
+VersionRequired =19
+Checksum =-122771766
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =14630
+    ItemSuffix =83
+    Left =735
+    Top =1335
+    Right =14880
+    Bottom =8985
+    RecSrcDt = Begin
+        0x390d16acd3cfe240
+    End
+    RecordSource ="qryStatistikElementeUnAbweichungElek"
+    Caption =" "
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x130b0000dc080000890500008905000000000000bf280000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a657420344c000000000000000000000000000000000000 ,
+        0x0a0306004400d300030700000200090000000000000001000100fcff00000100 ,
+        0x000000002000000080c993f00300000002000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000001a00330300000100040000ff000200000001000001002c010000 ,
+        0x020100000400000000000000000e000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000002000464f4e545306000c53 ,
+        0x00000000
+    End
+    PrtDevNames = Begin
+        0x170008001f0001004850204c617365724a657420344c00485050434c3545004c ,
+        0x5054313a00000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1474
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0x033b4710d4f02641bbf0e6b30301d078
+            End
+            Begin
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =10998
+                    Top =226
+                    Width =1704
+                    Height =576
+                    Name ="Schaltfläche43"
+                    Caption ="Statistics"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x214b042d2c98b348bf4251b812dd0639
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =9070
+                    Top =226
+                    Height =568
+                    TabIndex =1
+                    Name ="Befehl59"
+                    Caption ="Update\015\012Display"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xa21e7019c5f734458e814d675a1c7b8c
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =3
+                    Left =113
+                    Top =226
+                    Width =7815
+                    Height =585
+                    TabIndex =2
+                    Name ="subfrmSucheMembrantyp"
+                    SourceObject ="Form.subfrmStatistikAbweichungenUn"
+                    GUID = Begin
+                        0xd82dac57cd3d6b4fbab8cb356685fb6c
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13379
+                    Top =340
+                    Width =1251
+                    FontSize =10
+                    TabIndex =3
+                    Name ="Text79"
+                    ControlSource ="=Date()"
+                    GUID = Begin
+                        0x6a684c790e54574bbc7b2d91e19fd8b3
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0x4ac07655140e3c4696c48d503cff35d0
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7823
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x7d0f42c7f87b9446bb88d28324d310b6
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =2494
+                    Width =13485
+                    Height =5220
+                    Name ="subfrmSuchergebnisMontagedatum"
+                    SourceObject ="Form.subfrmStatistikAbweichungUnErgebnis"
+                    GUID = Begin
+                        0x1a8afa42b6bd1c41b33ee7b892bae6a2
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =113
+                    Width =6000
+                    Height =2250
+                    TabIndex =1
+                    Name ="subfrmStatistikElementeUnAbweichungElek"
+                    SourceObject ="Form.subfrmStatistikElementeUnAbweichungElek"
+                    GUID = Begin
+                        0x1b87ced6ca6e8945986c35627d6bedd0
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0xf8085e6e936e2b4394a264afe62e55b4
+            End
+        End
+        Begin FormFooter
+            CanGrow = NotDefault
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0x2cb3d94013c3c04bac4552c7e845f620
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl59_Click()
+    KorrekturfaktorenAktualisieren
+    subfrmSuchergebnisMontagedatum.Requery
+    subfrmStatistikElementeUnAbweichungElek.Requery
+End Sub
+
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Befehl59.Caption = "Anzeige aktualisieren"
+        Schaltfläche43.Caption = "Statistik"
+    
+    Else
+        Befehl59.Caption = "Update Display"
+        Schaltfläche43.Caption = "Statistics"
+    End If
+
+End Sub
+
+Private Sub Schaltfläche43_Click()
+    DoCmd.OpenForm "frmMenuStatistik"
+    DoCmd.Close acForm, "frmStatistikAbweichungUn"
+End Sub

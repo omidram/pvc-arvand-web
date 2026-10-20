@@ -1,0 +1,518 @@
+Version =19
+VersionRequired =19
+Checksum =122265352
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DataEntry = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    GridX =5
+    GridY =5
+    Width =14173
+    ItemSuffix =217
+    Left =465
+    Top =390
+    Right =14400
+    Bottom =9375
+    RecSrcDt = Begin
+        0x757b225d5488e140
+    End
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c4850354b5f37313534365f50434c00000000000000 ,
+        0x010418009c00b80303ff800701000900000000006400010001002c0102000100 ,
+        0x2c01010000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742035303030205365726965732050434c2036000000 ,
+        0x000000000000040032002e018603789c654fcb2e8341183d67a6ed288a05ad48 ,
+        0x45dd2f11112f6081451fa078804a5c9aef6bb44d88205db2a88d5d130fe009b0 ,
+        0xf006dec203d8b95f66fe5423f12dce393933df9c3995caff31c436afe8a9c426 ,
+        0xdc0193284875a75ada2ac2c549c02502ea37649272471d67dd503a58779461da ,
+        0x864d43f24667a8879409d69bb6b64899a34c5167a94bf4ebd3ccc2538131045e ,
+        0x6ff146e0208e98863b0d39e513ca31f58c72ce70321f5df1dfd3203ceff21192 ,
+        0xa43e433eb1ff06f9808c505fa0ef902fe800254d291ac95073d441da148b901e ,
+        0x6a1fb597b551cabdb1cbcc419c9131eaad753751cfa108b3113e21e083f59820 ,
+        0xac416b1a0bbfcadbb1b67dfdd78eb7edcbb6ed1f7d453fec0a378d5df52017b6 ,
+        0xbc1635cc3305eda47451ba7d548c99a8e71e9defecf37f00a4d5459500000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08002600400001004850204c617365724a657420353030302053657269657320 ,
+        0x50434c2036005c5c5355444f505330325c4850354b5f37313534365f50434c00 ,
+        0x6870356b5f373135343600
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =11336
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =660
+                    Top =225
+                    Width =12150
+                    Height =795
+                    FontSize =22
+                    BackColor =12632256
+                    Name ="Text0"
+                    Caption ="Statistics"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10204
+                    Top =340
+                    Width =2034
+                    Height =561
+                    Name ="Schaltfläche29"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =1020
+                    Top =2834
+                    Width =2507
+                    Height =4191
+                    Name ="Rechteck129"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1020
+                    Top =1700
+                    Width =2505
+                    Height =795
+                    FontSize =16
+                    BackColor =12632256
+                    Name ="Bezeichnungsfeld147"
+                    Caption ="Single Element Voltages"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =223
+                    Left =1242
+                    Top =4085
+                    Width =2031
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl184"
+                    Caption ="Element Voltages"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =4195
+                    Top =3061
+                    Width =2031
+                    Height =576
+                    TabIndex =2
+                    Name ="Befehl191"
+                    Caption ="Electrolyzers"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =1247
+                    Top =5102
+                    Width =2031
+                    Height =576
+                    TabIndex =3
+                    Name ="Befehl202"
+                    Caption ="Elements with High Voltages"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =1242
+                    Top =3064
+                    Width =2055
+                    Height =810
+                    TabIndex =4
+                    Name ="subfrmElektrolyseurVerteilungUN"
+                    SourceObject ="Form.subfrmElektrolyseurVerteilungUN"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3975
+                    Top =1695
+                    Width =2505
+                    Height =780
+                    FontSize =16
+                    BackColor =12632256
+                    Name ="Label205"
+                    Caption ="Power Consumption"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0xe3db715964bdb040b968d3bb03ee456e
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =215
+                    Left =3968
+                    Top =2834
+                    Width =2507
+                    Height =4191
+                    Name ="Box206"
+                    GUID = Begin
+                        0x87603c40b2684a4499cedd8e2ad4ee77
+                    End
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6916
+                    Top =1700
+                    Width =2505
+                    Height =780
+                    FontSize =16
+                    BackColor =12632256
+                    Name ="Label207"
+                    Caption ="Membranes"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0xbf448bb499ba5641a54add05abe65c59
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =6916
+                    Top =2834
+                    Width =2507
+                    Height =4191
+                    Name ="Box208"
+                    GUID = Begin
+                        0x02eeac33e9779545bd5d6000bb2f5377
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =7143
+                    Top =3061
+                    Width =2031
+                    Height =576
+                    TabIndex =5
+                    Name ="Command209"
+                    Caption ="DOL"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0xe275136c7f52d145bc1b8abd6cdbacac
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =3
+                    BackStyle =0
+                    OverlapFlags =223
+                    Left =1133
+                    Top =2948
+                    Width =2268
+                    Height =1814
+                    Name ="Box210"
+                    GUID = Begin
+                        0xd6ea50ccc0e7f140b105ad713f53fa1e
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =10099
+                    Top =3061
+                    Width =2031
+                    Height =576
+                    TabIndex =6
+                    Name ="Command211"
+                    Caption ="Group Avg. Sel. by Date"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Find Next"
+                    GUID = Begin
+                        0x9abb67a5d0db5c4fb7eaa807c3a54305
+                    End
+                End
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9864
+                    Top =1700
+                    Width =2505
+                    Height =780
+                    FontSize =16
+                    BackColor =12632256
+                    Name ="Label212"
+                    Caption ="Groups"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x66a4963af1df5e46b53ca8d73d189e7b
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =223
+                    Left =9864
+                    Top =2834
+                    Width =2507
+                    Height =4191
+                    Name ="Box213"
+                    GUID = Begin
+                        0x13edf58c6f20d34dbf1b6aeb5a4f3b33
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10091
+                    Top =3855
+                    Width =2031
+                    Height =576
+                    TabIndex =7
+                    Name ="Command214"
+                    Caption ="Group Sel. by Date"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Find Next"
+                    GUID = Begin
+                        0xd19e126b58f075458c1e1552d425d777
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10091
+                    Top =4648
+                    Width =2031
+                    Height =576
+                    TabIndex =8
+                    Name ="Command215"
+                    Caption ="Group Avg. Sel. by El. and Date"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Find Next"
+                    GUID = Begin
+                        0xd8b81f2a7fc2114ca9df17a876537a14
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =1247
+                    Top =5896
+                    Width =2031
+                    Height =576
+                    TabIndex =9
+                    Name ="Command216"
+                    Caption ="Un Distribution"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0xc1973d2ce31d3540a867f76d6fa3147d
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl191_Click()
+    KorrekturfaktorenAktualisieren
+    DoCmd.OpenForm "frmEnergieverbrauchDurchschnitt"
+    DoCmd.Close acForm, "frmMenuStatistik"
+End Sub
+
+Private Sub Befehl202_Click()
+    DoCmd.OpenForm "frmStatistikAbweichungUN"
+    DoCmd.Close acForm, "frmMenuStatistik"
+End Sub
+
+Private Sub Command209_Click()
+    DoCmd.OpenForm "frmMembranstatistik"
+    DoCmd.Close acForm, "frmMenuStatistik"
+End Sub
+
+Private Sub Command214_Click()
+
+    DoCmd.OpenForm "Norm(Um)AlleDatum"
+    DoCmd.Close acForm, "frmMenuStatistik"
+    
+End Sub
+
+Private Sub Command215_Click()
+
+    DoCmd.OpenForm "Norm(Um)ElekDatum"
+    DoCmd.Close acForm, "frmMenuStatistik"
+
+End Sub
+
+Private Sub Command216_Click()
+
+    DoCmd.OpenForm "frmStatistikVerteilungUN"
+    DoCmd.Close acForm, "frmMenuStatistik"
+
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    If GetIDGewSprache() = 1 Then
+        Text0.Caption = "Statistik"
+        Bezeichnungsfeld147.Caption = "Einzelelement-Spannungen"
+        Befehl184.Caption = "Element-Spannungen"
+        Label205.Caption = "Energie-verbrauch"
+        Befehl191.Caption = "Elektrolyseure"
+        Befehl202.Caption = "El. mit hohen Spannungen"
+        Command216.Caption = "Verteilung Un"
+        Label207.Caption = "Membranen"
+        Command209.Caption = "DOL"
+        Label212.Caption = "Gruppen"
+        Command211.Caption = "Un Gruppen zu Datum"
+        Command214.Caption = "Gruppe zu Datum und El."
+        Command215.Caption = "Un Gruppen in El. zu Datum"
+        
+        Schaltfläche29.Caption = "Hauptmenu"
+        
+    Else
+        Text0.Caption = "Statistics"
+        Bezeichnungsfeld147.Caption = "Single Element Voltages"
+        Befehl184.Caption = "Element Voltages"
+        Label205.Caption = "Power Consumption"
+        Befehl191.Caption = "Electrolyzers"
+        Befehl202.Caption = "Elements With High Voltages"
+        Command216.Caption = "Distribution Un"
+        Label207.Caption = "Membranes"
+        Command209.Caption = "DOL"
+        Label212.Caption = "Groups"
+        Command211.Caption = "Un all Groups Sel. by Date"
+        Command214.Caption = "Un all Groups Sel. by El. and Date"
+        Command215.Caption = "Un Groups in Sel. Electrol."
+        Schaltfläche29.Caption = "Main Menu"
+    End If
+
+End Sub
+
+Private Sub Befehl184_Click()
+    KorrekturfaktorenAktualisieren
+    DoCmd.OpenForm "frmDiagrammVerteilungUN"
+    DoCmd.Close acForm, "frmMenuStatistik"
+End Sub
+
+Private Sub Schaltfläche29_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "frmMenuStatistik"
+End Sub
+Private Sub Command211_Click()
+    KorrekturfaktorenAktualisieren
+    DoCmd.OpenForm "Norm(Um)DatMittel"
+    DoCmd.Close acForm, "MenuStatistik"
+    
+End Sub

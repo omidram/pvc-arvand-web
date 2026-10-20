@@ -618,6 +618,8 @@ export interface DashboardVoltageStats {
   danger_count: number;
   health_pct: number | null;
   max_voltage: number | null;
+  max_electrolyzer?: string | null;
+  max_position?: string | null;
   avg_voltage: number | null;
   danger_limit: number;
   cell_gauge_max: number;
@@ -1465,11 +1467,33 @@ export interface ElementDashOverview {
   oldest_waiting: { element_nr: string; state: ElementStage; days_in_state: number | null; since: string | null; note: string | null }[];
   parts: Record<"anode" | "cathode" | "membrane", { summary: PartsLifeSummary; histogram: LifeBin[] }>;
   coating: Record<"anode" | "cathode", CoatingSummary>;
+  workshop?: WorkshopSheet;
   alerts: { danger: number; warning: number; info: number };
   by_electrolyzer: { electrolyzer: string; cells: number; capacity: number }[];
   monthly_flow: { month: string; assembled: number; commissioned: number; decommissioned: number; disassembled: number }[];
   events: ShopEvent[];
   settings: ElementDashSettings;
+}
+
+export interface WorkshopStock {
+  usable: number;
+  rate_off: number;
+  awaiting_check: number;
+  ready_dispatch: number;
+  train_lm: number;
+  coated: { vendor: string; count: number }[];
+}
+
+export interface WorkshopSheet {
+  assembled_total: number;
+  assembled_pairs: { anode: string; cathode: string; count: number }[];
+  assembled_membranes: { type: string; count: number }[];
+  awaiting_disassembly: number;
+  anode: WorkshopStock;
+  cathode: WorkshopStock;
+  coating_companies: { company: string; anode_open: number; anode_returned: number; cathode_open: number; cathode_returned: number }[];
+  membrane_stock: number;
+  membrane_types: { type: string; count: number }[];
 }
 
 export interface CoatingSummary {

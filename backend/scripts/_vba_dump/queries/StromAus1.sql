@@ -1,0 +1,3 @@
+SELECT [Analyse anolyt].Elektrolyseur, [Analyse anolyt].Datum, [Analyse anolyt].Zeit, [Analyse pure brine].[flow rate], [Analyse pure brine].[NaClO3 Pb], [Analyse anolyt].[NaClO3 An], [Analyse pure brine].[Na2SO4 Pb], [Analyse anolyt].[Na2SO4 An], [Analyse pure brine].[NaOH Pb], [Analyse pure brine].[Na2CO3 Pb], [Analyse anolyt].[NaOCl An], [Analyse pure brine].[NaOCl Pb], [Analyse anolyt].[HCl An], [Analyse pure brine].[HCl Pb]
+FROM [Analyse anolyt] LEFT JOIN [Analyse pure brine] ON ([Analyse anolyt].Datum = [Analyse pure brine].Datum) AND ([Analyse anolyt].Elektrolyseur = [Analyse pure brine].Elektrolyseur)
+ORDER BY [Analyse anolyt].Elektrolyseur, [Analyse anolyt].Datum;

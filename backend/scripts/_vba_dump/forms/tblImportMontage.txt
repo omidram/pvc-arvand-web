@@ -1,0 +1,868 @@
+Version =19
+VersionRequired =19
+Checksum =-122868170
+Begin Form
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =4561
+    DatasheetFontHeight =10
+    ItemSuffix =58
+    Left =930
+    Top =1260
+    Right =5775
+    Bottom =9030
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x563848d39123e340
+    End
+    RecordSource ="Montage"
+    Caption ="Montage"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+            FontName ="Tahoma"
+        End
+        Begin Section
+            Height =9997
+            BackColor =-2147483633
+            Name ="Detail"
+            GUID = Begin
+                0xa804d7d42265cc459e41281493fda980
+            End
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =113
+                    ColumnWidth =1230
+                    Name ="Element Nr"
+                    ControlSource ="Element Nr"
+                    Format ="Standard"
+                    EventProcPrefix ="Element_Nr"
+                    GUID = Begin
+                        0x53764f6a86da86409edaf2707bf813da
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =113
+                            Width =855
+                            Height =240
+                            Name ="Label1"
+                            Caption ="Element Nr"
+                            GUID = Begin
+                                0x1cd58c7cb4db4a47b232fc73ad2ce042
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =453
+                    Width =2490
+                    ColumnWidth =810
+                    TabIndex =1
+                    Name ="Anoden Nr"
+                    ControlSource ="Anoden Nr"
+                    EventProcPrefix ="Anoden_Nr"
+                    GUID = Begin
+                        0xcc62caad88e7474e891475df15e3bce8
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =453
+                            Width =840
+                            Height =240
+                            Name ="Label3"
+                            Caption ="Anoden Nr"
+                            GUID = Begin
+                                0x3d3aaeefc1e5c34d9e3f31d37dae0283
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =793
+                    Width =2490
+                    ColumnWidth =690
+                    TabIndex =2
+                    Name ="Kathoden Nr"
+                    ControlSource ="Kathoden Nr"
+                    EventProcPrefix ="Kathoden_Nr"
+                    GUID = Begin
+                        0x2c501f9a753e7140b1239b31e0e6d6c1
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =793
+                            Width =975
+                            Height =240
+                            Name ="Label5"
+                            Caption ="Kathoden Nr"
+                            GUID = Begin
+                                0x7fc7df83d691a14a9dd603c15de68306
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =1133
+                    Width =2490
+                    ColumnWidth =855
+                    TabIndex =3
+                    Name ="Membrantyp"
+                    ControlSource ="Membrantyp"
+                    GUID = Begin
+                        0x6e31f3d80a4d91408f8d000b26997767
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =1133
+                            Width =975
+                            Height =240
+                            Name ="Label7"
+                            Caption ="Membrantyp"
+                            GUID = Begin
+                                0x66cdfbeb6bf52c4b9e1164a94fe9af5f
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =1474
+                    Width =2490
+                    ColumnWidth =1125
+                    TabIndex =4
+                    Name ="Membran Nr"
+                    ControlSource ="Membran Nr"
+                    EventProcPrefix ="Membran_Nr"
+                    GUID = Begin
+                        0x3d416a8055e5bf438f608250009800f5
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =1474
+                            Width =945
+                            Height =240
+                            Name ="Label9"
+                            Caption ="Membran Nr"
+                            GUID = Begin
+                                0x0bb09bdc24c04549907b07bc1358cc62
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =1814
+                    ColumnWidth =435
+                    TabIndex =5
+                    Name ="Elektroden Abstand"
+                    ControlSource ="Elektroden Abstand"
+                    Format ="Standard"
+                    EventProcPrefix ="Elektroden_Abstand"
+                    GUID = Begin
+                        0xf8395953934fff41a5b4b41fc1905b9e
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =1814
+                            Width =1485
+                            Height =240
+                            Name ="Label11"
+                            Caption ="Elektroden Abstand"
+                            GUID = Begin
+                                0x7be3f4b4d269724f817f8a2b9bab4422
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =2154
+                    ColumnWidth =870
+                    TabIndex =6
+                    Name ="Montage Datum"
+                    ControlSource ="Montage Datum"
+                    Format ="Short Date"
+                    EventProcPrefix ="Montage_Datum"
+                    GUID = Begin
+                        0x7bf3845c2893ba4e96a3df5d5393a9a7
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =2154
+                            Width =1215
+                            Height =240
+                            Name ="Label13"
+                            Caption ="Montage Datum"
+                            GUID = Begin
+                                0xc4ff4784bb751846a2081a05d012a953
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =2494
+                    Width =2490
+                    ColumnWidth =3288
+                    TabIndex =7
+                    Name ="Remarks"
+                    ControlSource ="Remarks"
+                    GUID = Begin
+                        0xd0c0ba18e266254f869bafa1a826bb55
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =2494
+                            Width =690
+                            Height =240
+                            Name ="Label15"
+                            Caption ="Remarks"
+                            GUID = Begin
+                                0x82f63873c7a7c146ad087fca854256a9
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =2834
+                    Width =2490
+                    ColumnWidth =900
+                    TabIndex =8
+                    Name ="Elektrolyseur"
+                    ControlSource ="Elektrolyseur"
+                    GUID = Begin
+                        0x7a2a4797d000fe439406063cd880d3f0
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =2834
+                            Width =1005
+                            Height =240
+                            Name ="Label17"
+                            Caption ="Elektrolyseur"
+                            GUID = Begin
+                                0xef89ed722a75b94482dd436b9086ed7a
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =3174
+                    ColumnWidth =480
+                    TabIndex =9
+                    Name ="Position"
+                    ControlSource ="Position"
+                    Format ="Standard"
+                    GUID = Begin
+                        0xd56719cb08b3ef4ba2326c2c58a79ab2
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =3174
+                            Width =630
+                            Height =240
+                            Name ="Label19"
+                            Caption ="Position"
+                            GUID = Begin
+                                0x1c00cc4567e5a1418fc3a00802608030
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =3514
+                    ColumnWidth =885
+                    TabIndex =10
+                    Name ="Einschalt Datum"
+                    ControlSource ="Einschalt Datum"
+                    Format ="Short Date"
+                    EventProcPrefix ="Einschalt_Datum"
+                    GUID = Begin
+                        0x88ce3fc1b1504e458fdfa82610f99f80
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =3514
+                            Width =1215
+                            Height =240
+                            Name ="Label21"
+                            Caption ="Einschalt Datum"
+                            GUID = Begin
+                                0x2326cf8adfb6f744ae6253601ff85b5a
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =3855
+                    ColumnWidth =930
+                    TabIndex =11
+                    Name ="Ausschalt Datum"
+                    ControlSource ="Ausschalt Datum"
+                    Format ="Short Date"
+                    EventProcPrefix ="Ausschalt_Datum"
+                    GUID = Begin
+                        0x21d42136a66ed24daa2b14eb925d92cd
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =3855
+                            Width =1275
+                            Height =240
+                            Name ="Label23"
+                            Caption ="Ausschalt Datum"
+                            GUID = Begin
+                                0xd8b291662ac0db49812caa0075d0d445
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =4195
+                    ColumnWidth =1275
+                    TabIndex =12
+                    Name ="DOL"
+                    ControlSource ="DOL"
+                    Format ="Standard"
+                    GUID = Begin
+                        0xbe481edc1e389b4faef10a1398b23301
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =4195
+                            Width =375
+                            Height =240
+                            Name ="Label25"
+                            Caption ="DOL"
+                            GUID = Begin
+                                0x60f0a0dc0d810e4fb13a43f96d0c9702
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =4535
+                    ColumnWidth =1140
+                    TabIndex =13
+                    Name ="Demontage Datum"
+                    ControlSource ="Demontage Datum"
+                    Format ="Short Date"
+                    EventProcPrefix ="Demontage_Datum"
+                    GUID = Begin
+                        0x89b8332970667347b0a18cbb1072fda0
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =4535
+                            Width =1410
+                            Height =240
+                            Name ="Label27"
+                            Caption ="Demontage Datum"
+                            GUID = Begin
+                                0x9d1371bc624877458274fa4bbe43eb6c
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =4875
+                    Width =2490
+                    TabIndex =14
+                    Name ="Gruppe"
+                    ControlSource ="Gruppe"
+                    GUID = Begin
+                        0x917dc1cf05bf5e42834a3b479206031c
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =4875
+                            Width =600
+                            Height =240
+                            Name ="Label29"
+                            Caption ="Gruppe"
+                            GUID = Begin
+                                0x8655a523f57e9b468feb5997f31ccd9c
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =5215
+                    TabIndex =15
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0x967d9b7de54b62439bc0186deb9a7c0b
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =5215
+                            Width =540
+                            Height =240
+                            Name ="Label31"
+                            Caption ="Datum"
+                            GUID = Begin
+                                0xc584a617e3cd21479429b061a3779457
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =5555
+                    Width =2490
+                    TabIndex =16
+                    Name ="Befund"
+                    ControlSource ="Befund"
+                    GUID = Begin
+                        0xe4ade929f770c947b2d3523464f98156
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =5555
+                            Width =585
+                            Height =240
+                            Name ="Label33"
+                            Caption ="Befund"
+                            GUID = Begin
+                                0x0bc54be0c413c4478e13cdb39c5a3b48
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =5896
+                    Width =2490
+                    TabIndex =17
+                    Name ="Aktion"
+                    ControlSource ="Aktion"
+                    GUID = Begin
+                        0xf6c6f9c6ac05c141b8c052f8d58fd0fc
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =5896
+                            Width =525
+                            Height =240
+                            Name ="Label35"
+                            Caption ="Aktion"
+                            GUID = Begin
+                                0xa6ad93ee72651743aa01a22ca5193924
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =6236
+                    TabIndex =18
+                    Name ="Versand Datum"
+                    ControlSource ="Versand Datum"
+                    Format ="Short Date"
+                    EventProcPrefix ="Versand_Datum"
+                    GUID = Begin
+                        0x25c74af7e0f09846beae4e0d7be246f4
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =6236
+                            Width =1170
+                            Height =240
+                            Name ="Label37"
+                            Caption ="Versand Datum"
+                            GUID = Begin
+                                0x61f23d421ec5fc40ba566d639a4445b6
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =6576
+                    TabIndex =19
+                    Name ="Rücklieferung"
+                    ControlSource ="Rücklieferung"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0xb0c5804c61ca324cb694d27765ea2083
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =6576
+                            Width =1050
+                            Height =240
+                            Name ="Label39"
+                            Caption ="Rücklieferung"
+                            GUID = Begin
+                                0xb8f78644869d7d4d84a5e02a51f7b6f2
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =6916
+                    Width =2490
+                    TabIndex =20
+                    Name ="Abschaltgrund"
+                    ControlSource ="Abschaltgrund"
+                    GUID = Begin
+                        0xb73c0afbdd0f00488eb1905119f02cc3
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =6916
+                            Width =1110
+                            Height =240
+                            Name ="Label41"
+                            Caption ="Abschaltgrund"
+                            GUID = Begin
+                                0x99cecfbd57948d41bae527dd5def13aa
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =7256
+                    Width =2490
+                    TabIndex =21
+                    Name ="Anode Coating"
+                    ControlSource ="Anode Coating"
+                    EventProcPrefix ="Anode_Coating"
+                    GUID = Begin
+                        0xa07b38ce6d7d9b409988c5c753be31d2
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =7256
+                            Width =1140
+                            Height =240
+                            Name ="Label43"
+                            Caption ="Anode Coating"
+                            GUID = Begin
+                                0x7e222d5f39deb841b24415204a5e0a14
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =7596
+                    Width =2490
+                    TabIndex =22
+                    Name ="Anode Electrode"
+                    ControlSource ="Anode Electrode"
+                    EventProcPrefix ="Anode_Electrode"
+                    GUID = Begin
+                        0x4d15641c2206fd43b2316c51bf80e71d
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =7596
+                            Width =1260
+                            Height =240
+                            Name ="Label45"
+                            Caption ="Anode Electrode"
+                            GUID = Begin
+                                0x952b235af92ceb45999ff6b2da3035e2
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =7937
+                    Width =2490
+                    TabIndex =23
+                    Name ="Anode Shell"
+                    ControlSource ="Anode Shell"
+                    EventProcPrefix ="Anode_Shell"
+                    GUID = Begin
+                        0xe65b660f49d74c46b11b0f89b1019be7
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =7937
+                            Width =915
+                            Height =240
+                            Name ="Label47"
+                            Caption ="Anode Shell"
+                            GUID = Begin
+                                0xac87dadf7561fb45a9008783fdf165ab
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =8277
+                    Width =2490
+                    TabIndex =24
+                    Name ="Cathode Coating"
+                    ControlSource ="Cathode Coating"
+                    EventProcPrefix ="Cathode_Coating"
+                    GUID = Begin
+                        0x6f59cdf0f2484d4a97270d38914cc0dd
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =8277
+                            Width =1290
+                            Height =240
+                            Name ="Label49"
+                            Caption ="Cathode Coating"
+                            GUID = Begin
+                                0xbccbb0393400c5409b1269b5cb92bfdc
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =8617
+                    Width =2490
+                    TabIndex =25
+                    Name ="Cathode Electrode"
+                    ControlSource ="Cathode Electrode"
+                    EventProcPrefix ="Cathode_Electrode"
+                    GUID = Begin
+                        0xaba3ff9816c9194aafdac14f377e1722
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =8617
+                            Width =1410
+                            Height =240
+                            Name ="Label51"
+                            Caption ="Cathode Electrode"
+                            GUID = Begin
+                                0xca918bfd5b1ed649ac0470d03da2dfaa
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =8957
+                    Width =2490
+                    TabIndex =26
+                    Name ="Cathode Shell"
+                    ControlSource ="Cathode Shell"
+                    EventProcPrefix ="Cathode_Shell"
+                    GUID = Begin
+                        0xd35cd49bec676c4fb918b74b68b596ef
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =8957
+                            Width =1065
+                            Height =240
+                            Name ="Label53"
+                            Caption ="Cathode Shell"
+                            GUID = Begin
+                                0x7d23c5bca92de0489881ac34fc2d4d3b
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =9297
+                    Width =2490
+                    TabIndex =27
+                    Name ="Info Membrane"
+                    ControlSource ="Info Membrane"
+                    EventProcPrefix ="Info_Membrane"
+                    GUID = Begin
+                        0x96e6b43595a3f54bbc81b27835fd3d93
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =9297
+                            Width =1170
+                            Height =240
+                            Name ="Label55"
+                            Caption ="Info Membrane"
+                            GUID = Begin
+                                0xff95cd9021aa89409d07eefbfb7ef3ff
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =9637
+                    Width =2490
+                    TabIndex =28
+                    Name ="Generation"
+                    ControlSource ="Generation"
+                    GUID = Begin
+                        0x35da0713feefed46839e61a61d05798b
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =9637
+                            Width =870
+                            Height =240
+                            Name ="Label57"
+                            Caption ="Generation"
+                            GUID = Begin
+                                0xf301a40b72dc2f48b206767eb4a4be1b
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End

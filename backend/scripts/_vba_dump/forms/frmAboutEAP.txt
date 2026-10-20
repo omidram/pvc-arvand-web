@@ -1,0 +1,168 @@
+Version =19
+VersionRequired =19
+Checksum =-123705999
+Begin Form
+    PopUp = NotDefault
+    Modal = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    TabularFamily =0
+    BorderStyle =3
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =5669
+    DatasheetFontHeight =10
+    ItemSuffix =4
+    Left =3375
+    Top =1950
+    Right =9105
+    Bottom =4560
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x437be2163b1ce340
+    End
+    Caption ="About EAP"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0xa0050000a0050000a0050000a005000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c00340243ef8005010001009a0b3408640001000f00580201000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="Tahoma"
+        End
+        Begin Section
+            Height =2267
+            BackColor =-2147483633
+            Name ="Detail"
+            GUID = Begin
+                0x90c00b921714fb47bff881e93d3db4e8
+            End
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =2040
+                    Top =1590
+                    Width =1476
+                    Height =388
+                    Name ="Command0"
+                    Caption ="OK"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xa228ba6cd2acdf448694529f66b6f463
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =1185
+                    Top =570
+                    Width =2775
+                    Height =210
+                    Name ="Label1"
+                    Caption ="Uhde Element Administration Program"
+                    GUID = Begin
+                        0xb8079aff5e1aa745b616cfb52e163b5a
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =1185
+                    Top =900
+                    Width =675
+                    Height =210
+                    Name ="Label2"
+                    Caption ="Version:"
+                    GUID = Begin
+                        0x74cddf13f707a04aa15e087cf9bdc621
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =2267
+                    Top =907
+                    Width =1080
+                    Height =210
+                    Name ="Label3"
+                    Caption ="2.16.0"
+                    GUID = Begin
+                        0xd75d0685543d10488bb2e3edd0c5634c
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub Command0_Click()
+    DoCmd.Close acForm, "frmAboutEAP"
+End Sub
+
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    If GetIDGewSprache() = 1 Then
+        Me.Caption = "Über Uhde EVP"
+        Label1.Caption = "Uhde Elementverwaltungs-Programm"
+        Label2.Caption = "Version:"
+    Else
+        Me.Caption = "About Uhde EAP"
+        Label1.Caption = "Uhde Element Administration Program"
+        Label2.Caption = "Version:"
+        
+    End If
+
+End Sub

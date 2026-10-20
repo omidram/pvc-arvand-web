@@ -1,0 +1,271 @@
+Version =19
+VersionRequired =19
+Checksum =-122846199
+Begin Form
+    GridX =5
+    GridY =5
+    Width =14173
+    ItemSuffix =126
+    Top =576
+    Right =11856
+    Bottom =6516
+    RecSrcDt = Begin
+        0xbe953aad53afe240
+    End
+    RecordSource ="tblAnodenrecoating"
+    Caption ="frmAnodenrecoating"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =1380
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =5670
+                    Height =570
+                    FontSize =14
+                    ForeColor =4194304
+                    Name ="Text8"
+                    Caption ="Anode Recoating"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12018
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld68"
+                    ControlSource ="=Date()"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =9070
+                    Top =113
+                    Width =1716
+                    Height =576
+                    TabIndex =1
+                    Name ="Hauptmenue"
+                    Caption ="Element Administration"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2381
+                    Top =1133
+                    Width =1695
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Shipping Date"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6576
+                    Top =1133
+                    Width =2835
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Manufacturer"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =566
+                    Top =1133
+                    Width =1710
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Anode No."
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4195
+                    Top =1133
+                    Width =2265
+                    Height =240
+                    Name ="Bezeichnungsfeld111"
+                    Caption ="Return Date"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9524
+                    Top =1133
+                    Width =4080
+                    Height =240
+                    Name ="Bezeichnungsfeld124"
+                    Caption ="Remark"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4195
+                    Width =2265
+                    TabIndex =2
+                    Name ="Cc"
+                    ControlSource ="Rücklieferdatum"
+                    Format ="General Date"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2381
+                    Width =1695
+                    TabIndex =1
+                    Name ="Text112"
+                    ControlSource ="Versanddatum"
+                    Format ="General Date"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =6576
+                    Width =2826
+                    TabIndex =3
+                    Name ="Text119"
+                    ControlSource ="Hersteller"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =9524
+                    Width =4086
+                    TabIndex =4
+                    Name ="Text123"
+                    ControlSource ="Bemerkung"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ListWidth =1440
+                    Left =566
+                    Height =226
+                    ColumnInfo ="\"\";\"\";\"10\";\"100\""
+                    Name ="Kombinationsfeld125"
+                    ControlSource ="Anodennummer"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryVerwendeteAnodennummern].[Anoden Nr] FROM [qryVerwendeteA"
+                        "nodennummern];"
+                    ColumnWidths ="1440"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =1048
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+    
+        Text8.Caption = "Anodenrecoating"
+        Me![Bezeichnungsfeld66].Caption = "Versanddatum"
+        Me![Bezeichnungsfeld68].Caption = "Hersteller"
+        Me![Bezeichnungsfeld93].Caption = "Anodennummer"
+        Me![Bezeichnungsfeld111].Caption = "Rückkehrdatum"
+        Bezeichnungsfeld124.Caption = "Bemerkung"
+        Hauptmenue.Caption = "Zellen-verwaltung"
+        
+    Else
+    
+        Text8.Caption = "Anode Recoating"
+        Me![Bezeichnungsfeld66].Caption = "Shipping Date"
+        Me![Bezeichnungsfeld68].Caption = "Manufacturer"
+        Me![Bezeichnungsfeld93].Caption = "Anode No."
+        Me![Bezeichnungsfeld111].Caption = "Return Date"
+        Bezeichnungsfeld124.Caption = "Remark"
+        Hauptmenue.Caption = "Element Administration"
+    
+                
+    End If
+
+
+
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "frmZellenverwaltung"
+    DoCmd.Close acForm, "frmAnodenrecoating"
+End Sub

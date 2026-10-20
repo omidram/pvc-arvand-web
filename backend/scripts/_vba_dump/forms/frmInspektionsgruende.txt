@@ -1,0 +1,272 @@
+Version =19
+VersionRequired =19
+Checksum =122846185
+Begin Form
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =12585
+    ItemSuffix =118
+    Top =420
+    Right =12870
+    Bottom =8205
+    RecSrcDt = Begin
+        0x71c61cfc13eae240
+    End
+    RecordSource ="qryInspektionsgruende2"
+    Caption ="Abschaltungen"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1940
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =7815
+                    Height =570
+                    FontSize =14
+                    ForeColor =4194304
+                    Name ="Text8"
+                    Caption ="Reasons for Element Inspection"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2267
+                    Top =1700
+                    Width =4575
+                    Height =240
+                    Name ="Bezeichnungsfeld109"
+                    Caption ="Inspektionsgrund"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1133
+                    Top =1700
+                    Width =795
+                    Height =240
+                    Name ="Bezeichnungsfeld110"
+                    Caption ="Code."
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =8503
+                    Top =113
+                    Width =1716
+                    Height =576
+                    Name ="Befehl115"
+                    Caption ="Element Administration"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =113
+                    Top =793
+                    Width =7815
+                    Height =360
+                    TabIndex =1
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1147
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9070
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2250
+                    Top =900
+                    Width =4575
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Inspektionsgrund"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1110
+                    Top =900
+                    Width =825
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Code"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1133
+                    Width =780
+                    Name ="Datum"
+                    ControlSource ="Code"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2267
+                    Width =4545
+                    TabIndex =1
+                    Name ="t An"
+                    ControlSource ="Inspektionsgrund"
+                    Format ="Fixed"
+                    EventProcPrefix ="t_An"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =8503
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl115_Click()
+    DoCmd.OpenForm "frmZellenverwaltung"
+    DoCmd.Close acForm, "frmInspektionsgruende"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    
+    If GewSprache = 1 Then
+        Text8.Caption = "Inspektionsgründe"
+        Bezeichnungsfeld110.Caption = "Code"
+        Bezeichnungsfeld93.Caption = "Code"
+        Bezeichnungsfeld109.Caption = "Inspektionsgrund"
+        Bezeichnungsfeld68.Caption = "Inspektionsgrund"
+        
+        Befehl115.Caption = "Element-verwaltung"
+        
+    Else
+        Text8.Caption = "Reasons for Element Inspection"
+        Bezeichnungsfeld110.Caption = "Code"
+        Bezeichnungsfeld93.Caption = "Code"
+        Bezeichnungsfeld109.Caption = "Reason for Inspection"
+        Bezeichnungsfeld68.Caption = "Reason for Inspection"
+        
+        Befehl115.Caption = "Element Administration"
+    End If
+
+
+End Sub

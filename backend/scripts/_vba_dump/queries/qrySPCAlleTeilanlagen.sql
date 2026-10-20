@@ -1,0 +1,3 @@
+SELECT qryCEAlleTeilanlagen.Teilanlagenbezeichnung, qryCEAlleTeilanlagen.Datum, Avg(SPCBer([qryUnAlleTeilanlagen]![Mittelwert von Un],[qryCEAlleTeilanlagen]![Mittelwert von µNaOH])) AS Energieverbrauch, Avg(qryUnAlleTeilanlagen.[Mittelwert von i]) AS iGes, Avg(qryUnAlleTeilanlagen.[Mittelwert von Un]) AS UnGes, Avg(qryCEAlleTeilanlagen.[Mittelwert von µNaOH]) AS CEGes, Avg(GetGewIRef()) AS iRefSPC
+FROM qryCEAlleTeilanlagen INNER JOIN qryUnAlleTeilanlagen ON (qryCEAlleTeilanlagen.Datum = qryUnAlleTeilanlagen.Datum) AND (qryCEAlleTeilanlagen.Teilanlagenbezeichnung = qryUnAlleTeilanlagen.Teilanlagenbezeichnung)
+GROUP BY qryCEAlleTeilanlagen.Teilanlagenbezeichnung, qryCEAlleTeilanlagen.Datum;

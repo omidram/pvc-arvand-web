@@ -1,0 +1,330 @@
+Version =17
+VersionRequired =17
+Checksum =122771751
+Begin Form
+    NavigationButtons = NotDefault
+    BorderStyle =0
+    GridX =5
+    GridY =5
+    Width =9751
+    ItemSuffix =74
+    Left =810
+    Top =2100
+    Right =8475
+    Bottom =4815
+    RecSrcDt = Begin
+        0x373bdc22339fe240
+    End
+    RecordSource ="tblElektrolyseuranordnung"
+    Caption =" "
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x130b0000dc080000890500008905000000000000bf280000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a657420344c000000000000000000000000000000000000 ,
+        0x0a0306004400d300030700000200090000000000000001000100fcff00000100 ,
+        0x000000002000000080c993f00300000002000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000001a00330300000100040000ff000200000001000001002c010000 ,
+        0x020100000400000000000000000e000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000002000464f4e545306000c53 ,
+        0x00000000
+    End
+    PrtDevNames = Begin
+        0x170008001f0001004850204c617365724a657420344c00485050434c3545004c ,
+        0x5054313a00000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =340
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    Left =113
+                    Top =113
+                    Width =1245
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld55"
+                    Caption ="Electrolyzer"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =1474
+                    Top =113
+                    Width =675
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld56"
+                    Caption ="Rack"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =2267
+                    Top =113
+                    Width =1590
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld57"
+                    Caption ="Start Position"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3968
+                    Top =113
+                    Width =1365
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld58"
+                    Caption ="End Position"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =5442
+                    Top =113
+                    Width =1245
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld60"
+                    Caption ="Train"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6803
+                    Top =113
+                    Width =1365
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld61"
+                    Caption ="Transformer"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8277
+                    Top =113
+                    Width =1365
+                    Height =210
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld62"
+                    Caption ="Recitifier"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =233
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =1474
+                    Width =680
+                    Height =226
+                    Name ="Text64"
+                    ControlSource ="Block"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =2267
+                    Width =1579
+                    Height =220
+                    TabIndex =1
+                    Name ="Text65"
+                    ControlSource ="Anfangsposition"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =3968
+                    Width =1361
+                    Height =226
+                    TabIndex =2
+                    Name ="Text66"
+                    ControlSource ="Endposition"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =113
+                    Width =1247
+                    Height =226
+                    TabIndex =3
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"50\""
+                    Name ="Kombinationsfeld70"
+                    ControlSource ="Bezeichnung"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichn"
+                        "ung].[Bezeichnung] FROM [tblElektrolyseurbezeichnung];"
+                    ColumnWidths ="0;1440"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =5442
+                    Width =1248
+                    Height =226
+                    TabIndex =4
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"50\""
+                    Name ="Kombinationsfeld71"
+                    ControlSource ="Teilanlage"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [tblTeilanlagenbezeichnung].[Nr], [tblTeilanlagenbezeichnung]"
+                        ".[Bezeichnung] FROM [tblTeilanlagenbezeichnung];"
+                    ColumnWidths ="0;1440"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =6916
+                    Width =1247
+                    Height =226
+                    TabIndex =5
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"50\""
+                    Name ="Kombinationsfeld72"
+                    ControlSource ="Transformator"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [tblTransformatorbezeichnung].[Nr], [tblTransformatorbezeichn"
+                        "ung].[Bezeichnung] FROM [tblTransformatorbezeichnung];"
+                    ColumnWidths ="0;1440"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =1440
+                    Left =8277
+                    Width =1360
+                    Height =226
+                    TabIndex =6
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"50\""
+                    Name ="Kombinationsfeld73"
+                    ControlSource ="Gleichrichter"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [tblGleichrichterbezeichnung].[Nr], [tblGleichrichterbezeichn"
+                        "ung].[Bezeichnung] FROM [tblGleichrichterbezeichnung];"
+                    ColumnWidths ="0;1440"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Bezeichnungsfeld55.Caption = "Elektrolyseur"
+        Bezeichnungsfeld56.Caption = "Block"
+        Bezeichnungsfeld57.Caption = "Anfangsposition"
+        Bezeichnungsfeld58.Caption = "Endposition"
+        Bezeichnungsfeld60.Caption = "Teilanlage"
+        Bezeichnungsfeld61.Caption = "Transformator"
+        Bezeichnungsfeld62.Caption = "Gleichrichter"
+        
+    Else
+        Bezeichnungsfeld55.Caption = "Electrolyzer"
+        Bezeichnungsfeld56.Caption = "Rack"
+        Bezeichnungsfeld57.Caption = "Start Position"
+        Bezeichnungsfeld58.Caption = "End Position"
+        Bezeichnungsfeld60.Caption = "Train"
+        Bezeichnungsfeld61.Caption = "Transformer"
+        Bezeichnungsfeld62.Caption = "Rectifier"
+        
+    End If
+
+End Sub

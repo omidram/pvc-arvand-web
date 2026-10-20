@@ -1,0 +1,301 @@
+Version =19
+VersionRequired =19
+Checksum =-122913161
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =14966
+    ItemSuffix =169
+    Right =14880
+    Bottom =8745
+    RecSrcDt = Begin
+        0x7b3faad8a99ae240
+    End
+    Caption ="DOL"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0xc60100006e040000960200006e040000000000006f5a0000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a6574203420506c75732028436f70792032290000000000 ,
+        0x0004010494004000037700060200090000000000000001000901580201000100 ,
+        0x5802040000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000006010000020000000000000000000000010040004d5355444f034850 ,
+        0x204c617365724a6574203420506c75730000000000000000000000000000e401 ,
+        0x0000000000003c0100000000040064000a000000
+    End
+    PrtDevNames = Begin
+        0x080011002d00000057494e53504f4f4c004850204c617365724a657420342050 ,
+        0x6c75732028436f7079203229005c5c53686c6e61615c73686c30313900000000 ,
+        0x00000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1020
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0xf8cce927d91fa444a4d19531973422ed
+            End
+            Begin
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =9070
+                    Top =226
+                    Width =1596
+                    Height =576
+                    Name ="Schaltfläche27"
+                    Caption ="Main Menu"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x29f35c908899cb44a8a01edaaa882bbe
+                    End
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    TextFontFamily =0
+                    Left =13266
+                    Top =340
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    TabIndex =1
+                    BackColor =12632256
+                    Name ="Feld28"
+                    ControlSource ="=Date()"
+                    GUID = Begin
+                        0x8e44a5a8daa7514fada587fe12200c67
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10885
+                    Top =226
+                    Width =1596
+                    Height =576
+                    TabIndex =2
+                    Name ="Befehl154"
+                    Caption ="Search"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Datensatz suchen"
+                    GUID = Begin
+                        0x2ac3bd4695867843bec655c683253ec3
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =345
+                    Top =225
+                    Width =5340
+                    Height =465
+                    FontSize =14
+                    Name ="Bezeichnungsfeld168"
+                    Caption ="Duplicate Anodes (all Elements)"
+                    GUID = Begin
+                        0x6d01860437003741a6b3ee543d4bafdd
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0x4e777f7a491e0e4e8be3b6d5817c72a1
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7937
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x2ce8faa648c70d4ba8303a3040ad8379
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =121
+                    Width =14745
+                    Height =7695
+                    Name ="subfrmSuchergebnis"
+                    SourceObject ="Form.subfrmSuchergebnisDuplikateAnodenAktiv"
+                    GUID = Begin
+                        0x8c910051a25f794b8180ae0dd508173e
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =453
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0xa6e026b02bd6054db9cb8570685fc445
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12925
+                    Top =113
+                    Width =1597
+                    Height =227
+                    Name ="Feld80"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                    GUID = Begin
+                        0x3108d221a020e54f950458c491128b7a
+                    End
+                End
+                Begin PageBreak
+                    OverlapFlags =85
+                    Name ="Seitenumbruch70"
+                    GUID = Begin
+                        0x8d236b4e56d29a42bc0c7e249484aa85
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0x064965538c5ab943bc6e378dfcab97d6
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl160_Click()
+    Forms!subfrmSuchergebnisMembrantyp.Requery
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Bezeichnungsfeld168.Caption = "Duplikate Anoden (aktive Elemente)"
+        Schaltfläche27.Caption = "Hauptmenu"
+        Befehl154.Caption = "Such-funktionen"
+        
+    Else
+        Bezeichnungsfeld168.Caption = "Duplicate Anodes (active Elements)"
+        Schaltfläche27.Caption = "Main Menu"
+        Befehl154.Caption = "Search"
+    End If
+End Sub
+
+Private Sub Schaltfläche27_Click()
+On Error GoTo Err_Schaltfläche27_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Header"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "frmSucheDuplikateAnodenAktiv"
+
+Exit_Schaltfläche27_Click:
+    Exit Sub
+
+Err_Schaltfläche27_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche27_Click
+    
+End Sub
+
+Private Sub Befehl154_Click()
+On Error GoTo Err_Befehl154_Click
+
+    DoCmd.OpenForm "Suchübersicht"
+    DoCmd.Close acForm, "frmSucheDuplikateAnodenAktiv"
+
+Exit_Befehl154_Click:
+    Exit Sub
+
+Err_Befehl154_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl154_Click
+    
+End Sub

@@ -1,0 +1,3 @@
+SELECT tblAnodendetails.Anodennummer, tblAnodendetails.Baugruppe, tblAnodendetails.[Bauteil Nr], tblAnodendetails.[U Zeichnungs Nr], tblAnodendetails.Hersteller, tblAnodendetails.[H Auftrags Nr], tblAnodendetails.[H Zeichnungs Nr], tblAnodendetails.[H Datum], tblAnodendetails.Wanne, tblAnodendetails.Kontaktstreifen, tblAnodendetails.Elektrodenunterstützung, tblAnodendetails.Elektrodenform, tblAnodendetails.Coating, tblAnodendetails.Baffleplate, tblAnodendetails.Downcomer, tblAnodendetails.Einlaufsystem, tblAnodendetails.[Standrohr Di], tblAnodendetails.Flanschbreite
+FROM tblAnodendetails
+WHERE (((tblAnodendetails.Anodennummer) Like (SELECT SucheAnodeninformation FROM tblGewDaten)));

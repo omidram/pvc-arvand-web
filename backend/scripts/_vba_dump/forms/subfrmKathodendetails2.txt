@@ -1,0 +1,803 @@
+Version =19
+VersionRequired =19
+Checksum =122992735
+Begin Form
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =13606
+    ItemSuffix =103
+    Left =45
+    Top =750
+    Right =13935
+    Bottom =8235
+    RecSrcDt = Begin
+        0x4f653eed1c95e240
+    End
+    RecordSource ="tblKathodendetails"
+    Caption ="Anoden"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x890500008905000089050000890500000000000026350000211a000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c00340203ff8007020009009a0b34086400010001002c0102000100 ,
+        0x2c01010000004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextAlign =3
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin CheckBox
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin TextBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin ListBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =1417
+            LabelX =-236
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0xb90bf5dbabba174399463a966bf29a47
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0x0293da010269724c966d6f870476b8e7
+            End
+        End
+        Begin Section
+            Height =6689
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x22bf4e8e8e795a4f86bb30880dc1cd35
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7934
+                    Top =679
+                    Width =2280
+                    TabIndex =10
+                    Name ="Bauteil Nr"
+                    ControlSource ="Bauteil Nr"
+                    EventProcPrefix ="Bauteil_Nr"
+                    GUID = Begin
+                        0xef31020a5f347f4ab5937841774ea436
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6245
+                            Top =679
+                            Width =1572
+                            Height =240
+                            Name ="Text21"
+                            Caption ="Component no.:"
+                            GUID = Begin
+                                0xe2223e750d6ca043b0e648826a617aaf
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7934
+                    Top =1019
+                    Width =2280
+                    TabIndex =11
+                    Name ="U Zeichnungs Nr"
+                    ControlSource ="U Zeichnungs Nr"
+                    EventProcPrefix ="U_Zeichnungs_Nr"
+                    GUID = Begin
+                        0xc153edee5a608c4e997c56a2ad8ff0bd
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6006
+                            Top =1019
+                            Width =1807
+                            Height =240
+                            Name ="Text25"
+                            Caption ="Uhde drawing no.:"
+                            GUID = Begin
+                                0xb449bbe9a62fa949a480dc0801b4dde9
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2601
+                    Top =340
+                    Width =2280
+                    Height =480
+                    FontSize =16
+                    Name ="Hersteller"
+                    ControlSource ="Hersteller"
+                    GUID = Begin
+                        0x0df6219902989a49a6d716bd98f54284
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =793
+                            Top =340
+                            Width =1692
+                            Height =225
+                            Name ="Text27"
+                            Caption ="Manufacturer"
+                            GUID = Begin
+                                0xc4bf8981b7eb9f46a95e5d0680d9066e
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2610
+                    Top =2267
+                    Width =2280
+                    TabIndex =2
+                    Name ="H Auftrags Nr"
+                    ControlSource ="H Auftrags Nr"
+                    EventProcPrefix ="H_Auftrags_Nr"
+                    GUID = Begin
+                        0xa476c5b1937b07409bbe9aa9a2ae6fde
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =116
+                            Top =2267
+                            Width =2376
+                            Height =240
+                            Name ="Text29"
+                            Caption ="Manufacturers order no.:"
+                            GUID = Begin
+                                0x718cb92b93d62049bbfb4f8179d19aaa
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2610
+                    Top =2607
+                    Width =2280
+                    TabIndex =3
+                    Name ="H Zeichnungs Nr"
+                    ControlSource ="H Zeichnungs Nr"
+                    EventProcPrefix ="H_Zeichnungs_Nr"
+                    GUID = Begin
+                        0xc5aed451b515b244ac315faebd3bed78
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =115
+                            Top =2607
+                            Width =2377
+                            Height =240
+                            Name ="Text31"
+                            Caption ="Manufacturers drawing no.:"
+                            GUID = Begin
+                                0x646c66b94b1baa429e2c08912aa0b1ca
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7934
+                    Top =339
+                    Width =810
+                    TabIndex =9
+                    Name ="Feld36"
+                    ControlSource ="Baugruppe"
+                    GUID = Begin
+                        0x55258bfc39ba2a46abedc0e325cb538f
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6470
+                            Top =339
+                            Width =1346
+                            Height =240
+                            Name ="Text37"
+                            Caption ="Design group"
+                            GUID = Begin
+                                0xed6b6e7c14c09a4294a189a303ca1071
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =3174
+                    Width =2827
+                    Height =227
+                    TabIndex =4
+                    Name ="Feld38"
+                    ControlSource ="Wanne"
+                    GUID = Begin
+                        0x15c7740f20f406498353805b4d16ed32
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1700
+                            Top =3174
+                            Width =720
+                            Height =240
+                            Name ="Text39"
+                            Caption ="Pan"
+                            GUID = Begin
+                                0x6bed64b974cfd442b90634fa875afffb
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =3855
+                    Width =2823
+                    Height =226
+                    TabIndex =6
+                    Name ="Feld42"
+                    ControlSource ="Elektrodenunterstützung"
+                    GUID = Begin
+                        0x0e08e16d4dfa96489056c46822a79964
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =223
+                            Top =3855
+                            Width =2205
+                            Height =240
+                            Name ="Text43"
+                            Caption ="Electrode support"
+                            GUID = Begin
+                                0xd6cb86dd54f3bf47982622bdffd23b42
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7937
+                    Top =3174
+                    Width =2844
+                    Height =226
+                    TabIndex =13
+                    Name ="Feld44"
+                    ControlSource ="Elektrodenform"
+                    GUID = Begin
+                        0x8c461b49b86c9a4a90771a79af391dd7
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6240
+                            Top =3180
+                            Width =1560
+                            Height =240
+                            Name ="Text45"
+                            Caption ="Electrode shape"
+                            GUID = Begin
+                                0x9acf7167f8cb9b4daf0a2afaf55435ec
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7937
+                    Top =3514
+                    Width =2844
+                    Height =226
+                    TabIndex =14
+                    Name ="Feld46"
+                    ControlSource ="Coating"
+                    GUID = Begin
+                        0xf4d2f0e8fff8684d8183e50099bccca7
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =7065
+                            Top =3510
+                            Width =720
+                            Height =240
+                            Name ="Text47"
+                            Caption ="Coating"
+                            GUID = Begin
+                                0xe482bef91614fc4eaee62a64e77b34c6
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =4195
+                    Width =2826
+                    Height =236
+                    TabIndex =7
+                    Name ="Feld54"
+                    ControlSource ="Einlaufsystem"
+                    GUID = Begin
+                        0x7f072f0432893748af266b8f9bf38fd1
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =218
+                            Top =4195
+                            Width =2205
+                            Height =240
+                            Name ="Text55"
+                            Caption ="Feedpipe design"
+                            GUID = Begin
+                                0xb09b9a57d6dbcb4eb16a6545492887e5
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =3514
+                    Width =2826
+                    Height =236
+                    TabIndex =5
+                    Name ="Feld56"
+                    ControlSource ="Flanschbreite"
+                    GUID = Begin
+                        0xfb371fceebfa0944951e0ce932817d0e
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1133
+                            Top =3514
+                            Width =1290
+                            Height =240
+                            Name ="Text57"
+                            Caption ="Flange width"
+                            GUID = Begin
+                                0x1ec4a80f64f09947ada459dc919d11c6
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =4535
+                    Width =2826
+                    Height =236
+                    TabIndex =8
+                    Name ="Feld58"
+                    ControlSource ="Standrohr Di"
+                    GUID = Begin
+                        0x203967642631834f99ac8ba0231de7ce
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =227
+                            Top =4535
+                            Width =2190
+                            Height =240
+                            Name ="Text59"
+                            Caption ="Standpipe diameter"
+                            GUID = Begin
+                                0xa01ccdbfa7bccc43bab30a87f04fab91
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7940
+                    Top =1927
+                    Width =1143
+                    Height =226
+                    TabIndex =12
+                    Name ="Feld63"
+                    ControlSource ="H Datum"
+                    GUID = Begin
+                        0x5bd7e8b0fd289f44b82c6d3c088e3fa7
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6012
+                            Top =1927
+                            Width =1800
+                            Height =240
+                            Name ="Text64"
+                            Caption ="Manufacturing date"
+                            GUID = Begin
+                                0x021d134b5e065a40bef95b8d5a4dca23
+                            End
+                        End
+                    End
+                End
+                Begin PageBreak
+                    OverlapFlags =85
+                    Top =6689
+                    Name ="Seitenumbruch77"
+                    GUID = Begin
+                        0x1416d709ae11f1428c0aa748ab98739f
+                    End
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ListWidth =1440
+                    Left =2602
+                    Top =1133
+                    Width =2268
+                    Height =242
+                    TabIndex =1
+                    ColumnInfo ="\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x658da8df4c51d54d9f9085b076ee5f42
+                    End
+                    Name ="Kombinationsfeld88"
+                    ControlSource ="Kathodennummer"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryVerwendeteKathodennummern].[Kathoden Nr] FROM [qryVerwend"
+                        "eteKathodennummern];"
+                    ColumnWidths ="1440"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =680
+                            Top =1133
+                            Width =1800
+                            Height =240
+                            Name ="Bezeichnungsfeld87"
+                            Caption ="Cathode no.:"
+                            GUID = Begin
+                                0x06ae45698fe5274691226f595a5ead91
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7940
+                    Top =2287
+                    Width =1143
+                    Height =226
+                    TabIndex =15
+                    Name ="Text90"
+                    ControlSource ="Eingangsdatum"
+                    GUID = Begin
+                        0x63ecbd92df72d54c8ee26ca499cd1395
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6012
+                            Top =2287
+                            Width =1800
+                            Height =240
+                            Name ="Label91"
+                            Caption ="Delivery date"
+                            GUID = Begin
+                                0x79fd9357bdcac5478c074ad4cd43ba55
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =4895
+                    Width =8166
+                    Height =236
+                    TabIndex =16
+                    Name ="Text92"
+                    ControlSource ="Bemerkung"
+                    GUID = Begin
+                        0xfc2f7e02e132624c85e51398605bfde8
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =227
+                            Top =4895
+                            Width =2190
+                            Height =240
+                            Name ="Label93"
+                            Caption ="Remark"
+                            GUID = Begin
+                                0x2c42b53d785d8c43a88ae52a9ee4a3f2
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11905
+                    Top =1927
+                    Width =1143
+                    Height =226
+                    TabIndex =17
+                    Name ="Text96"
+                    ControlSource ="Batch"
+                    GUID = Begin
+                        0x437b7f68bc0a0f469aed9dc5e067cd4c
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =9977
+                            Top =1927
+                            Width =1800
+                            Height =240
+                            Name ="Label97"
+                            Caption ="Batch"
+                            GUID = Begin
+                                0x4571689e9863104d9bf35a804c2c5d40
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2608
+                    Top =1474
+                    Width =2268
+                    Height =226
+                    TabIndex =18
+                    Name ="Text99"
+                    ControlSource ="Generation"
+                    GUID = Begin
+                        0x3b6ccc9cbc5ecf489b8097586650e71c
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =680
+                            Top =1474
+                            Width =1800
+                            Height =240
+                            Name ="Label100"
+                            Caption ="Generation"
+                            GUID = Begin
+                                0x28520401c3e08a418c4a9e15f0600c9b
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7940
+                    Top =2647
+                    Width =1143
+                    Height =226
+                    TabIndex =19
+                    Name ="Text101"
+                    ControlSource ="Eingangsdatum"
+                    GUID = Begin
+                        0x6c31ffb48d61bf4fa359812a9d59887a
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =6012
+                            Top =2647
+                            Width =1800
+                            Height =240
+                            Name ="Label102"
+                            Caption ="Decommissioned"
+                            GUID = Begin
+                                0x60f140a1e3aa0c41b6baf81bbc37896a
+                            End
+                        End
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =566
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0x7526608e79f0d4429d66cf3d193865d4
+            End
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    Left =8099
+                    Top =226
+                    Name ="Feld75"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                    GUID = Begin
+                        0xe4a7cc482854194c91ddcc1f33a4d948
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0x3ef26c4e3877d94a9417cb93551e614a
+            End
+            Begin
+                Begin PageBreak
+                    OverlapFlags =85
+                    Name ="Seitenumbruch78"
+                    GUID = Begin
+                        0xd4f6c2074bf2334f88047d09059a467d
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Text27.Caption = "Hersteller"
+        Bezeichnungsfeld87.Caption = "Kathoden-Nr."
+        Label100.Caption = "Generation"
+        Text29.Caption = "Hersteller Auftragsnr."
+        Text31.Caption = "Hersteller Zeichnungsnr."
+        Text39.Caption = "Wanne"
+        Text57.Caption = "Flanschbreite"
+        Label97.Caption = "Batch"
+        Text43.Caption = "Elektrodenunterstützung"
+        Text37.Caption = "Baugruppe"
+        Text21.Caption = "Bauteil-Nr."
+        Text25.Caption = "Uhde Zeichnungsnr."
+        Text64.Caption = "Herstellungsdatum"
+        Label91.Caption = "Lieferdatum"
+        Text45.Caption = "Elektrodenform"
+        Text47.Caption = "Coating"
+        Text55.Caption = "Einlaufsystem"
+        Text59.Caption = "Standrohrdurchmesser"
+        Label93.Caption = "Bemerkung"
+        Label102.Caption = "Stillegungsdatum"
+        
+    Else
+        Text27.Caption = "Manufacturer"
+        Bezeichnungsfeld87.Caption = "Cathode No."
+        Label100.Caption = "Generation"
+        Text29.Caption = "Manufacturer's Order No."
+        Text31.Caption = "Manfacturer's Drawing No."
+        Text39.Caption = "Pan"
+        Text57.Caption = "Flange Width"
+        Label97.Caption = "Batch"
+        Text43.Caption = "Electrode Support"
+        Text37.Caption = "Design Group"
+        Text21.Caption = "Component No."
+        Text25.Caption = "Uhde Drawing No."
+        Text64.Caption = "Manufacturing Date"
+        Label91.Caption = "Delivery Date"
+        Text45.Caption = "Electrode Shape"
+        Text47.Caption = "Coating"
+        Text55.Caption = "Feed Pipe Design"
+        Text59.Caption = "Standpipe Diameter"
+        Label93.Caption = "Remark"
+        Label102.Caption = "Decommissioned"
+    End If
+
+End Sub

@@ -1,0 +1,177 @@
+Version =17
+VersionRequired =17
+Checksum =122868186
+Begin Form
+    OrderByOn = NotDefault
+    DefaultView =2
+    GridX =5
+    GridY =5
+    Width =11451
+    RowHeight =240
+    ItemSuffix =32
+    Left =6270
+    Top =1935
+    Right =9990
+    Bottom =6645
+    OrderBy ="Spannungen.Position"
+    RecSrcDt = Begin
+        0x473854bead81e140
+    End
+    RecordSource ="Spannungen"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextAlign =3
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin OptionButton
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin CheckBox
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin TextBox
+            SpecialEffect =2
+            LabelAlign =3
+            TextAlign =2
+            Width =798
+            Height =255
+            LabelX =-113
+        End
+        Begin ListBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =1417
+            LabelX =-236
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =12632256
+            Name ="Formularkopf1"
+        End
+        Begin Section
+            Height =481
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    Left =1357
+                    Top =113
+                    ColumnWidth =825
+                    Name ="Position"
+                    ControlSource ="Position"
+                    Format ="Standard"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =340
+                            Top =113
+                            Width =904
+                            Height =240
+                            Name ="Text13"
+                            Caption ="Position:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    Left =2946
+                    Top =113
+                    ColumnWidth =720
+                    TabIndex =1
+                    Name ="Ui"
+                    ControlSource ="Ui"
+                    Format ="Standard"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =2494
+                            Top =113
+                            Width =339
+                            Height =240
+                            Name ="Text15"
+                            Caption ="Ui:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    Left =4533
+                    Top =113
+                    ColumnWidth =696
+                    TabIndex =2
+                    Name ="Uk"
+                    ControlSource ="Uk"
+                    Format ="Standard"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =3968
+                            Top =113
+                            Width =452
+                            Height =240
+                            Name ="Text17"
+                            Caption ="Uk:"
+                        End
+                    End
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    Left =6120
+                    Top =113
+                    ColumnWidth =780
+                    TabIndex =3
+                    Name ="Feld26"
+                    ControlSource ="=Avg([Ui])"
+                    Format ="Standard"
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =5555
+                            Top =113
+                            Width =452
+                            Height =240
+                            Name ="Text27"
+                            Caption ="Um:"
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End

@@ -1,0 +1,26 @@
+﻿=== StromAus1
+SELECT [Analyse anolyt].Elektrolyseur, [Analyse anolyt].Datum, [Analyse anolyt].Zeit, [Analyse pure brine].[flow rate], [Analyse pure brine].[NaClO3 Pb], [Analyse anolyt].[NaClO3 An], [Analyse pure brine].[Na2SO4 Pb], [Analyse anolyt].[Na2SO4 An], [Analyse pure brine].[NaOH Pb], [Analyse pure brine].[Na2CO3 Pb], [Analyse anolyt].[NaOCl An], [Analyse pure brine].[NaOCl Pb], [Analyse anolyt].[HCl An], [Analyse pure brine].[HCl Pb]
+
+FROM [Analyse anolyt] LEFT JOIN [Analyse pure brine] ON ([Analyse anolyt].Datum = [Analyse pure brine].Datum) AND ([Analyse anolyt].Elektrolyseur = [Analyse pure brine].Elektrolyseur)
+
+ORDER BY [Analyse anolyt].Elektrolyseur, [Analyse anolyt].Datum;
+
+=== StromAusGes
+SELECT StromAus2.Elektrolyseur, StromAus2.Datum, StromAus2.Zeit, StromAusVAno.VAnolyt, ([StromAus2]![NaClO3 An]*[StromAusVAno]![VAnolyt]-[StromAus2]![NaClO3 Pb]*[StromAus2]![flow rate])*100/([UnElekFV]![I Gesamt]*[UnElekFV]![Elementzahl]*3*0.662) AS ┬╡NaClO3, ([StromAus2]![NaOCl An]*[StromAusVAno]![VAnolyt]*100)/([UnElekFV]![I Gesamt]*[UnElekFV]![Elementzahl]*3*1.38869) AS ┬╡NaOCl, ([StromAus2]![NaOH Pb]*[StromAus2]![flow rate]*100)/([UnElekFV]![I Gesamt]*[UnElekFV]![Elementzahl]*3*1.4923) AS ┬╡Alkali, ([StromAus2]![Na2CO3 Pb]*[StromAus2]![flow rate]*100)/([UnElekFV]![I Gesamt]*[UnElekFV]![Elementzahl]*3*1.978) AS ┬╡Na2CO3, (2*[Analyse Chlorgas]![O2 Cl]/([Analyse Chlorgas]![Cl2 + CO2 Cl]+2*[Analyse Chlorgas]![O2 Cl]))*(100-[┬╡NaClO3]-[┬╡NaOCl]) AS ┬╡O2, 100-[┬╡O2]-[┬╡NaClO3]-[┬╡NaOCl]+[┬╡Na2CO3]+[┬╡Alkali] AS ┬╡NaOH
+
+FROM ((StromAus2 INNER JOIN StromAusVAno ON (StromAus2.Datum = StromAusVAno.Datum) AND (StromAus2.Elektrolyseur = StromAusVAno.Elektrolyseur)) INNER JOIN UnElekFV ON (StromAus2.Datum = UnElekFV.Datum) AND (StromAus2.Elektrolyseur = UnElekFV.Elektrolyseur)) INNER JOIN [Analyse Chlorgas] ON (StromAus2.Datum = [Analyse Chlorgas].Datum) AND (StromAus2.Elektrolyseur = [Analyse Chlorgas].Elektrolyseur)
+
+ORDER BY StromAus2.Elektrolyseur, StromAus2.Datum;
+
+=== StromAusGesMittel
+SELECT Last(StromAusGes.Datum) AS [LetzterWert von Datum], Avg(StromAusGes.VAnolyt) AS [Mittelwert von VAnolyt], Avg(StromAusGes.[┬╡NaClO3]) AS [Mittelwert von ┬╡NaClO3], Avg([StromAusGes]![┬╡NaOCl]) AS [Mittelwert von ┬╡NaOCl], Avg(StromAusGes.[┬╡Alkali]) AS [Mittelwert von ┬╡Alkali], Avg(StromAusGes.[┬╡Na2CO3]) AS [Mittelwert von ┬╡Na2CO3], Avg(StromAusGes.[┬╡O2]) AS [Mittelwert von ┬╡O2], Avg(StromAusGes.[┬╡NaOH]) AS [Mittelwert von ┬╡NaOH]
+
+FROM StromAusGes;
+
+=== qryVAnolytElementAlt
+SELECT tblEingabeUnElement.Elektrolyseur, tblEingabeUnElement.Position, tblEingabeUnElement.Datum, tblEingabeUnElement.Zeit, VAnolytBer([Analyse Pure Brine Element]![flow rate],[Analyse Pure Brine Element]![Na2SO4 Pb],[Analyse Anolyt Element]![Na2SO4 An]) AS VAnolyt
+
+FROM (tblEingabeUnElement INNER JOIN [Analyse Pure Brine Element] ON (tblEingabeUnElement.Datum = [Analyse Pure Brine Element].Datum) AND (tblEingabeUnElement.Position = [Analyse Pure Brine Element].Position) AND (tblEingabeUnElement.Elektrolyseur = [Analyse Pure Brine Element].Elektrolyseur)) INNER JOIN [Analyse Anolyt Element] ON ([Analyse Pure Brine Element].Datum = [Analyse Anolyt Element].Datum) AND ([Analyse Pure Brine Element].Position = [Analyse Anolyt Element].Position) AND ([Analyse Pure Brine Element].Elektrolyseur = [Analyse Anolyt Element].Elektrolyseur), tblGewDaten INNER JOIN tblElektrolyseurbezeichnung ON tblGewDaten.IDElektrolyseurCEElement = tblElektrolyseurbezeichnung.Nr
+
+WHERE (((tblEingabeUnElement.Elektrolyseur)=(SELECT Bezeichnung FROM tblElektrolyseurbezeichnung WHERE tblGewDaten.IDElektrolyseurCEElement = tblElektrolyseurbezeichnung.Nr)) AND ((tblEingabeUnElement.Position) Like (Select IDPositionCEElement FROM tblGewDaten)) AND ((VAnolytBer([Analyse Pure Brine Element]![flow rate],[Analyse Pure Brine Element]![Na2SO4 Pb],[Analyse Anolyt Element]![Na2SO4 An]))<>(-1)));
+

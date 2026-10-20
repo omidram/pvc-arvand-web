@@ -1,0 +1,711 @@
+Version =19
+VersionRequired =19
+Checksum =-122992724
+Begin Form
+    AllowEditing = NotDefault
+    AutoCenter = NotDefault
+    AllowAdditions = NotDefault
+    OrderByOn = NotDefault
+    GridX =5
+    GridY =5
+    Width =13039
+    ItemSuffix =77
+    Right =11856
+    Bottom =6912
+    OrderBy ="qryUnElektrolyseure.Datum DESC"
+    RecSrcDt = Begin
+        0x554d10bdfdd1e240
+    End
+    RecordSource ="qryUnElektrolyseure"
+    Caption ="Master"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x540300008905000052030000890500000000000088260000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c00340203ff8007010009009a0b34086400010001002c0102000100 ,
+        0x2c01010000004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1825
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =1585
+                    Width =1140
+                    Height =240
+                    Name ="Text10"
+                    Caption ="Electrolyser"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1473
+                    Top =1585
+                    Width =690
+                    Height =240
+                    Name ="Text12"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2380
+                    Top =1585
+                    Width =480
+                    Height =240
+                    Name ="Text14"
+                    Caption ="Time"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =2947
+                    Top =1360
+                    Width =690
+                    Height =465
+                    Name ="Text16"
+                    Caption =" I total [kA]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =3630
+                    Top =1362
+                    Width =690
+                    Height =450
+                    Name ="Text18"
+                    Caption ="i\015\012[kA/m²]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4422
+                    Top =1360
+                    Width =375
+                    Height =465
+                    Name ="Text20"
+                    Caption ="Cc [%]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4988
+                    Top =1360
+                    Width =495
+                    Height =465
+                    Name ="Text22"
+                    Caption ="t An [°C]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5669
+                    Top =1360
+                    Width =495
+                    Height =465
+                    Name ="Text24"
+                    Caption ="t Ka [°C]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6465
+                    Top =1362
+                    Width =465
+                    Height =450
+                    Name ="Text26"
+                    Caption ="tm [°C]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7029
+                    Top =1360
+                    Width =390
+                    Height =465
+                    Name ="Text35"
+                    Caption ="Um [V]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7710
+                    Top =1360
+                    Width =390
+                    Height =465
+                    Name ="Text37"
+                    Caption ="Un [V]"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =10998
+                    Top =793
+                    Width =1806
+                    Height =576
+                    FontSize =8
+                    Name ="Schaltfläche67"
+                    Caption ="Standardized Voltage"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =7815
+                    Height =570
+                    FontSize =14
+                    Name ="Text8"
+                    Caption ="Standarized Voltage Several Electrolysers"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =121
+                    Top =793
+                    Width =7815
+                    Height =360
+                    TabIndex =1
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =10998
+                    Top =113
+                    Width =1806
+                    Height =576
+                    FontSize =8
+                    TabIndex =2
+                    Name ="Befehl73"
+                    Caption ="Update Display"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =8050
+                    Top =113
+                    Width =2760
+                    Height =1020
+                    TabIndex =3
+                    Name ="subfrmElektrolyseureUN"
+                    SourceObject ="Form.subfrmElektrolyseureUnCeSpc"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =226
+                    Top =453
+                    Width =7597
+                    Height =227
+                    Name ="Bezeichnungsfeld76"
+                    Caption ="Basis: Tabelle Un Elektrolyseure"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =920
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            Begin
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =678
+                    Width =1140
+                    Height =240
+                    Name ="Text41"
+                    Caption ="Electrolyser"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1473
+                    Top =678
+                    Width =690
+                    Height =240
+                    Name ="Text42"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2380
+                    Top =678
+                    Width =480
+                    Height =240
+                    Name ="Text43"
+                    Caption ="Time"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =2947
+                    Top =453
+                    Width =690
+                    Height =465
+                    Name ="Text44"
+                    Caption =" I total [kA]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =3623
+                    Top =453
+                    Width =690
+                    Height =465
+                    Name ="Text45"
+                    Caption ="i [kA/m²]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4422
+                    Top =453
+                    Width =375
+                    Height =465
+                    Name ="Text46"
+                    Caption ="Cc [%]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4988
+                    Top =453
+                    Width =495
+                    Height =465
+                    Name ="Text47"
+                    Caption ="t An [°C]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5669
+                    Top =453
+                    Width =495
+                    Height =465
+                    Name ="Text48"
+                    Caption ="t Ka [°C]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6360
+                    Top =450
+                    Width =450
+                    Height =465
+                    Name ="Text49"
+                    Caption ="tm [°C]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7029
+                    Top =455
+                    Width =390
+                    Height =465
+                    Name ="Text51"
+                    Caption ="Um [V]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7710
+                    Top =455
+                    Width =390
+                    Height =465
+                    Name ="Text52"
+                    Caption ="Un [V]"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    TextFontFamily =0
+                    Left =8617
+                    Top =113
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    BackColor =12632256
+                    Name ="Feld66"
+                    ControlSource ="=Date()"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Width =1140
+                    ColumnWidth =1245
+                    Name ="Elektrolyseur"
+                    ControlSource ="Elektrolyseur"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1360
+                    Width =870
+                    ColumnWidth =810
+                    TabIndex =1
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2380
+                    Width =570
+                    ColumnWidth =750
+                    TabIndex =2
+                    Name ="Zeit"
+                    ControlSource ="Zeit"
+                    Format ="Short Time"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3061
+                    Width =573
+                    ColumnWidth =945
+                    TabIndex =3
+                    Name ="I Gesamt"
+                    ControlSource ="I Gesamt"
+                    Format ="Standard"
+                    EventProcPrefix ="I_Gesamt"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3741
+                    Width =465
+                    ColumnWidth =570
+                    TabIndex =4
+                    Name ="i"
+                    ControlSource ="i"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4308
+                    Width =573
+                    ColumnWidth =630
+                    TabIndex =5
+                    Name ="Cc"
+                    ControlSource ="Cc"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4988
+                    Width =558
+                    ColumnWidth =675
+                    TabIndex =6
+                    Name ="t An"
+                    ControlSource ="t An"
+                    Format ="Standard"
+                    EventProcPrefix ="t_An"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5669
+                    Width =573
+                    ColumnWidth =675
+                    TabIndex =7
+                    Name ="t Ka"
+                    ControlSource ="t Ka"
+                    Format ="Standard"
+                    EventProcPrefix ="t_Ka"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6349
+                    Width =585
+                    ColumnWidth =690
+                    TabIndex =8
+                    Name ="tm"
+                    ControlSource ="tm"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7029
+                    Width =558
+                    TabIndex =9
+                    Name ="Feld36"
+                    ControlSource ="Mittelwert von Ui"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7710
+                    Width =558
+                    TabIndex =10
+                    BackColor =16777088
+                    Name ="Feld38"
+                    ControlSource ="Un"
+                    Format ="Standard"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8050
+                    Top =113
+                    Width =1747
+                    Height =227
+                    Name ="Feld80"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl73_Click()
+    Me.Requery
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Text8.Caption = "Normierte Spannung Mehrerer Elektrolyseure"
+        Bezeichnungsfeld76.Caption = "Basis: Tabelle Un Elektrolyseure"
+        Text10.Caption = "Elektrolyseur"
+        Text41.Caption = "Elektrolyseur"
+        Text12.Caption = "Datum"
+        Text42.Caption = "Datum"
+        Text14.Caption = "Zeit"
+        Text43.Caption = "Zeit"
+        Text16.Caption = "I total [kA]"
+        Text44.Caption = "I total [kA]"
+        Text18.Caption = "i [kA/m²]"
+        Text45.Caption = "i [kA/m²]"
+        Text20.Caption = "Cc [%]"
+        Text46.Caption = "Cc [%]"
+        Text22.Caption = "t An [°C]"
+        Text47.Caption = "t An [°C]"
+        Text24.Caption = "t Ka [°C]"
+        Text48.Caption = "t Ka [°C]"
+        Text26.Caption = "tm [°C]"
+        Text49.Caption = "tm [°C]"
+        Text35.Caption = "Um [V]"
+        Text51.Caption = "Um [V]"
+        Text37.Caption = "Un [V]"
+        Text52.Caption = "Un [V]"
+        Befehl73.Caption = "Anzeige aktualisieren"
+        Schaltfläche67.Caption = "Normierte Spannung"
+        
+    Else
+        Text8.Caption = "Standardized Voltage Several Electrolyzers"
+        Bezeichnungsfeld76.Caption = "Basis: Table Un Electrolyzers"
+        Text10.Caption = "Electrolyzer"
+        Text41.Caption = "Electrolyzer"
+        Text12.Caption = "Date"
+        Text42.Caption = "Date"
+        Text14.Caption = "Time"
+        Text43.Caption = "Time"
+        Text16.Caption = "I total [kA]"
+        Text44.Caption = "I total [kA]"
+        Text18.Caption = "i [kA/m²]"
+        Text45.Caption = "i [kA/m²]"
+        Text20.Caption = "Cc [%]"
+        Text46.Caption = "Cc [%]"
+        Text22.Caption = "t An [°C]"
+        Text47.Caption = "t An [°C]"
+        Text24.Caption = "t Ca [°C]"
+        Text48.Caption = "t Ca [°C]"
+        Text26.Caption = "tm [°C]"
+        Text49.Caption = "tm [°C]"
+        Text35.Caption = "Um [V]"
+        Text51.Caption = "Um [V]"
+        Text37.Caption = "Un [V]"
+        Text52.Caption = "Un [V]"
+        Befehl73.Caption = "Update Display"
+        Schaltfläche67.Caption = "Standardized Voltage"
+        
+    End If
+       
+End Sub
+
+Private Sub Schaltfläche67_Click()
+On Error GoTo Err_Schaltfläche67_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Betriebsdaten"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "frmTabelleUnElektrolyseure"
+
+Exit_Schaltfläche67_Click:
+    Exit Sub
+
+Err_Schaltfläche67_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche67_Click
+    
+End Sub

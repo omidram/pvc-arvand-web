@@ -1,0 +1,3 @@
+SELECT tblTeilanlagenbezeichnung.Bezeichnung AS Teilanlagenbezeichnung, tblElektrolyseuranordnung.Bezeichnung AS Elektrolyseurbezeichnung
+FROM tblTeilanlagenbezeichnung INNER JOIN tblElektrolyseuranordnung ON tblTeilanlagenbezeichnung.Bezeichnung = tblElektrolyseuranordnung.Teilanlage
+GROUP BY tblTeilanlagenbezeichnung.Bezeichnung, tblElektrolyseuranordnung.Bezeichnung;

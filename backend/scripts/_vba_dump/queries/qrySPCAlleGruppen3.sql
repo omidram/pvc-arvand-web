@@ -1,0 +1,2 @@
+SELECT qryCEAlleGruppen.Gruppe, qryCEAlleGruppen.Datum, qryUnAlleGruppen2.i AS [i Mittel], SPCBer([qryUnAlleGruppen2]![Un],[qryCEAlleGruppen]![µNaOH]) AS Energieverbrauch, qryUnAlleGruppen2.Un AS [Un Mittel], qryCEAlleGruppen.µNaOH AS CE, GetGewIRef() AS iRefSPC
+FROM qryUnAlleGruppen2 INNER JOIN qryCEAlleGruppen ON (qryUnAlleGruppen2.Datum = qryCEAlleGruppen.Datum) AND (qryUnAlleGruppen2.Gruppe = qryCEAlleGruppen.Gruppe);

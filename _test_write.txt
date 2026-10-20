@@ -1,0 +1,3 @@
+img=595x419 emblem=(82,151)-(246,217) crop=(74,94)-(254,274) square=(180, 180)
+wrote C:\Users\Omid\Downloads\pvc_arvand_web\frontend\public\favicon.png
+wrote C:\Users\Omid\Downloads\pvc_arvand_web\frontend\src\app\icon.png

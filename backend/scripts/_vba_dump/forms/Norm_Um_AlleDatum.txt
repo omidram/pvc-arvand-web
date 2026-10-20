@@ -1,0 +1,749 @@
+Version =19
+VersionRequired =19
+Checksum =122265357
+Begin Form
+    AutoCenter = NotDefault
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =12188
+    DatasheetFontHeight =10
+    ItemSuffix =74
+    Left =3120
+    Top =1155
+    Right =15600
+    Bottom =9390
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0xb7c14fef12d3e240
+    End
+    RecordSource ="Norm(Um)AlleDatum"
+    Caption ="Norm(Um)AlleDatum"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0xdc08000037020000890500001b01000000000000642f0000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c4850354b5f37313534365f50434c00000000000000 ,
+        0x010418009c00b80303ff800702000900000000006400010001002c0102000100 ,
+        0x2c01010000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742035303030205365726965732050434c2036000000 ,
+        0x000000000000040032002e018603789c654fcb2e8341183d67a6ed288a05ad48 ,
+        0x45dd2f11112f6081451fa078804a5c9aef6bb44d88205db2a88d5d130fe009b0 ,
+        0xf006dec203d8b95f66fe5423f12dce393933df9c3995caff31c436afe8a9c426 ,
+        0xdc0193284875a75ada2ac2c549c02502ea37649272471d67dd503a58779461da ,
+        0x864d43f24667a8879409d69bb6b64899a34c5167a94bf4ebd3ccc2538131045e ,
+        0x6ff146e0208e98863b0d39e513ca31f58c72ce70321f5df1dfd3203ceff21192 ,
+        0xa43e433eb1ff06f9808c505fa0ef902fe800254d291ac95073d441da148b901e ,
+        0x6a1fb597b551cabdb1cbcc419c9131eaad753751cfa108b3113e21e083f59820 ,
+        0xac416b1a0bbfcadbb1b67dfdd78eb7edcbb6ed1f7d453fec0a378d5df52017b6 ,
+        0xbc1635cc3305eda47451ba7d548c99a8e71e9defecf37f00a4d5459500000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08002600400001004850204c617365724a657420353030302053657269657320 ,
+        0x50434c2036005c5c5355444f505330325c4850354b5f37313534365f50434c00 ,
+        0x6870356b5f373135343600
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            BackColor =-2147483633
+            ForeColor =-2147483630
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            Width =850
+            Height =850
+        End
+        Begin Line
+            SpecialEffect =3
+            Width =1701
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =2
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+            BackColor =-2147483643
+            ForeColor =-2147483640
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =1090
+            BackColor =-2147483633
+            Name ="Formularkopf"
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1984
+                    Top =850
+                    Width =690
+                    Height =240
+                    FontWeight =600
+                    Name ="GruppeBezeichnungsfeld"
+                    Caption ="Group"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =2711
+                    Top =850
+                    Width =1200
+                    Height =240
+                    FontWeight =600
+                    Name ="ElektrolyseurBezeichnungsfeld"
+                    Caption ="Electrolyser"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =3911
+                    Top =850
+                    Width =735
+                    Height =240
+                    FontWeight =600
+                    Name ="DatumBezeichnungsfeld"
+                    Caption ="Date"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =4657
+                    Top =850
+                    Width =735
+                    Height =240
+                    FontWeight =600
+                    Name ="MittelwertvonUn1Bezeichnungsfeld"
+                    Caption ="Un"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =5382
+                    Top =685
+                    Width =975
+                    Height =405
+                    FontWeight =600
+                    Name ="MembrantypBezeichnungsfeld"
+                    Caption ="Membrane typ"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6520
+                    Top =850
+                    Width =570
+                    Height =240
+                    FontWeight =600
+                    Name ="MittelwertvonIGesamtBezeichnungsfeld"
+                    Caption ="I(kA)"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =7143
+                    Top =850
+                    Width =510
+                    Height =240
+                    FontWeight =600
+                    Name ="ElektrodenAbstandBezeichnungsfeld"
+                    Caption ="Gap"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =7653
+                    Top =623
+                    Width =990
+                    Height =450
+                    FontWeight =600
+                    Name ="AnzahlvonElementNBezeichnungsfeld"
+                    Caption ="Number of elelments"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =56
+                    Width =1860
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BackColor =12632256
+                    ForeColor =4194304
+                    Name ="Text8"
+                    Caption ="Un Groups"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =6406
+                    Top =113
+                    Width =2676
+                    Height =441
+                    FontSize =10
+                    FontWeight =600
+                    Name ="Befehl48"
+                    Caption ="Statistics"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =8617
+                    Top =624
+                    Width =975
+                    Height =450
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld54"
+                    Caption ="Anode coating"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9703
+                    Top =624
+                    Width =1005
+                    Height =450
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld57"
+                    Caption ="Cathode coating"
+                    Tag ="DetachedLabel"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1147
+            BackColor =-2147483633
+            Name ="Seitenkopf"
+            Begin
+                Begin Label
+                    DisplayWhen =1
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =56
+                    Width =1710
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BackColor =12632256
+                    ForeColor =4194304
+                    Name ="Bezeichnungsfeld45"
+                    Caption ="Un Groups"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2041
+                    Top =907
+                    Width =690
+                    Height =240
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld61"
+                    Caption ="Group"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =2768
+                    Top =907
+                    Width =1200
+                    Height =240
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld62"
+                    Caption ="Electrolyser"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =3968
+                    Top =907
+                    Width =735
+                    Height =240
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld63"
+                    Caption ="Date"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =4714
+                    Top =907
+                    Width =735
+                    Height =240
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld64"
+                    Caption ="Un"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =5439
+                    Top =742
+                    Width =975
+                    Height =405
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld65"
+                    Caption ="Membrane typ"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6577
+                    Top =907
+                    Width =570
+                    Height =240
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="I(kA)"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =7200
+                    Top =907
+                    Width =510
+                    Height =240
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld67"
+                    Caption ="Gap"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =8674
+                    Top =681
+                    Width =975
+                    Height =450
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld69"
+                    Caption ="Anode coating"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9700
+                    Top =681
+                    Width =1065
+                    Height =450
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld70"
+                    Caption ="Cathode coating"
+                    Tag ="DetachedLabel"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =7710
+                    Top =680
+                    Width =990
+                    Height =450
+                    FontWeight =600
+                    Name ="Bezeichnungsfeld71"
+                    Caption ="Number of elelments"
+                    Tag ="DetachedLabel"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =-2147483633
+            Name ="Detailbereich"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1984
+                    Width =630
+                    Height =255
+                    ColumnWidth =900
+                    Name ="Gruppe"
+                    ControlSource ="Gruppe"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2847
+                    Width =945
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =1
+                    Name ="Elektrolyseur"
+                    ControlSource ="Elektrolyseur"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3851
+                    Width =795
+                    Height =255
+                    ColumnWidth =825
+                    TabIndex =2
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4705
+                    Width =675
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =3
+                    BackColor =16777088
+                    Name ="Mittelwert von Un1"
+                    ControlSource ="Mittelwert von Un1"
+                    Format ="Standard"
+                    EventProcPrefix ="Mittelwert_von_Un1"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5454
+                    Width =1005
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =4
+                    Name ="Membrantyp"
+                    ControlSource ="Membrantyp"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6520
+                    Width =570
+                    Height =255
+                    ColumnWidth =2310
+                    TabIndex =5
+                    Name ="Mittelwert von I Gesamt"
+                    ControlSource ="Mittelwert von I Gesamt"
+                    EventProcPrefix ="Mittelwert_von_I_Gesamt"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7143
+                    Width =570
+                    Height =255
+                    ColumnWidth =1260
+                    TabIndex =6
+                    Name ="Elektroden Abstand"
+                    ControlSource ="Elektroden Abstand"
+                    Format ="Standard"
+                    EventProcPrefix ="Elektroden_Abstand"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7767
+                    Width =750
+                    Height =255
+                    ColumnWidth =900
+                    TabIndex =7
+                    Name ="Anzahl von Element Nr"
+                    ControlSource ="Anzahl von Anzahl von Element Nr"
+                    EventProcPrefix ="Anzahl_von_Element_Nr"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8569
+                    Width =1080
+                    Height =255
+                    TabIndex =8
+                    Name ="Text52"
+                    ControlSource ="Anodencoating"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9700
+                    Width =1020
+                    Height =255
+                    TabIndex =9
+                    Name ="Text59"
+                    ControlSource ="Kathodencoating"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =-2147483633
+            Name ="Seitenfuß"
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =-2147483633
+            Name ="Formularfuß"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Befehl47_Click()
+On Error GoTo Err_Befehl47_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Header"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Norm(Um)AlleDatum"
+
+Exit_Befehl47_Click:
+    Exit Sub
+
+Err_Befehl47_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl47_Click
+    
+End Sub
+Private Sub Befehl48_Click()
+On Error GoTo Err_Befehl48_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "frmMenuStatistik"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Norm(Um)AlleDatum"
+
+Exit_Befehl48_Click:
+    Exit Sub
+
+Err_Befehl48_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl48_Click
+    
+End Sub
+Private Sub Befehl49_Click()
+On Error GoTo Err_Befehl49_Click
+
+    Dim stDocName As String
+
+    stDocName = "Norm(Um)AlleDatum"
+    DoCmd.OpenReport stDocName, acNormal
+
+Exit_Befehl49_Click:
+    Exit Sub
+
+Err_Befehl49_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl49_Click
+    
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+  
+    If GetIDGewSprache = 1 Then
+        Text8.Caption = "Un Gruppen"
+        Bezeichnungsfeld45.Caption = "Un Gruppen"
+        GruppeBezeichnungsfeld.Caption = "Gruppe"
+        Bezeichnungsfeld61.Caption = "Gruppe"
+        ElektrolyseurBezeichnungsfeld.Caption = "Elektrolyseur"
+        Bezeichnungsfeld62.Caption = "Elektrolyseur"
+        DatumBezeichnungsfeld.Caption = "Datum"
+        Bezeichnungsfeld63.Caption = "Datum"
+        MittelwertvonUn1Bezeichnungsfeld.Caption = "Un [V]"
+        Bezeichnungsfeld63.Caption = "Un [V]"
+        MembrantypBezeichnungsfeld.Caption = "Membran-typ"
+        Bezeichnungsfeld65.Caption = "Membran-typ"
+        MittelwertvonIGesamtBezeichnungsfeld.Caption = "I [kA]"
+        Bezeichnungsfeld66.Caption = "I [kA]"
+        ElektrodenAbstandBezeichnungsfeld.Caption = "Gap"
+        Bezeichnungsfeld67.Caption = "Gap"
+        AnzahlvonElementNBezeichnungsfeld.Caption = "Anzahl Elemente"
+        Bezeichnungsfeld71.Caption = "Anzahl Elemente"
+        Bezeichnungsfeld54.Caption = "Anoden-coating"
+        Bezeichnungsfeld69.Caption = "Anoden-coating"
+        Bezeichnungsfeld57.Caption = "Kathoden-coating"
+        Bezeichnungsfeld70.Caption = "Kathoden-coating"
+        Befehl48.Caption = "Statistik"
+        
+    Else
+        Text8.Caption = "Un Groups"
+        Bezeichnungsfeld45.Caption = "Un Groups"
+        GruppeBezeichnungsfeld.Caption = "Group"
+        Bezeichnungsfeld61.Caption = "Group"
+        ElektrolyseurBezeichnungsfeld.Caption = "Elektrolyzer"
+        Bezeichnungsfeld62.Caption = "Elektrolyzer"
+        DatumBezeichnungsfeld.Caption = "Date"
+        Bezeichnungsfeld63.Caption = "Date"
+        MittelwertvonUn1Bezeichnungsfeld.Caption = "Un [V]"
+        Bezeichnungsfeld63.Caption = "Un [V]"
+        MembrantypBezeichnungsfeld.Caption = "Membrane type"
+        Bezeichnungsfeld65.Caption = "Membrane type"
+        MittelwertvonIGesamtBezeichnungsfeld.Caption = "I [kA]"
+        Bezeichnungsfeld66.Caption = "I [kA]"
+        ElektrodenAbstandBezeichnungsfeld.Caption = "Gap"
+        Bezeichnungsfeld67.Caption = "Gap"
+        AnzahlvonElementNBezeichnungsfeld.Caption = "Number of Elements"
+        Bezeichnungsfeld71.Caption = "Number of Elements"
+        Bezeichnungsfeld54.Caption = "Anode coating"
+        Bezeichnungsfeld69.Caption = "Anode coating"
+        Bezeichnungsfeld57.Caption = "Cathode coating"
+        Bezeichnungsfeld70.Caption = "Cathode coating"
+
+        Befehl48.Caption = "Statistics"
+    End If
+
+End Sub

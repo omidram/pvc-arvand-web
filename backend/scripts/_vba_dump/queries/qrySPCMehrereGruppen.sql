@@ -1,0 +1,2 @@
+SELECT qryCEMehrereGruppen.Gruppe, qryCEMehrereGruppen.Datum, qryUnMehrereGruppen.AvgOfi AS [i Mittel], SPCBer([qryUnMehrereGruppen]![Mittelwert von Un],[qryCEMehrereGruppen]![µNaOH]) AS Energieverbrauch, qryUnMehrereGruppen.[Mittelwert von Un] AS [Un Mittel], qryCEMehrereGruppen.µNaOH AS CE, GetGewIRef() AS iRefSPC
+FROM qryUnMehrereGruppen INNER JOIN qryCEMehrereGruppen ON (qryUnMehrereGruppen.Datum = qryCEMehrereGruppen.Datum) AND (qryUnMehrereGruppen.Gruppe = qryCEMehrereGruppen.Gruppe);

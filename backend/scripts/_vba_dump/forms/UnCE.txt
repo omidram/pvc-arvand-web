@@ -1,0 +1,310 @@
+Version =19
+VersionRequired =19
+Checksum =122265357
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    GridX =5
+    GridY =5
+    Width =12245
+    ItemSuffix =224
+    Left =3360
+    Top =1995
+    Right =15600
+    Bottom =9120
+    RecSrcDt = Begin
+        0x757b225d5488e140
+    End
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c485035315f37323938305f50434c00000000000000 ,
+        0x010418009c00b803033f80000100090000000000640001000700580202000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a657420353130302050434c203600000000000000000000 ,
+        0x00000000000004003200c3018603789c65914d4f14411086ebed6e6859403928 ,
+        0xa0c1387e211a335956d0c43d78408c984dd844412e1a3033ec8e6eaa36339068 ,
+        0x8c9a3dea012fdee0e0d9b30750e41ff82b8c9ebd81f8d93d918d8995cefb769e ,
+        0xae74555767d9ffa140754c2b670dbc25fb1020b21db976e67ad714e85ac24956 ,
+        0x4fb846f29bf834f81de4245a0abc0f2d0b3e0abda2fb89a794bc37320279043e ,
+        0x85d6aa5e2e82cf818721672125088c548cbbf60c86c8d90c0c799ffdebb7bdfb ,
+        0xcd631c26fbccd76f3e053f813c07bf00cf197f78de677164e48e21d7b720f0f4 ,
+        0xb31ef446d447fa938ec87ed18af27039f7310fee826c13ffa47497f807f131c8 ,
+        0x0ec977e25f2487c0fde048f10024800c42f72222de0fe9831cc0f271f096d26b ,
+        0xfa35e92bae1c5bc527201b6e69ee365c30d26564cbd8f57c644772b5c66b4fae ,
+        0x4339f94a5e3f6aaf1f8ca251ea04ed7549b412eeed1c366dfce65fdcd1c6afda ,
+        0xd8ddfd8d0e929ec09cd2579df04bdd9c04d94d5da55b0b692d5e0aaa69c24b71 ,
+        0x7af97a35a82c64717ac3b1f1d16231b819a7499c95ab1395e062b9debcb7581a ,
+        0x2fd5c2a8d128cfc6699608076361e952e873c3b10b455f6c0abd24057037b8c7 ,
+        0xf56f3090cff801acfb0bf7b63f83426d90000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001f00390001004850204c617365724a657420353130302050434c2036005c ,
+        0x5c5355444f505330325c485035315f37323938305f50434c00485035315f3732 ,
+        0x39383000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7143
+            BackColor =12632256
+            Name ="Detail0"
+            OnClick ="AnDiaSt1"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =1133
+                    Top =226
+                    Width =7590
+                    Height =1260
+                    FontSize =22
+                    BackColor =12632256
+                    Name ="Text0"
+                    Caption ="Un / CE"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =4320
+                    Top =6015
+                    Width =2034
+                    Height =561
+                    Name ="Schaltfläche29"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    BorderWidth =3
+                    OverlapFlags =93
+                    Left =1133
+                    Top =2616
+                    Width =2495
+                    Height =4191
+                    Name ="Rechteck105"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1135
+                    Top =1815
+                    Width =2490
+                    Height =570
+                    FontSize =18
+                    BackColor =12632256
+                    Name ="Bezeichnungsfeld106"
+                    Caption ="Electrolyzer"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =1360
+                    Top =4195
+                    Width =2046
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl211"
+                    Caption ="Graph"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    SpecialEffect =1
+                    Left =1360
+                    Top =2948
+                    Width =2040
+                    Height =1140
+                    TabIndex =2
+                    Name ="subfrmUnCE1"
+                    SourceObject ="Form.subfrmUnCE1"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    SpecialEffect =3
+                    Left =1700
+                    Top =793
+                    Width =6435
+                    Height =525
+                    TabIndex =3
+                    Name ="subfrmAuswertungszeitraum"
+                    SourceObject ="Form.subfrmAuswertungszeitraum"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =1365
+                    Top =6015
+                    Width =2046
+                    Height =576
+                    TabIndex =4
+                    Name ="Command222"
+                    Caption ="Graph"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x191de4a147e3bc41a07cb38eea148318
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =1365
+                    Top =5550
+                    Width =2040
+                    Height =330
+                    FontSize =10
+                    FontWeight =700
+                    Name ="Label223"
+                    Caption ="All Electrolyzers"
+                    GUID = Begin
+                        0xc1a334316e318c419114d00aa46f6d81
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Command222_Click()
+    DoCmd.OpenForm "frmDiagrammUnCeAlleElektrolyseure"
+    DoCmd.Close acForm, "UnCE"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+   Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text0.Caption = "Un /CE"
+        Bezeichnungsfeld106.Caption = "Elektrolyseure"
+        Befehl211.Caption = "Diagramm"
+        Label223.Caption = "Alle Elektrolyseure"
+        Command222.Caption = "Diagramm"
+        Schaltfläche29.Caption = "Hauptmenu"
+        
+    Else
+        Text0.Caption = "Un / CE"
+        Bezeichnungsfeld106.Caption = "Electrolyzers"
+        Befehl211.Caption = "Chart"
+        Label223.Caption = "All Electrolyzers"
+        Command222.Caption = "Chart"
+        Schaltfläche29.Caption = "Main Menu"
+    End If
+
+End Sub
+
+Private Sub Befehl211_Click()
+On Error GoTo Err_Befehl211_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "frmDiagrammUnCE"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    
+    DoCmd.Close acForm, "UnCE"
+
+Exit_Befehl211_Click:
+    Exit Sub
+
+Err_Befehl211_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl211_Click
+    
+End Sub
+
+Private Sub Schaltfläche29_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "UnCE"
+End Sub

@@ -1,0 +1,450 @@
+Version =19
+VersionRequired =19
+Checksum =124393442
+Begin Form
+    AutoResize = NotDefault
+    PopUp = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    ScrollBars =2
+    BorderStyle =1
+    PictureAlignment =5
+    PictureSizeMode =1
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =3968
+    DatasheetFontHeight =10
+    ItemSuffix =25
+    Left =2760
+    Top =1185
+    Right =6720
+    Bottom =11070
+    DatasheetGridlinesColor =12632256
+    PaintPalette = Begin
+        0x000359000000000000ccff0005cdff000aceff000fcfff0014d0ff001ad1ff00 ,
+        0x1fd2ff0024d3ff0029d4ff002ed5ff0034d6ff0039d7ff003ed8ff0043d9ff00 ,
+        0x48daff004edbff0053dcff0058ddff005ddeff0062dfff0068e0ff006de1ff00 ,
+        0x72e2ff0077e3ff007ce4ff0082e6ff0087e7ff008ce8ff0091e9ff0096eaff00 ,
+        0x9cebff00a1ecff00a6edff00abeeff00b0efff00b6f0ff00bbf1ff00c0f2ff00 ,
+        0xc5f3ff00caf4ff00cccccc00cfcfcf00d0f5ff00d1d1d100d4d4d400d5f6ff00 ,
+        0xd6d6d600d9d9d900daf7ff00dbdbdb00dedede00dff8ff00e0e0e000e3e3e300 ,
+        0xe4f9ff00e5e5e500e8e8e800eafaff00ebebeb00ededed00effbff00f0f0f000 ,
+        0xf2f2f200f4fcff00f5f5f500f7f7f700f9fdff00fafafa00fcfcfc00ffffff00 ,
+        0x800000000080000080800000000080008000800000808000c0c0c000c0dcc000 ,
+        0xa6caf000fffbf000a0a0a40080808000ff00000000ff0000ffff00000000ff00 ,
+        0xff00ff0000ffff0000000000
+    End
+    RecSrcDt = Begin
+        0x1baee8b1cecde240
+    End
+    RecordSource ="qryInspektionsgruendeMontage"
+    Caption ="Inspektionsgründe"
+    OnOpen ="[Event Procedure]"
+    OnClose ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c003402033f8002010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            BackStyle =0
+            BorderWidth =1
+            Width =850
+            Height =850
+        End
+        Begin Line
+            BorderWidth =1
+            Width =1701
+        End
+        Begin Image
+            SpecialEffect =1
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =1
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =1
+            BorderWidth =3
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BorderColor =12632256
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =1
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin ListBox
+            SpecialEffect =1
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin Subform
+            SpecialEffect =1
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =1
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="Arial"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =283
+            BackColor =12632256
+            Name ="Formularkopf"
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =396
+                    Width =690
+                    Height =225
+                    Name ="Bezeichnungsfeld14"
+                    Caption ="Code"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1170
+                    Width =2475
+                    Height =225
+                    Name ="Label22"
+                    Caption ="Description"
+                    GUID = Begin
+                        0x31afdb2b9a8f9047bb90377d679821a4
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =283
+            BackColor =12632256
+            Name ="Detailbereich"
+            Begin
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    TextAlign =2
+                    BackStyle =1
+                    Left =396
+                    Width =692
+                    Height =230
+                    Name ="Text12"
+                    ControlSource ="Code"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =1190
+                    Width =2492
+                    Height =230
+                    TabIndex =1
+                    Name ="Text16"
+                    ControlSource ="Inspektionsgrund"
+                    GUID = Begin
+                        0x877919d18e7c7340b3f637e0800db6ad
+                    End
+                End
+                Begin CheckBox
+                    OverlapFlags =247
+                    Left =113
+                    Width =340
+                    Height =215
+                    TabIndex =2
+                    Name ="Check17"
+                    ControlSource ="Gewaehlt"
+                    AfterUpdate ="[Event Procedure]"
+                    GUID = Begin
+                        0x75f5fb80d99b914397bef923f69b082c
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =1133
+            BackColor =12632256
+            Name ="Formularfuß"
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =1133
+                    Top =226
+                    Height =576
+                    FontWeight =700
+                    Name ="Befehl15"
+                    Caption ="Beenden"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Datensatz suchen"
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Check17_AfterUpdate()
+    Dim rst1 As DAO.Recordset
+    Dim Codestring, Codestring2 As String
+    Dim i, l, AnzahlCodes As Long
+    
+    i = 1
+    'AnzahlCodes = Me!Text20
+    Codestring = ""
+    
+    'DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, i
+    'Do Until EOF
+    '    DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, acNext
+    '    If Me!Check17 = True Then
+    '        CodeString = CodeString + Me!Text12 + ", "
+    '    End If
+    'Loop
+    
+    Set rst1 = Me.RecordsetClone
+    
+    If rst1.BOF And rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    
+    rst1.MoveFirst
+    AnzahlCodes = 0
+    Do Until rst1.EOF
+        AnzahlCodes = AnzahlCodes + 1
+        rst1.MoveNext
+    Loop
+    
+
+    rst1.MoveFirst
+    Do Until rst1.EOF
+        If rst1!Gewaehlt = True Or (Me!Check17 = True And Me!Text12 = rst1!Code) Then
+            If Not (Me!Text12 = rst1!Code And Me!Check17 = False) Then
+                Codestring = Codestring + rst1!Code + ", "
+            End If
+        End If
+        rst1.MoveNext
+    Loop
+    rst1.Close
+    
+    'Set rst1 = CurrentDb.OpenRecordset("Select * From Me!Text12")
+    'rst1.Close
+    
+    'Do Until i = AnzahlCodes + 1
+    '    DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, i
+    '    If Me!Check17 = True Then
+    '        Codestring = Codestring + Me!Text12 + ", "
+    '    End If
+    '    i = i + 1
+    'Loop
+    'DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, 1
+    
+    If Codestring <> "" Then
+        l = Len(Codestring)
+        Codestring2 = Left(Codestring, l - 2)
+        Forms!frmMontagedaten![Reason for decommis.] = Codestring2
+    Else
+        Forms!frmMontagedaten![Reason for decommis.] = Null
+    End If
+    
+End Sub
+
+Private Sub Form_Close()
+    UpdateGruende ("")
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Me.Caption = "Inspektionsgründe"
+        Bezeichnungsfeld14.Caption = "Code"
+        Label22.Caption = "Beschreibung"
+        Befehl15.Caption = "Beenden"
+    Else
+        Me.Caption = "Reasons for Inspection"
+        Bezeichnungsfeld14.Caption = "Code"
+        Label22.Caption = "Description"
+        Befehl15.Caption = "Close"
+    End If
+    UpdateGruende (" ")
+End Sub
+Private Sub Befehl15_Click()
+    DoCmd.Close acForm, "frmInspektionsgruendeMontage"
+End Sub
+
+Public Sub UpdateGruende(CodestringMontageliste As Variant)
+    Dim i, j, l, AnzahlCodes, AnzahlGewCodes As Long
+    Dim Teilcode(100) As String
+    Dim Str1 As String
+    Dim rst1 As DAO.Recordset
+    
+    Set rst1 = Me.RecordsetClone
+    
+    If rst1.BOF And rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    
+    rst1.MoveFirst
+    i = 0
+    Do Until rst1.EOF
+        i = i + 1
+        rst1.MoveNext
+    Loop
+    rst1.Close
+    
+    AnzahlCodes = i
+    
+    i = 1
+    Do Until i = AnzahlCodes + 1
+        DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, i
+        Me!Check17 = False
+        i = i + 1
+    Loop
+    
+    DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, 1
+        
+    l = Len(CodestringMontageliste)
+    If l = 0 Then
+        Exit Sub
+    End If
+            
+    i = 0
+    Do Until i = 100
+        Teilcode(i) = ""
+        i = i + 1
+    Loop
+    AnzahlGewCodes = 1
+
+    i = 1
+    j = 1
+    Do Until j = l + 1
+        Str1 = Mid(CodestringMontageliste, j, 1)
+        If Str1 = " " Or Str1 = "," Then
+            If Teilcode(i) <> "" Then
+                i = i + 1
+                AnzahlGewCodes = AnzahlGewCodes + 1
+            End If
+        Else
+            Teilcode(i) = Teilcode(i) + Str1
+        End If
+        j = j + 1
+    Loop
+    j = 1
+    Do Until j = AnzahlGewCodes + 1
+        i = 1
+        Do Until i = AnzahlCodes + 1
+            DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, i
+            If Teilcode(j) = Me!Text12 Then
+                Me!Check17 = True
+            End If
+            i = i + 1
+        Loop
+        j = j + 1
+    Loop
+    
+    DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, 1
+
+End Sub

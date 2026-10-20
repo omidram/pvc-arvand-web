@@ -1,0 +1,3 @@
+SELECT tblKathodendetails.Kathodennummer, tblKathodendetails.Baugruppe, tblKathodendetails.[Bauteil Nr], tblKathodendetails.[U Zeichnungs Nr], tblKathodendetails.Hersteller, tblKathodendetails.[H Auftrags Nr], tblKathodendetails.[H Zeichnungs Nr], tblKathodendetails.[H Datum], tblKathodendetails.Wanne, tblKathodendetails.Kontaktstreifen, tblKathodendetails.Elektrodenunterstützung, tblKathodendetails.Elektrodenform, tblKathodendetails.Coating, tblKathodendetails.Einlaufsystem, tblKathodendetails.[Standrohr Di], tblKathodendetails.Flanschbreite
+FROM tblKathodendetails
+WHERE (((tblKathodendetails.Kathodennummer) Like (SELECT SucheKathodeninformation FROM tblGewDaten)));

@@ -1,0 +1,4 @@
+SELECT DISTINCTROW Montage.[Element Nr], Montage.Elektrolyseur, Montage.Position, Montage.Generation, Montage.[Anoden Nr], Montage.[Kathoden Nr], Montage.[Membran Nr], Montage.Membrantyp, Montage.Gruppe, Montage.[Einschalt Datum], Montage.[Ausschalt Datum], IIf(IsNull([Ausschalt Datum]),Date()-[Einschalt Datum],Null) AS AktuelleDOL, [Ausschalt Datum]-[Einschalt Datum] AS GesamtDOL, Montage.Abschaltgrund, Montage.[Anode Coating], Montage.[Anode Electrode], Montage.[Anode Shell], Montage.[Cathode Coating], Montage.[Cathode Electrode], Montage.[Cathode Shell], Montage.[Info Membrane], Montage.Remarks, Montage.[Montage Datum], Montage.[Demontage Datum], Montage.[Elektroden Abstand]
+FROM Montage, tblGewDaten
+WHERE (((Montage.[Element Nr]) Like (SELECT SucheElementnummer FROM tblGewDaten)))
+ORDER BY Montage.[Element Nr], Montage.[Membran Nr];

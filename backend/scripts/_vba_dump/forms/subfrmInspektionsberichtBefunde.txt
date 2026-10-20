@@ -1,0 +1,729 @@
+Version =19
+VersionRequired =19
+Checksum =123705992
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    TabularFamily =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =11338
+    DatasheetFontHeight =10
+    ItemSuffix =41
+    Left =900
+    Top =1440
+    Right =11955
+    Bottom =3195
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x7fcde9d35321e340
+    End
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0xa0050000a0050000a0050000a005000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x010400059c00340243ef8005010001009a0b3408640001000f00580201000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c0027000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+            FontName ="Tahoma"
+        End
+        Begin Section
+            Height =1530
+            BackColor =12632256
+            Name ="Detail"
+            GUID = Begin
+                0x1109f30b3f5d76428dc582426cc8620f
+            End
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    Left =121
+                    Top =65
+                    Width =340
+                    Height =226
+                    Name ="Label1"
+                    Caption =" "
+                    GUID = Begin
+                        0xf8e98efb82ce5a4d8d9c16f655996aff
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =518
+                    Top =65
+                    Width =2098
+                    Height =226
+                    Name ="Label2"
+                    Caption =" "
+                    GUID = Begin
+                        0xd8d327f8e0f5ae439e8610aa6e62a3b0
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =121
+                    Top =348
+                    Width =340
+                    Height =227
+                    Name ="Label3"
+                    Caption =" "
+                    GUID = Begin
+                        0x71231b4f31677d4aaad99dc56231d891
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =518
+                    Top =348
+                    Width =2098
+                    Height =227
+                    Name ="Label4"
+                    Caption =" "
+                    GUID = Begin
+                        0x633437fd1ae07d4eb25a058c3daa7d26
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =120
+                    Top =630
+                    Width =340
+                    Height =227
+                    Name ="Label5"
+                    Caption =" "
+                    GUID = Begin
+                        0xd4a08ba646dba84aad43d57a57152ce1
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =518
+                    Top =632
+                    Width =2098
+                    Height =226
+                    Name ="Label6"
+                    Caption =" "
+                    GUID = Begin
+                        0x6d476b63ac14494aba614b5d60592282
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =121
+                    Top =915
+                    Width =340
+                    Height =227
+                    Name ="Label7"
+                    Caption =" "
+                    GUID = Begin
+                        0x286f4e0b87d3204283796a84115f00b4
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =518
+                    Top =915
+                    Width =2098
+                    Height =227
+                    Name ="Label8"
+                    Caption =" "
+                    GUID = Begin
+                        0x24421179e035834d9733435d26d159bb
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =113
+                    Top =1195
+                    Width =340
+                    Height =226
+                    Name ="Label9"
+                    Caption =" "
+                    GUID = Begin
+                        0xb1c36d4c54b9af43a1541089795952a9
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =517
+                    Top =1190
+                    Width =2098
+                    Height =226
+                    Name ="Label10"
+                    Caption =" "
+                    GUID = Begin
+                        0xa618c781760ef540ad14e5ce06bdefce
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =2835
+                    Top =65
+                    Width =340
+                    Height =227
+                    Name ="Label11"
+                    Caption =" "
+                    GUID = Begin
+                        0x6b14afed90ad764fbc6e7cd3771682b1
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3239
+                    Top =60
+                    Width =2098
+                    Height =227
+                    Name ="Label12"
+                    Caption =" "
+                    GUID = Begin
+                        0x3520eb33d93cc441ab672b3e98b786e8
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =2835
+                    Top =348
+                    Width =340
+                    Height =227
+                    Name ="Label13"
+                    Caption =" "
+                    GUID = Begin
+                        0x9cdde6a0fa9c0d4783b0d6d10e558b82
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3239
+                    Top =343
+                    Width =2098
+                    Height =227
+                    Name ="Label14"
+                    Caption =" "
+                    GUID = Begin
+                        0xa82afae7e7b2fd45b2dba8065d79d257
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =2835
+                    Top =632
+                    Width =340
+                    Height =226
+                    Name ="Label15"
+                    Caption =" "
+                    GUID = Begin
+                        0x7d7f35791eebb9468c3cbc70feafa803
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3239
+                    Top =627
+                    Width =2098
+                    Height =226
+                    Name ="Label16"
+                    Caption =" "
+                    GUID = Begin
+                        0xd9effaef69529a428805cd0e5af45df5
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =2836
+                    Top =915
+                    Width =340
+                    Height =226
+                    Name ="Label17"
+                    Caption =" "
+                    GUID = Begin
+                        0xf004d60297fadc459a6e986143459290
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3226
+                    Top =915
+                    Width =2097
+                    Height =226
+                    Name ="Label18"
+                    Caption =" "
+                    GUID = Begin
+                        0x380f353f390fd644a876e86480e65c86
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =2835
+                    Top =1195
+                    Width =340
+                    Height =227
+                    Name ="Label19"
+                    Caption =" "
+                    GUID = Begin
+                        0x603c4ee67015814a83c2718ffb6d1184
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3225
+                    Top =1195
+                    Width =2097
+                    Height =227
+                    Name ="Label20"
+                    Caption =" "
+                    GUID = Begin
+                        0x1165542707b83943a955350cdafd975a
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =5550
+                    Top =60
+                    Width =340
+                    Height =227
+                    Name ="Label21"
+                    Caption =" "
+                    GUID = Begin
+                        0xc41d036ea56c7b45810e31662b752eba
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6015
+                    Top =60
+                    Width =2097
+                    Height =227
+                    Name ="Label22"
+                    Caption =" "
+                    GUID = Begin
+                        0xff74a6d683e74d4f8c7cd688e748a7fc
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =5550
+                    Top =345
+                    Width =340
+                    Height =227
+                    Name ="Label23"
+                    Caption =" "
+                    GUID = Begin
+                        0xc9cd8ea085bc6740bc8bbc0b77fbd428
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6015
+                    Top =345
+                    Width =2097
+                    Height =227
+                    Name ="Label24"
+                    Caption =" "
+                    GUID = Begin
+                        0xba7e5bcdf0f23e4bbea7113b9fe573cb
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =5550
+                    Top =630
+                    Width =340
+                    Height =227
+                    Name ="Label25"
+                    Caption =" "
+                    GUID = Begin
+                        0x407dfdcd19ce7f4abcb196d5c555329e
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6015
+                    Top =630
+                    Width =2097
+                    Height =227
+                    Name ="Label26"
+                    Caption =" "
+                    GUID = Begin
+                        0x5f9350f5ed41c646b2bfd5755eaf360e
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =5550
+                    Top =915
+                    Width =340
+                    Height =227
+                    Name ="Label27"
+                    Caption =" "
+                    GUID = Begin
+                        0x2928efd5450cb240b3d1d3bf3772542b
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6015
+                    Top =915
+                    Width =2097
+                    Height =227
+                    Name ="Label28"
+                    Caption =" "
+                    GUID = Begin
+                        0xa7e73b348b21b941b673002f2e8f7a58
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =5550
+                    Top =1200
+                    Width =340
+                    Height =227
+                    Name ="Label29"
+                    Caption =" "
+                    GUID = Begin
+                        0x32c76b4cb702bd4a85af412ea9b34edc
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6015
+                    Top =1200
+                    Width =2097
+                    Height =227
+                    Name ="Label30"
+                    Caption =" "
+                    GUID = Begin
+                        0x038b76991c96bc41a7ca4cf90ad25022
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8325
+                    Top =60
+                    Width =340
+                    Height =227
+                    Name ="Label31"
+                    Caption =" "
+                    GUID = Begin
+                        0xde364d74e81497409bc3acb90baa270d
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8790
+                    Top =60
+                    Width =2097
+                    Height =227
+                    Name ="Label32"
+                    Caption =" "
+                    GUID = Begin
+                        0xbdc1b4083b01984fa8c20a5624b1553d
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8325
+                    Top =345
+                    Width =340
+                    Height =227
+                    Name ="Label33"
+                    Caption =" "
+                    GUID = Begin
+                        0xb021d3377494be44ade8bce2a76cedba
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8790
+                    Top =345
+                    Width =2097
+                    Height =227
+                    Name ="Label34"
+                    Caption =" "
+                    GUID = Begin
+                        0xb1dd94bf20c42648b6c0a06dc04c1bad
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8325
+                    Top =630
+                    Width =340
+                    Height =227
+                    Name ="Label35"
+                    Caption =" "
+                    GUID = Begin
+                        0x9f6ab619d703f34f8d187fdd02bc417d
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8790
+                    Top =630
+                    Width =2097
+                    Height =227
+                    Name ="Label36"
+                    Caption =" "
+                    GUID = Begin
+                        0x54ef43e202fd7341b1b7165d77e9a8fb
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8325
+                    Top =915
+                    Width =340
+                    Height =227
+                    Name ="Label37"
+                    Caption =" "
+                    GUID = Begin
+                        0x52231fb3a406c04e87303144c173efad
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8790
+                    Top =915
+                    Width =2097
+                    Height =227
+                    Name ="Label38"
+                    Caption =" "
+                    GUID = Begin
+                        0x3839bcfee885ef4fa9d21827efe2087b
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8325
+                    Top =1200
+                    Width =340
+                    Height =227
+                    Name ="Label39"
+                    Caption =" "
+                    GUID = Begin
+                        0xaada990c7dc4224a8dbc6c64c83d8ccd
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8790
+                    Top =1200
+                    Width =2097
+                    Height =227
+                    Name ="Label40"
+                    Caption =" "
+                    GUID = Begin
+                        0x7779fe4173c4834eadc4ba3686eea6a2
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Dim X1, Y1, Spaltenabstand, Zeilenabstand As Long
+    
+    Set rst1 = CurrentDb.OpenRecordset("Select * From qryInspektionsbefunde2 ORDER BY Code")
+    X1 = 10
+    Y1 = 10
+    Zeilenabstand = 100
+    Spaltenabstand = 1000
+
+    If Not rst1.EOF Then
+        rst1.MoveFirst
+    Else
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label1.Caption = rst1!Code
+    Me!Label2.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label3.Caption = rst1!Code
+    Me!Label4.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label5.Caption = rst1!Code
+    Me!Label6.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    
+    Me!Label7.Caption = rst1!Code
+    Me!Label8.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label9.Caption = rst1!Code
+    Me!Label10.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label11.Caption = rst1!Code
+    Me!Label12.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label13.Caption = rst1!Code
+    Me!Label14.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label15.Caption = rst1!Code
+    Me!Label16.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label17.Caption = rst1!Code
+    Me!Label18.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label19.Caption = rst1!Code
+    Me!Label20.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label21.Caption = rst1!Code
+    Me!Label22.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label23.Caption = rst1!Code
+    Me!Label24.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label25.Caption = rst1!Code
+    Me!Label26.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label27.Caption = rst1!Code
+    Me!Label28.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label29.Caption = rst1!Code
+    Me!Label30.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label31.Caption = rst1!Code
+    Me!Label32.Caption = rst1!Inspektionsgrund
+     rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label33.Caption = rst1!Code
+    Me!Label34.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label35.Caption = rst1!Code
+    Me!Label36.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label37.Caption = rst1!Code
+    Me!Label38.Caption = rst1!Inspektionsgrund
+    rst1.MoveNext
+    If rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    Me!Label39.Caption = rst1!Code
+    Me!Label40.Caption = rst1!Inspektionsgrund
+   
+    rst1.Close
+
+End Sub

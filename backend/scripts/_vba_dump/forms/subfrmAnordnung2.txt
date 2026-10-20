@@ -1,0 +1,249 @@
+Version =17
+VersionRequired =17
+Checksum =-122771769
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    BorderStyle =0
+    GridX =5
+    GridY =5
+    Width =10318
+    ItemSuffix =63
+    Left =225
+    Top =1020
+    Right =10620
+    Bottom =2565
+    RecSrcDt = Begin
+        0xcb709fce7c87e240
+    End
+    RecordSource ="tblGewDaten"
+    Caption =" "
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x130b0000dc080000890500008905000000000000bf280000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a657420344c000000000000000000000000000000000000 ,
+        0x0a0306004400d300030700000200090000000000000001000100fcff00000100 ,
+        0x000000002000000080c993f00300000002000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000001a00330300000100040000ff000200000001000001002c010000 ,
+        0x020100000400000000000000000e000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000002000464f4e545306000c53 ,
+        0x00000000
+    End
+    PrtDevNames = Begin
+        0x170008001f0001004850204c617365724a657420344c00485050434c3545004c ,
+        0x5054313a00000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =1700
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin ListBox
+                    OverlapFlags =87
+                    ColumnCount =8
+                    Left =340
+                    Top =346
+                    Width =9855
+                    Height =1132
+                    Name ="Liste53"
+                    ControlSource ="IDAnordnung"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW tblElektrolyseuranordnung.ID, tblElektrolyseuranordnung.Bezei"
+                        "chnung, tblElektrolyseuranordnung.Block, tblElektrolyseuranordnung.Anfangspositi"
+                        "on, tblElektrolyseuranordnung.Endposition, tblElektrolyseuranordnung.Teilanlage,"
+                        " tblElektrolyseuranordnung.Transformator, tblElektrolyseuranordnung.Gleichrichte"
+                        "r FROM tblElektrolyseuranordnung;"
+                    ColumnWidths ="0;1448;737;1701;1701;1249;1420;1420"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =453
+                    Top =113
+                    Width =1245
+                    Height =210
+                    Name ="Bezeichnungsfeld55"
+                    Caption ="Electrolyzer"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =1822
+                    Top =113
+                    Width =675
+                    Height =210
+                    Name ="Bezeichnungsfeld56"
+                    Caption ="Rack"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =2607
+                    Top =113
+                    Width =1590
+                    Height =210
+                    Name ="Bezeichnungsfeld57"
+                    Caption ="Start Position"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =4308
+                    Top =113
+                    Width =1365
+                    Height =210
+                    Name ="Bezeichnungsfeld58"
+                    Caption ="End Position"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =6009
+                    Top =113
+                    Width =1140
+                    Height =210
+                    Name ="Bezeichnungsfeld60"
+                    Caption ="Train"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =7256
+                    Top =113
+                    Width =1365
+                    Height =210
+                    Name ="Bezeichnungsfeld61"
+                    Caption ="Transformer"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =8730
+                    Top =113
+                    Width =1365
+                    Height =210
+                    Name ="Bezeichnungsfeld62"
+                    Caption ="Recitifier"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =0
+            BackColor =12632256
+            Name ="Detail0"
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Bezeichnungsfeld55.Caption = "Elektrolyseur"
+        Bezeichnungsfeld56.Caption = "Block"
+        Bezeichnungsfeld57.Caption = "Anfangsposition"
+        Bezeichnungsfeld58.Caption = "Endposition"
+        Bezeichnungsfeld60.Caption = "Teilanlage"
+        Bezeichnungsfeld61.Caption = "Transformator"
+        Bezeichnungsfeld62.Caption = "Gleichrichter"
+        
+    Else
+        Bezeichnungsfeld55.Caption = "Electrolyzer"
+        Bezeichnungsfeld56.Caption = "Rack"
+        Bezeichnungsfeld57.Caption = "Start Position"
+        Bezeichnungsfeld58.Caption = "End Position"
+        Bezeichnungsfeld60.Caption = "Train"
+        Bezeichnungsfeld61.Caption = "Transformer"
+        Bezeichnungsfeld62.Caption = "Rectifier"
+        
+    End If
+
+End Sub

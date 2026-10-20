@@ -1,0 +1,380 @@
+Version =19
+VersionRequired =19
+Checksum =122265346
+Begin Report
+    LayoutForPrint = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    DateGrouping =1
+    GrpKeepTogether =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10204
+    DatasheetFontHeight =10
+    ItemSuffix =25
+    Left =210
+    Top =360
+    Right =5730
+    Bottom =8175
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x4c2483374e20e340
+    End
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0xf0000000f0000000f0000000f000000000000000dc2700007f17000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330345c485032335f37323439305f50434c00000000000000 ,
+        0x010418009c00b803033f00020100090000000000640001000700580202000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742032333030205365726965732050434c3600000000 ,
+        0x00000000000004003200c1018603789c65914d6b14411086eb9dea4d9bcd4673 ,
+        0x50134571c06f9161ddac82ee41303124610e0b6ab25e028bbb24a35215677250 ,
+        0x44cd1ee3215e3c28f83b44a3676ffe0741f4eccd6fc7ee59b208d6e1ad7ede2e ,
+        0x9aeaaa2cfb3f02d00aae042eddc616d9bb00912d153a54e89229d34c2249b692 ,
+        0xc832694e7214bc853cd7c3e805901de859c841ac6fb2cc057a027a0f7204720a ,
+        0x720c7a125a83c2686ca463dc83c711914bd750266941aec3d3429fb44f8b8eb4 ,
+        0x7fe7f13ef6917de47b597d087900dd803c86b48cbf3c0d4344ae7b45e8f9134f ,
+        0xf8443446fc913b643f734045b89a9b58820c43bf92fc26b961f807e5b9fc2239 ,
+        0x04fd46fcd3d31fd23d90bd9071c833d6103a011e45876427740cba0bb2c177de ,
+        0xb0bc0bf8057fa0de73e68b58af68dbe86b281b193152363a6cecab627efb0bb5 ,
+        0xc66ba5d0032851d505d92fe4f93d3b1d026d774ab4196d9f9c6d06f6cb7fedd2 ,
+        0xc07e3ab0ed5b9ea7abed74b9bb1636d344d6bae98570b619c6edac9bce3bb336 ,
+        0x59ad369a537178ae31dbbc343379b6568ba6e3b8b1d04db34425ac4767ce47be ,
+        0x28aad7ab7e90df6937f1145a014f3b9127bc7ab9d8d11c4649cb901148c5756e ,
+        0x305e4cf816acdb84fbce5f3e5472660000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x080012002d00000077696e73706f6f6c00655c5c5355444f505330345c485032 ,
+        0x335f37323439305f50434c0035485032335f37323439300000485035315f3732 ,
+        0x393830000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            TextFontFamily =2
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            OldBorderStyle =0
+            TextFontFamily =2
+            Width =1701
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin Subform
+            Width =1701
+            Height =1701
+        End
+        Begin PageHeader
+            Height =850
+            Name ="PageHeaderSection"
+            GUID = Begin
+                0x4b92aa72a34439418a8b0db3ce900073
+            End
+            Begin
+                Begin Line
+                    BorderWidth =2
+                    Left =56
+                    Top =226
+                    Width =0
+                    Height =624
+                    Name ="Line16"
+                    GUID = Begin
+                        0xb930b53c391250469f495c5df5c5921d
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    BorderWidth =2
+                    Left =56
+                    Top =226
+                    Width =10035
+                    Name ="Line17"
+                    GUID = Begin
+                        0x50dcb9913fa27441884906d64d7f6504
+                    End
+                End
+                Begin Line
+                    BorderWidth =2
+                    Left =10091
+                    Top =226
+                    Width =0
+                    Height =624
+                    Name ="Line18"
+                    GUID = Begin
+                        0x0ec6a5fce3a63243b87f24e95c7baf3c
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    BorderWidth =1
+                    Left =56
+                    Top =850
+                    Width =10035
+                    Name ="Line19"
+                    GUID = Begin
+                        0x9f3263d72ca6f340ace600fc151dad8f
+                    End
+                End
+                Begin Label
+                    TextAlign =2
+                    TextFontFamily =34
+                    Left =2265
+                    Top =390
+                    Width =5670
+                    Height =390
+                    FontSize =16
+                    FontWeight =700
+                    Name ="Label22"
+                    Caption ="Inspektionsbericht"
+                    GUID = Begin
+                        0x243601e343c9f840aab5341253e3945e
+                    End
+                End
+            End
+        End
+        Begin Section
+            KeepTogether = NotDefault
+            CanGrow = NotDefault
+            Height =6015
+            Name ="Detail"
+            GUID = Begin
+                0x1bfd2703bf5bdc499b7907a9ccb46727
+            End
+            Begin
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =1870
+                    Top =113
+                    Width =1588
+                    Height =227
+                    Name ="Text0"
+                    GUID = Begin
+                        0x47c0dacbc622444cb7d0a8e548584ee1
+                    End
+                    Begin
+                        Begin Label
+                            TextFontFamily =34
+                            Left =396
+                            Top =113
+                            Width =964
+                            Height =227
+                            Name ="Label1"
+                            Caption ="Kunde:"
+                            GUID = Begin
+                                0x023b0b77570bd8499ab313777bf296e9
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =1870
+                    Top =453
+                    Width =1588
+                    Height =227
+                    TabIndex =1
+                    Name ="Text2"
+                    GUID = Begin
+                        0x3cb0a916035de74c8492fe47e8840e9b
+                    End
+                    Begin
+                        Begin Label
+                            Left =396
+                            Top =453
+                            Width =1304
+                            Height =227
+                            Name ="Label3"
+                            Caption ="Elektrolyseur Nr.:"
+                            GUID = Begin
+                                0x11964ec981294349bfb5cbd62ab687d6
+                            End
+                        End
+                    End
+                End
+                Begin Line
+                    BorderWidth =1
+                    Left =396
+                    Top =113
+                    Width =3062
+                    Name ="Line5"
+                    GUID = Begin
+                        0xd1a23a2562a686488e5e14b5b0b1ebc8
+                    End
+                End
+                Begin Line
+                    BorderWidth =1
+                    Left =396
+                    Top =453
+                    Width =3062
+                    Name ="Line6"
+                    GUID = Begin
+                        0x84f15d096b3010408c6cf9041d788087
+                    End
+                End
+                Begin Line
+                    BorderWidth =1
+                    Left =396
+                    Top =113
+                    Width =0
+                    Height =1361
+                    Name ="Line7"
+                    GUID = Begin
+                        0x714043d77707e442b6ca1de54bd34838
+                    End
+                End
+                Begin Line
+                    BorderWidth =1
+                    Left =396
+                    Top =793
+                    Width =3062
+                    Name ="Line8"
+                    GUID = Begin
+                        0x2bfc90b2b4faef4f8499bfb5f83f2ddf
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =1870
+                    Top =793
+                    Width =1588
+                    Height =227
+                    TabIndex =2
+                    Name ="Text10"
+                    GUID = Begin
+                        0x7021b69cc8e4d9479c084dfd6505742c
+                    End
+                    Begin
+                        Begin Label
+                            Left =396
+                            Top =793
+                            Width =1304
+                            Height =227
+                            Name ="Label11"
+                            Caption ="Position:"
+                            GUID = Begin
+                                0xdc3bd3ea02394842bc175ddeebdfb722
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    IMESentenceMode =3
+                    Left =1870
+                    Top =1133
+                    Width =1588
+                    Height =227
+                    TabIndex =3
+                    Name ="Text12"
+                    GUID = Begin
+                        0xe582fd6d12400148a5596536a4143c16
+                    End
+                    Begin
+                        Begin Label
+                            Left =396
+                            Top =1133
+                            Width =1304
+                            Height =227
+                            Name ="Label13"
+                            Caption ="Element Nr.:"
+                            GUID = Begin
+                                0x1accbd6cd818f34b8de65a40ca529b8a
+                            End
+                        End
+                    End
+                End
+                Begin Line
+                    BorderWidth =1
+                    Left =396
+                    Top =1133
+                    Width =3062
+                    Name ="Line14"
+                    GUID = Begin
+                        0xc77e7b30cf106b4e99d8939e1a31149b
+                    End
+                End
+                Begin Line
+                    BorderWidth =2
+                    Left =60
+                    Width =0
+                    Height =1762
+                    Name ="Line15"
+                    GUID = Begin
+                        0x1f9a0358b7754340bb052776d4d11276
+                    End
+                End
+                Begin Line
+                    BorderWidth =1
+                    Left =396
+                    Top =1474
+                    Width =3062
+                    Name ="Line20"
+                    GUID = Begin
+                        0x76e2cbe921e1054c88f95ef5809d7605
+                    End
+                End
+                Begin Line
+                    BorderWidth =1
+                    Left =3458
+                    Top =113
+                    Width =0
+                    Height =1361
+                    Name ="Line21"
+                    GUID = Begin
+                        0x08ce1b26ef15404a992d6afe95ecd7db
+                    End
+                End
+                Begin Subform
+                    OldBorderStyle =0
+                    Left =570
+                    Top =2835
+                    Width =4550
+                    Height =3060
+                    TabIndex =4
+                    Name ="subrptInspektionsberichtMAS"
+                    SourceObject ="Report.subrptInspektionsberichtMAS"
+                    GUID = Begin
+                        0x13d8cbe4490ed0438cfd3464c8cf2692
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            Height =1134
+            Name ="PageFooterSection"
+            GUID = Begin
+                0x4815cc87f6a1b7459e62b7c736bd8720
+            End
+        End
+    End
+End

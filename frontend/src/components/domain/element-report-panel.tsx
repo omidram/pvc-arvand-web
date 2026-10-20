@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 import { elementDashboardApi } from "@/lib/endpoints";
-import type { CellCheck, ElementDashOverview, ElementStage } from "@/lib/types";
+import type { CellCheck, ElementDashOverview, ElementStage, WorkshopSheet } from "@/lib/types";
 import { VoltageGauge } from "@/components/domain/voltage-gauge";
 import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
@@ -74,6 +74,151 @@ export function ElementReportPanel({ compact = false }: { compact?: boolean }) {
     );
   }
   return <Report data={query.data} compact={compact} cls={cls} head={head} />;
+}
+
+function vendorName(t: (path: string, vars?: Record<string, string | number | null | undefined>) => string, name: string) {
+  const key = `elDash.report.vendor.${name}`;
+  const label = t(key);
+  return label === key ? name : label;
+}
+
+/** Workshop inventory in the same groups as the cell-shop paper: assembled cells, spare electrodes, coating, membranes. */
+function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean }) {
+  const { t } = useI18n();
+  const pairLimit = compact ? 4 : sheet.assembled_pairs.length;
+  const typeLimit = compact ? 4 : sheet.membrane_types.length;
+  const companyLimit = compact ? 4 : sheet.coating_companies.length;
+  const coated = (kind: "anode" | "cathode") => (compact ? sheet[kind].coated.slice(0, 4) : sheet[kind].coated);
+  return (
+    <section className="er-shop-sheet">
+      <h3 className="er-shop-title">{t("elDash.report.shopTitle")}</h3>
+      <p className="dash-voltage-sub">{t("elDash.report.shopSub")}</p>
+      <div className="er-shop-grid">
+        <table className="ed-table er-shop-table">
+          <thead>
+            <tr>
+              <th>{t("elDash.report.assembled")}</th>
+              <th className="ed-num">{t("elDash.report.assembledTotal")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sheet.assembled_pairs.slice(0, pairLimit).map((row) => (
+              <tr key={`${row.anode}-${row.cathode}`}>
+                <td>{t("elDash.report.assembledPair", { anode: vendorName(t, row.anode), cathode: vendorName(t, row.cathode) })}</td>
+                <td className="ed-num">{formatNumber(row.count, 0)}</td>
+              </tr>
+            ))}
+            {sheet.assembled_membranes.slice(0, typeLimit).map((row) => (
+              <tr key={row.type}>
+                <td>{t("elDash.report.assembledMem", { type: row.type })}</td>
+                <td className="ed-num">{formatNumber(row.count, 0)}</td>
+              </tr>
+            ))}
+            <tr>
+              <td><strong>{t("elDash.report.assembledTotal")}</strong></td>
+              <td className="ed-num"><strong>{formatNumber(sheet.assembled_total, 0)}</strong></td>
+            </tr>
+            <tr>
+              <td>{t("elDash.report.dismantleTitle")}</td>
+              <td className="ed-num">{formatNumber(sheet.awaiting_disassembly, 0)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <table className="ed-table er-shop-table">
+          <thead>
+            <tr>
+              <th>{t("elDash.report.spareTitle")}</th>
+              <th className="ed-num">{t("elDash.report.anode")}</th>
+              <th className="ed-num">{t("elDash.report.cathode")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{t("elDash.report.usable")}</td>
+              <td className="ed-num">{formatNumber(sheet.anode.usable, 0)}</td>
+              <td className="ed-num">{formatNumber(sheet.cathode.usable, 0)}</td>
+            </tr>
+            {Array.from(new Set([...coated("anode").map((r) => r.vendor), ...coated("cathode").map((r) => r.vendor)])).map((vendor) => (
+              <tr key={vendor}>
+                <td>{t("elDash.report.coatedBy", { vendor: vendorName(t, vendor) })}</td>
+                <td className="ed-num">{formatNumber(sheet.anode.coated.find((r) => r.vendor === vendor)?.count ?? 0, 0)}</td>
+                <td className="ed-num">{formatNumber(sheet.cathode.coated.find((r) => r.vendor === vendor)?.count ?? 0, 0)}</td>
+              </tr>
+            ))}
+            <tr>
+              <td>{t("elDash.report.trainLm")}</td>
+              <td className="ed-num">{formatNumber(sheet.anode.train_lm, 0)}</td>
+              <td className="ed-num">{formatNumber(sheet.cathode.train_lm, 0)}</td>
+            </tr>
+            <tr>
+              <td>{t("elDash.report.awaitingCheck")}</td>
+              <td className="ed-num">{formatNumber(sheet.anode.awaiting_check, 0)}</td>
+              <td className="ed-num">{formatNumber(sheet.cathode.awaiting_check, 0)}</td>
+            </tr>
+            <tr>
+              <td>{t("elDash.report.readyDispatch")}</td>
+              <td className="ed-num">{formatNumber(sheet.anode.ready_dispatch, 0)}</td>
+              <td className="ed-num">{formatNumber(sheet.cathode.ready_dispatch, 0)}</td>
+            </tr>
+            <tr>
+              <td>{t("elDash.report.rateOff")}</td>
+              <td className="ed-num">{formatNumber(sheet.anode.rate_off, 0)}</td>
+              <td className="ed-num">{formatNumber(sheet.cathode.rate_off, 0)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {!compact ? (
+        <div className="er-shop-grid">
+          <table className="ed-table er-shop-table">
+            <thead>
+              <tr>
+                <th>{t("elDash.report.coatingTitle")}</th>
+                <th className="ed-num">{t("elDash.report.anode")}</th>
+                <th className="ed-num">{t("elDash.report.cathode")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sheet.coating_companies.slice(0, companyLimit).map((row) => (
+                <tr key={row.company}>
+                  <td>
+                    {row.company}
+                    <div className="er-shop-note">
+                      {t("elDash.report.coatingOpen")} {row.anode_open}/{row.cathode_open} · {t("elDash.report.coatingBack")} {row.anode_returned}/{row.cathode_returned}
+                    </div>
+                  </td>
+                  <td className="ed-num">{formatNumber(row.anode_returned, 0)}</td>
+                  <td className="ed-num">{formatNumber(row.cathode_returned, 0)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <table className="ed-table er-shop-table">
+            <thead>
+              <tr>
+                <th>{t("elDash.report.membraneTitle")}</th>
+                <th className="ed-num">{t("elDash.report.membraneTotal")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sheet.membrane_types.slice(0, typeLimit).map((row) => (
+                <tr key={row.type}>
+                  <td>{row.type}</td>
+                  <td className="ed-num">{formatNumber(row.count, 0)}</td>
+                </tr>
+              ))}
+              <tr>
+                <td><strong>{t("elDash.report.membraneTotal")}</strong></td>
+                <td className="ed-num"><strong>{formatNumber(sheet.membrane_stock, 0)}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </section>
+  );
 }
 
 /** Is any cell holding two elements, is any element in two cells, and how full is every electrolyzer of both trains. */
@@ -229,6 +374,8 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
         <VoltageGauge value={readyPct} max={100} label={t("elDash.report.shopReadiness")} unit="%" tone={readyPct == null ? "info" : readyPct >= 30 ? "ok" : "warning"} digits={0} />
         <VoltageGauge value={due90} max={Math.max(due90, 20)} label={t("elDash.report.due90")} unit={t("elDash.report.parts")} tone={due90 ? "warning" : "ok"} digits={0} />
       </div>
+
+      {data.workshop ? <ShopSheet sheet={data.workshop} compact={compact} /> : null}
 
       {data.cell_check ? <CellCheck check={data.cell_check} compact={compact} /> : null}
 

@@ -1,0 +1,3 @@
+SELECT qryUnAlleElektrolyseure.Datum, Avg(qryUnAlleElektrolyseure.[I Gesamt]) AS [Mittelwert von I Gesamt], Avg(qryUnAlleElektrolyseure.i) AS [Mittelwert von i], Avg(qryUnAlleElektrolyseure.Cc) AS [Mittelwert von Cc], Avg(qryUnAlleElektrolyseure.[t Ka]) AS [Mittelwert von t Ka], Avg(qryUnAlleElektrolyseure.[t An]) AS [Mittelwert von t An], Avg(qryUnAlleElektrolyseure.Un) AS [Mittelwert von Un], qryUnAlleElektrolyseure.iRef, Count(qryUnAlleElektrolyseure.Elektrolyseur) AS [Anzahl von Elektrolyseur]
+FROM qryUnAlleElektrolyseure
+GROUP BY qryUnAlleElektrolyseure.Datum, qryUnAlleElektrolyseure.iRef;

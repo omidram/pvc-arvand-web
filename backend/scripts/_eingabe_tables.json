@@ -1,0 +1,305 @@
+{
+  "Normierung": {
+    "columns": [
+      {
+        "name": "Normierung",
+        "type": "COUNTER",
+        "size": 10
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": "VARCHAR",
+        "size": 50
+      },
+      {
+        "name": "Datum",
+        "type": "DATETIME",
+        "size": 19
+      },
+      {
+        "name": "Zeit",
+        "type": "DATETIME",
+        "size": 19
+      },
+      {
+        "name": "I Gesamt",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Cc",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "t An",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "t Ka",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Uo",
+        "type": "DOUBLE",
+        "size": 53
+      }
+    ],
+    "sample": [
+      {
+        "Normierung": 461,
+        "Elektrolyseur": null,
+        "Datum": null,
+        "Zeit": null,
+        "I Gesamt": null,
+        "Cc": null,
+        "t An": null,
+        "t Ka": null,
+        "Uo": null
+      },
+      {
+        "Normierung": 462,
+        "Elektrolyseur": "H",
+        "Datum": "2006-06-28 00:00:00",
+        "Zeit": "1899-12-30 10:04:00",
+        "I Gesamt": 14.21,
+        "Cc": 32.15,
+        "t An": 87.22,
+        "t Ka": 87.22,
+        "Uo": null
+      },
+      {
+        "Normierung": 463,
+        "Elektrolyseur": "I",
+        "Datum": "2006-06-28 00:00:00",
+        "Zeit": "1899-12-30 10:04:00",
+        "I Gesamt": 14.2,
+        "Cc": 32.15,
+        "t An": 87.13,
+        "t Ka": 87.13,
+        "Uo": null
+      }
+    ],
+    "count": 6
+  },
+  "tblEingabeUnElement": {
+    "columns": [
+      {
+        "name": "Elektrolyseur",
+        "type": "VARCHAR",
+        "size": 50
+      },
+      {
+        "name": "Position",
+        "type": "INTEGER",
+        "size": 10
+      },
+      {
+        "name": "Datum",
+        "type": "DATETIME",
+        "size": 19
+      },
+      {
+        "name": "Zeit",
+        "type": "DATETIME",
+        "size": 19
+      },
+      {
+        "name": "I Gesamt",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Cc",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "t An",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "t Ka",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "U",
+        "type": "DOUBLE",
+        "size": 53
+      }
+    ],
+    "sample": [],
+    "count": 0
+  },
+  "tblEingabeUnGruppe": {
+    "columns": [
+      {
+        "name": "Gruppe",
+        "type": "INTEGER",
+        "size": 10
+      },
+      {
+        "name": "Datum",
+        "type": "DATETIME",
+        "size": 19
+      },
+      {
+        "name": "Zeit",
+        "type": "DATETIME",
+        "size": 19
+      },
+      {
+        "name": "I Gesamt",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Cc",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "t An",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "t Ka",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "U Gesamt",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "n",
+        "type": "DOUBLE",
+        "size": 53
+      }
+    ],
+    "sample": [],
+    "count": 0
+  },
+  "tblUnElement": {
+    "columns": [
+      {
+        "name": "Elektrolyseur",
+        "type": "VARCHAR",
+        "size": 50
+      },
+      {
+        "name": "Datum",
+        "type": "DATETIME",
+        "size": 19
+      },
+      {
+        "name": "Zeit",
+        "type": "DATETIME",
+        "size": 19
+      },
+      {
+        "name": "I Gesamt",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "i",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Cc",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "t An",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "t Ka",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "tm",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Uo",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Position",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Ui",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Mittelwert von Ui",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Unalt2",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "ti",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "tiAlt",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Un",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "Unalt",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "UnVgl3",
+        "type": "DOUBLE",
+        "size": 53
+      },
+      {
+        "name": "iRef",
+        "type": "VARCHAR",
+        "size": 255
+      },
+      {
+        "name": "tKorr",
+        "type": "VARCHAR",
+        "size": 255
+      },
+      {
+        "name": "cKorr",
+        "type": "VARCHAR",
+        "size": 255
+      }
+    ],
+    "sample": [],
+    "count": 0
+  }
+}

@@ -1,0 +1,529 @@
+{
+  "frmEingabeUnElement": {
+    "recordsource": "tblEingabeUnElement",
+    "caption": "Normierung",
+    "controls": [
+      {
+        "name": "Text13",
+        "type": 100,
+        "caption": "Input Standardized Voltage Single Element",
+        "left": 115,
+        "top": 113,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Befehl46",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 8503,
+        "top": 113,
+        "width": 1701,
+        "height": 576
+      },
+      {
+        "name": "Text15",
+        "type": 100,
+        "caption": "Electrolyzer:",
+        "left": 340,
+        "top": 226,
+        "width": 1243,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "left": 1696,
+        "top": 226,
+        "width": 1710,
+        "height": 330
+      },
+      {
+        "name": "Feld43",
+        "type": 109,
+        "controlsource": "Position",
+        "format": "Standard",
+        "left": 1700,
+        "top": 680,
+        "width": 915,
+        "height": 345
+      },
+      {
+        "name": "Text44",
+        "type": 100,
+        "caption": "Position:",
+        "left": 345,
+        "top": 685,
+        "width": 1245,
+        "height": 240
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 798,
+        "width": 7815,
+        "height": 360
+      },
+      {
+        "name": "Text17",
+        "type": 100,
+        "caption": "Date:",
+        "left": 906,
+        "top": 1133,
+        "width": 678,
+        "height": 240
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "format": "Short Date",
+        "left": 1697,
+        "top": 1133,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "Text19",
+        "type": 100,
+        "caption": "Time:",
+        "left": 1019,
+        "top": 1585,
+        "width": 565,
+        "height": 240
+      },
+      {
+        "name": "Zeit",
+        "type": 109,
+        "controlsource": "Zeit",
+        "format": "Short Time",
+        "left": 1697,
+        "top": 1585,
+        "width": 690,
+        "height": 255
+      },
+      {
+        "name": "Text21",
+        "type": 100,
+        "caption": "I Total:",
+        "left": 680,
+        "top": 2267,
+        "width": 904,
+        "height": 240
+      },
+      {
+        "name": "I Gesamt",
+        "type": 109,
+        "controlsource": "I Gesamt",
+        "format": "Standard",
+        "left": 1697,
+        "top": 2267,
+        "width": 918,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld47",
+        "type": 100,
+        "caption": "[kA]",
+        "left": 2834,
+        "top": 2267,
+        "width": 570,
+        "height": 210
+      },
+      {
+        "name": "Text23",
+        "type": 100,
+        "caption": "NaOH:",
+        "left": 697,
+        "top": 2719,
+        "width": 887,
+        "height": 240
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "format": "Standard",
+        "left": 1697,
+        "top": 2719,
+        "width": 918,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld48",
+        "type": 100,
+        "caption": "[% w/w]",
+        "left": 2835,
+        "top": 2725,
+        "width": 765,
+        "height": 210
+      },
+      {
+        "name": "Text25",
+        "type": 100,
+        "caption": "t An:",
+        "left": 1020,
+        "top": 3174,
+        "width": 565,
+        "height": 240
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "format": "Standard",
+        "left": 1698,
+        "top": 3174,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld49",
+        "type": 100,
+        "caption": "[°C]",
+        "left": 2834,
+        "top": 3174,
+        "width": 570,
+        "height": 210
+      },
+      {
+        "name": "Text27",
+        "type": 100,
+        "caption": "t Ka:",
+        "left": 1020,
+        "top": 3628,
+        "width": 565,
+        "height": 240
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "format": "Standard",
+        "left": 1698,
+        "top": 3628,
+        "width": 918,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld50",
+        "type": 100,
+        "caption": "[°C]",
+        "left": 2834,
+        "top": 3628,
+        "width": 570,
+        "height": 210
+      },
+      {
+        "name": "Text40",
+        "type": 100,
+        "caption": "U:",
+        "left": 1023,
+        "top": 4081,
+        "width": 557,
+        "height": 240
+      },
+      {
+        "name": "Feld39",
+        "type": 109,
+        "controlsource": "U",
+        "format": "Standard",
+        "left": 1693,
+        "top": 4081,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld51",
+        "type": 100,
+        "caption": "[V]",
+        "left": 2834,
+        "top": 4081,
+        "width": 570,
+        "height": 210
+      }
+    ]
+  },
+  "frmEingabeUnGruppe": {
+    "recordsource": "tblEingabeUnGruppe",
+    "caption": "frmEingabeGruppen",
+    "controls": [
+      {
+        "name": "Text13",
+        "type": 100,
+        "caption": "Input Standardized Voltage Group",
+        "left": 115,
+        "top": 113,
+        "width": 7815,
+        "height": 570
+      },
+      {
+        "name": "Befehl46",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "left": 8503,
+        "top": 113,
+        "width": 1701,
+        "height": 576
+      },
+      {
+        "name": "Text15",
+        "type": 100,
+        "caption": "Group:",
+        "left": 340,
+        "top": 226,
+        "width": 1243,
+        "height": 240
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Gruppe",
+        "left": 1696,
+        "top": 226,
+        "width": 1710,
+        "height": 330
+      },
+      {
+        "name": "Text17",
+        "type": 100,
+        "caption": "Date:",
+        "left": 906,
+        "top": 793,
+        "width": 678,
+        "height": 240
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "format": "Short Date",
+        "left": 1697,
+        "top": 793,
+        "width": 870,
+        "height": 255
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "left": 113,
+        "top": 798,
+        "width": 7815,
+        "height": 360
+      },
+      {
+        "name": "Text19",
+        "type": 100,
+        "caption": "Time:",
+        "left": 1019,
+        "top": 1245,
+        "width": 565,
+        "height": 240
+      },
+      {
+        "name": "Zeit",
+        "type": 109,
+        "controlsource": "Zeit",
+        "format": "Short Time",
+        "left": 1697,
+        "top": 1245,
+        "width": 690,
+        "height": 255
+      },
+      {
+        "name": "Text21",
+        "type": 100,
+        "caption": "I Total:",
+        "left": 680,
+        "top": 1927,
+        "width": 904,
+        "height": 240
+      },
+      {
+        "name": "I Gesamt",
+        "type": 109,
+        "controlsource": "I Gesamt",
+        "format": "Standard",
+        "left": 1697,
+        "top": 1927,
+        "width": 918,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld47",
+        "type": 100,
+        "caption": "[kA]",
+        "left": 2834,
+        "top": 1927,
+        "width": 570,
+        "height": 210
+      },
+      {
+        "name": "Text23",
+        "type": 100,
+        "caption": "Cc:",
+        "left": 697,
+        "top": 2379,
+        "width": 887,
+        "height": 240
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "format": "Standard",
+        "left": 1697,
+        "top": 2379,
+        "width": 918,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld48",
+        "type": 100,
+        "caption": "[% w/w]",
+        "left": 2835,
+        "top": 2385,
+        "width": 765,
+        "height": 210
+      },
+      {
+        "name": "Text25",
+        "type": 100,
+        "caption": "t An:",
+        "left": 1020,
+        "top": 2834,
+        "width": 565,
+        "height": 240
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "format": "Standard",
+        "left": 1698,
+        "top": 2834,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld49",
+        "type": 100,
+        "caption": "[°C]",
+        "left": 2834,
+        "top": 2834,
+        "width": 570,
+        "height": 210
+      },
+      {
+        "name": "Text27",
+        "type": 100,
+        "caption": "t Ka:",
+        "left": 1020,
+        "top": 3288,
+        "width": 565,
+        "height": 240
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "format": "Standard",
+        "left": 1698,
+        "top": 3288,
+        "width": 918,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld50",
+        "type": 100,
+        "caption": "[°C]",
+        "left": 2834,
+        "top": 3288,
+        "width": 570,
+        "height": 210
+      },
+      {
+        "name": "Text40",
+        "type": 100,
+        "caption": "U Total:",
+        "left": 453,
+        "top": 3741,
+        "width": 1127,
+        "height": 240
+      },
+      {
+        "name": "Feld39",
+        "type": 109,
+        "controlsource": "U Gesamt",
+        "format": "Standard",
+        "left": 1693,
+        "top": 3741,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Bezeichnungsfeld51",
+        "type": 100,
+        "caption": "[V]",
+        "left": 2834,
+        "top": 3741,
+        "width": 570,
+        "height": 210
+      },
+      {
+        "name": "Bezeichnungsfeld52",
+        "type": 100,
+        "caption": "[/]",
+        "left": 2834,
+        "top": 4194,
+        "width": 570,
+        "height": 210
+      },
+      {
+        "name": "Feld43",
+        "type": 109,
+        "controlsource": "n",
+        "format": "Standard",
+        "left": 1700,
+        "top": 4195,
+        "width": 915,
+        "height": 255
+      },
+      {
+        "name": "Text44",
+        "type": 100,
+        "caption": "No. of Elements:",
+        "left": 0,
+        "top": 4200,
+        "width": 1590,
+        "height": 240
+      }
+    ]
+  },
+  "Betriebsdaten_data_input_buttons": {
+    "Schaltfläche72": {
+      "caption": "Electrolyzers",
+      "OnClick": "[Event Procedure]",
+      "onClickProp": "[Event Procedure]"
+    },
+    "Schaltfläche85": {
+      "caption": "All Elements",
+      "OnClick": "[Event Procedure]",
+      "onClickProp": "[Event Procedure]"
+    },
+    "Befehl197": {
+      "caption": "Groups",
+      "OnClick": "[Event Procedure]",
+      "onClickProp": "[Event Procedure]"
+    },
+    "Befehl198": {
+      "caption": "Single Elements",
+      "OnClick": "[Event Procedure]",
+      "onClickProp": "[Event Procedure]"
+    }
+  }
+}

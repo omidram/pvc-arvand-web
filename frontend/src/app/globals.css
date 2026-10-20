@@ -5822,6 +5822,11 @@ button.ed-mini:hover { background: rgb(15 23 42 / 0.04); }
 .er-pipeline { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; margin-bottom: 0.85rem; }
 @media (min-width: 700px) { .er-pipeline { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (min-width: 1100px) { .er-pipeline { grid-template-columns: repeat(8, minmax(0, 1fr)); } }
+.er-shop-sheet { margin: 0.75rem 0 0.25rem; }
+.er-shop-title { margin: 0; font-size: 0.95rem; font-weight: 800; }
+.er-shop-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; }
+.er-shop-table { width: 100%; }
+.er-shop-note { font-size: 0.68rem; color: #64748b; font-weight: 600; }
 .er-stage {
   display: flex; flex-direction: column; gap: 0.1rem; padding: 0.45rem 0.6rem;
   border-radius: 0.7rem; border: 1px solid #e2e8f0; border-top-width: 4px; background: #ffffff;

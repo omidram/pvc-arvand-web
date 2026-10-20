@@ -1,0 +1,1871 @@
+Version =19
+VersionRequired =19
+Checksum =123706001
+Begin Form
+    RecordSelectors = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =2
+    GridX =8
+    GridY =8
+    Width =12047
+    ItemSuffix =1459
+    Left =345
+    Top =75
+    Right =12390
+    Bottom =9045
+    RecSrcDt = Begin
+        0x85d92c169123e340
+    End
+    RecordSource ="tblInspektionsbericht"
+    Caption ="Inspektionsprotokoll"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0xa0050000a0050000a0050000a005000000000000812e00002940000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x010418009c00b80343ef80050100010000000000640001000f00580201000100 ,
+        0x5802020001004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a657420353130302050434c203600000000000000000000 ,
+        0x00000000000004003200c3018603789c65914d4f14411086ebed6e6859403928 ,
+        0xa0c1387e211a335956d0c43d78408c984dd844412e1a3033ec8e6eaa36339068 ,
+        0x8c9a3dea012fdee0e0d9b30750e41ff82b8c9ebd81f8d93d918d8995cefb769e ,
+        0xae74555767d9ffa140754c2b670dbc25fb1020b21db976e67ad714e85ac24956 ,
+        0x4fb846f29bf834f81de4245a0abc0f2d0b3e0abda2fb89a794bc37320279043e ,
+        0x85d6aa5e2e82cf818721672125088c548cbbf60c86c8d90c0c799ffdebb7bdfb ,
+        0xcd631c26fbccd76f3e053f813c07bf00cf197f78de677164e48e21d7b720f0f4 ,
+        0xb31ef446d447fa938ec87ed18af27039f7310fee826c13ffa47497f807f131c8 ,
+        0x0ec977e25f2487c0fde048f10024800c42f72222de0fe9831cc0f271f096d26b ,
+        0xfa35e92bae1c5bc527201b6e69ee365c30d26564cbd8f57c644772b5c66b4fae ,
+        0x4339f94a5e3f6aaf1f8ca251ea04ed7549b412eeed1c366dfce65fdcd1c6afda ,
+        0xd8ddfd8d0e929ec09cd2579df04bdd9c04d94d5da55b0b692d5e0aaa69c24b71 ,
+        0x7af97a35a82c64717ac3b1f1d16231b819a7499c95ab1395e062b9debcb7581a ,
+        0x2fd5c2a8d128cfc6699608076361e952e873c3b10b455f6c0abd24057037b8c7 ,
+        0xf56f3090cff801acfb0bf7b63f83426d90000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x080020003b000100000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000000000485035315f ,
+        0x3732393830000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =850
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0x94c8e634a261c543a02df9c9d605c069
+            End
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =9525
+                    Height =570
+                    FontSize =14
+                    ForeColor =4194304
+                    Name ="Text8"
+                    Caption ="Inspection Report"
+                    GUID = Begin
+                        0xcd9131a31b819d4e9483bd0b716f0506
+                    End
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =10204
+                    Top =141
+                    Width =1716
+                    Height =576
+                    Name ="Hauptmenue"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x5ca3f542b806564196cf47f9229b83df
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            GUID = Begin
+                0x111adc56b91c9c46aedf7535d19e0ba1
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =20976
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x3887a4419f8ebf4790bfba554447e15a
+            End
+            Begin
+                Begin TextBox
+                    Enabled = NotDefault
+                    DecimalPlaces =0
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2125
+                    Top =1204
+                    Width =1205
+                    Height =213
+                    Name ="Elementnummer"
+                    ControlSource ="tblGewElementInspektionsbericht.Element Nr"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0x0f354fcf4f711a4db4a5ec93295606de
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =290
+                    Top =2400
+                    Width =5385
+                    Height =210
+                    Name ="Label605"
+                    Caption ="Membrane Inspection:"
+                    FontName ="Microsoft Sans Serif"
+                    GUID = Begin
+                        0x5ed7a6ddd67ab84b9d3380eae32489de
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =290
+                    Top =2685
+                    Width =5385
+                    Height =210
+                    Name ="Label606"
+                    Caption ="Anode side (top view):"
+                    GUID = Begin
+                        0x465ebd352270564b8278663c12696e6b
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =285
+                    Top =6945
+                    Width =5385
+                    Height =270
+                    Name ="Bezeichnungsfeld100"
+                    Caption ="Cathode side (plan view)"
+                    GUID = Begin
+                        0x59e8b2911063fd42978fb15478906ad9
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =290
+                    Top =2895
+                    Width =5520
+                    Height =3900
+                    TabIndex =1
+                    Name ="subfrmInspektionsberichtMembranAS"
+                    SourceObject ="Form.subfrmInspektionsberichtMembranAS"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0xdb423157e91f3647a8c4b6f7572f7b19
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =290
+                    Top =7215
+                    Width =5520
+                    Height =3615
+                    TabIndex =2
+                    Name ="Child1360"
+                    SourceObject ="Form.subfrmInspektionsberichtMembranKS"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0x7a99ba2119836743af9258f0c3e4eed9
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =6245
+                    Top =7215
+                    Width =5520
+                    Height =3615
+                    TabIndex =3
+                    Name ="Child1361"
+                    SourceObject ="Form.subfrmInspektionsberichtMembranLT"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0x5ae200590e774944aeadb372cd2e7d9b
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =285
+                    Top =11700
+                    Width =5520
+                    Height =3615
+                    TabIndex =4
+                    Name ="Child1362"
+                    SourceObject ="Form.subfrmInspektionsberichtAnodenhalbschale"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0x983de1eb160bf947abce3d50de13fe46
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =6240
+                    Top =11700
+                    Width =5520
+                    Height =3615
+                    TabIndex =5
+                    Name ="Child1363"
+                    SourceObject ="Form.subfrmInspektionsberichtKathodenhalbschale"
+                    LinkChildFields ="Element Nr"
+                    LinkMasterFields ="Element Nr"
+                    GUID = Begin
+                        0xcb5b8b5472e915409fd56581d5bd59f5
+                    End
+                End
+                Begin Line
+                    OverlapFlags =85
+                    Left =75
+                    Top =10980
+                    Width =11838
+                    Name ="Line1364"
+                    GUID = Begin
+                        0xc478727e9123564fa69528a116f12542
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =8645
+                    Top =3823
+                    Width =992
+                    Height =283
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Bottom"
+                    GUID = Begin
+                        0xe192bccd3d1e6847925b8f3374b7cac4
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =6236
+                    Top =4673
+                    Width =2409
+                    Height =283
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Wrinkle"
+                    GUID = Begin
+                        0x38763c35041dce4abd0989049257920c
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =6236
+                    Top =5523
+                    Width =2409
+                    Height =284
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Tears (T)"
+                    GUID = Begin
+                        0x7c2ac7603a661142b2e3888e63024786
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =7653
+                    Top =3823
+                    Width =992
+                    Height =283
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld105"
+                    Caption ="Top"
+                    GUID = Begin
+                        0x837e57f1279a4f4ead2a8ca3e665bcb1
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =7635
+                    Top =3540
+                    Width =2925
+                    Height =285
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld101"
+                    Caption ="Peripheries"
+                    GUID = Begin
+                        0x54da8d322357b5469ecc4e93a0383ffa
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =6236
+                    Top =3539
+                    Width =1417
+                    Height =567
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld109"
+                    Caption ="Anode Surface"
+                    GUID = Begin
+                        0x6bf34bf446163b43ab1991e2682faba2
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =150
+                    Top =484
+                    Width =1785
+                    Height =240
+                    Name ="Bezeichnungsfeld107"
+                    Caption ="Electrolyzer No.:"
+                    GUID = Begin
+                        0x2c98b78343efe14fb40e8f49e18ab0d6
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =929
+                    Top =141
+                    Width =2401
+                    Height =213
+                    TabIndex =6
+                    Name ="Text1366"
+                    ControlSource ="Kunde"
+                    GUID = Begin
+                        0xee460a44728c234281056a023c338b74
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =167
+                    Top =135
+                    Width =690
+                    Height =210
+                    Name ="Label1367"
+                    Caption ="Client"
+                    GUID = Begin
+                        0x0ed23045d2d22749a458be3fc727f9e2
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =135
+                    Top =1204
+                    Width =1800
+                    Height =210
+                    Name ="Label1368"
+                    Caption ="Element No.:"
+                    GUID = Begin
+                        0xd9c6ffd0c0922c4e92488443ef3cf67b
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    OverlapFlags =85
+                    Left =75
+                    Top =2340
+                    Width =11838
+                    Name ="Line1369"
+                    GUID = Begin
+                        0x0f59d0e7af19c941ae2c94b22982bcb9
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =2125
+                    Top =496
+                    Width =1205
+                    Height =212
+                    TabIndex =7
+                    Name ="Text1370"
+                    ControlSource ="Elektrolyseur"
+                    GUID = Begin
+                        0x2da2e7a2109f65419c539b96480103db
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =135
+                    Top =844
+                    Width =1815
+                    Height =240
+                    Name ="Label1371"
+                    Caption ="Position"
+                    GUID = Begin
+                        0xcc633678692fe24e9eced38395c6dc9c
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =2125
+                    Top =850
+                    Width =1205
+                    Height =212
+                    TabIndex =8
+                    Name ="Text1372"
+                    ControlSource ="Position"
+                    GUID = Begin
+                        0x3371d8da689c9245a9258a3dc5e0a228
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =3675
+                    Top =139
+                    Width =3060
+                    Height =240
+                    Name ="Label1373"
+                    Caption ="Anode No.:"
+                    GUID = Begin
+                        0x37c75bb85328664d9e78dcc1c1eb3dc8
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =215
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =5669
+                    Top =141
+                    Width =2480
+                    Height =213
+                    TabIndex =9
+                    Name ="Text1374"
+                    ControlSource ="Anoden Nr"
+                    GUID = Begin
+                        0x1a76d753cfa1354c8a849678ef813835
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =3660
+                    Top =499
+                    Width =3090
+                    Height =240
+                    Name ="Label1375"
+                    Caption ="Cathode No.:"
+                    GUID = Begin
+                        0xcfac64c304f2304bb09c5431f033f383
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =215
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =5669
+                    Top =496
+                    Width =2480
+                    Height =212
+                    TabIndex =10
+                    Name ="Text1376"
+                    ControlSource ="Kathoden Nr"
+                    GUID = Begin
+                        0x0854e4a5ab8e124fb6fb082546315287
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =3645
+                    Top =859
+                    Width =3120
+                    Height =240
+                    Name ="Label1377"
+                    Caption ="Membrane No.:"
+                    GUID = Begin
+                        0xb7697134a53d9949b3078f879f12ff86
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =215
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =5669
+                    Top =850
+                    Width =2480
+                    Height =212
+                    TabIndex =11
+                    Name ="Text1378"
+                    ControlSource ="Membran Nr"
+                    GUID = Begin
+                        0x2f422a8d39b3fd449609419bf1353cd1
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =3645
+                    Top =1219
+                    Width =3120
+                    Height =240
+                    Name ="Label1379"
+                    Caption ="Membrane Type:"
+                    GUID = Begin
+                        0x3d4258b6dcbea2419591ef24e4e30204
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =215
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =5669
+                    Top =1204
+                    Width =2480
+                    Height =213
+                    TabIndex =12
+                    Name ="Text1380"
+                    ControlSource ="Membrantyp"
+                    GUID = Begin
+                        0xe749a491a1a49642baf8eeb4b0bedab5
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    DecimalPlaces =0
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10700
+                    Top =1204
+                    Width =1205
+                    Height =213
+                    TabIndex =13
+                    Name ="Text1381"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0xa845a971eaeafe45bcbfc37f9b0e3458
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =8428
+                    Top =496
+                    Width =1847
+                    Height =212
+                    Name ="Label1382"
+                    Caption ="Days on line:"
+                    GUID = Begin
+                        0x06bec2b3bb60c04cb3c289d69f34f052
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =10689
+                    Top =141
+                    Width =1216
+                    Height =213
+                    TabIndex =14
+                    Name ="Text1383"
+                    ControlSource ="Demontage Datum"
+                    GUID = Begin
+                        0x1d5284b98573cc4280db1555a443bef4
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =8428
+                    Top =141
+                    Width =1847
+                    Height =213
+                    Name ="Label1384"
+                    Caption ="Disassembly Date:"
+                    GUID = Begin
+                        0x5e352f2432ba6a4cb6c85f545c50acee
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =8428
+                    Top =1204
+                    Width =2201
+                    Height =213
+                    Name ="Label1385"
+                    Caption ="Electrode No. (Cathode)"
+                    GUID = Begin
+                        0x149339ef2e581843b36100465637db2f
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =10700
+                    Top =496
+                    Width =1205
+                    Height =212
+                    TabIndex =15
+                    Name ="Text1386"
+                    ControlSource ="DOL"
+                    GUID = Begin
+                        0xd574c17bd5df244683c74d5cbe30d73c
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =8433
+                    Top =850
+                    Width =2194
+                    Height =212
+                    Name ="Label1387"
+                    Caption ="Electrode No. (Anode)"
+                    GUID = Begin
+                        0x29b7b5a6db09644894d15e982e79d0ef
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =10700
+                    Top =850
+                    Width =1205
+                    Height =212
+                    TabIndex =16
+                    Name ="Text1388"
+                    GUID = Begin
+                        0x93a33b15ddcfa540bad37bc3f232f12e
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =6233
+                    Top =2972
+                    Width =5530
+                    Height =567
+                    FontWeight =400
+                    Name ="Label1390"
+                    Caption ="Blister"
+                    GUID = Begin
+                        0x6e478e5d7e35c24a9b053a514fb1c643
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =10559
+                    Top =3539
+                    Width =1204
+                    Height =567
+                    FontWeight =400
+                    Name ="Label1391"
+                    Caption ="Corner"
+                    GUID = Begin
+                        0x477783c04e646747b0a81c2352310763
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =9566
+                    Top =3823
+                    Width =993
+                    Height =283
+                    FontWeight =400
+                    Name ="Label1392"
+                    Caption ="Site"
+                    GUID = Begin
+                        0xe12ca29e070fee4da2c456dd8c894b83
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =6236
+                    Top =4106
+                    Width =1417
+                    Height =284
+                    FontWeight =400
+                    Name ="Label1393"
+                    Caption ="[%]"
+                    GUID = Begin
+                        0x8f211d8e5267974b8540a20832278454
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =7653
+                    Top =4106
+                    Width =992
+                    Height =284
+                    FontWeight =400
+                    Name ="Label1394"
+                    Caption ="[%]"
+                    GUID = Begin
+                        0x4dfdf1e6653ca040bd670b9fe6ae724c
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =8645
+                    Top =4106
+                    Width =921
+                    Height =284
+                    FontWeight =400
+                    Name ="Label1395"
+                    Caption ="[%]"
+                    GUID = Begin
+                        0x63f601f54f2627408f200d9902455a14
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =9566
+                    Top =4106
+                    Width =1063
+                    Height =284
+                    FontWeight =400
+                    Name ="Label1396"
+                    Caption ="[%]"
+                    GUID = Begin
+                        0xc968b3fa9889944794dfe01842b64c82
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =10559
+                    Top =4106
+                    Width =1204
+                    Height =284
+                    FontWeight =400
+                    Name ="Label1397"
+                    Caption ="[%]"
+                    GUID = Begin
+                        0x6a04bba416af974491139c3ebebec56e
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =6236
+                    Top =5807
+                    Width =779
+                    Height =850
+                    FontWeight =400
+                    Name ="Label1398"
+                    Caption ="Remarks"
+                    GUID = Begin
+                        0xb05515408ba4ba4ca94faff8ee5269fe
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    IMESentenceMode =3
+                    Left =7015
+                    Top =5807
+                    Width =4748
+                    Height =850
+                    TabIndex =17
+                    Name ="Text1400"
+                    ControlSource ="BlisterBemerkungen"
+                    GUID = Begin
+                        0x2b61f63e3ddc83429cffa130c547da77
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =6236
+                    Top =4390
+                    Width =1417
+                    Height =283
+                    TabIndex =18
+                    Name ="Text1401"
+                    ControlSource ="BlisterAnodenflaeche"
+                    GUID = Begin
+                        0x8bc5028dda48dc469ecc6cbd9b25fdc8
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =7653
+                    Top =4390
+                    Width =992
+                    Height =283
+                    TabIndex =19
+                    Name ="Text1402"
+                    ControlSource ="BlisterPeripherieOben"
+                    GUID = Begin
+                        0x4a5e36f039baa34e84badd0121a1242b
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =8645
+                    Top =4390
+                    Width =921
+                    Height =283
+                    TabIndex =20
+                    Name ="Text1403"
+                    ControlSource ="BlisterPeripherieUnten"
+                    GUID = Begin
+                        0x26ea74df3f5fcf40aaaf587bbdfc30bd
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =9566
+                    Top =4390
+                    Width =993
+                    Height =283
+                    TabIndex =21
+                    Name ="Text1404"
+                    ControlSource ="BlisterPeripherieSeite"
+                    GUID = Begin
+                        0x2cbe5d6f59568b4291bc6ac31b8244da
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    TextAlign =2
+                    IMESentenceMode =3
+                    Left =10559
+                    Top =4390
+                    Width =1204
+                    Height =283
+                    TabIndex =22
+                    Name ="Text1405"
+                    ControlSource ="BlisterEcken"
+                    GUID = Begin
+                        0x708502db87131c46a62b7cdfbc9ce91c
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =6236
+                    Top =4956
+                    Width =2409
+                    Height =284
+                    FontWeight =400
+                    Name ="Label1406"
+                    Caption ="Pressure marks (PM)"
+                    GUID = Begin
+                        0xb7c7f9fe5fc222448be65dd9824299d3
+                    End
+                End
+                Begin Label
+                    OldBorderStyle =1
+                    OverlapFlags =95
+                    TextAlign =1
+                    Left =6236
+                    Top =5240
+                    Width =2409
+                    Height =283
+                    FontWeight =400
+                    Name ="Label1407"
+                    Caption ="Visible holes (VH)"
+                    GUID = Begin
+                        0x13959d1713e2574a8ae2afe455f65acd
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    IMESentenceMode =3
+                    Left =8645
+                    Top =4673
+                    Width =3118
+                    Height =283
+                    TabIndex =23
+                    Name ="Text1408"
+                    ControlSource ="Falten"
+                    GUID = Begin
+                        0x9d915b3f5c82e242ab7b639914678286
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    IMESentenceMode =3
+                    Left =8645
+                    Top =4956
+                    Width =3118
+                    Height =284
+                    TabIndex =24
+                    Name ="Text1409"
+                    ControlSource ="Druckstellen"
+                    GUID = Begin
+                        0x392fea5e5b5c26438a20bf388e56a550
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =95
+                    IMESentenceMode =3
+                    Left =8645
+                    Top =5240
+                    Width =3118
+                    Height =283
+                    TabIndex =25
+                    Name ="Text1410"
+                    ControlSource ="SichtbareLoecher"
+                    GUID = Begin
+                        0x97aa6b61bea4244f8cd7c8128d75f912
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =87
+                    IMESentenceMode =3
+                    Left =8645
+                    Top =5523
+                    Width =3118
+                    Height =284
+                    TabIndex =26
+                    Name ="Text1411"
+                    ControlSource ="Risse"
+                    GUID = Begin
+                        0x723733c31be77841944c858fe4910815
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =135
+                    Top =1530
+                    Width =1995
+                    Height =210
+                    Name ="Label1412"
+                    Caption ="Reason for Inspection"
+                    GUID = Begin
+                        0x25714d73bbbd2b4d9fabf3e45daa4ec3
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    DecimalPlaces =0
+                    SpecialEffect =0
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =2196
+                    Top =1559
+                    Width =9709
+                    Height =212
+                    TabIndex =27
+                    Name ="Text1413"
+                    ControlSource ="Abschaltgrund"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0xf7a303a527d19d49b0bf45ea25311d24
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    SpecialEffect =0
+                    OverlapFlags =87
+                    TextAlign =1
+                    Left =2185
+                    Top =1771
+                    Width =9720
+                    Height =213
+                    TabIndex =28
+                    Name ="Text1414"
+                    ControlSource ="Inspektionsgrund"
+                    Format ="Fixed"
+                    GUID = Begin
+                        0x1d26d8fa7bcdb04db90925e913a17c59
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    OverlapFlags =93
+                    Left =75
+                    Top =17085
+                    Width =11838
+                    Name ="Line1415"
+                    GUID = Begin
+                        0xdf327dfbe08c7f479400913fbf2b61c1
+                    End
+                End
+                Begin CheckBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    Left =1700
+                    Top =17858
+                    TabIndex =29
+                    Name ="Check1416"
+                    ControlSource ="ProbeKathode"
+                    GUID = Begin
+                        0x0c14d44026166f4bb9547820387056e7
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =285
+                    Top =17145
+                    Width =2550
+                    Height =210
+                    Name ="Label1417"
+                    Caption ="Sample taken"
+                    GUID = Begin
+                        0x889b703c6c2e65449c77fe965eebb983
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =283
+                    Top =17858
+                    Width =1357
+                    Height =212
+                    Name ="Label1418"
+                    Caption ="Cathode"
+                    GUID = Begin
+                        0x101fbe277abb584cb7205e841aa5a825
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =283
+                    Top =18212
+                    Width =1357
+                    Height =213
+                    Name ="Label1419"
+                    Caption ="Anode"
+                    GUID = Begin
+                        0x0df815db75e3fb48b7400048bc83cc38
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =283
+                    Top =18496
+                    Width =1357
+                    Height =212
+                    Name ="Label1420"
+                    Caption ="Membrane"
+                    GUID = Begin
+                        0x959ba40cbe56e141a6b9443b0e53a337
+                    End
+                End
+                Begin CheckBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    Left =1695
+                    Top =18210
+                    TabIndex =30
+                    Name ="Check1421"
+                    ControlSource ="ProbeAnode"
+                    GUID = Begin
+                        0x0852cd91be324d46b49dd94a49eb994d
+                    End
+                End
+                Begin CheckBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    Left =1695
+                    Top =18495
+                    TabIndex =31
+                    Name ="Check1422"
+                    ControlSource ="ProbeMembran"
+                    GUID = Begin
+                        0xabba23e65edf8e42b038e7c7d2f3b7e8
+                    End
+                End
+                Begin CheckBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    Left =6027
+                    Top =17858
+                    TabIndex =32
+                    Name ="Check1423"
+                    ControlSource ="EinsteckrohrKathodeOK"
+                    GUID = Begin
+                        0x5962ba806a6f4444ae54acc8c377aa7a
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3405
+                    Top =17858
+                    Width =2554
+                    Height =212
+                    Name ="Label1424"
+                    Caption ="Insert pipe (Cathode)"
+                    GUID = Begin
+                        0x11da0bb1e26bb14ba06e6104a2f6e24a
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3405
+                    Top =18135
+                    Width =2554
+                    Height =213
+                    Name ="Label1425"
+                    Caption ="Spacer Strip (Anode)"
+                    GUID = Begin
+                        0x126a15497a0a8a48855ae50be1769cda
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3405
+                    Top =18419
+                    Width =2550
+                    Height =212
+                    Name ="Label1426"
+                    Caption ="Spacer Strip (Cathode)"
+                    GUID = Begin
+                        0x2a658c41616ef04792f59f3d6f4da8db
+                    End
+                End
+                Begin CheckBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    Left =6027
+                    Top =18135
+                    TabIndex =33
+                    Name ="Check1427"
+                    ControlSource ="DistanzsteifenAnodeOK"
+                    GUID = Begin
+                        0xe4fbd7b3c650714ead6e14929dd5f65a
+                    End
+                End
+                Begin CheckBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    Left =6027
+                    Top =18419
+                    TabIndex =34
+                    Name ="Check1428"
+                    ControlSource ="DistanzstreifenKathodeOK"
+                    GUID = Begin
+                        0x18b2b66d740c144681b2ca88dd116821
+                    End
+                End
+                Begin CheckBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    Left =6027
+                    Top =17574
+                    TabIndex =35
+                    Name ="Check1429"
+                    ControlSource ="EinsteckrohrAnodeOK"
+                    GUID = Begin
+                        0xdcfefebd5b544245b9a53d763f5f504a
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3405
+                    Top =17574
+                    Width =2554
+                    Height =213
+                    Name ="Label1430"
+                    Caption ="Insert pipe (Anode)"
+                    GUID = Begin
+                        0x62ddb35eeac45748b43f8c373af699e4
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3412
+                    Top =18703
+                    Width =2554
+                    Height =212
+                    Name ="Label1431"
+                    Caption ="Rahmendichtung"
+                    GUID = Begin
+                        0x88faf4d86ae74742af6135898267e45b
+                    End
+                End
+                Begin CheckBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    Left =6027
+                    Top =18702
+                    TabIndex =36
+                    Name ="Check1432"
+                    ControlSource ="RahmendichtungOK"
+                    GUID = Begin
+                        0x30f98186d167644390e4347cf93c7666
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    OverlapFlags =93
+                    Left =75
+                    Top =19123
+                    Width =8568
+                    Name ="Line1434"
+                    GUID = Begin
+                        0x722f28fdfa9afc4f868293f7779ad690
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =287
+                    Top =19200
+                    Width =1245
+                    Height =210
+                    Name ="Label1435"
+                    Caption ="Remarks"
+                    GUID = Begin
+                        0xa08edf1cc833ad4f8b3928bd5b5b666d
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =285
+                    Top =19479
+                    Width =8226
+                    Height =780
+                    TabIndex =37
+                    Name ="Text1436"
+                    ControlSource ="BemerkungenInspektionsbericht"
+                    GUID = Begin
+                        0x9b0628b0878e4442adff28481d21a276
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    OverlapFlags =93
+                    Left =75
+                    Top =20340
+                    Width =11838
+                    Name ="Line1437"
+                    GUID = Begin
+                        0xb48d8d5f64020c40b03d9c8b63ec8270
+                    End
+                End
+                Begin Line
+                    LineSlant = NotDefault
+                    OverlapFlags =87
+                    Left =8636
+                    Top =17085
+                    Width =4
+                    Height =3259
+                    Name ="Line1438"
+                    GUID = Begin
+                        0xba1f20c295d17e49ada814bfecb35d60
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8715
+                    Top =17220
+                    Width =930
+                    Height =210
+                    Name ="Label1439"
+                    Caption ="Name:"
+                    GUID = Begin
+                        0xd2d1752513355e488daf424da43e2906
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8715
+                    Top =18135
+                    Width =930
+                    Height =210
+                    Name ="Label1440"
+                    Caption ="Date:"
+                    GUID = Begin
+                        0xc591edacf8110440871542350e2b0d17
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =8715
+                    Top =19275
+                    Width =1485
+                    Height =210
+                    Name ="Label1441"
+                    Caption ="Signature:"
+                    GUID = Begin
+                        0xccb24a8513108c4ab1526ffbee5f778b
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =9720
+                    Top =17220
+                    Width =2121
+                    TabIndex =38
+                    Name ="Text1442"
+                    ControlSource ="Name"
+                    GUID = Begin
+                        0x5f9fdc7d89e6c644a8a59676ee7013d5
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =9720
+                    Top =18135
+                    Width =2121
+                    TabIndex =39
+                    Name ="Text1443"
+                    ControlSource ="Date"
+                    GUID = Begin
+                        0x24b0507198b4ec4f89c3de6125d88b76
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =3412
+                    Top =17145
+                    Width =1695
+                    Height =210
+                    Name ="Label1444"
+                    Caption ="Condition of"
+                    GUID = Begin
+                        0xbe41338682412f4496bd2c3f3ffa14cf
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =6240
+                    Top =6945
+                    Width =3405
+                    Height =270
+                    Name ="Label1445"
+                    Caption ="Leak test anode side (plan view)"
+                    GUID = Begin
+                        0x9cd50998ffd6ab43a3b00c1cdfbcea64
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =10485
+                    Top =6945
+                    Width =1275
+                    Height =270
+                    FontWeight =400
+                    Name ="Label1446"
+                    Caption ="Pinhole (P)"
+                    GUID = Begin
+                        0x1d7ffb67c3515c4ea28035f450f6d740
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =285
+                    Top =11130
+                    Width =5385
+                    Height =270
+                    Name ="Label1447"
+                    Caption ="Halfshell inspection"
+                    GUID = Begin
+                        0x892bb3607a1e2242a6f224c23b9a3a30
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =285
+                    Top =11415
+                    Width =5385
+                    Height =270
+                    Name ="Label1448"
+                    Caption ="Anode half shell (plan view)"
+                    GUID = Begin
+                        0xe148c070fcd5f141a1f4eb1eb55b66a9
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6240
+                    Top =11415
+                    Width =5385
+                    Height =270
+                    Name ="Label1449"
+                    Caption ="Cathode half shell (plan view)"
+                    GUID = Begin
+                        0xf1ddf4dcae22d54e8effd79a4e8747f9
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =6311
+                    Top =17574
+                    Width =2120
+                    Height =213
+                    TabIndex =40
+                    Name ="Text1450"
+                    ControlSource ="EinsteckrohrAnodeBemerkung"
+                    GUID = Begin
+                        0x991aeb971b4d3747bce51d75bdb13602
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =6311
+                    Top =17858
+                    Width =2120
+                    Height =213
+                    TabIndex =41
+                    Name ="Text1451"
+                    ControlSource ="EinsteckrohrKathodeBemerkung"
+                    GUID = Begin
+                        0xc02ffdb3bc4eec44b353c70e4080dffb
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =6311
+                    Top =18141
+                    Width =2120
+                    Height =213
+                    TabIndex =42
+                    Name ="Text1452"
+                    ControlSource ="DistanzstreifenAnodeBemerkung"
+                    GUID = Begin
+                        0xf9b8a3668b0a7e4eb8911dd755007c6c
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =6311
+                    Top =18425
+                    Width =2120
+                    Height =213
+                    TabIndex =43
+                    Name ="Text1453"
+                    ControlSource ="DistanzstreifenKathodeBemerkung"
+                    GUID = Begin
+                        0x4434ba1ca270a5479f6eab9ab3817893
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =6311
+                    Top =18708
+                    Width =2120
+                    Height =213
+                    TabIndex =44
+                    Name ="Text1454"
+                    ControlSource ="RahmendichtungBemerkung"
+                    GUID = Begin
+                        0x99401b9e5a4dd9468404e5ef20e2d0c1
+                    End
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5877
+                    Top =17149
+                    Width =435
+                    Height =210
+                    Name ="Label1455"
+                    Caption ="ok"
+                    GUID = Begin
+                        0x1088c2792b8b8a4a9f41d6de725b432e
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10133
+                    Top =15519
+                    Width =1626
+                    Height =576
+                    TabIndex =45
+                    Name ="Command1456"
+                    Caption ="Description"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Find Next"
+                    GUID = Begin
+                        0x827fd7ee07653d4688f370c6668e7a18
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =283
+                    Top =15433
+                    Width =9720
+                    Height =1440
+                    TabIndex =46
+                    Name ="subfrmInspektionsberichtBefunde"
+                    SourceObject ="Form.subfrmInspektionsberichtBefunde"
+                    GUID = Begin
+                        0x3203e529050bdf4d80ca75d97a1da828
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            GUID = Begin
+                0x031e2638049ff94b9811e86d4aaefccf
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0x9e95a070ced28948848d1133fba8745f
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Inspektionsbericht"
+        Label1367.Caption = "Kunde:"
+        Bezeichnungsfeld107.Caption = "Elektrolyseur Nr.:"
+        Label1371.Caption = "Position:"
+        Label1368.Caption = "Element Nr.:"
+        Label1373.Caption = "Anoden Nr.:"
+        Label1375.Caption = "Kathoden Nr.:"
+        Label1377.Caption = "Membran Nr.:"
+        Label1379.Caption = "Membran Typ.:"
+        Label1384.Caption = "Demontage-Datum:"
+        Label1382.Caption = "Betriebstage:"
+        Label1387.Caption = "Elektroden Nr. (Anode):"
+        Label1385.Caption = "Elektroden Nr. (Kathode):"
+        Label1412.Caption = "Inspektionsgrund:"
+        Label605.Caption = "Membraninspektion"
+        Label606.Caption = "Anodenseite (Draufsicht)"
+        Label1390.Caption = "Blister"
+        Bezeichnungsfeld68.Caption = "Anodenfläche"
+        Bezeichnungsfeld101.Caption = "Peripherie"
+        Label1391.Caption = "Ecken"
+        Bezeichnungsfeld105.Caption = "Oben"
+        Bezeichnungsfeld93.Caption = "Unten"
+        Label1392.Caption = "Seite"
+        Bezeichnungsfeld66.Caption = "Falten (F)"
+        Bezeichnungsfeld109.Caption = "Kathodenseite"
+        Label1406.Caption = "Druckstellen (DS)"
+        Label1407.Caption = "Sichtbare Löcher (SL)"
+        Bezeichnungsfeld68.Caption = "Risse (R)"
+        Label1398.Caption = "Bemer-kungen"
+        Bezeichnungsfeld100.Caption = "Kathodenseite (Draufsicht)"
+        Label1445.Caption = "Leaktest (Anodenseite Draufsicht)"
+        Label1446.Caption = "Pinhole (P)"
+        Label1448.Caption = "Anodenhalbschale (Draufsicht)"
+        Label1449.Caption = "Kathodenhalbschale (Draufsicht)"
+        Label1447.Caption = "Halbschaleninspektion"
+        Command1456.Caption = "Befunde"
+        Label1417.Caption = "Probe genommen von"
+        Label1418.Caption = "Kathode"
+        Label1419.Caption = "Anode"
+        Label1420.Caption = "Membran"
+        Label1444.Caption = "Zustand von"
+        Label1455.Caption = "i. O."
+        Label1430.Caption = "Einsteckrohr (Anode)"
+        Label1424.Caption = "Einsteckrohr (Kathode)"
+        Label1425.Caption = "Distanzstreifen (Anode)"
+        Label1426.Caption = "Distanzstreifen (Kathode)"
+        Label1431.Caption = "Rahmendichtung"
+        Label1439.Caption = "Name:"
+        Label1440.Caption = "Datum:"
+        Label1441.Caption = "Unterschrift:"
+        Label1435.Caption = "Bemerkungen"
+        
+        Hauptmenue.Caption = "OK"
+        
+    Else
+        Text8.Caption = "Inspection Report"
+        Label1367.Caption = "Client:"
+        Bezeichnungsfeld107.Caption = "Electrolyzer No.:"
+        Label1371.Caption = "Position:"
+        Label1368.Caption = "Element No.:"
+        Label1373.Caption = "Anode No.:"
+        Label1375.Caption = "Cathode No.:"
+        Label1377.Caption = "Membrane No.:"
+        Label1379.Caption = "Membrane Type:"
+        Label1384.Caption = "Disassembly Date:"
+        Label1382.Caption = "Days on Line:"
+        Label1387.Caption = "Electrode No. (Anode):"
+        Label1385.Caption = "Electrode No. (Cathode):"
+        Label1412.Caption = "Reason for inspection:"
+        Label605.Caption = "Membrane inspection"
+        Label606.Caption = "Anode side (top view)"
+        Label1390.Caption = "Blister"
+        Bezeichnungsfeld109.Caption = "Anode Surface"
+        Bezeichnungsfeld101.Caption = "Periphery"
+        Label1391.Caption = "Corner"
+        Bezeichnungsfeld105.Caption = "Top"
+        Bezeichnungsfeld93.Caption = "Bottom"
+        Label1392.Caption = "Side"
+        Bezeichnungsfeld66.Caption = "Wrinkle (W)"
+        Label1406.Caption = "Pressure marks (PM)"
+        Label1407.Caption = "Visible holes (VH)"
+        Bezeichnungsfeld68.Caption = "Tears (T)"
+        Label1398.Caption = "Remarks"
+        Bezeichnungsfeld100.Caption = "Cathode side (plan view)"
+        Label1445.Caption = "Leaktest (Anode side plan view)"
+        Label1446.Caption = "Pinhole (P)"
+        Label1447.Caption = "Half shell inspection"
+        Label1448.Caption = "Anode half shell (plan view)"
+        Label1449.Caption = "Cathode half shell (plan view)"
+        Command1456.Caption = "Findings"
+        Label1417.Caption = "Sample taken"
+        Label1418.Caption = "Cathode"
+        Label1419.Caption = "Anode"
+        Label1420.Caption = "Membrane"
+        Label1444.Caption = "Condition of"
+        Label1455.Caption = "ok"
+        Label1430.Caption = "Insert pipe (Anode)"
+        Label1424.Caption = "Insert pipe (Cathode)"
+        Label1425.Caption = "Spacer Strip (Anode)"
+        Label1426.Caption = "Spacer Strip (Cathode)"
+        Label1431.Caption = "Frame gasket"
+        Label1439.Caption = "Name:"
+        Label1440.Caption = "Date:"
+        Label1441.Caption = "Signature:"
+        Label1435.Caption = "Remarks"
+        
+        Hauptmenue.Caption = "OK"
+    End If
+
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    'DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "frmInspektionsbericht"
+End Sub
+Private Sub Command1456_Click()
+    Dim rst1 As DAO.Recordset
+    Dim dbs As Database
+    Dim tdf As TableDef
+    
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    
+    Set dbs = CurrentDb
+    Set tdf = dbs.TableDefs!tblInspektionsberichtBefunde
+    If GewSprache = 1 Then
+        tdf.Fields!IDSprache.DefaultValue = "1"
+    Else
+        tdf.Fields!IDSprache.DefaultValue = "2"
+    End If
+    
+    DoCmd.OpenForm "frmInspektionsberichtBefunde"
+    'DoCmd.Close acForm, "frmZellenverwaltung"
+    
+End Sub

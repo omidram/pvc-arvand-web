@@ -497,32 +497,6 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
                       })
                     }
                   />
-                  <InspectionSignaturePad
-                    label="Maint."
-                    name={text(values.sign_maint_name)}
-                    image={text(values.sign_maint_image)}
-                    readOnly={readOnly}
-                    onChange={(patch) =>
-                      onPatch({
-                        sign_maint_name: patch.name ?? values.sign_maint_name,
-                        sign_maint_image: patch.image ?? values.sign_maint_image,
-                        sign_maint_at: patch.at ?? values.sign_maint_at,
-                      })
-                    }
-                  />
-                  <InspectionSignaturePad
-                    label="Proc."
-                    name={text(values.sign_proc_name)}
-                    image={text(values.sign_proc_image)}
-                    readOnly={readOnly}
-                    onChange={(patch) =>
-                      onPatch({
-                        sign_proc_name: patch.name ?? values.sign_proc_name,
-                        sign_proc_image: patch.image ?? values.sign_proc_image,
-                        sign_proc_at: patch.at ?? values.sign_proc_at,
-                      })
-                    }
-                  />
                 </div>
               </td>
             </tr>

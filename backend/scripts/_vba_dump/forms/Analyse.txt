@@ -1,0 +1,1164 @@
+Version =19
+VersionRequired =19
+Checksum =-123705999
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    AllowEdits = NotDefault
+    GridX =5
+    GridY =5
+    Width =15420
+    ItemSuffix =126
+    Top =324
+    Right =11856
+    Bottom =7248
+    RecSrcDt = Begin
+        0x757b225d5488e140
+    End
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000d52f0000e71b000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c4850354b5f37313534365f50434c00000000000000 ,
+        0x010418009c00b803031f00000200090000000000640001000700fcff02000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a65742035303030205365726965732050434c2036000000 ,
+        0x000000000000040032002e018603789c654fcb2e8341183d67a6ed288a05ad48 ,
+        0x45dd2f11112f6081451fa078804a5c9aef6bb44d88205db2a88d5d130fe009b0 ,
+        0xf006dec203d8b95f66fe5423f12dce393933df9c3995caff31c436afe8a9c426 ,
+        0xdc0193284875a75ada2ac2c549c02502ea37649272471d67dd503a58779461da ,
+        0x864d43f24667a8879409d69bb6b64899a34c5167a94bf4ebd3ccc2538131045e ,
+        0x6ff146e0208e98863b0d39e513ca31f58c72ce70321f5df1dfd3203ceff21192 ,
+        0xa43e433eb1ff06f9808c505fa0ef902fe800254d291ac95073d441da148b901e ,
+        0x6a1fb597b551cabdb1cbcc419c9131eaad753751cfa108b3113e21e083f59820 ,
+        0xac416b1a0bbfcadbb1b67dfdd78eb7edcbb6ed1f7d453fec0a378d5df52017b6 ,
+        0xbc1635cc3305eda47451ba7d548c99a8e71e9defecf37f00a4d5459500000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08002600400001004850204c617365724a657420353030302053657269657320 ,
+        0x50434c2036005c5c5355444f505330325c4850354b5f37313534365f50434c00 ,
+        0x6870356b5f373135343600
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Section
+            Height =9070
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =221
+                    Top =226
+                    Width =7590
+                    Height =645
+                    FontSize =22
+                    Name ="Text0"
+                    Caption ="Analysis"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10320
+                    Top =225
+                    Width =2034
+                    Height =561
+                    Name ="Schaltfläche29"
+                    Caption ="Main Menu"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =232
+                    Top =1814
+                    Width =2615
+                    Height =5772
+                    Name ="Rechteck56"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =6236
+                    Top =2040
+                    Width =2391
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl81"
+                    Caption ="Anolyte"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =6236
+                    Top =2721
+                    Width =2391
+                    Height =576
+                    TabIndex =2
+                    Name ="Befehl82"
+                    Caption ="Catholyte"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =6236
+                    Top =4081
+                    Width =2391
+                    Height =576
+                    TabIndex =3
+                    Name ="Befehl83"
+                    Caption ="Chlorine"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =6236
+                    Top =3401
+                    Width =2391
+                    Height =576
+                    TabIndex =4
+                    Name ="Befehl84"
+                    Caption ="Pure brine"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =334
+                    Top =6788
+                    Width =2391
+                    Height =576
+                    TabIndex =5
+                    Name ="Befehl85"
+                    Caption ="Lean Caustic Inlet"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =334
+                    Top =6108
+                    Width =2391
+                    Height =576
+                    TabIndex =6
+                    Name ="Befehl86"
+                    Caption ="Demin. Water"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =334
+                    Top =4747
+                    Width =2391
+                    Height =576
+                    TabIndex =7
+                    Name ="Befehl87"
+                    Caption ="Hydrogen"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =223
+                    Left =6122
+                    Top =1808
+                    Width =2615
+                    Height =5787
+                    Name ="Rechteck89"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =334
+                    Top =2026
+                    Width =2391
+                    Height =576
+                    TabIndex =8
+                    Name ="Befehl90"
+                    Caption ="Anolyte"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =334
+                    Top =2706
+                    Width =2391
+                    Height =576
+                    TabIndex =9
+                    Name ="Befehl91"
+                    Caption ="Catholyte"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =334
+                    Top =3387
+                    Width =2391
+                    Height =576
+                    TabIndex =10
+                    Name ="Befehl92"
+                    Caption ="Pure brine"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =1133
+                    Width =2610
+                    Height =555
+                    FontSize =18
+                    Name ="Bezeichnungsfeld94"
+                    Caption ="Total Plant"
+                    FontName ="Arial"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6122
+                    Top =1133
+                    Width =2625
+                    Height =585
+                    FontSize =18
+                    Name ="Bezeichnungsfeld95"
+                    Caption ="Electrolyzer"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =334
+                    Top =4067
+                    Width =2391
+                    Height =576
+                    TabIndex =11
+                    Name ="Befehl96"
+                    Caption ="Chlorine"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =8055
+                    Top =225
+                    Width =2031
+                    Height =576
+                    TabIndex =12
+                    Name ="Befehl101"
+                    Caption ="Current Efficiency"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =334
+                    Top =5428
+                    Width =2391
+                    Height =576
+                    TabIndex =13
+                    Name ="Befehl102"
+                    Caption ="HCl to Anolyte"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6236
+                    Top =5442
+                    Width =2391
+                    Height =576
+                    TabIndex =14
+                    Name ="Befehl103"
+                    Caption ="HCl for Acidification"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =3174
+                    Top =1814
+                    Width =2615
+                    Height =5787
+                    Name ="Rechteck104"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3174
+                    Top =1133
+                    Width =2640
+                    Height =555
+                    FontSize =18
+                    Name ="Bezeichnungsfeld105"
+                    Caption ="Train"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3288
+                    Top =3401
+                    Width =2391
+                    Height =576
+                    TabIndex =15
+                    Name ="Befehl106"
+                    Caption ="Pure brine"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3288
+                    Top =5442
+                    Width =2391
+                    Height =576
+                    TabIndex =16
+                    Name ="Befehl107"
+                    Caption ="HCl to Anolyte"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =9184
+                    Top =2040
+                    Width =2391
+                    Height =576
+                    TabIndex =17
+                    Name ="Befehl108"
+                    Caption ="Anolyte"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =9184
+                    Top =2721
+                    Width =2391
+                    Height =576
+                    TabIndex =18
+                    Name ="Befehl109"
+                    Caption ="Catholyte"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =9184
+                    Top =4081
+                    Width =2391
+                    Height =576
+                    TabIndex =19
+                    Name ="Befehl110"
+                    Caption ="Chlorine"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =9184
+                    Top =3401
+                    Width =2391
+                    Height =576
+                    TabIndex =20
+                    Name ="Befehl111"
+                    Caption ="Pure brine"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =215
+                    Left =9070
+                    Top =1817
+                    Width =2615
+                    Height =5787
+                    Name ="Rechteck112"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9070
+                    Top =1133
+                    Width =2640
+                    Height =585
+                    FontSize =18
+                    Name ="Bezeichnungsfeld113"
+                    Caption ="Group"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =12132
+                    Top =2040
+                    Width =2391
+                    Height =561
+                    TabIndex =21
+                    Name ="Befehl115"
+                    Caption ="Anolyte"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =12132
+                    Top =2721
+                    Width =2391
+                    Height =561
+                    TabIndex =22
+                    Name ="Befehl116"
+                    Caption ="Catholyte"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =12132
+                    Top =4081
+                    Width =2391
+                    Height =561
+                    TabIndex =23
+                    Name ="Befehl117"
+                    Caption ="Chlorine"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =12132
+                    Top =3401
+                    Width =2391
+                    Height =561
+                    TabIndex =24
+                    Name ="Befehl118"
+                    Caption ="Pure brine"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =215
+                    Left =12018
+                    Top =1817
+                    Width =2600
+                    Height =5787
+                    Name ="Rechteck119"
+                End
+                Begin Label
+                    SpecialEffect =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12018
+                    Top =1133
+                    Width =2610
+                    Height =570
+                    FontSize =18
+                    Name ="Bezeichnungsfeld120"
+                    Caption ="Element"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3288
+                    Top =2040
+                    Width =2391
+                    Height =576
+                    TabIndex =25
+                    Name ="Befehl121"
+                    Caption ="Anolyte"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3288
+                    Top =2721
+                    Width =2391
+                    Height =576
+                    TabIndex =26
+                    Name ="Befehl122"
+                    Caption ="Catholyte"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3288
+                    Top =6803
+                    Width =2391
+                    Height =576
+                    TabIndex =27
+                    Name ="Befehl123"
+                    Caption ="Lean Caustic Inlet"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3288
+                    Top =4081
+                    Width =2391
+                    Height =576
+                    TabIndex =28
+                    Name ="Command124"
+                    Caption ="Chlorine"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0xbb695b3f6049274dba7bbcc14dcbfb27
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =12585
+                    Top =225
+                    Width =2034
+                    Height =561
+                    TabIndex =29
+                    Name ="Command125"
+                    Caption ="Main Menu"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x0b847fa180125b4485b5a5896a6ed4f0
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl102_Click()
+    DoCmd.OpenForm "frmAnalyseHClGesamtanlage"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl103_Click()
+    DoCmd.OpenForm "frmAnalyseHClElektrolyseur"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl106_Click()
+    DoCmd.OpenForm "An Reinsole Teilanlage"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl107_Click()
+    DoCmd.OpenForm "frmAnalyseHClTeilanlage"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl108_Click()
+    DoCmd.OpenForm "An Anolyt Gruppe"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl109_Click()
+    DoCmd.OpenForm "An Katholyt Gruppe"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl110_Click()
+    DoCmd.OpenForm "An Chlorgas Gruppe"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl111_Click()
+    DoCmd.OpenForm "An Reinsole Gruppe"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl115_Click()
+    DoCmd.OpenForm "An Anolyt Element"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl116_Click()
+    DoCmd.OpenForm "An Katholyt Element"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl117_Click()
+    DoCmd.OpenForm "An Chlorgas Element"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl118_Click()
+    DoCmd.OpenForm "An Reinsole Element"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl121_Click()
+    DoCmd.OpenForm "An Anolyt Teilanlage"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl122_Click()
+    DoCmd.OpenForm "An Katholyt Teilanlage"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Befehl123_Click()
+    DoCmd.OpenForm "An Caustic Feed Teilanlage"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Command124_Click()
+    DoCmd.OpenForm "An Chlorgas Teilanlage"
+    DoCmd.Close acForm, "Analyse"
+End Sub
+
+Private Sub Command125_Click()
+    DoCmd.OpenForm "frmAnalysenEinlesen"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Text0.Caption = "Analysen"
+        Bezeichnungsfeld94.Caption = "Gesamtanlage"
+        Befehl90.Caption = "Anolyt"
+        Befehl91.Caption = "Katholyt"
+        Befehl92.Caption = "Reinstsole"
+        Befehl85.Caption = "Dünnlauge-Zulauf"
+        Befehl96.Caption = "Chlor"
+        Befehl87.Caption = "Wasserstoff"
+        Befehl86.Caption = "Demin. Wasser"
+        Befehl102.Caption = "HCl zum Anolyten"
+        Befehl103.Caption = "HCl"
+       
+        Bezeichnungsfeld105.Caption = "Teilanlage"
+        Befehl121.Caption = "Anolyt"
+        Befehl122.Caption = "Katholyt"
+        Befehl106.Caption = "Reinstsole"
+        Command124.Caption = "Chlor"
+        Befehl107.Caption = "HCl zum Anolyten"
+        Befehl123.Caption = "Dünnlauge-Zulauf"
+        
+        Bezeichnungsfeld95.Caption = "Elektrolyseur"
+        Befehl81.Caption = "Anolyt"
+        Befehl84.Caption = "Reinstsole"
+        Befehl103.Caption = "HCl für Ansäuerung"
+        Befehl83.Caption = "Chlor"
+        Befehl82.Caption = "Katholyt"
+        
+        Bezeichnungsfeld113.Caption = "Gruppe"
+        Befehl108.Caption = "Anolyt"
+        Befehl111.Caption = "Reinstsole"
+        Befehl110.Caption = "Chlor"
+        Befehl109.Caption = "Katholyt"
+        
+        Bezeichnungsfeld120.Caption = "Element"
+        Befehl115.Caption = "Anolyt"
+        Befehl118.Caption = "Reinstsole"
+        Befehl117.Caption = "Chlor"
+        Befehl116.Caption = "Katholyt"
+          
+        Befehl101.Caption = "Stromausbeute"
+        Schaltfläche29.Caption = "Hauptmenu"
+        Command125.Caption = "Analysen Einlesen"
+        
+    Else
+        
+        Text0.Caption = "Analysis"
+        Bezeichnungsfeld94.Caption = "Total Plant"
+        Befehl90.Caption = "Anolyte"
+        Befehl91.Caption = "Catholyte"
+        Befehl92.Caption = "Pure Brine"
+        Befehl85.Caption = "Lean Caustic"
+        Befehl96.Caption = "Chlorine"
+        Befehl87.Caption = "Hydrogen"
+        Befehl86.Caption = "Demin. Water"
+        Befehl102.Caption = "HCl to Anolyte"
+        Befehl103.Caption = "HCl"
+        
+        Bezeichnungsfeld105.Caption = "Train"
+        Befehl121.Caption = "Anolyte"
+        Befehl122.Caption = "Catholyte"
+        Befehl106.Caption = "Pure Brine"
+        Command124.Caption = "Chlorine"
+        Befehl107.Caption = "HCl to Anolyte"
+        Befehl123.Caption = "Lean Caustic Feed"
+        
+        Bezeichnungsfeld95.Caption = "Electrolyzer"
+        Befehl81.Caption = "Anolyte"
+        Befehl84.Caption = "Pure Brine"
+        Befehl103.Caption = "HCl for Acidification"
+        Befehl83.Caption = "Chlorine"
+        Befehl82.Caption = "Catholyte"
+        
+        Bezeichnungsfeld113.Caption = "Group"
+        Befehl108.Caption = "Anolyte"
+        Befehl111.Caption = "Pure Brine"
+        Befehl110.Caption = "Chlorine"
+        Befehl109.Caption = "Catholyte"
+        
+        Bezeichnungsfeld120.Caption = "Element"
+        Befehl115.Caption = "Anolyte"
+        Befehl118.Caption = "Pure Brine"
+        Befehl117.Caption = "Chlorine"
+        Befehl116.Caption = "Catholyte"
+        
+        Befehl101.Caption = "Current Efficiency"
+        Schaltfläche29.Caption = "Main Menu"
+        Command125.Caption = "Import Analyses"
+        
+    End If
+
+End Sub
+
+Private Sub Schaltfläche29_Click()
+On Error GoTo Err_Schaltfläche29_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Header"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Schaltfläche29_Click:
+    Exit Sub
+
+Err_Schaltfläche29_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche29_Click
+    
+End Sub
+
+
+
+Private Sub Schaltfläche74_Click()
+On Error GoTo Err_Schaltfläche74_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "An Katholyt"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche74_Click:
+    Exit Sub
+
+Err_Schaltfläche74_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche74_Click
+    
+End Sub
+
+Private Sub Schaltfläche75_Click()
+On Error GoTo Err_Schaltfläche75_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "An Caustic feed"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+Exit_Schaltfläche75_Click:
+    Exit Sub
+
+Err_Schaltfläche75_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche75_Click
+    
+End Sub
+
+Private Sub Befehl79_Click()
+On Error GoTo Err_Befehl79_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Hydrogen"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Befehl79_Click:
+    Exit Sub
+
+Err_Befehl79_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl79_Click
+    
+End Sub
+Private Sub Befehl80_Click()
+On Error GoTo Err_Befehl80_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Hydrochloric acid"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+Exit_Befehl80_Click:
+    Exit Sub
+
+Err_Befehl80_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl80_Click
+    
+End Sub
+Private Sub Befehl81_Click()
+On Error GoTo Err_Befehl81_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Anolyt"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl81_Click:
+    Exit Sub
+
+Err_Befehl81_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl81_Click
+    
+End Sub
+Private Sub Befehl82_Click()
+On Error GoTo Err_Befehl82_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Katholyt"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl82_Click:
+    Exit Sub
+
+Err_Befehl82_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl82_Click
+    
+End Sub
+Private Sub Befehl83_Click()
+On Error GoTo Err_Befehl83_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Chlorgas"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl83_Click:
+    Exit Sub
+
+Err_Befehl83_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl83_Click
+    
+End Sub
+Private Sub Befehl84_Click()
+On Error GoTo Err_Befehl84_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Reinsole"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl84_Click:
+    Exit Sub
+
+Err_Befehl84_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl84_Click
+    
+End Sub
+Private Sub Befehl85_Click()
+On Error GoTo Err_Befehl85_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Caustic feed"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl85_Click:
+    Exit Sub
+
+Err_Befehl85_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl85_Click
+    
+End Sub
+Private Sub Befehl86_Click()
+On Error GoTo Err_Befehl86_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Deminwater"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl86_Click:
+    Exit Sub
+
+Err_Befehl86_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl86_Click
+    
+End Sub
+Private Sub Befehl87_Click()
+On Error GoTo Err_Befehl87_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Hydrogen"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl87_Click:
+    Exit Sub
+
+Err_Befehl87_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl87_Click
+    
+End Sub
+Private Sub Befehl90_Click()
+On Error GoTo Err_Befehl90_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Anolyt Gesamt"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl90_Click:
+    Exit Sub
+
+Err_Befehl90_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl90_Click
+    
+End Sub
+Private Sub Befehl91_Click()
+On Error GoTo Err_Befehl91_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Katholyt Gesamt"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl91_Click:
+    Exit Sub
+
+Err_Befehl91_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl91_Click
+    
+End Sub
+Private Sub Befehl92_Click()
+On Error GoTo Err_Befehl92_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Reinsole Gesamt"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl92_Click:
+    Exit Sub
+
+Err_Befehl92_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl92_Click
+    
+End Sub
+Private Sub Befehl96_Click()
+On Error GoTo Err_Befehl96_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "An Chlorgas Gesamt"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl96_Click:
+    Exit Sub
+
+Err_Befehl96_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl96_Click
+    
+End Sub
+Private Sub Befehl101_Click()
+On Error GoTo Err_Befehl101_Click
+
+    Dim stDocName As String
+    Dim stLinkCriteria As String
+
+    stDocName = "Anodische Bilanz"
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+    DoCmd.Close acForm, "Analyse"
+
+Exit_Befehl101_Click:
+    Exit Sub
+
+Err_Befehl101_Click:
+    MsgBox Err.Description
+    Resume Exit_Befehl101_Click
+    
+End Sub

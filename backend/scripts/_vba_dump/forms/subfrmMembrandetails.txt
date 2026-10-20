@@ -1,0 +1,375 @@
+Version =19
+VersionRequired =19
+Checksum =-122992724
+Begin Form
+    AutoCenter = NotDefault
+    DefaultView =0
+    ViewsAllowed =1
+    GridX =5
+    GridY =5
+    Width =17574
+    ItemSuffix =102
+    Left =120
+    Top =2280
+    Right =13320
+    Bottom =7215
+    RecSrcDt = Begin
+        0x9f591250f1fee240
+    End
+    RecordSource ="qryMembrandetails"
+    Caption ="Membrandetails"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x890500008905000089050000890500000000000043340000211a000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c00340203ff8007020009009a0b34086400010001002c0102000100 ,
+        0x2c01010000004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextAlign =3
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin CheckBox
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin TextBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin ListBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =1417
+            LabelX =-236
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0xd7fb42cffec94846a5a30e9e3e92a966
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0x6416445825730d448596bcf0583b0356
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =5669
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0xcf286e9454fdba4dbf3913af25f22ea0
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =340
+                    Width =2265
+                    Height =225
+                    FontWeight =500
+                    Name ="Datum"
+                    ControlSource ="Eingangsdatum"
+                    GUID = Begin
+                        0x5fdf4eae6215d04da1af06de5e75ac20
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1133
+                            Top =340
+                            Width =1347
+                            Height =225
+                            Name ="Text27"
+                            Caption ="Delivery Date"
+                            GUID = Begin
+                                0xc4d727c7227ec64e87bb1e74a548665c
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =1247
+                    Width =2280
+                    Height =225
+                    TabIndex =2
+                    Name ="Nummer"
+                    ControlSource ="Membrannummer"
+                    GUID = Begin
+                        0xe555c3fcc31d8f4587f386ce50c41da5
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =566
+                            Top =1247
+                            Width =1926
+                            Height =240
+                            Name ="Text29"
+                            Caption ="Membrane Number"
+                            GUID = Begin
+                                0x4978be3ecd94144fa64846c22dd8f8a0
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2607
+                    Top =2145
+                    Width =9855
+                    TabIndex =4
+                    Name ="Bemerkung"
+                    ControlSource ="Bemerkung"
+                    GUID = Begin
+                        0x42c82faebb758441b87d0971ae4e7e4f
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1133
+                            Top =2148
+                            Width =1350
+                            Height =240
+                            Name ="Text31"
+                            Caption ="Remarks"
+                            GUID = Begin
+                                0xe4dc92e925bbb249abb2faf30a708e1d
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =793
+                    Width =2271
+                    Height =225
+                    TabIndex =1
+                    Name ="Text90"
+                    ControlSource ="Membrantyp"
+                    GUID = Begin
+                        0x36d1bc680650044da14a7aac572da549
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =1020
+                            Top =793
+                            Width =1440
+                            Height =240
+                            Name ="Bezeichnungsfeld91"
+                            Caption ="Membrane Type"
+                            GUID = Begin
+                                0xdf06ecbe8e19624f8da7019a4be61151
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =1700
+                    Width =2280
+                    Height =225
+                    TabIndex =3
+                    Name ="Text98"
+                    ControlSource ="Batch"
+                    GUID = Begin
+                        0x8cb614050f07ee4ab9bd02e19c44ccdd
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =566
+                            Top =1700
+                            Width =1926
+                            Height =240
+                            Name ="Label99"
+                            Caption ="Batch"
+                            GUID = Begin
+                                0x7e5f4bc7b03c1948bf85adcfde12e585
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2607
+                    Top =2607
+                    Width =2265
+                    Height =225
+                    FontWeight =500
+                    TabIndex =5
+                    Name ="Text100"
+                    ControlSource ="Stillegungsdatum"
+                    GUID = Begin
+                        0x7f90839b17d523479e9140bf691393f3
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =566
+                            Top =2607
+                            Width =1917
+                            Height =225
+                            Name ="Label101"
+                            Caption ="Out of Service"
+                            GUID = Begin
+                                0xd31da5874cff1c469cbe2aedb8a1409d
+                            End
+                        End
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =453
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0x9f09e464e9b2c143b173402e89bfa94b
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8277
+                    Top =113
+                    Width =1747
+                    Height =227
+                    Name ="Feld80"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                    GUID = Begin
+                        0xb98e5db2d869964bb2da2a88032051f4
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0xb9d10ead135fb54e853859630bb8a800
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Text27.Caption = "Eingangsdatum"
+        Bezeichnungsfeld91.Caption = "Membrantyp"
+        Text29.Caption = "Membran-Nr."
+        Label99.Caption = "Batch"
+        Text31.Caption = "Bemerkung"
+        Label101.Caption = "Stillegungsdatum"
+        
+        
+    Else
+        Text27.Caption = "Delivery Date"
+        Bezeichnungsfeld91.Caption = "Membrane Type"
+        Text29.Caption = "Membrane No."
+        Label99.Caption = "Batch"
+        Text31.Caption = "Remarks"
+        Label101.Caption = "Out of Service"
+
+    End If
+
+End Sub

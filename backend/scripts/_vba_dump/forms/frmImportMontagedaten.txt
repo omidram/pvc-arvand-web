@@ -1,0 +1,549 @@
+Version =19
+VersionRequired =19
+Checksum =-123706012
+Begin Form
+    PopUp = NotDefault
+    Modal = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    BorderStyle =3
+    GridX =5
+    GridY =5
+    Width =7937
+    ItemSuffix =188
+    Left =3660
+    Top =2985
+    Right =11595
+    Bottom =4665
+    RecSrcDt = Begin
+        0x066a806c8c23e340
+    End
+    RecordSource ="tblGewDaten"
+    Caption ="Import Assembly Data"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x1e030000180300004d0300001803000000000000e83a0000e900000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x010400059c00340203ff8007020009009a0b34086400010001002c0102000100 ,
+        0x2c01010000004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c0027000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0xdb5f38c24db4fa449af90c9bbf2f3ba5
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0x0531ad8ed3005343add0868dec16db00
+            End
+        End
+        Begin Section
+            Height =907
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x2b7f9acadc375b4b9d9419dc3bba93c9
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2834
+                    Top =113
+                    Width =4536
+                    Height =227
+                    Name ="Text78"
+                    ControlSource ="VerzeichnisMontagedatenbank"
+                    GUID = Begin
+                        0x1c84ba6ae104c94181a6c3084f6ff34e
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =2834
+                    Top =453
+                    Width =2268
+                    Height =227
+                    TabIndex =1
+                    Name ="Text171"
+                    ControlSource ="NameMontagedatenbank"
+                    GUID = Begin
+                        0x099d5848b2c3c24a81da78eed3fdc679
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =226
+                    Top =113
+                    Width =2491
+                    Height =227
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld80"
+                    Caption ="Directory"
+                    GUID = Begin
+                        0x3bb73bf479795a43b262afb45345ca4f
+                    End
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =226
+                    Top =453
+                    Width =2491
+                    Height =227
+                    FontWeight =400
+                    Name ="Bezeichnungsfeld169"
+                    Caption ="Name"
+                    GUID = Begin
+                        0x12538111f396ab4085fcf2f49b1f3a19
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0xe7cd21dec674fb4fbebd5266fb882f67
+            End
+            Begin
+                Begin PageBreak
+                    OverlapFlags =85
+                    Name ="Seitenumbruch70"
+                    GUID = Begin
+                        0x419748adf1f098459ec5c3d961f65cd0
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =793
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0x4ba7b0155daacf478e8fb71a1a2005c0
+            End
+            Begin
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =1485
+                    Top =225
+                    Width =2496
+                    Height =471
+                    FontWeight =400
+                    Name ="Befehl181"
+                    Caption ="Import Assembly Data"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x99cce16dfb32fc4b9545bcc540f8e587
+                    End
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =4206
+                    Top =225
+                    Width =2046
+                    Height =471
+                    TabIndex =1
+                    Name ="Befehl180"
+                    Caption ="Close"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x716a82fd01f78b4faba084cfa73dfb96
+                    End
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+
+
+Private Sub Befehl180_Click()
+    DoCmd.Close acForm, "frmImportMontagedaten"
+End Sub
+
+Private Sub Befehl181_Click()
+    
+    Dim db, dbs As Database
+    Dim td As TableDef
+    Dim rst1, rst2, rst3, rst4, rst5, rst6, rst7, rst8, rst9, rst10, rst11, rst12 As DAO.Recordset
+    Dim Einlesedatei As Variant
+    Dim strDateiname As String
+    
+    Set dbs = CurrentDb
+    
+    ' Verzeichnis und Dateinamen für Datenbank mit Montagedaten einlesen
+    'Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY VerzeichnisMontagedatenbank")
+    'strDateiname = rst1!VerzeichnisMontagedatenbank & "\" & rst1!NameMontagedatenbank
+    'rst1.Close
+    strDateiname = Me!Text78 & "\" & Me!Text171
+    
+    'Prüfen, ob Datei vorhanden ist
+    If FileExist(strDateiname) = 0 Then
+        If GetIDGewSprache() = 1 Then
+            MsgBox "Keine Dateien gefunden", vbInformation, "Hinweis"
+        Else
+            MsgBox "No files found", vbInformation, "Remark"
+        End If
+        Exit Sub
+    End If
+    
+    'Einlesen der Montagedaten aus der gefundenen Datei
+    DoCmd.DeleteObject acTable, "tblImportMontage"
+    DoCmd.TransferDatabase acImport, "Microsoft Access", strDateiname, acTable, "Montage", "tblImportMontage"
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblImportMontage WHERE [Element Nr] is not Null ORDER BY [Element Nr]")
+    
+    'Einlesen der Anodeninstandhaltung-Daten aus der gefundenen Datei
+    'Einlesen der Kathodeninstandhaltung-Daten aus der gefundenen Datei
+    
+    'Vor Einlesen prüfen ob nicht alle Demontagedaten eingegeben sind
+        'Set rst8 = CurrentDb.OpenRecordset(" SELECT * FROM Spannungen WHERE" & _
+        ' "(((Spannungen.Elektrolyseur)='" & rst5!Elektrolyseur & "')" & _
+        ' "AND ((Spannungen.Datum)=" & Format$(CDate(rst2!Datum), "\#m\/d\/yy\#") & ")" & _
+        ' "AND ((Spannungen.Zeit)=#12/30/1899 " & rst2!Zeit & "#)) ")
+
+    rst2.MoveFirst
+    Do Until rst2.EOF
+        
+            'Datensatz aus importierter Tabelle suchen
+            Set rst3 = CurrentDb.OpenRecordset(" SELECT * FROM Montage WHERE" & _
+                        "((Montage.[Element Nr])=" & rst2![Element Nr] & ") ")
+
+            'Debug.Print rst3![Element Nr], rst3!Elektrolyseur, rst3![Einschalt Datum], rst3![Ausschalt Datum], rst3![Demontage Datum]
+            If (rst3.BOF And rst3.EOF) Then
+                 With rst3
+                    .AddNew
+                     
+                    ![Element Nr] = rst2![Element Nr]
+                    ![Anoden Nr] = rst2![Anoden Nr]
+                    ![Kathoden Nr] = rst2![Kathoden Nr]
+                    !Membrantyp = rst2!Membrantyp
+                    ![Membran Nr] = rst2![Membran Nr]
+                    ![Elektroden Abstand] = rst2![Elektroden Abstand]
+                    ![Montage Datum] = rst2![Montage Datum]
+                    !Remarks = rst2!Remarks
+                    !Elektrolyseur = rst2!Elektrolyseur
+                    !Position = rst2!Position
+                    ![Einschalt Datum] = rst2![Einschalt Datum]
+                    ![Ausschalt Datum] = rst2![Ausschalt Datum]
+                    ![Demontage Datum] = rst2![Demontage Datum]
+                    !Gruppe = rst2!Gruppe
+                    ![Abschaltgrund] = rst2![Abschaltgrund]
+                    ![Anode coating] = rst2![Anode coating]
+                    ![Anode electrode] = rst2![Anode electrode]
+                    ![Anode shell] = rst2![Anode shell]
+                    ![Cathode coating] = rst2![Cathode coating]
+                    ![Cathode electrode] = rst2![Cathode electrode]
+                    ![Cathode shell] = rst2![Cathode shell]
+                    ![Info membrane] = rst2![Info membrane]
+                    ![Generation] = rst2![Generation]
+                    .Update
+                End With
+            Else
+                With rst3
+                    .Edit
+                    If ![Elektrolyseur] = "Reserve" Then
+                        ![Elektrolyseur] = rst2!Elektrolyseur
+                    End If
+                    ![Position] = rst2![Position]
+                    ![Einschalt Datum] = rst2![Einschalt Datum]
+                    .Update
+                End With
+            End If
+            rst3.Close
+            rst2.MoveNext
+        Loop
+                
+    rst2.Close
+    
+    
+    
+    
+    
+     
+    'Einlesen der Anodeninstandhaltung-Daten aus der gefundenen Datei
+    DoCmd.DeleteObject acTable, "tblImportAnodeninstandhaltung"
+    DoCmd.TransferDatabase acImport, "Microsoft Access", strDateiname, acTable, "tblAnodeninstandhaltung", "tblImportAnodeninstandhaltung"
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblImportAnodeninstandhaltung Where ( [Anoden Nr] is not null and Versanddatum is not null) ")
+    Do Until rst2.EOF
+    'Datensatz in bestehender Tabelle suchen
+        Set rst3 = CurrentDb.OpenRecordset(" SELECT * FROM tblAnodeninstandhaltung WHERE" & _
+         "((([tblAnodeninstandhaltung!Anoden Nr])='" & rst2![Anoden Nr] & "')" & _
+         "AND ((tblAnodeninstandhaltung!Versanddatum)=" & Format$(CDate(rst2!Versanddatum), "\#m\/d\/yy\#") & ")" & _
+          ") ")
+          
+        'Debug.Print rst3![Anoden Nr], rst3!Datum, rst3![Befund], rst3![Aktion], rst3![Versanddatum]
+        If Not (rst3.BOF And rst3.EOF) Then
+            'Debug.Print rst2![Anoden Nr], rst2!Datum
+            With rst3
+                .Edit
+                    '![Anoden Nr] = rst2![Anoden Nr]
+                    '!Datum = rst2!Datum
+                    If IsNull(!Befund) = True Then
+                        !Befund = rst2!Befund
+                    End If
+                    If IsNull(!Aktion) = True Then
+                        !Aktion = rst2!Aktion
+                    End If
+                    If IsNull(!Versanddatum) = True Then
+                        !Versanddatum = rst2!Versanddatum
+                    End If
+                    If IsNull(!Rücklieferung) = True Then
+                        !Rücklieferung = rst2!Rücklieferung
+                    End If
+                .Update
+            End With
+        End If
+        rst3.Close
+        rst2.MoveNext
+    Loop
+    rst2.Close
+    
+    'Einlesen der Kathodeninstandhaltung-Daten aus der gefundenen Datei
+    DoCmd.DeleteObject acTable, "tblImportKathodeninstandhaltung"
+    DoCmd.TransferDatabase acImport, "Microsoft Access", strDateiname, acTable, "tblKathodeninstandhaltung", "tblImportKathodeninstandhaltung"
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblImportKathodeninstandhaltung Where ( [Kathoden Nr] is not null and Versanddatum is not null) ")
+    Do Until rst2.EOF
+    'Datensatz in bestehender Tabelle suchen
+        Set rst3 = CurrentDb.OpenRecordset(" SELECT * FROM tblKathodeninstandhaltung WHERE" & _
+         "((([tblKathodeninstandhaltung!Kathoden Nr])='" & rst2![Kathoden Nr] & "')" & _
+         "AND ((tblKathodeninstandhaltung!Versanddatum)=" & Format$(CDate(rst2!Versanddatum), "\#m\/d\/yy\#") & ")" & _
+          ") ")
+        If Not (rst3.BOF And rst3.EOF) Then
+            With rst3
+                .Edit
+                    '![Kathoden Nr] = rst2![Kathoden Nr]
+                    '!Datum = rst2!Datum
+                    If IsNull(!Befund) = True Then
+                        !Befund = rst2!Befund
+                    End If
+                    If IsNull(!Aktion) = True Then
+                        !Aktion = rst2!Aktion
+                    End If
+                    If IsNull(!Versanddatum) = True Then
+                        !Versanddatum = rst2!Versanddatum
+                    End If
+                    If IsNull(!Rücklieferung) = True Then
+                        !Rücklieferung = rst2!Rücklieferung
+                    End If
+                .Update
+            End With
+        End If
+        rst3.Close
+        rst2.MoveNext
+    Loop
+    rst2.Close
+        
+'Einlesen der Anodenrecoating-Daten aus der gefundenen Datei
+    DoCmd.DeleteObject acTable, "tblImportAnodenrecoating"
+    DoCmd.TransferDatabase acImport, "Microsoft Access", strDateiname, acTable, "tblAnodenrecoating", "tblImportAnodenrecoating"
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblImportAnodenrecoating Where ( [Anodennummer] is not null and Versanddatum is not null) ")
+    If rst2.BOF And rst2.EOF Then
+        Exit Sub
+    End If
+    Do Until rst2.EOF
+    'Datensatz in bestehender Tabelle suchen
+        Set rst3 = CurrentDb.OpenRecordset(" SELECT * FROM tblAnodenrecoating WHERE" & _
+         "((([tblAnodenrecoating!Anodennummer])='" & rst2![Anodennummer] & "')" & _
+         "AND ((tblAnodenrecoating!Versanddatum)=" & Format$(CDate(rst2!Versanddatum), "\#m\/d\/yy\#") & ")" & _
+          ") ")
+          
+        'Debug.Print rst3![Anoden Nr], rst3!Datum, rst3![Befund], rst3![Aktion], rst3![Versanddatum]
+        If Not (rst3.BOF And rst3.EOF) Then
+            'Debug.Print rst2![Anoden Nr], rst2!Datum
+            With rst3
+                .Edit
+                    '![Anoden Nr] = rst2![Anoden Nr]
+                    '!Datum = rst2!Datum
+                    
+                    If IsNull(!Versanddatum) = True Then
+                        !Versanddatum = rst2!Versanddatum
+                    End If
+                    If IsNull(!Rücklieferdatum) = True Then
+                        !Rücklieferdatum = rst2!Rücklieferdatum
+                    End If
+                .Update
+            End With
+        End If
+        rst3.Close
+        rst2.MoveNext
+    Loop
+    rst2.Close
+    
+    'Einlesen der Kathodenrecoating-Daten aus der gefundenen Datei
+    DoCmd.DeleteObject acTable, "tblImportKathodenrecoating"
+    DoCmd.TransferDatabase acImport, "Microsoft Access", strDateiname, acTable, "tblKathodenrecoating", "tblImportKathodenrecoating"
+    Set rst2 = CurrentDb.OpenRecordset("Select * From tblImportKathodenrecoating Where ( [Kathodennummer] is not null and Versanddatum is not null) ")
+    If rst2.BOF And rst2.EOF Then
+        Exit Sub
+    End If
+    Do Until rst2.EOF
+    'Datensatz in bestehender Tabelle suchen
+        Set rst3 = CurrentDb.OpenRecordset(" SELECT * FROM tblKathodenrecoating WHERE" & _
+         "((([tblKathodenrecoating!Kathodennummer])='" & rst2![Kathodennummer] & "')" & _
+         "AND ((tblKathodenrecoating!Versanddatum)=" & Format$(CDate(rst2!Versanddatum), "\#m\/d\/yy\#") & ")" & _
+          ") ")
+        If Not (rst3.BOF And rst3.EOF) Then
+            With rst3
+                .Edit
+                    '![Kathoden Nr] = rst2![Kathoden Nr]
+                    '!Datum = rst2!Datum
+                    If IsNull(!Versanddatum) = True Then
+                        !Versanddatum = rst2!Versanddatum
+                    End If
+                    If IsNull(!Rücklieferdatum) = True Then
+                        !Rücklieferdatum = rst2!Rücklieferdatum
+                    End If
+                .Update
+            End With
+        End If
+        rst3.Close
+        rst2.MoveNext
+    Loop
+    rst2.Close
+        
+        
+    If GetIDGewSprache() = 1 Then
+        MsgBox "Einlesen der Montagedaten abgeschlossen."
+    Else
+        MsgBox "Reading of assembly data completed."
+    End If
+
+
+End Sub
+
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    If GetIDGewSprache() = 1 Then
+        Me.Caption = "Import Montagedaten"
+        Bezeichnungsfeld80.Caption = "Verzeichnis"
+        Bezeichnungsfeld169.Caption = "Name Montagedatenbank"
+        Befehl181.Caption = "Import Montagedaten"
+        Befehl180.Caption = "Schließen"
+          
+    Else
+        Me.Caption = "Import Assembly Data"
+        Bezeichnungsfeld80.Caption = "Directory"
+        Bezeichnungsfeld169.Caption = "Name of Assembly Data Base"
+        Befehl181.Caption = "Import Assembly Data"
+        Befehl180.Caption = "Close"
+        
+    End If
+
+
+End Sub

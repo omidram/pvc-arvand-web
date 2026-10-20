@@ -1,0 +1,308 @@
+Version =19
+VersionRequired =19
+Checksum =122771745
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    PictureAlignment =5
+    PictureSizeMode =1
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =7920
+    DatasheetFontHeight =10
+    ItemSuffix =29
+    Left =885
+    Top =300
+    Right =6645
+    Bottom =3360
+    DatasheetGridlinesColor =12632256
+    PaintPalette = Begin
+        0x000359000000000000ccff0005cdff000aceff000fcfff0014d0ff001ad1ff00 ,
+        0x1fd2ff0024d3ff0029d4ff002ed5ff0034d6ff0039d7ff003ed8ff0043d9ff00 ,
+        0x48daff004edbff0053dcff0058ddff005ddeff0062dfff0068e0ff006de1ff00 ,
+        0x72e2ff0077e3ff007ce4ff0082e6ff0087e7ff008ce8ff0091e9ff0096eaff00 ,
+        0x9cebff00a1ecff00a6edff00abeeff00b0efff00b6f0ff00bbf1ff00c0f2ff00 ,
+        0xc5f3ff00caf4ff00cccccc00cfcfcf00d0f5ff00d1d1d100d4d4d400d5f6ff00 ,
+        0xd6d6d600d9d9d900daf7ff00dbdbdb00dedede00dff8ff00e0e0e000e3e3e300 ,
+        0xe4f9ff00e5e5e500e8e8e800eafaff00ebebeb00ededed00effbff00f0f0f000 ,
+        0xf2f2f200f4fcff00f5f5f500f7f7f700f9fdff00fafafa00fcfcfc00ffffff00 ,
+        0x800000000080000080800000000080008000800000808000c0c0c000c0dcc000 ,
+        0xa6caf000fffbf000a0a0a40080808000ff00000000ff0000ffff00000000ff00 ,
+        0xff00ff0000ffff0000000000
+    End
+    RecSrcDt = Begin
+        0x5f7b6601ceafe240
+    End
+    RecordSource ="tblGewDaten"
+    Caption ="subfrmVerzeichnisAnalysen"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            BackStyle =0
+            BorderWidth =1
+            Width =850
+            Height =850
+        End
+        Begin Line
+            BorderWidth =1
+            Width =1701
+        End
+        Begin Image
+            SpecialEffect =1
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =1
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =1
+            BorderWidth =3
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BorderColor =12632256
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =1
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin ListBox
+            SpecialEffect =1
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin Subform
+            SpecialEffect =1
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =1
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="Arial"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            Name ="Formularkopf"
+            GUID = Begin
+                0x69c91a3e9194664094ad84948f27cb68
+            End
+        End
+        Begin Section
+            Height =1644
+            BackColor =12632256
+            Name ="Detailbereich"
+            GUID = Begin
+                0x9b2341e8ba5b764199d8b6645ac002d4
+            End
+            Begin
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    Left =1815
+                    Top =113
+                    Width =3276
+                    Name ="Text19"
+                    ControlSource ="VerzeichnisAnalysen"
+                    GUID = Begin
+                        0x9a413bc3d5517347ac83ce7a184874fe
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =59
+                            Top =113
+                            Width =1650
+                            Height =255
+                            Name ="Bezeichnungsfeld20"
+                            Caption ="Path"
+                            GUID = Begin
+                                0x981f5048ef20504fb6628d85aa9b0c66
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    Left =1814
+                    Top =450
+                    Width =3291
+                    TabIndex =1
+                    Name ="Text23"
+                    ControlSource ="DateinameAnalysenReinstsole"
+                    GUID = Begin
+                        0x1c3b7dfea56d2b4ab5a0ee3d43f55388
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =58
+                            Top =450
+                            Width =1650
+                            Height =255
+                            Name ="Label24"
+                            Caption ="File"
+                            GUID = Begin
+                                0xff3c55828beee74391b47bd9d67ebf78
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    Left =1814
+                    Top =795
+                    Width =3291
+                    TabIndex =2
+                    Name ="Text25"
+                    ControlSource ="DateinameAnalysenAnolyt"
+                    GUID = Begin
+                        0x38b195cbb3cdb04eb25bbf45678198d9
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =58
+                            Top =795
+                            Width =1650
+                            Height =255
+                            Name ="Label26"
+                            Caption ="File"
+                            GUID = Begin
+                                0x934a53f425ed3142b0c939db3c620eb4
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    Left =1814
+                    Top =1140
+                    Width =3291
+                    TabIndex =3
+                    Name ="Text27"
+                    ControlSource ="DateinameAnalysenChlor"
+                    GUID = Begin
+                        0xe47d33cae95732478ebc2ea931853b3c
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =58
+                            Top =1140
+                            Width =1650
+                            Height =255
+                            Name ="Label28"
+                            Caption ="File"
+                            GUID = Begin
+                                0xdcd0fd1377e11b4f8b94e6befdbc242a
+                            End
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            Name ="Formularfuß"
+            GUID = Begin
+                0x1d11f9c7178beb4fa90c5a165d74d742
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    If GetIDGewSprache() = 1 Then
+        Bezeichnungsfeld20.Caption = "Verzeichnis"
+        Label24.Caption = "Datei Reinstsole"
+        Label26.Caption = "Datei Anolyt"
+        Label28.Caption = "Datei Chlor"
+        
+    Else
+        Bezeichnungsfeld20.Caption = "Directory"
+        Label24.Caption = "File Pure Brine"
+        Label26.Caption = "File Anolyte"
+        Label28.Caption = "File Chlorine"
+    End If
+
+End Sub

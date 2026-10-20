@@ -1,0 +1,317 @@
+Version =17
+VersionRequired =17
+Checksum =122771768
+Begin Form
+    TabularFamily =0
+    GridX =5
+    GridY =5
+    Width =9070
+    ItemSuffix =46
+    Left =720
+    Top =750
+    Right =10080
+    Bottom =8640
+    RecSrcDt = Begin
+        0xd5300742b687e140
+    End
+    RecordSource ="ABF5 Recoating Anoden"
+    Caption ="Recoating Anoden"
+    PrtMip = Begin
+        0x890500008905000089050000890500000000000017260000f000000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a657420344c000000000000000000000000000000000000 ,
+        0x0a0306004400d300030700000100090000000000000001000100fcff00000100 ,
+        0x000000002000000080c993f00300000002000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000001a00330300000100040000ff000200000001000001002c010000 ,
+        0x020100000400000000000000000e000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000002000464f4e545306000c53 ,
+        0x00000000
+    End
+    PrtDevNames = Begin
+        0x170008001f0001404850204c617365724a657420344c00485050434c3545004c ,
+        0x5054313a00000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextFontFamily =0
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            TextFontFamily =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            TextFontFamily =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            TextFontFamily =0
+            Width =1701
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =1475
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =1
+                    Top =113
+                    Width =2496
+                    Height =360
+                    FontSize =14
+                    ForeColor =16777215
+                    Name ="Text7"
+                    Caption ="Recoating Anode"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3288
+                    Top =1247
+                    Width =912
+                    Height =228
+                    Name ="Text12"
+                    Caption ="Anode No"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5102
+                    Top =1247
+                    Width =792
+                    Height =228
+                    Name ="Text20"
+                    Caption ="DOL"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =2721
+                    Top =113
+                    Width =1491
+                    Height =456
+                    Name ="Schaltfläche27"
+                    Caption ="Menue"
+                    OnClick ="Hauptmenue"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7370
+                    Top =793
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    TabIndex =1
+                    BackColor =12632256
+                    Name ="Feld28"
+                    ControlSource ="=Date()"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =4422
+                    Top =113
+                    Width =1596
+                    Height =456
+                    TabIndex =2
+                    Name ="Schaltfläche23"
+                    Caption ="Search"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    SpecialEffect =2
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =340
+                    Top =680
+                    Width =5668
+                    Height =442
+                    FontSize =14
+                    FontWeight =600
+                    ForeColor =255
+                    Name ="Text21"
+                    Caption ="DOL  > 6  years  (2160 days)"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =907
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =113
+                    Width =3168
+                    Height =456
+                    FontSize =14
+                    FontWeight =600
+                    Name ="Text22"
+                    Caption ="Recoating Anode"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3174
+                    Top =680
+                    Width =1140
+                    Height =216
+                    Name ="Text25"
+                    Caption ="Anode No"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5101
+                    Top =680
+                    Width =912
+                    Height =216
+                    Name ="Text29"
+                    Caption ="DOL"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7370
+                    Top =226
+                    Width =1142
+                    Height =347
+                    FontSize =10
+                    BackColor =12632256
+                    Name ="Feld32"
+                    ControlSource ="=Date()"
+                End
+            End
+        End
+        Begin Section
+            Height =240
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3287
+                    Width =912
+                    Height =228
+                    ColumnWidth =1185
+                    Name ="Anoden Nr"
+                    ControlSource ="Anoden Nr"
+                    EventProcPrefix ="Anoden_Nr"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5084
+                    Width =792
+                    ColumnWidth =1635
+                    TabIndex =1
+                    Name ="Summe von DOL"
+                    ControlSource ="Summe von DOL"
+                    EventProcPrefix ="Summe_von_DOL"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7029
+                    Top =113
+                    Name ="Feld35"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+                Begin Label
+                    SpecialEffect =2
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1133
+                    Top =113
+                    Width =5104
+                    Height =454
+                    FontSize =14
+                    FontWeight =600
+                    Name ="Text37"
+                    Caption ="DOL  > 6  years  (2160 days)"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Schaltfläche23_Click()
+    DoCmd.OpenForm "Suchübersicht"
+    DoCmd.Close acForm, "Recoating Anoden"
+End Sub

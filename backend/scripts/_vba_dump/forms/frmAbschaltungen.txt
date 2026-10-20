@@ -1,0 +1,885 @@
+Version =19
+VersionRequired =19
+Checksum =58839672
+Begin Form
+    FilterOn = NotDefault
+    OrderByOn = NotDefault
+    GridX =5
+    GridY =5
+    Width =18708
+    ItemSuffix =136
+    Right =18390
+    Bottom =8775
+    Filter ="((([tblAbschaltungen].[Anlagenteil]=\"Total\"))) AND (Year([tblAbschaltungen].[A"
+        "bschaltzeitpunkt])=(Year(Date())-1))"
+    OrderBy ="[tblAbschaltungen].[Nr]"
+    RecSrcDt = Begin
+        0x4657fc99a192e240
+    End
+    RecordSource ="tblAbschaltungen"
+    Caption ="Abschaltungen"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x890500008905000089050000890500000000000014490000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x010400069c00841d43ff800701000900ea0a6f08640001000700580202000100 ,
+        0x5802030000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000012010000ffffffff0000000000000000000000000000000044494e55 ,
+        0x220060079c09e8134613f4b00000000000000000000000000000000000000000 ,
+        0x00000000000000003f0000000100000000000000000000000000000000000000 ,
+        0x0000000000000100000000000000000000000000000002000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000010001000100010001000100010000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000000000000000000060070000534d544a ,
+        0x00000000100050074800500020004c0061007300650072004a00650074002000 ,
+        0x4d00350030003300350020004d00460050002000500043004c00200036000000 ,
+        0x496e70757442696e005072696e74657253656c65637400524553444c4c00556e ,
+        0x69726573444c4c00455350524954537570706f72746564005472756500485044 ,
+        0x6f6355495355490054727565005265736f6c7574696f6e003630306470690046 ,
+        0x6173745265730046616c7365004f7269656e746174696f6e00504f5254524149 ,
+        0x540048504f7269656e74526f746174653138300046616c7365004475706c6578 ,
+        0x004e4f4e4500506170657253697a65004c45545445520045646765546f456467 ,
+        0x650046616c7365004850506170657253697a65414c4d436f6e73747261696e74 ,
+        0x73004558454355544956455f4a495300416c7465726e6174654c657474657248 ,
+        0x6561640046616c73650052455443686f69636500547275650048505061706572 ,
+        0x53697a654475706c6578436f6e73747261696e74730053544154454d454e5400 ,
+        0x4d6564696154797065004175746f0045636f6e6f6d6f64650046616c73650054 ,
+        0x6578744173426c61636b0046616c736500545441734269746d61707353657474 ,
+        0x696e670054544d6f64654f75746c696e65004850584d4c46696c655573656400 ,
+        0x68706335303335362e786d6c004850456e61626c6552415753706f6f6c696e67 ,
+        0x0054727565005072696e745175616c69747947726f757000505147726f75705f ,
+        0x3300485050434c36506173735468726f756768005472756500436f6c6c617465 ,
+        0x004f4646004f757470757442696e004175746f00537461706c696e67004e6f6e ,
+        0x65004850446f6350726f705265736f757263654461746100687063686c366465 ,
+        0x2e636162004850436f6c6f724d6f6465004d4f4e4f4348524f4d455f4d4f4445 ,
+        0x00485050444c547970650050444c5f50434c36004850504a4c456e636f64696e ,
+        0x6700555446380048504a6f624163636f756e74696e670048504a4f4241434354 ,
+        0x5f4a4f4241434e54004850426f726e4f6e44617465004850424f440048504a6f ,
+        0x6242794a6f624f76657272696465004a424a4f004a52436f6e73747261696e74 ,
+        0x73004a524348445061727469616c0048504e5573654469666646697273745061 ,
+        0x676543686f696365005452554500485050616765457863657074696f6e734669 ,
+        0x6c6500485043504536646500485050616765457863657074696f6e73496e7465 ,
+        0x72666163650053686f7750616765457863657074696f6e730048505061676545 ,
+        0x7863657074696f6e7300436f766572496e73657274696f6e004a524844496e73 ,
+        0x74616c6c6564004a5248444f6666004850536d6172744475706c657853696e67 ,
+        0x6c65506167654a6f620054727565004850536d6172744475706c65784f646450 ,
+        0x6167654a6f6200547275650048504d616e75616c4475706c65784469616c6f67 ,
+        0x4974656d7300496e737472756374696f6e49445f30315f46414345444f574e2d ,
+        0x4e4f524f544154450048504d616e75616c466565644f7269656e746174696f6e ,
+        0x0046414345444f574e0048504f757470757442696e4f7269656e746174696f6e ,
+        0x0046414345444f574e0048504d616e75616c4475706c6578506167654f726465 ,
+        0x72004576656e506167657346697273740048504d61704d616e75616c46656564 ,
+        0x546f54726179310046616c73650048505072696e744f6e426f74685369646573 ,
+        0x4d616e75616c6c790046616c73650048504475706c69636174654a6f624e616d ,
+        0x654f766572726964650053574657005053416c69676e6d656e7446696c650048 ,
+        0x50434c53366465004850536d6172744875625f4f6e6c696e65646961676e6f73 ,
+        0x746963746f6f6c730054525545004850536d6172744875625f537570706f7274 ,
+        0x616e6474726f75626c6573686f6f74696e670054525545004850536d61727448 ,
+        0x75625f50726f647563746d616e75616c730054525545004850536d6172744875 ,
+        0x625f436865636b666f7264726976657275706461746573005452554500485053 ,
+        0x6d6172744875625f4f72646572737570706c6965730054525545004850536d61 ,
+        0x72744875625f53686f776d65686f77005452554500505353657276696365735f ,
+        0x446576696365616e64537570706c696573537461747573005452554500485053 ,
+        0x6d61727448756200496e65745f5349445f3236335f4249445f3237365f484944 ,
+        0x5f32363500505353657276696365734f7074696f6e0050726e537461745f5349 ,
+        0x445f3234325f4249445f3237305f4849445f3135353231004850436f6e73756d ,
+        0x6572437573746f6d506170657200547275650048504a6f62416363576f50696e ,
+        0x0054727565004850507265416e616c7973697300547275650048504d616e7561 ,
+        0x6c4475706c65784469616c6f674d6f64656c004d6f64656c6573730048504c70 ,
+        0x6953656c656374696f6e004e6f6e650000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000e813000049555048 ,
+        0x14000100789cedd93d4bc3401807f07f14445c2cd6cdc5454741e9e0cb20697a ,
+        0x5651f134a205eb20b61541add4228e3a88f815fc08fa253afa015cc5b5f809dc ,
+        0xf4b99842da9aa8e05bedff179edce5924b42933e57aed53890527ab61f1682ea ,
+        0xb782ed1672deba131dfe71a65c401e6559f22885f434c73ef614bb81e700d3bf ,
+        0x2bb4c7c7590d6598416ce00045893c36bfe0bad45af8fc89da574242fbf5da58 ,
+        0x51a954eaca20cb8f5cd39ed3e9a8eb848f9fe134d660cb489a8e3a3111d12759 ,
+        0x11f55e893ebf315837bfcf6bc7d5da83fb8312ddaf41444414256c1c2122a2df ,
+        0x61e6394c5a5ec42eb651421147120594318825290b5e7b5eb66c294ded481622 ,
+        0xa2ffc5fcaf69e640165ddb7194eb8ea88c32edd60f44e37ccb7bf32f819b8ed5 ,
+        0xaa0e269185f6b2f88eacb7b02f797b4632f89e97b7b3ef66f96cddd628c6bc3e ,
+        0xaee47e4716253517235266a0bee0f3a6ef71886379f67bf20e503b52f29d7590 ,
+        0xfceddb20a23f604edb4e6a653de5a6ed55c7d673035337331789aa3abb7b188f ,
+        0x2f4fcd3775d8bdba3f1f7e5297438f13d7b1935bad93b3b65ad16f9c9a888888 ,
+        0x888888885ac00bc92d609f000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x080012002a000100000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000505342455443544237453a5241570031005053424554 ,
+        0x43544237453a52415700
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =2154
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =7815
+                    Height =795
+                    FontSize =14
+                    Name ="Text8"
+                    Caption ="Abschaltungen"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =10771
+                    Top =226
+                    Width =1716
+                    Height =576
+                    Name ="Hauptmenue"
+                    Caption ="Shut Down"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4195
+                    Top =1705
+                    Width =1710
+                    Height =240
+                    Name ="Bezeichnungsfeld101"
+                    Caption ="Einschaltzeitpunkt"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2494
+                    Top =1705
+                    Width =1590
+                    Height =240
+                    Name ="Bezeichnungsfeld105"
+                    Caption ="Abschaltzeitpunkt"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11906
+                    Top =1705
+                    Width =6240
+                    Height =240
+                    Name ="Bezeichnungsfeld107"
+                    Caption ="Bemerkung"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8049
+                    Top =1705
+                    Width =2610
+                    Height =240
+                    Name ="Bezeichnungsfeld109"
+                    Caption ="Ursache"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =1700
+                    Width =555
+                    Height =240
+                    Name ="Bezeichnungsfeld110"
+                    Caption ="Nr."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5990
+                    Top =1700
+                    Width =1035
+                    Height =240
+                    Name ="Bezeichnungsfeld119"
+                    Caption ="Dauer [h]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10770
+                    Top =1705
+                    Width =1020
+                    Height =240
+                    Name ="Bezeichnungsfeld123"
+                    Caption ="Category"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7130
+                    Top =1700
+                    Width =810
+                    Height =240
+                    Name ="Bezeichnungsfeld127"
+                    Caption ="Code"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =780
+                    Top =1695
+                    Width =1605
+                    Height =240
+                    Name ="Label131"
+                    Caption ="Anlagenteil"
+                    GUID = Begin
+                        0x1441d055064b494887b1a10ab8d13a5c
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =113
+                    Top =1020
+                    Width =7815
+                    Height =345
+                    TabIndex =1
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                    GUID = Begin
+                        0xaa51331f04f50246adceb0715754139a
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1360
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10204
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2494
+                    Top =914
+                    Width =1605
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Abschaltzeitpunkt"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8049
+                    Top =914
+                    Width =2610
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Ursache"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Top =907
+                    Width =585
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Nr."
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11906
+                    Top =914
+                    Width =6240
+                    Height =240
+                    Name ="Bezeichnungsfeld100"
+                    Caption ="Bemerkung"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4195
+                    Top =914
+                    Width =1725
+                    Height =240
+                    Name ="Bezeichnungsfeld111"
+                    Caption ="Einschaltzeitpunkt"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6005
+                    Top =907
+                    Width =1020
+                    Height =240
+                    Name ="Bezeichnungsfeld120"
+                    Caption ="Dauer[h]"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10770
+                    Top =914
+                    Width =1020
+                    Height =240
+                    Name ="Bezeichnungsfeld124"
+                    Caption ="Category"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7130
+                    Top =907
+                    Width =825
+                    Height =240
+                    Name ="Bezeichnungsfeld128"
+                    Caption ="Code"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =780
+                    Top =900
+                    Width =1635
+                    Height =240
+                    Name ="Label132"
+                    Caption ="Anlagenteil"
+                    GUID = Begin
+                        0x257cb70ee644d74f9fa74fa94e8c5574
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Width =555
+                    Name ="Datum"
+                    ControlSource ="Nr"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4195
+                    Width =1710
+                    TabIndex =3
+                    Name ="Cc"
+                    ControlSource ="Einschaltzeitpunkt"
+                    Format ="General Date"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =11905
+                    Width =6240
+                    TabIndex =8
+                    Name ="Un"
+                    ControlSource ="Bemerkung"
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2494
+                    Width =1590
+                    TabIndex =2
+                    Name ="Text112"
+                    ControlSource ="Abschaltzeitpunkt"
+                    Format ="General Date"
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    OverlapFlags =85
+                    ColumnCount =2
+                    ListWidth =2520
+                    Left =8049
+                    Width =2616
+                    TabIndex =6
+                    BoundColumn =1
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"10\";\"300\""
+                    Name ="Kombinationsfeld118"
+                    ControlSource ="Ursache"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryAbschaltungsursachen].[ID], [qryAbschaltungsursachen].[Ab"
+                        "schaltungsursache] FROM [qryAbschaltungsursachen];"
+                    ColumnWidths ="0;2520"
+                    AfterUpdate ="[Event Procedure]"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6020
+                    Width =1005
+                    TabIndex =4
+                    Name ="Text121"
+                    ControlSource ="=([Einschaltzeitpunkt]-[Abschaltzeitpunkt])*24"
+                    Format ="Fixed"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10770
+                    Width =1014
+                    Height =226
+                    TabIndex =7
+                    Name ="Text126"
+                    ControlSource ="Kategorie"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    ListWidth =1440
+                    Left =7142
+                    Width =794
+                    Height =226
+                    TabIndex =5
+                    ColumnInfo ="\"\";\"\";\"10\";\"100\""
+                    Name ="Kombinationsfeld130"
+                    ControlSource ="Code"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryAbschaltungsursachen].[Code] FROM [qryAbschaltungsursache"
+                        "n];"
+                    ColumnWidths ="1440"
+                    AfterUpdate ="[Event Procedure]"
+                End
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =793
+                    Width =1590
+                    TabIndex =1
+                    Name ="Text133"
+                    ControlSource ="Anlagenteil"
+                    GUID = Begin
+                        0xf0ba2c38b6c0594dbafb37b97681510d
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =10204
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =1048
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+
+Private Sub Befehl115_Click()
+    DoCmd.OpenForm "frmAbschaltungsursachen"
+    DoCmd.Close acForm, "frmAbschaltungen"
+End Sub
+
+Private Sub Befehl116_Click()
+    DoCmd.OpenForm "frmAbschaltungszusammenfassung"
+    DoCmd.Close acForm, "frmAbschaltungen"
+End Sub
+
+
+Private Sub Form_Open(Cancel As Integer)
+
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Liste der Abschaltungen"
+        Bezeichnungsfeld110.Caption = "Nr."
+        Bezeichnungsfeld93.Caption = "Nr."
+        Label131.Caption = "Anlagenteil"
+        Label132.Caption = "Anlagenteil"
+        Bezeichnungsfeld105.Caption = "Abschaltzeitpunkt"
+        Bezeichnungsfeld66.Caption = "Abschaltzeitpunkt"
+        Bezeichnungsfeld101.Caption = "Einschaltzeitpunkt"
+        Bezeichnungsfeld111.Caption = "Einschaltzeitpunkt"
+        Bezeichnungsfeld119.Caption = "Dauer [h]"
+        Bezeichnungsfeld120.Caption = "Dauer [h]"
+        Bezeichnungsfeld109.Caption = "Ursache"
+        Bezeichnungsfeld68.Caption = "Ursache"
+        Bezeichnungsfeld127.Caption = "Code"
+        Bezeichnungsfeld128.Caption = "Code"
+        Bezeichnungsfeld123.Caption = "Kategorie"
+        Bezeichnungsfeld124.Caption = "Kategorie"
+        Bezeichnungsfeld107.Caption = "Bemerkung"
+        Bezeichnungsfeld100.Caption = "Bemerkung"
+        
+        Hauptmenue.Caption = "Abschaltungen"
+        
+    Else
+        Text8.Caption = "Shut Down List"
+        Bezeichnungsfeld110.Caption = "No."
+        Bezeichnungsfeld93.Caption = "No."
+        Label131.Caption = "Part of Plant"
+        Label132.Caption = "Part of Plant"
+        Bezeichnungsfeld105.Caption = "Shut Down Time"
+        Bezeichnungsfeld66.Caption = "Shut Down Time"
+        Bezeichnungsfeld101.Caption = "Start Up Time"
+        Bezeichnungsfeld111.Caption = "Start Up Time"
+        Bezeichnungsfeld119.Caption = "Duration [h]"
+        Bezeichnungsfeld120.Caption = "Duration [h]"
+        Bezeichnungsfeld127.Caption = "Code"
+        Bezeichnungsfeld128.Caption = "Code"
+        Bezeichnungsfeld109.Caption = "Reason"
+        Bezeichnungsfeld68.Caption = "Reason"
+        Bezeichnungsfeld123.Caption = "Category"
+        Bezeichnungsfeld124.Caption = "Category"
+        Bezeichnungsfeld107.Caption = "Remarks"
+        Bezeichnungsfeld100.Caption = "Remarks"
+        
+        Hauptmenue.Caption = "Shut Down"
+       
+    End If
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "frmMenuAbschaltungen"
+    DoCmd.Close acForm, "frmAbschaltungen"
+End Sub
+
+Private Sub Kombinationsfeld118_AfterUpdate()
+    UpdateCode
+    UpdateKategorie
+End Sub
+
+Private Sub Kombinationsfeld130_AfterUpdate()
+    UpdateAbschaltungsursache
+    UpdateKategorie
+End Sub
+
+Private Sub UpdateKategorie()
+    Dim GewKategorie, GewCode As Variant
+    Dim rst2 As DAO.Recordset
+    
+    Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM qryAbschaltungsursachen WHERE" & _
+    "(((qryAbschaltungsursachen.Abschaltungsursache)='" & Me!Kombinationsfeld118 & "'))  ")
+        
+    If rst2.BOF And rst2.EOF Then
+        rst2.Close
+        Exit Sub
+    End If
+    rst2.MoveFirst
+    GewKategorie = rst2!Kategorie
+    rst2.Close
+    Me!Text126 = GewKategorie
+    
+End Sub
+
+Private Sub UpdateCode()
+    Dim GewCode As Variant
+    Dim rst2 As DAO.Recordset
+    
+    Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM qryAbschaltungsursachen WHERE" & _
+    "(((qryAbschaltungsursachen.Abschaltungsursache)='" & Me!Kombinationsfeld118 & "'))  ")
+
+    If rst2.BOF And rst2.EOF Then
+        rst2.Close
+        Exit Sub
+    End If
+
+    rst2.MoveFirst
+    GewCode = rst2!Code
+    rst2.Close
+    Me!Kombinationsfeld130 = GewCode
+    
+End Sub
+
+Private Sub UpdateAbschaltungsursache()
+    Dim GewAbschaltungsursache As Variant
+    Dim rst2 As DAO.Recordset
+    
+    Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM qryAbschaltungsursachen WHERE" & _
+        "(((qryAbschaltungsursachen.Code)='" & Me!Kombinationsfeld130 & "'))  ")
+    Debug.Print Me!Kombinationsfeld130, rst2!Code, rst2!Abschaltungsursache
+    If rst2.BOF And rst2.EOF Then
+        rst2.Close
+        Exit Sub
+    End If
+    
+    rst2.MoveFirst
+    GewAbschaltungsursache = rst2!Abschaltungsursache
+    rst2.Close
+    Me!Kombinationsfeld118 = GewAbschaltungsursache
+
+End Sub
+  

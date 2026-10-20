@@ -1,0 +1,4 @@
+SELECT DISTINCTROW [Norm(Um)GR].Datum, Avg([Norm(Um)GR].i) AS [i Mittel], Avg([Norm(Um)GR].Un) AS [Un Mittel], [Norm(Um)GR].Gruppe, [Norm(Um)GR].Membrantyp, [Gruppen aktiv].[Anzahl von Element Nr], [Gruppen aktiv].[Elektroden Abstand], Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating, GetGewiRef() AS iRef
+FROM tblGewDaten, ([Norm(Um)GR] INNER JOIN [Gruppen aktiv] ON [Norm(Um)GR].Gruppe = [Gruppen aktiv].Gruppe) INNER JOIN Gruppenmerkmale ON [Gruppen aktiv].Gruppe = Gruppenmerkmale.Gruppe
+GROUP BY [Norm(Um)GR].Datum, [Norm(Um)GR].Gruppe, [Norm(Um)GR].Membrantyp, [Gruppen aktiv].[Anzahl von Element Nr], [Gruppen aktiv].[Elektroden Abstand], Gruppenmerkmale.Anodencoating, Gruppenmerkmale.Kathodencoating, GetGewiRef()
+HAVING ((([Norm(Um)GR].Gruppe)=(SELECT IDGruppeUnCeSPCGruppe FROM tblGewDaten)));

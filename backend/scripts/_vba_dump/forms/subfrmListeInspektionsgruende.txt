@@ -1,0 +1,227 @@
+Version =17
+VersionRequired =17
+Checksum =122846185
+Begin Form
+    GridX =5
+    GridY =5
+    Width =6236
+    RowHeight =240
+    ItemSuffix =36
+    Left =5040
+    Top =3180
+    Right =11550
+    Bottom =5850
+    RecSrcDt = Begin
+        0xf4dd997170b4e240
+    End
+    RecordSource ="tblListeInspektionsgruende"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextAlign =3
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin OptionButton
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin CheckBox
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin TextBox
+            SpecialEffect =2
+            LabelAlign =3
+            TextAlign =2
+            Width =798
+            Height =255
+            LabelX =-113
+        End
+        Begin ListBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =1417
+            LabelX =-236
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin FormHeader
+            Height =240
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =105
+                    Width =1155
+                    Height =240
+                    Name ="Text13"
+                    Caption ="No."
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3061
+                    Width =3075
+                    Height =240
+                    Name ="Text15"
+                    Caption ="Reasons for Inspection"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1360
+                    Width =1588
+                    Height =226
+                    Name ="Bezeichnungsfeld34"
+                    Caption ="Code"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    Left =113
+                    Width =1143
+                    ColumnWidth =825
+                    Name ="Grund Nr"
+                    ControlSource ="Grund Nr"
+                    Format ="Standard"
+                    AfterUpdate ="[Event Procedure]"
+                    OnChange ="[Event Procedure]"
+                    EventProcPrefix ="Grund_Nr"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ListWidth =2295
+                    Left =3061
+                    Width =3062
+                    Height =220
+                    TabIndex =2
+                    ColumnInfo ="\"\";\"\";\"10\";\"50\""
+                    Name ="Kombinationsfeld32"
+                    ControlSource ="Inspektionsgrund"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryInspektionsgruende].[Inspektionsgrund] FROM [qryInspektio"
+                        "nsgruende];"
+                    ColumnWidths ="2295"
+                    AfterUpdate ="[Event Procedure]"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ListWidth =2295
+                    Left =1360
+                    Width =1592
+                    Height =220
+                    TabIndex =1
+                    ColumnInfo ="\"\";\"\";\"10\";\"50\""
+                    Name ="Kombinationsfeld35"
+                    ControlSource ="Code"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryInspektionsgruende].[Code] FROM [qryInspektionsgruende];"
+                    ColumnWidths ="2296"
+                    AfterUpdate ="[Event Procedure]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    If GetIDGewSprache() = 1 Then
+        Text13.Caption = "Nr."
+        Bezeichnungsfeld34.Caption = "Code"
+        Text15.Caption = "Inspektionsgründe"
+    
+    Else
+        Text13.Caption = "No."
+        Bezeichnungsfeld34.Caption = "Code"
+        Text15.Caption = "Reasons for Inspection"
+    
+    End If
+    
+End Sub
+
+Private Sub Kombinationsfeld32_AfterUpdate()
+    Dim GewCode As Variant
+    Dim rst2 As DAO.Recordset
+    
+    Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM qryInspektionsgruende WHERE" & _
+    "(((qryInspektionsgruende.Inspektionsgrund)='" & Me!Kombinationsfeld32 & "'))  ")
+    If rst2.BOF And rst2.EOF Then
+        rst2.Close
+        Exit Sub
+    End If
+    rst2.MoveFirst
+    GewCode = rst2!Code
+    rst2.Close
+    Me!Kombinationsfeld35 = GewCode
+
+End Sub
+
+Private Sub Kombinationsfeld35_AfterUpdate()
+    Dim GewInspektionsgrund As Variant
+    Dim rst2 As DAO.Recordset
+    
+    Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM qryInspektionsgruende WHERE" & _
+    "(((qryInspektionsgruende.Code)='" & Me!Kombinationsfeld35 & "'))  ")
+        
+    If rst2.BOF And rst2.EOF Then
+        rst2.Close
+        Exit Sub
+    End If
+    rst2.MoveFirst
+    GewInspektionsgrund = rst2!Inspektionsgrund
+    rst2.Close
+    Me!Kombinationsfeld32 = GewInspektionsgrund
+    
+End Sub
+
+Private Sub Position_AfterUpdate()
+    ' Me!Position.DefaultValue = Str$(CLng(Me!Position) + 1)
+        
+End Sub
+
+Private Sub Position_Change()
+    ' Me!Position.DefaultValue = Str$(CLng(Me!Position) + 1)
+End Sub

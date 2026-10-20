@@ -1,0 +1,304 @@
+Version =17
+VersionRequired =17
+Checksum =-122846199
+Begin Form
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =14173
+    ItemSuffix =123
+    Right =14460
+    Bottom =7785
+    RecSrcDt = Begin
+        0x58f6c1f8efa4e240
+    End
+    RecordSource ="tblMembraninstandhaltung"
+    Caption ="Membraninstandhaltung"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =1380
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =5670
+                    Height =570
+                    FontSize =14
+                    ForeColor =4194304
+                    Name ="Text8"
+                    Caption ="Membrane Maintenance"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12018
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld68"
+                    ControlSource ="=Date()"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =9070
+                    Top =113
+                    Width =1716
+                    Height =576
+                    TabIndex =1
+                    Name ="Hauptmenue"
+                    Caption ="Element Administration"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3480
+                    Top =1140
+                    Width =10485
+                    Height =240
+                    Name ="Bezeichnungsfeld101"
+                    Caption ="Repair Work"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1695
+                    Top =1140
+                    Width =1650
+                    Height =240
+                    Name ="Bezeichnungsfeld105"
+                    Caption ="Membrane No."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =1140
+                    Width =1470
+                    Height =240
+                    Name ="Bezeichnungsfeld110"
+                    Caption ="Date of Repair"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1147
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12018
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1700
+                    Top =907
+                    Width =1725
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Membrane No."
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =900
+                    Width =1485
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Date of Repair"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3495
+                    Top =900
+                    Width =10455
+                    Height =240
+                    Name ="Bezeichnungsfeld111"
+                    Caption ="Repair Work"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =116
+                    Width =1470
+                    Name ="Datum"
+                    ControlSource ="Reparaturdatum"
+                    Format ="Short Date"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =3518
+                    Width =10530
+                    TabIndex =2
+                    Name ="Cc"
+                    ControlSource ="Reparatur"
+                    Format ="sd\\an\"dard\"d\"ex\"d"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1700
+                    Width =1710
+                    TabIndex =1
+                    Name ="Text112"
+                    ControlSource ="Membrannummer"
+                    Format ="d\"ex\"d"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =9637
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =1048
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Membraninstandhaltung"
+        Bezeichnungsfeld110.Caption = "Reparaturdatum"
+        Bezeichnungsfeld93.Caption = "Reparaturdatum"
+        Bezeichnungsfeld105.Caption = "Membran-Nr."
+        Bezeichnungsfeld66.Caption = "Membran-Nr."
+        Bezeichnungsfeld101.Caption = "Art der Reparatur"
+        Bezeichnungsfeld111.Caption = "Art der Reparatur"
+        
+        Hauptmenue.Caption = "Zellen-verwaltung"
+        
+    Else
+        Text8.Caption = "Membrane Maintenance"
+        Bezeichnungsfeld110.Caption = "Date of Repair"
+        Bezeichnungsfeld93.Caption = "Date of Repair"
+        Bezeichnungsfeld105.Caption = "Membrane No."
+        Bezeichnungsfeld66.Caption = "Membrane No."
+        Bezeichnungsfeld101.Caption = "Repair Work"
+        Bezeichnungsfeld111.Caption = "Repair Work"
+        
+        Hauptmenue.Caption = "Element Administration"
+        
+    End If
+
+
+
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "frmZellenverwaltung"
+    DoCmd.Close acForm, "frmMembraninstandhaltung"
+End Sub

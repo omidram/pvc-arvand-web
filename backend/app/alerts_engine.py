@@ -483,6 +483,8 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     by_sev: dict[str, dict[str, int]] = {}
     ok = warn = danger = 0
     max_v: float | None = None
+    max_el: str | None = None
+    max_pos: str | None = None
     for row in readings:
         el = (row.electrolyzer or "").strip().upper()
         if not el or row.voltage is None:
@@ -507,6 +509,8 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
             bucket["ok"] += 1
         if max_v is None or v > max_v:
             max_v = v
+            max_el = el
+            max_pos = (row.position or "").strip() or None
 
     live_loads = {
         el: item
@@ -565,6 +569,8 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         "danger_count": danger,
         "health_pct": health_pct,
         "max_voltage": round(max_v, 4) if max_v is not None else None,
+        "max_electrolyzer": max_el,
+        "max_position": max_pos,
         "avg_voltage": round(plant_total / cell_count, 4) if cell_count else None,
         "danger_limit": danger_limit,
         "cell_gauge_max": cell_gauge_max,

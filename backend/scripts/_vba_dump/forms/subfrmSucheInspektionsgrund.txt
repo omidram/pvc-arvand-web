@@ -1,0 +1,176 @@
+Version =17
+VersionRequired =17
+Checksum =122771751
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    ScrollBars =0
+    GridX =5
+    GridY =5
+    Width =6803
+    ItemSuffix =160
+    Left =525
+    Top =600
+    Right =8475
+    Bottom =3375
+    RecSrcDt = Begin
+        0x4c4c03677b99e240
+    End
+    RecordSource ="tblGewDaten"
+    Caption ="SucheInspektionsgrundCode"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0xc60100006e040000960200006e040000000000006f5a0000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a6574203420506c75732028436f70792032290000000000 ,
+        0x0004010494004000037700060200090000000000000001000901580201000100 ,
+        0x5802040000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000006010000020000000000000000000000010040004d5355444f034850 ,
+        0x204c617365724a6574203420506c75730000000000000000000000000000e401 ,
+        0x0000000000003c0100000000040064000a000000
+    End
+    PrtDevNames = Begin
+        0x080011002d00000057494e53504f4f4c004850204c617365724a657420342050 ,
+        0x6c75732028436f7079203229005c5c53686c6e61615c73686c30313900000000 ,
+        0x00000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =566
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    DisplayWhen =2
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =113
+                    Top =113
+                    Width =3285
+                    Height =345
+                    FontSize =10
+                    Name ="Text8"
+                    Caption ="Search Reason for Inspektion"
+                End
+                Begin ComboBox
+                    OverlapFlags =85
+                    ListWidth =1441
+                    Left =3514
+                    Top =113
+                    Width =3186
+                    ColumnInfo ="\"\";\"\";\"10\";\"50\""
+                    Name ="Kombinationsfeld159"
+                    ControlSource ="SucheInspektionsgrundCode"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCTROW [qryInspektionsgruende].[Code] FROM [qryInspektionsgruende];"
+                    ColumnWidths ="1440"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+        End
+        Begin Section
+            Height =0
+            BackColor =12632256
+            Name ="Detail0"
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            Begin
+                Begin PageBreak
+                    OverlapFlags =85
+                    Name ="Seitenumbruch70"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Suche Inspektionsgrund"
+    Else
+        Text8.Caption = "Search Reason for Inspection"
+        
+    End If
+End Sub

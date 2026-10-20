@@ -1,0 +1,214 @@
+Version =19
+VersionRequired =19
+Checksum =-122868170
+Begin Form
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    TabularFamily =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =4561
+    DatasheetFontHeight =10
+    ItemSuffix =12
+    Left =930
+    Top =1260
+    Right =5775
+    Bottom =3420
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x672374ee9123e340
+    End
+    RecordSource ="tblKathodeninstandhaltung"
+    Caption ="tblKathodeninstandhaltung"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Tahoma"
+        End
+        Begin TextBox
+            FELineBreak = NotDefault
+            SpecialEffect =2
+            OldBorderStyle =0
+            Width =1701
+            LabelX =-1701
+            FontName ="Tahoma"
+        End
+        Begin Section
+            Height =2174
+            BackColor =-2147483633
+            Name ="Detail"
+            GUID = Begin
+                0xa16087fb2ff1a14eac9cd2fc173bd2f1
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =113
+                    Width =2490
+                    Name ="Kathoden Nr"
+                    ControlSource ="Kathoden Nr"
+                    EventProcPrefix ="Kathoden_Nr"
+                    GUID = Begin
+                        0xa521893bcaa30c42809e9ec086166865
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =113
+                            Width =975
+                            Height =240
+                            Name ="Label1"
+                            Caption ="Kathoden Nr"
+                            GUID = Begin
+                                0x10853fd54555f14e8844fc204032e720
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =453
+                    TabIndex =1
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0x17521e7a51224f4aa14bc9ddb2583694
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =453
+                            Width =540
+                            Height =240
+                            Name ="Label3"
+                            Caption ="Datum"
+                            GUID = Begin
+                                0x472f65f8f30aac4993b98b5fdd1f557b
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =793
+                    Width =2490
+                    ColumnWidth =2610
+                    TabIndex =2
+                    Name ="Befund"
+                    ControlSource ="Befund"
+                    GUID = Begin
+                        0x8d412f4462b6044bae8b5abfd3d31c4f
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =793
+                            Width =585
+                            Height =240
+                            Name ="Label5"
+                            Caption ="Befund"
+                            GUID = Begin
+                                0x70c6c2e66fb6c044a1c2870bc960ef8e
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =1133
+                    Width =2490
+                    ColumnWidth =2610
+                    TabIndex =3
+                    Name ="Aktion"
+                    ControlSource ="Aktion"
+                    GUID = Begin
+                        0x8cc7c74b6c64284f8d09f34240061960
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =1133
+                            Width =525
+                            Height =240
+                            Name ="Label7"
+                            Caption ="Aktion"
+                            GUID = Begin
+                                0x817db3104ddcba4bb21dafba8663638d
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =1474
+                    TabIndex =4
+                    Name ="Versanddatum"
+                    ControlSource ="Versanddatum"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0xa929e89c6ed5f5439b22669ca4a41523
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =1474
+                            Width =1110
+                            Height =240
+                            Name ="Label9"
+                            Caption ="Versanddatum"
+                            GUID = Begin
+                                0x017ff5ea7ad650499b3feaad36ac95f8
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1927
+                    Top =1814
+                    TabIndex =5
+                    Name ="Rücklieferung"
+                    ControlSource ="Rücklieferung"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0x0d3fb6c3dd1d704c95270ad33ac42651
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =113
+                            Top =1814
+                            Width =1050
+                            Height =240
+                            Name ="Label11"
+                            Caption ="Rücklieferung"
+                            GUID = Begin
+                                0x3e7531bab4d6af4eb8087d796c5e7575
+                            End
+                        End
+                    End
+                End
+            End
+        End
+    End
+End

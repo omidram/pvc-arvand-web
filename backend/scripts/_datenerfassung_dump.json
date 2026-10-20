@@ -1,0 +1,776 @@
+{
+  "Datenerfassung Elektrolyseure": {
+    "rs": "NormElek",
+    "caption": "Normierung",
+    "defaultview": "0",
+    "controls": [
+      {
+        "name": "Text13",
+        "type": 100,
+        "caption": "Input Standardized Voltage Electrolyser",
+        "top": 113,
+        "left": 115
+      },
+      {
+        "name": "Befehl46",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "top": 113,
+        "left": 8503
+      },
+      {
+        "name": "Text15",
+        "type": 100,
+        "caption": "Electrolyser:",
+        "top": 226,
+        "left": 340
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "top": 226,
+        "left": 1696
+      },
+      {
+        "name": "Text17",
+        "type": 100,
+        "caption": "Date:",
+        "top": 793,
+        "left": 906
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "format": "Short Date",
+        "top": 793,
+        "left": 1697
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "top": 798,
+        "left": 113
+      },
+      {
+        "name": "Text19",
+        "type": 100,
+        "caption": "Time:",
+        "top": 1245,
+        "left": 1019
+      },
+      {
+        "name": "Zeit",
+        "type": 109,
+        "controlsource": "Zeit",
+        "format": "Short Time",
+        "top": 1245,
+        "left": 1697
+      },
+      {
+        "name": "Text21",
+        "type": 100,
+        "caption": "I Total:",
+        "top": 1927,
+        "left": 680
+      },
+      {
+        "name": "I Gesamt",
+        "type": 109,
+        "controlsource": "I Gesamt",
+        "format": "Standard",
+        "top": 1927,
+        "left": 1697
+      },
+      {
+        "name": "Bezeichnungsfeld47",
+        "type": 100,
+        "caption": "[kA]",
+        "top": 1927,
+        "left": 2834
+      },
+      {
+        "name": "Text23",
+        "type": 100,
+        "caption": "Cc:",
+        "top": 2379,
+        "left": 1132
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "format": "Standard",
+        "top": 2379,
+        "left": 1697
+      },
+      {
+        "name": "Bezeichnungsfeld48",
+        "type": 100,
+        "caption": "[% w/w]",
+        "top": 2385,
+        "left": 2835
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "format": "Standard",
+        "top": 2834,
+        "left": 1698
+      },
+      {
+        "name": "Bezeichnungsfeld49",
+        "type": 100,
+        "caption": "[°C]",
+        "top": 2834,
+        "left": 2834
+      },
+      {
+        "name": "Bezeichnungsfeld55",
+        "type": 100,
+        "caption": "(aus Katholyttemperatur berechnet)",
+        "top": 2834,
+        "left": 3514
+      },
+      {
+        "name": "Text25",
+        "type": 100,
+        "caption": "t An:",
+        "top": 2835,
+        "left": 1020
+      },
+      {
+        "name": "Text27",
+        "type": 100,
+        "caption": "t Ka:",
+        "top": 3288,
+        "left": 1027
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "format": "Standard",
+        "top": 3288,
+        "left": 1698
+      },
+      {
+        "name": "Bezeichnungsfeld50",
+        "type": 100,
+        "caption": "[°C]",
+        "top": 3288,
+        "left": 2834
+      },
+      {
+        "name": "Text40",
+        "type": 100,
+        "caption": "U Total:",
+        "top": 3741,
+        "left": 453
+      },
+      {
+        "name": "Feld39",
+        "type": 109,
+        "controlsource": "U Gesamt",
+        "format": "Standard",
+        "top": 3741,
+        "left": 1693
+      },
+      {
+        "name": "Bezeichnungsfeld51",
+        "type": 100,
+        "caption": "[V]",
+        "top": 3741,
+        "left": 2834
+      },
+      {
+        "name": "Bezeichnungsfeld52",
+        "type": 100,
+        "caption": "[/]",
+        "top": 4194,
+        "left": 2834
+      },
+      {
+        "name": "Feld43",
+        "type": 109,
+        "controlsource": "Elementzahl",
+        "format": "Standard",
+        "top": 4195,
+        "left": 1700
+      },
+      {
+        "name": "Text44",
+        "type": 100,
+        "caption": "No. of Elements:",
+        "top": 4200,
+        "left": 0
+      }
+    ]
+  },
+  "Datenerfassung Elemente": {
+    "rs": "Normierung",
+    "caption": "Normierung",
+    "defaultview": "0",
+    "controls": [
+      {
+        "name": "Text13",
+        "type": 100,
+        "caption": "Input Standardized Voltage Elements",
+        "top": 113,
+        "left": 340
+      },
+      {
+        "name": "subfrmSpannung",
+        "type": 112,
+        "sourceobject": "subfrmSpannung",
+        "linkchildfields": "Normierung",
+        "linkmasterfields": "Normierung",
+        "top": 113,
+        "left": 6236
+      },
+      {
+        "name": "Schaltfläche39",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "top": 113,
+        "left": 7483
+      },
+      {
+        "name": "Befehl42",
+        "type": 104,
+        "caption": "Read Data from File",
+        "top": 113,
+        "left": 9411
+      },
+      {
+        "name": "Text15",
+        "type": 100,
+        "caption": "Electrolyser:",
+        "top": 226,
+        "left": 340
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "top": 226,
+        "left": 1696
+      },
+      {
+        "name": "Text17",
+        "type": 100,
+        "caption": "Date:",
+        "top": 793,
+        "left": 906
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "format": "Short Date",
+        "top": 793,
+        "left": 1697
+      },
+      {
+        "name": "Text19",
+        "type": 100,
+        "caption": "Time:",
+        "top": 1245,
+        "left": 1019
+      },
+      {
+        "name": "Zeit",
+        "type": 109,
+        "controlsource": "Zeit",
+        "format": "Long Time",
+        "top": 1245,
+        "left": 1697
+      },
+      {
+        "name": "Text21",
+        "type": 100,
+        "caption": "I Gesamt:",
+        "top": 1927,
+        "left": 680
+      },
+      {
+        "name": "I Gesamt",
+        "type": 109,
+        "controlsource": "I Gesamt",
+        "format": "Standard",
+        "top": 1927,
+        "left": 1697
+      },
+      {
+        "name": "Text23",
+        "type": 100,
+        "caption": "Cc:",
+        "top": 2379,
+        "left": 1132
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "format": "Standard",
+        "top": 2379,
+        "left": 1697
+      },
+      {
+        "name": "Text25",
+        "type": 100,
+        "caption": "t An",
+        "top": 2834,
+        "left": 1020
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "format": "Standard",
+        "top": 2834,
+        "left": 1698
+      },
+      {
+        "name": "Bezeichnungsfeld55",
+        "type": 100,
+        "caption": "(Aus Katholyttemperatur berechnet)",
+        "top": 2834,
+        "left": 2721
+      },
+      {
+        "name": "Text27",
+        "type": 100,
+        "caption": "t Ka:",
+        "top": 3288,
+        "left": 1020
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "format": "Standard",
+        "top": 3288,
+        "left": 1698
+      },
+      {
+        "name": "Bezeichnungsfeld41",
+        "type": 100,
+        "caption": "Ui: Element voltage including back to back voltage",
+        "top": 5555,
+        "left": 6009
+      },
+      {
+        "name": "Bezeichnungsfeld43",
+        "type": 100,
+        "caption": "Um: Calculated average element voltage",
+        "top": 5896,
+        "left": 6009
+      }
+    ]
+  },
+  "frmEingabeUnElement": {
+    "rs": "tblEingabeUnElement",
+    "caption": "Normierung",
+    "defaultview": "0",
+    "controls": [
+      {
+        "name": "Text13",
+        "type": 100,
+        "caption": "Input Standardized Voltage Single Element",
+        "top": 113,
+        "left": 115
+      },
+      {
+        "name": "Befehl46",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "top": 113,
+        "left": 8503
+      },
+      {
+        "name": "Text15",
+        "type": 100,
+        "caption": "Electrolyzer:",
+        "top": 226,
+        "left": 340
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "top": 226,
+        "left": 1696
+      },
+      {
+        "name": "Feld43",
+        "type": 109,
+        "controlsource": "Position",
+        "format": "Standard",
+        "top": 680,
+        "left": 1700
+      },
+      {
+        "name": "Text44",
+        "type": 100,
+        "caption": "Position:",
+        "top": 685,
+        "left": 345
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "top": 798,
+        "left": 113
+      },
+      {
+        "name": "Text17",
+        "type": 100,
+        "caption": "Date:",
+        "top": 1133,
+        "left": 906
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "format": "Short Date",
+        "top": 1133,
+        "left": 1697
+      },
+      {
+        "name": "Text19",
+        "type": 100,
+        "caption": "Time:",
+        "top": 1585,
+        "left": 1019
+      },
+      {
+        "name": "Zeit",
+        "type": 109,
+        "controlsource": "Zeit",
+        "format": "Short Time",
+        "top": 1585,
+        "left": 1697
+      },
+      {
+        "name": "Text21",
+        "type": 100,
+        "caption": "I Total:",
+        "top": 2267,
+        "left": 680
+      },
+      {
+        "name": "I Gesamt",
+        "type": 109,
+        "controlsource": "I Gesamt",
+        "format": "Standard",
+        "top": 2267,
+        "left": 1697
+      },
+      {
+        "name": "Bezeichnungsfeld47",
+        "type": 100,
+        "caption": "[kA]",
+        "top": 2267,
+        "left": 2834
+      },
+      {
+        "name": "Text23",
+        "type": 100,
+        "caption": "NaOH:",
+        "top": 2719,
+        "left": 697
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "format": "Standard",
+        "top": 2719,
+        "left": 1697
+      },
+      {
+        "name": "Bezeichnungsfeld48",
+        "type": 100,
+        "caption": "[% w/w]",
+        "top": 2725,
+        "left": 2835
+      },
+      {
+        "name": "Text25",
+        "type": 100,
+        "caption": "t An:",
+        "top": 3174,
+        "left": 1020
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "format": "Standard",
+        "top": 3174,
+        "left": 1698
+      },
+      {
+        "name": "Bezeichnungsfeld49",
+        "type": 100,
+        "caption": "[°C]",
+        "top": 3174,
+        "left": 2834
+      },
+      {
+        "name": "Text27",
+        "type": 100,
+        "caption": "t Ka:",
+        "top": 3628,
+        "left": 1020
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "format": "Standard",
+        "top": 3628,
+        "left": 1698
+      },
+      {
+        "name": "Bezeichnungsfeld50",
+        "type": 100,
+        "caption": "[°C]",
+        "top": 3628,
+        "left": 2834
+      },
+      {
+        "name": "Text40",
+        "type": 100,
+        "caption": "U:",
+        "top": 4081,
+        "left": 1023
+      },
+      {
+        "name": "Feld39",
+        "type": 109,
+        "controlsource": "U",
+        "format": "Standard",
+        "top": 4081,
+        "left": 1693
+      },
+      {
+        "name": "Bezeichnungsfeld51",
+        "type": 100,
+        "caption": "[V]",
+        "top": 4081,
+        "left": 2834
+      }
+    ]
+  },
+  "frmEingabeUnGruppe": {
+    "rs": "tblEingabeUnGruppe",
+    "caption": "frmEingabeGruppen",
+    "defaultview": "0",
+    "controls": [
+      {
+        "name": "Text13",
+        "type": 100,
+        "caption": "Input Standardized Voltage Group",
+        "top": 113,
+        "left": 115
+      },
+      {
+        "name": "Befehl46",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "top": 113,
+        "left": 8503
+      },
+      {
+        "name": "Text15",
+        "type": 100,
+        "caption": "Group:",
+        "top": 226,
+        "left": 340
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Gruppe",
+        "top": 226,
+        "left": 1696
+      },
+      {
+        "name": "Text17",
+        "type": 100,
+        "caption": "Date:",
+        "top": 793,
+        "left": 906
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "format": "Short Date",
+        "top": 793,
+        "left": 1697
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "top": 798,
+        "left": 113
+      },
+      {
+        "name": "Text19",
+        "type": 100,
+        "caption": "Time:",
+        "top": 1245,
+        "left": 1019
+      },
+      {
+        "name": "Zeit",
+        "type": 109,
+        "controlsource": "Zeit",
+        "format": "Short Time",
+        "top": 1245,
+        "left": 1697
+      },
+      {
+        "name": "Text21",
+        "type": 100,
+        "caption": "I Total:",
+        "top": 1927,
+        "left": 680
+      },
+      {
+        "name": "I Gesamt",
+        "type": 109,
+        "controlsource": "I Gesamt",
+        "format": "Standard",
+        "top": 1927,
+        "left": 1697
+      },
+      {
+        "name": "Bezeichnungsfeld47",
+        "type": 100,
+        "caption": "[kA]",
+        "top": 1927,
+        "left": 2834
+      },
+      {
+        "name": "Text23",
+        "type": 100,
+        "caption": "Cc:",
+        "top": 2379,
+        "left": 697
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "format": "Standard",
+        "top": 2379,
+        "left": 1697
+      },
+      {
+        "name": "Bezeichnungsfeld48",
+        "type": 100,
+        "caption": "[% w/w]",
+        "top": 2385,
+        "left": 2835
+      },
+      {
+        "name": "Text25",
+        "type": 100,
+        "caption": "t An:",
+        "top": 2834,
+        "left": 1020
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "format": "Standard",
+        "top": 2834,
+        "left": 1698
+      },
+      {
+        "name": "Bezeichnungsfeld49",
+        "type": 100,
+        "caption": "[°C]",
+        "top": 2834,
+        "left": 2834
+      },
+      {
+        "name": "Text27",
+        "type": 100,
+        "caption": "t Ka:",
+        "top": 3288,
+        "left": 1020
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "format": "Standard",
+        "top": 3288,
+        "left": 1698
+      },
+      {
+        "name": "Bezeichnungsfeld50",
+        "type": 100,
+        "caption": "[°C]",
+        "top": 3288,
+        "left": 2834
+      },
+      {
+        "name": "Text40",
+        "type": 100,
+        "caption": "U Total:",
+        "top": 3741,
+        "left": 453
+      },
+      {
+        "name": "Feld39",
+        "type": 109,
+        "controlsource": "U Gesamt",
+        "format": "Standard",
+        "top": 3741,
+        "left": 1693
+      },
+      {
+        "name": "Bezeichnungsfeld51",
+        "type": 100,
+        "caption": "[V]",
+        "top": 3741,
+        "left": 2834
+      },
+      {
+        "name": "Bezeichnungsfeld52",
+        "type": 100,
+        "caption": "[/]",
+        "top": 4194,
+        "left": 2834
+      },
+      {
+        "name": "Feld43",
+        "type": 109,
+        "controlsource": "n",
+        "format": "Standard",
+        "top": 4195,
+        "left": 1700
+      },
+      {
+        "name": "Text44",
+        "type": 100,
+        "caption": "No. of Elements:",
+        "top": 4200,
+        "left": 0
+      }
+    ]
+  }
+}

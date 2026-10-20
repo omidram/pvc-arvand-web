@@ -1,0 +1,3 @@
+SELECT NormElek.Elektrolyseur, NormElek.Datum, NormElek.Zeit, NormElek.[I Gesamt], [I Gesamt]/GetGewFlaeche() AS i, NormElek.Cc, NormElek.[t An], NormElek.[t Ka], ([t An]+[t Ka])/2 AS tm, NormElek.Uo, [NormElek]![U Gesamt]/[NormElek]![Elementzahl] AS Um, UnBer([Um],[i],[tm],[Cc]) AS Un, GetGewiRef() AS iRef, GetGewtKorrektur() AS tKorr, GetGewcKorrektur() AS cKorr
+FROM NormElek, tblGewDaten
+WHERE (((NormElek.Datum)>[tblGewDaten].[Anfangsdatum] And (NormElek.Datum)<[tblGewDaten].[Enddatum]) AND ((NormElek.[I Gesamt]) Is Not Null) AND ((NormElek.Cc) Is Not Null) AND ((NormElek.[t An]) Is Not Null) AND ((NormElek.[t Ka]) Is Not Null));

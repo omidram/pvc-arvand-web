@@ -1,0 +1,903 @@
+CodeBehindForm
+
+Attribute VB_GlobalNameSpace = False
+
+Attribute VB_Creatable = True
+
+Attribute VB_PredeclaredId = True
+
+Attribute VB_Exposed = False
+
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+
+Private Sub Schaltfläche104_Click()
+
+On Error GoTo Err_Schaltfläche104_Click
+
+
+
+    Dim DocName As String
+
+    Dim LinkCriteria As String
+
+
+
+    DocName = "DiaGesamtElek"
+
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+
+
+Exit_Schaltfläche104_Click:
+
+    Exit Sub
+
+
+
+Err_Schaltfläche104_Click:
+
+    MsgBox Error$
+
+    Resume Exit_Schaltfläche104_Click
+
+    
+
+End Sub
+
+
+
+Private Sub Befehl169_Click()
+
+    KorrekturfaktorenAktualisieren
+
+    If (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 1) And (Me!Rahmen306.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnElement"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 1) And (Me!Rahmen306.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnElement"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 3) And (Me!Rahmen306.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnMehrereElemente"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 3) And (Me!Rahmen306.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnMehrereElemente"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 2) And (Me!Rahmen306.Value = 1) Then
+
+        If GetIDGewSprache() = 1 Then
+
+            MsgBox "Darstellung in Diagramm nicht möglich", vbInformation, "Hinweis"
+
+        Else
+
+            MsgBox "Presentation of results in chart not possible", vbInformation, "Remark"
+
+        End If
+
+    ElseIf (Me!Rahmen294.Value = 1) And (Me!Rahmen300.Value = 2) And (Me!Rahmen306.Value = 2) Then
+
+        DoCmd.OpenForm "Gesamt Normierung"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 1) And (Me!Rahmen306.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnElement2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 1) And (Me!Rahmen306.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnElement2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 3) And (Me!Rahmen306.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnMehrereElemente2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 3) And (Me!Rahmen306.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnMehrereElemente2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 2) And (Me!Rahmen306.Value = 1) Then
+
+        If GetIDGewSprache() = 1 Then
+
+            MsgBox "Darstellung in Diagramm nicht möglich", vbInformation, "Hinweis"
+
+        Else
+
+            MsgBox "Presentation of results in chart not possible", vbInformation, "Remark"
+
+        End If
+
+    ElseIf (Me!Rahmen294.Value = 2) And (Me!Rahmen300.Value = 2) And (Me!Rahmen306.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnAlleElemente2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    
+
+    End If
+
+End Sub
+
+
+
+Private Sub Befehl197_Click()
+
+    DoCmd.OpenForm "frmEingabeUnGruppe"
+
+    DoCmd.Close acForm, "Betriebsdaten"
+
+End Sub
+
+
+
+Private Sub Befehl198_Click()
+
+    DoCmd.OpenForm "frmEingabeUnElement"
+
+    DoCmd.Close acForm, "Betriebsdaten"
+
+End Sub
+
+
+
+Private Sub Befehl254_Click()
+
+    KorrekturfaktorenAktualisieren
+
+    If (Me!Rahmen236.Value = 1) And (Me!Rahmen242.Value = 1) And (Me!Rahmen248.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnTeilanlage"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen236.Value = 1) And (Me!Rahmen242.Value = 1) And (Me!Rahmen248.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnTeilanlage"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen236.Value = 1) And (Me!Rahmen242.Value = 2) And (Me!Rahmen248.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUNAlleTeilanlagen"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen236.Value = 1) And (Me!Rahmen242.Value = 2) And (Me!Rahmen248.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnAlleTeilanlagen"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen236.Value = 2) And (Me!Rahmen242.Value = 1) And (Me!Rahmen248.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnTeilanlage2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen236.Value = 2) And (Me!Rahmen242.Value = 1) And (Me!Rahmen248.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnTeilanlage2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen236.Value = 2) And (Me!Rahmen242.Value = 2) And (Me!Rahmen248.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnAlleTeilanlagen2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen236.Value = 2) And (Me!Rahmen242.Value = 2) And (Me!Rahmen248.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnAlleTeilanlagen2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+
+
+    End If
+
+
+
+End Sub
+
+
+
+Private Sub Befehl274_Click()
+
+    KorrekturfaktorenAktualisieren
+
+    If (Me!Rahmen256.Value = 1) And (Me!Rahmen268.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnGesamtanlage"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen256.Value = 1) And (Me!Rahmen268.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnGesamtanlage"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen256.Value = 2) And (Me!Rahmen268.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnGesamtanlage2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen256.Value = 2) And (Me!Rahmen268.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnGesamtanlage2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    End If
+
+End Sub
+
+
+
+Private Sub Form_Open(Cancel As Integer)
+
+    If GetIDGewSprache() = 1 Then
+
+        Bezeichnungsfeld175.Caption = "Normierte Spannung"
+
+        
+
+        Bezeichnungsfeld193.Caption = "Gesamtanlage"
+
+        Bezeichnungsfeld257.Caption = "Verwendete Tabelle"
+
+        Bezeichnungsfeld259.Caption = "Elektrolyseure"
+
+        Bezeichnungsfeld261.Caption = "Alle Elemente pro Elektrol."
+
+        Bezeichnungsfeld269.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld271.Caption = "Diagramm"
+
+        Bezeichnungsfeld273.Caption = "Tabelle"
+
+        Befehl274.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Bezeichnungsfeld195.Caption = "Teilanlage"
+
+        Bezeichnungsfeld237.Caption = "Verwendete Tabelle"
+
+        Bezeichnungsfeld239.Caption = "Elektrolyseure"
+
+        Bezeichnungsfeld241.Caption = "Alle Elemente pro Elektrol."
+
+        Bezeichnungsfeld243.Caption = "Berechnung für"
+
+        Bezeichnungsfeld245.Caption = "Einzelne Teilanlage"
+
+        Bezeichnungsfeld247.Caption = "Alle Teilanlagen"
+
+        Bezeichnungsfeld249.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld251.Caption = "Diagramm"
+
+        Bezeichnungsfeld253.Caption = "Tabelle"
+
+        Schaltfläche98.Caption = "Ergebnisse anzeigen"
+
+        
+
+        
+
+        Befehl254.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Text84.Caption = "Elektrolyseure"
+
+        Bezeichnungsfeld214.Caption = "Verwendete Tabelle"
+
+        Bezeichnungsfeld217.Caption = "Elektrolyseure"
+
+        Bezeichnungsfeld219.Caption = "Alle Elemente pro Elektrol."
+
+        Bezeichnungsfeld228.Caption = "Berechnung für"
+
+        Bezeichnungsfeld231.Caption = "Einzel-Elektrolyseur"
+
+        Bezeichnungsfeld322.Caption = "Mehrere Elektrolyseure"
+
+        Bezeichnungsfeld233.Caption = "Alle Elektrolyseure"
+
+        Bezeichnungsfeld221.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld224.Caption = "Diagramm"
+
+        Bezeichnungsfeld226.Caption = "Tabelle"
+
+        Schaltfläche98.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Bezeichnungsfeld111.Caption = "Gruppen"
+
+        Bezeichnungsfeld276.Caption = "Verwendete Tabelle"
+
+        Bezeichnungsfeld278.Caption = "Alle Elemente pro Elektrol."
+
+        Bezeichnungsfeld280.Caption = "Gruppen"
+
+        Bezeichnungsfeld282.Caption = "Berechnung für"
+
+        Bezeichnungsfeld284.Caption = "Einzelne Gruppe"
+
+        Bezeichnungsfeld336.Caption = "Mehrere Gruppen"
+
+        Bezeichnungsfeld286.Caption = "Alle Gruppen"
+
+        Bezeichnungsfeld288.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld290.Caption = "Diagramm"
+
+        Bezeichnungsfeld292.Caption = "Tabelle"
+
+        Befehl129.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Bezeichnungsfeld115.Caption = "Elemente"
+
+        Bezeichnungsfeld295.Caption = "Verwendete Tabelle"
+
+        Bezeichnungsfeld297.Caption = "Alle Elemente pro Elektrol."
+
+        Bezeichnungsfeld299.Caption = "Einzelne Elemente"
+
+        Bezeichnungsfeld301.Caption = "Berechnung für"
+
+        Bezeichnungsfeld303.Caption = "Individuelles Element"
+
+        Bezeichnungsfeld332.Caption = "Mehrere Elemente"
+
+        Bezeichnungsfeld305.Caption = "Alle Elemente"
+
+        Bezeichnungsfeld307.Caption = "Ergebnisse als"
+
+        Bezeichnungsfeld309.Caption = "Diagramm"
+
+        Bezeichnungsfeld311.Caption = "Tabelle"
+
+        Befehl169.Caption = "Ergebnisse anzeigen"
+
+        
+
+        Befehl112.Caption = "Gruppe nach El. und Dat."
+
+        
+
+        Bezeichnungsfeld192.Caption = "Dateneingabe"
+
+        Schaltfläche72.Caption = "Elektrolyseure"
+
+        Schaltfläche85.Caption = "Alle Elemente"
+
+        Befehl197.Caption = "Gruppen"
+
+        Befehl198.Caption = "Einzelne Elemente"
+
+        
+
+        Schaltfläche29.Caption = "Hauptmenu"
+
+        
+
+    Else
+
+        Bezeichnungsfeld175.Caption = "Standardized Voltage"
+
+        
+
+        Bezeichnungsfeld193.Caption = "Total Plant"
+
+        Bezeichnungsfeld257.Caption = "Used Table"
+
+        Bezeichnungsfeld259.Caption = "Electrolyzers"
+
+        Bezeichnungsfeld261.Caption = "All Elements per Electrol."
+
+        Bezeichnungsfeld269.Caption = "Results as"
+
+        Bezeichnungsfeld271.Caption = "Chart"
+
+        Bezeichnungsfeld273.Caption = "Table"
+
+        Befehl274.Caption = "Display Results"
+
+        
+
+        Bezeichnungsfeld195.Caption = "Train"
+
+        Bezeichnungsfeld237.Caption = "Used Table"
+
+        Bezeichnungsfeld239.Caption = "Electrolyzers"
+
+        Bezeichnungsfeld241.Caption = "All Elements per Electrol."
+
+        Bezeichnungsfeld243.Caption = "Calculation for"
+
+        Bezeichnungsfeld245.Caption = "Individual Train"
+
+        Bezeichnungsfeld247.Caption = "All Trains"
+
+        Bezeichnungsfeld249.Caption = "Results as"
+
+        Bezeichnungsfeld251.Caption = "Chart"
+
+        Bezeichnungsfeld253.Caption = "Table"
+
+        Befehl254.Caption = "Display Results"
+
+        
+
+        Text84.Caption = "Electrolyzers"
+
+        Bezeichnungsfeld214.Caption = "Used Table"
+
+        Bezeichnungsfeld217.Caption = "Electrolyzers"
+
+        Bezeichnungsfeld219.Caption = "All Elements per Electrol."
+
+        Bezeichnungsfeld228.Caption = "Calculation for"
+
+        Bezeichnungsfeld231.Caption = "Individual Electrolyzer"
+
+        Bezeichnungsfeld322.Caption = "Several Electrolyzers"
+
+        Bezeichnungsfeld233.Caption = "All Electrolysers"
+
+        Bezeichnungsfeld221.Caption = "Results as"
+
+        Bezeichnungsfeld224.Caption = "Chart"
+
+        Bezeichnungsfeld226.Caption = "Table"
+
+        Schaltfläche98.Caption = "Display results"
+
+        
+
+        Bezeichnungsfeld111.Caption = "Groups"
+
+        Bezeichnungsfeld276.Caption = "Used Table"
+
+        Bezeichnungsfeld278.Caption = "All Elements per Electrol."
+
+        Bezeichnungsfeld280.Caption = "Groups"
+
+        Bezeichnungsfeld282.Caption = "Calculation for"
+
+        Bezeichnungsfeld284.Caption = "Individual Group"
+
+        Bezeichnungsfeld336.Caption = "Several Groups"
+
+        Bezeichnungsfeld286.Caption = "All Groups"
+
+        Bezeichnungsfeld288.Caption = "Results as"
+
+        Bezeichnungsfeld290.Caption = "Chart"
+
+        Bezeichnungsfeld292.Caption = "Table"
+
+        Befehl129.Caption = "Display Results"
+
+        
+
+        Bezeichnungsfeld115.Caption = "Elements"
+
+        Bezeichnungsfeld295.Caption = "Used Table"
+
+        Bezeichnungsfeld297.Caption = "All Elements per Electrol."
+
+        Bezeichnungsfeld299.Caption = "Individual Element"
+
+        Bezeichnungsfeld301.Caption = "Calculation for"
+
+        Bezeichnungsfeld303.Caption = "Individual Element"
+
+        Bezeichnungsfeld332.Caption = "Several Elements"
+
+        Bezeichnungsfeld305.Caption = "All Elements"
+
+        Bezeichnungsfeld307.Caption = "Results as"
+
+        Bezeichnungsfeld309.Caption = "Chart"
+
+        Bezeichnungsfeld311.Caption = "Table"
+
+        Befehl169.Caption = "Display results"
+
+        
+
+        
+
+      
+
+       
+
+        Befehl112.Caption = "Group Selected by El. and Date"
+
+        
+
+        Bezeichnungsfeld192.Caption = "Data Input"
+
+        Schaltfläche72.Caption = "Electrolyzers"
+
+        Schaltfläche85.Caption = "All Elements"
+
+        Befehl197.Caption = "Groups"
+
+        Befehl198.Caption = "Single Elements"
+
+        
+
+        Schaltfläche29.Caption = "Main Menu"
+
+    End If
+
+
+
+End Sub
+
+
+
+Private Sub Schaltfläche29_Click()
+
+On Error GoTo Err_Schaltfläche29_Click
+
+
+
+    Dim DocName As String
+
+    Dim LinkCriteria As String
+
+
+
+    DocName = "Header"
+
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+    DoCmd.Close acForm, "Betriebsdaten"
+
+
+
+Exit_Schaltfläche29_Click:
+
+    Exit Sub
+
+
+
+Err_Schaltfläche29_Click:
+
+    MsgBox Error$
+
+    Resume Exit_Schaltfläche29_Click
+
+    
+
+End Sub
+
+
+
+Private Sub Schaltfläche72_Click()
+
+On Error GoTo Err_Schaltfläche72_Click
+
+
+
+    Dim DocName As String
+
+    Dim LinkCriteria As String
+
+
+
+    DocName = "Datenerfassung Elektrolyseure"
+
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+    DoCmd.Close acForm, "Betriebsdaten"
+
+
+
+Exit_Schaltfläche72_Click:
+
+    Exit Sub
+
+
+
+Err_Schaltfläche72_Click:
+
+    MsgBox Error$
+
+    Resume Exit_Schaltfläche72_Click
+
+    
+
+End Sub
+
+
+
+Private Sub Schaltfläche85_Click()
+
+On Error GoTo Err_Schaltfläche85_Click
+
+
+
+    Dim DocName As String
+
+    Dim LinkCriteria As String
+
+
+
+    DocName = "Datenerfassung Elemente"
+
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+    DoCmd.Close acForm, "Betriebsdaten"
+
+
+
+Exit_Schaltfläche85_Click:
+
+    Exit Sub
+
+
+
+Err_Schaltfläche85_Click:
+
+    MsgBox Error$
+
+    Resume Exit_Schaltfläche85_Click
+
+    
+
+End Sub
+
+
+
+Private Sub Schaltfläche88_Click()
+
+On Error GoTo Err_Schaltfläche88_Click
+
+
+
+    Dim DocName As String
+
+    Dim LinkCriteria As String
+
+
+
+    DocName = "DiaPos"
+
+    DoCmd.OpenForm DocName, , , LinkCriteria
+
+
+
+Exit_Schaltfläche88_Click:
+
+    Exit Sub
+
+
+
+Err_Schaltfläche88_Click:
+
+    MsgBox Error$
+
+    Resume Exit_Schaltfläche88_Click
+
+    
+
+End Sub
+
+
+
+Private Sub Schaltfläche98_Click()
+
+    KorrekturfaktorenAktualisieren
+
+    If (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 1) And (Me!Rahmen220.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUn"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 1) And (Me!Rahmen220.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnElektrolyseur"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 2) And (Me!Rahmen220.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUNAlleElektrolyseure"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 2) And (Me!Rahmen220.Value = 2) Then
+
+        DoCmd.OpenForm "NormElekGes"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 3) And (Me!Rahmen220.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnMehrereElektrolyseure"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 1) And (Me!Rahmen227.Value = 3) And (Me!Rahmen220.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnElektrolyseure"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 1) And (Me!Rahmen220.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnElektrolyseur2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 1) And (Me!Rahmen220.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnElektrolyseur2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 3) And (Me!Rahmen220.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnMehrereElektrolyseure2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 3) And (Me!Rahmen220.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnMehrereElektrolyseure2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 2) And (Me!Rahmen220.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnAlleElektrolyseure2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    ElseIf (Me!Rahmen213.Value = 2) And (Me!Rahmen227.Value = 2) And (Me!Rahmen220.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnAlleElektrolyseure2"
+
+        DoCmd.Close acForm, "Betriebsdaten"
+
+    End If
+
+
+
+End Sub
+
+
+
+Private Sub Befehl113_Click()
+
+On Error GoTo Err_Befehl113_Click
+
+
+
+    Dim stDocName As String
+
+    Dim stLinkCriteria As String
+
+
+
+    stDocName = "Norm(Um)MittelDatum"
+
+    DoCmd.OpenForm stDocName, , , stLinkCriteria
+
+
+
+Exit_Befehl113_Click:
+
+    Exit Sub
+
+
+
+Err_Befehl113_Click:
+
+    MsgBox Err.Description
+
+    Resume Exit_Befehl113_Click
+
+    
+
+End Sub
+
+
+
+Private Sub Befehl129_Click()
+
+    KorrekturfaktorenAktualisieren
+
+    If (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 1) And (Me!Rahmen287.Value = 1) Then
+
+        DoCmd.OpenForm "DiaGruppe"
+
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 1) And (Me!Rahmen287.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnGruppe"
+
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 3) And (Me!Rahmen287.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUNMehrereGruppen"
+
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 3) And (Me!Rahmen287.Value = 2) Then
+
+        DoCmd.OpenForm "frmDiagrammUNMehrereGruppen"
+
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 2) And (Me!Rahmen287.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUNAlleGruppen"
+
+    ElseIf (Me!Rahmen275.Value = 1) And (Me!Rahmen281.Value = 2) And (Me!Rahmen287.Value = 2) Then
+
+        DoCmd.OpenForm "ListGrGes"
+
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 1) And (Me!Rahmen287.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnGruppe2"
+
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 1) And (Me!Rahmen287.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnGruppe2"
+
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 3) And (Me!Rahmen287.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnMehrereGruppen2"
+
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 3) And (Me!Rahmen287.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnMehrereGruppen2"
+
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 2) And (Me!Rahmen287.Value = 1) Then
+
+        DoCmd.OpenForm "frmDiagrammUnAlleGruppen2"
+
+    ElseIf (Me!Rahmen275.Value = 2) And (Me!Rahmen281.Value = 2) And (Me!Rahmen287.Value = 2) Then
+
+        DoCmd.OpenForm "frmTabelleUnAlleGruppen2"
+
+    End If
+
+    DoCmd.Close acForm, "Betriebsdaten"
+
+
+
+End Sub

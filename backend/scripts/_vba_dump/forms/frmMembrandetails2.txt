@@ -1,0 +1,620 @@
+Version =19
+VersionRequired =19
+Checksum =119539062
+Begin Form
+    AutoResize = NotDefault
+    PopUp = NotDefault
+    Modal = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    BorderStyle =1
+    PictureAlignment =5
+    PictureSizeMode =1
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =3968
+    DatasheetFontHeight =10
+    ItemSuffix =38
+    Left =9195
+    Top =4200
+    Right =12990
+    Bottom =8955
+    DatasheetGridlinesColor =12632256
+    PaintPalette = Begin
+        0x000359000000000000ccff0005cdff000aceff000fcfff0014d0ff001ad1ff00 ,
+        0x1fd2ff0024d3ff0029d4ff002ed5ff0034d6ff0039d7ff003ed8ff0043d9ff00 ,
+        0x48daff004edbff0053dcff0058ddff005ddeff0062dfff0068e0ff006de1ff00 ,
+        0x72e2ff0077e3ff007ce4ff0082e6ff0087e7ff008ce8ff0091e9ff0096eaff00 ,
+        0x9cebff00a1ecff00a6edff00abeeff00b0efff00b6f0ff00bbf1ff00c0f2ff00 ,
+        0xc5f3ff00caf4ff00cccccc00cfcfcf00d0f5ff00d1d1d100d4d4d400d5f6ff00 ,
+        0xd6d6d600d9d9d900daf7ff00dbdbdb00dedede00dff8ff00e0e0e000e3e3e300 ,
+        0xe4f9ff00e5e5e500e8e8e800eafaff00ebebeb00ededed00effbff00f0f0f000 ,
+        0xf2f2f200f4fcff00f5f5f500f7f7f700f9fdff00fafafa00fcfcfc00ffffff00 ,
+        0x800000000080000080800000000080008000800000808000c0c0c000c0dcc000 ,
+        0xa6caf000fffbf000a0a0a40080808000ff00000000ff0000ffff00000000ff00 ,
+        0xff00ff0000ffff0000000000
+    End
+    RecSrcDt = Begin
+        0x16997fc71aeae240
+    End
+    RecordSource ="tblMembrandetails"
+    Caption ="Membrandetails"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x5c5c5355444f505330325c485035315f37323938305f50434c00000000000000 ,
+        0x010418009c00b803033f80020100090000000000640001000700580202000100 ,
+        0x5802000000004c65747465720000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x0000000000000000000000000000000000000000000000000000000094042e00 ,
+        0x4850204c617365724a657420353130302050434c203600000000000000000000 ,
+        0x00000000000004003200c3018603789c65914d4f14411086ebed6e6859403928 ,
+        0xa0c1387e211a335956d0c43d78408c984dd844412e1a3033ec8e6eaa36339068 ,
+        0x8c9a3dea012fdee0e0d9b30750e41ff82b8c9ebd81f8d93d918d8995cefb769e ,
+        0xae74555767d9ffa140754c2b670dbc25fb1020b21db976e67ad714e85ac24956 ,
+        0x4fb846f29bf834f81de4245a0abc0f2d0b3e0abda2fb89a794bc37320279043e ,
+        0x85d6aa5e2e82cf818721672125088c548cbbf60c86c8d90c0c799ffdebb7bdfb ,
+        0xcd631c26fbccd76f3e053f813c07bf00cf197f78de677164e48e21d7b720f0f4 ,
+        0xb31ef446d447fa938ec87ed18af27039f7310fee826c13ffa47497f807f131c8 ,
+        0x0ec977e25f2487c0fde048f10024800c42f72222de0fe9831cc0f271f096d26b ,
+        0xfa35e92bae1c5bc527201b6e69ee365c30d26564cbd8f57c644772b5c66b4fae ,
+        0x4339f94a5e3f6aaf1f8ca251ea04ed7549b412eeed1c366dfce65fdcd1c6afda ,
+        0xd8ddfd8d0e929ec09cd2579df04bdd9c04d94d5da55b0b692d5e0aaa69c24b71 ,
+        0x7af97a35a82c64717ac3b1f1d16231b819a7499c95ab1395e062b9debcb7581a ,
+        0x2fd5c2a8d128cfc6699608076361e952e873c3b10b455f6c0abd24057037b8c7 ,
+        0xf56f3090cff801acfb0bf7b63f83426d90000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001f00390001004850204c617365724a657420353130302050434c2036005c ,
+        0x5c5355444f505330325c485035315f37323938305f50434c00485035315f3732 ,
+        0x39383000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            BackStyle =0
+            BorderWidth =1
+            Width =850
+            Height =850
+        End
+        Begin Line
+            BorderWidth =1
+            Width =1701
+        End
+        Begin Image
+            SpecialEffect =1
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =1
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =1
+            BorderWidth =3
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BorderColor =12632256
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =1
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin ListBox
+            SpecialEffect =1
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin Subform
+            SpecialEffect =1
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =1
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="Arial"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =12632256
+            Name ="Formularkopf"
+        End
+        Begin Section
+            Height =2211
+            BackColor =12632256
+            Name ="Detailbereich"
+            Begin
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =1695
+                    Top =165
+                    Width =1716
+                    Name ="Text25"
+                    ControlSource ="Membrantyp"
+                    GUID = Begin
+                        0x64dd50afe974b547a6d8c9963ab9c9f0
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =165
+                            Top =165
+                            Width =1320
+                            Height =255
+                            Name ="Label26"
+                            Caption ="Membrantyp"
+                            GUID = Begin
+                                0x5ae0f1a538407d4c96187fd6103070b1
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =1700
+                    Top =450
+                    TabIndex =1
+                    Name ="Text27"
+                    ControlSource ="Membrannummer"
+                    GUID = Begin
+                        0x7567d6c685d49d4bac69e7a9b1a66e23
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =165
+                            Top =478
+                            Width =1320
+                            Height =255
+                            Name ="Label28"
+                            Caption ="Membrannummer"
+                            GUID = Begin
+                                0xe729733263cefe44951e02c61a09fc6f
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =1700
+                    Top =735
+                    TabIndex =2
+                    Name ="Text29"
+                    ControlSource ="Batch"
+                    GUID = Begin
+                        0x92b2a54a8e0d5543a3c0f97a17f332a0
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =87
+                            Left =165
+                            Top =738
+                            Width =975
+                            Height =255
+                            Name ="Label30"
+                            Caption ="Batch"
+                            GUID = Begin
+                                0x44e4e5ebc3361b4394e0620691b06729
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =1700
+                    Top =1020
+                    Width =1416
+                    TabIndex =3
+                    Name ="Text31"
+                    ControlSource ="Eingangsdatum"
+                    GUID = Begin
+                        0x443e4aceee43424180868430df276eea
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =170
+                            Top =1020
+                            Width =1260
+                            Height =255
+                            Name ="Label32"
+                            Caption ="Eingangsdatum"
+                            GUID = Begin
+                                0x2e81f31a4704bf448fae7a3e71532358
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =1700
+                    Top =1307
+                    Width =1416
+                    TabIndex =4
+                    Name ="Text34"
+                    ControlSource ="Stillegungsdatum"
+                    GUID = Begin
+                        0x8648a4be856cdf4c9ce01cd58041e13c
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =165
+                            Top =1305
+                            Width =1290
+                            Height =255
+                            Name ="Label35"
+                            Caption ="Stillegungsdatum"
+                            GUID = Begin
+                                0xdec28a987761e349a638b7cbf709a653
+                            End
+                        End
+                    End
+                End
+                Begin TextBox
+                    SpecialEffect =2
+                    OverlapFlags =85
+                    BackStyle =1
+                    IMESentenceMode =3
+                    Left =1700
+                    Top =1592
+                    Height =495
+                    TabIndex =5
+                    Name ="Text36"
+                    ControlSource ="Bemerkung"
+                    GUID = Begin
+                        0x60f40c65953cce448e7026c7fb253421
+                    End
+                    Begin
+                        Begin Label
+                            OverlapFlags =85
+                            Left =165
+                            Top =1590
+                            Width =975
+                            Height =255
+                            Name ="Label37"
+                            Caption ="Bemerkung"
+                            GUID = Begin
+                                0xa266ee800a43db4da14215b6e961091e
+                            End
+                        End
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =793
+            BackColor =12632256
+            Name ="Formularfuß"
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =1140
+                    Top =60
+                    Height =576
+                    FontWeight =700
+                    Name ="Befehl15"
+                    Caption ="Beenden"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Datensatz suchen"
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Check17_AfterUpdate()
+    Dim rst1 As DAO.Recordset
+    Dim Codestring, Codestring2 As String
+    Dim i, l, AnzahlCodes As Long
+    
+    i = 1
+    'AnzahlCodes = Me!Text20
+    Codestring = ""
+    
+    'DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, i
+    'Do Until EOF
+    '    DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, acNext
+    '    If Me!Check17 = True Then
+    '        CodeString = CodeString + Me!Text12 + ", "
+    '    End If
+    'Loop
+    
+    Set rst1 = Me.RecordsetClone
+    
+    If rst1.BOF And rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    
+    rst1.MoveFirst
+    AnzahlCodes = 0
+    Do Until rst1.EOF
+        AnzahlCodes = AnzahlCodes + 1
+        rst1.MoveNext
+    Loop
+    
+
+    rst1.MoveFirst
+    Do Until rst1.EOF
+        If rst1.Gewaehlt = True Or (Me!Check17 = True And Me.Text12 = rst1.Code) Then
+            If Not (Me!Text12 = rst1.Code And Me!Check17 = False) Then
+                Codestring = Codestring + rst1.Code + ", "
+            End If
+        End If
+        rst1.MoveNext
+    Loop
+    rst1.Close
+    
+    'Set rst1 = CurrentDb.OpenRecordset("Select * From Me!Text12")
+    'rst1.Close
+    
+    'Do Until i = AnzahlCodes + 1
+    '    DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, i
+    '    If Me!Check17 = True Then
+    '        Codestring = Codestring + Me!Text12 + ", "
+    '    End If
+    '    i = i + 1
+    'Loop
+    'DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, 1
+    
+    If Codestring <> "" Then
+        l = Len(Codestring)
+        Codestring2 = Left(Codestring, l - 2)
+        Forms!frmMontagedaten![Reason for decommis.] = Codestring2
+    Else
+        Forms!frmMontagedaten![Reason for decommis.] = Null
+    End If
+    
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Me.Caption = "Membrandetails"
+        Label26.Caption = "Membrantyp"
+        Label28.Caption = "Membran-Nr."
+        Label30.Caption = "Batch"
+        Label32.Caption = "Lieferdatum"
+        Label35.Caption = "Stilllegunsdatum"
+        Label37.Caption = "Bemerkung"
+        Befehl15.Caption = "Beenden"
+    Else
+        Me.Caption = "Membrane Deatails"
+        Label26.Caption = "Membrane Type"
+        Label28.Caption = "Membrane No."
+        Label30.Caption = "Batch"
+        Label32.Caption = "Delivery Date"
+        Label35.Caption = "Decommissioned"
+        Label37.Caption = "Remark"
+        
+        Befehl15.Caption = "Close"
+    End If
+    'UpdateGruende (" ")
+End Sub
+Private Sub Befehl15_Click()
+    DoCmd.Close acForm, "frmMembrandetails2"
+End Sub
+
+Public Sub UpdateGruende(CodestringMontageliste As Variant)
+    Dim i, j, l, AnzahlCodes, AnzahlGewCodes As Long
+    Dim Teilcode(100) As String
+    Dim Str1 As String
+    Dim rst1 As DAO.Recordset
+    
+    Set rst1 = Me.RecordsetClone
+    
+    If rst1.BOF And rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    
+    rst1.MoveFirst
+    i = 0
+    Do Until rst1.EOF
+        i = i + 1
+        rst1.MoveNext
+    Loop
+    rst1.Close
+    
+    AnzahlCodes = i
+    
+    i = 1
+    Do Until i = AnzahlCodes + 1
+        DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, i
+        Me!Check17 = False
+        i = i + 1
+    Loop
+    
+    DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, 1
+        
+    l = Len(CodestringMontageliste)
+    If l = 0 Then
+        Exit Sub
+    End If
+            
+    i = 0
+    Do Until i = 100
+        Teilcode(i) = ""
+        i = i + 1
+    Loop
+    AnzahlGewCodes = 1
+
+    i = 1
+    j = 1
+    Do Until j = l + 1
+        Str1 = Mid(CodestringMontageliste, j, 1)
+        If Str1 = " " Or Str1 = "," Then
+            If Teilcode(i) <> "" Then
+                i = i + 1
+                AnzahlGewCodes = AnzahlGewCodes + 1
+            End If
+        Else
+            Teilcode(i) = Teilcode(i) + Str1
+        End If
+        j = j + 1
+    Loop
+    j = 1
+    Do Until j = AnzahlGewCodes + 1
+        i = 1
+        Do Until i = AnzahlCodes + 1
+            DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, i
+            If Teilcode(j) = Me!Text12 Then
+                Me!Check17 = True
+            End If
+            i = i + 1
+        Loop
+        j = j + 1
+    Loop
+    
+    DoCmd.GoToRecord acForm, "frmInspektionsgruendeMontage", acGoTo, 1
+
+End Sub
+
+
+Public Sub UpdateMembrandetails(CodestringMembrannummer As Variant)
+    Dim i As Long
+    Dim Str1 As String
+    Dim rst1 As DAO.Recordset
+    
+    Set rst1 = Me.RecordsetClone
+    
+    If rst1.BOF And rst1.EOF Then
+        rst1.Close
+        Exit Sub
+    End If
+    
+    rst1.MoveFirst
+    i = 0
+    Do Until rst1.EOF
+        i = i + 1
+        If rst1!Membrannummer = CodestringMembrannummer Then
+            Me!Text25.Visible = True
+            Me!Text27.Visible = True
+            Me!Text29.Visible = True
+            Me!Text31.Visible = True
+            Me!Text34.Visible = True
+            Me!Text36.Visible = True
+            DoCmd.GoToRecord acForm, "frmMembrandetails2", acGoTo, i
+            rst1.Close
+            Exit Sub
+        End If
+        rst1.MoveNext
+    Loop
+    rst1.Close
+    
+    Me!Text25.Visible = False
+    Me!Text27.Visible = False
+    Me!Text29.Visible = False
+    Me!Text31.Visible = False
+    Me!Text34.Visible = False
+    Me!Text36.Visible = False
+    
+    
+    
+End Sub

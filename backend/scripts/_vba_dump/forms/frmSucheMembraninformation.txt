@@ -1,0 +1,373 @@
+Version =19
+VersionRequired =19
+Checksum =122992735
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =14740
+    ItemSuffix =86
+    Right =14745
+    Bottom =10080
+    RecSrcDt = Begin
+        0x0043f28f8087e240
+    End
+    RecordSource ="tblBasisdaten"
+    Caption =" "
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x130b0000dc080000890500008905000000000000bf280000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x010400059c00340203070000020009009a0b3408640001000100fcff00000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c0027000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1020
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =10998
+                    Top =226
+                    Width =1704
+                    Height =576
+                    Name ="Schaltfläche43"
+                    Caption ="Search"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =7143
+                    Top =226
+                    Height =568
+                    TabIndex =1
+                    Name ="Befehl59"
+                    Caption ="Update\015\012Display"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =3
+                    Left =113
+                    Top =226
+                    Width =6795
+                    Height =585
+                    TabIndex =2
+                    Name ="subfrmSucheMembrantyp"
+                    SourceObject ="Form.subfrmSucheMembraninformation"
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13379
+                    Top =340
+                    Width =1251
+                    FontSize =10
+                    TabIndex =3
+                    Name ="Text79"
+                    ControlSource ="=Date()"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =9070
+                    Top =226
+                    Width =1704
+                    Height =576
+                    TabIndex =4
+                    Name ="Befehl80"
+                    Caption ="Main Menue"
+                    OnClick ="[Event Procedure]"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =9070
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin Subform
+                    OverlapFlags =87
+                    Left =113
+                    Top =566
+                    Width =14505
+                    Height =3405
+                    Name ="subfrmMembrandetails"
+                    SourceObject ="Form.subfrmMembrandetails"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    Left =113
+                    Top =340
+                    Width =2721
+                    Height =227
+                    Name ="Bezeichnungsfeld81"
+                    Caption ="Membrandetails"
+                End
+                Begin Subform
+                    OverlapFlags =87
+                    Left =113
+                    Top =4548
+                    Width =14505
+                    Height =1815
+                    TabIndex =1
+                    Name ="subfrmMembrangeschichte"
+                    SourceObject ="Form.subfrmMembrangeschichte"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =113
+                            Top =4308
+                            Width =2340
+                            Height =240
+                            Name ="subfrmMembrangeschichteBeschriftung"
+                            Caption ="Membrangeschichte"
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =87
+                    Left =113
+                    Top =6929
+                    Width =14505
+                    Height =1815
+                    TabIndex =2
+                    Name ="subfrmMembraninstandhaltung"
+                    SourceObject ="Form.subfrmMembraninstandhaltung"
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Left =113
+                            Top =6689
+                            Width =2340
+                            Height =240
+                            Name ="Bezeichnungsfeld85"
+                            Caption ="Membraninstandhaltung"
+                        End
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Schaltfläche30_Click()
+On Error GoTo Err_Schaltfläche30_Click
+
+    Dim x As Integer
+
+    x = Shell("EXCEL.EXE", 1)
+
+Exit_Schaltfläche30_Click:
+    Exit Sub
+
+Err_Schaltfläche30_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche30_Click
+    
+End Sub
+
+Private Sub Schaltfläche33_Click()
+On Error GoTo Err_Schaltfläche33_Click
+
+
+    DoCmd.DoMenuItem A_FORMBAR, A_RECORDSMENU, A_REFRESH, , A_MENU_VER20
+
+Exit_Schaltfläche33_Click:
+    Exit Sub
+
+Err_Schaltfläche33_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche33_Click
+    
+End Sub
+
+Private Sub Schaltfläche34_Click()
+On Error GoTo Err_Schaltfläche34_Click
+
+
+    DoCmd.PrintOut
+
+Exit_Schaltfläche34_Click:
+    Exit Sub
+
+Err_Schaltfläche34_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche34_Click
+    
+End Sub
+
+Private Sub Schaltfläche44_Click()
+On Error GoTo Err_Schaltfläche44_Click
+
+
+    DoCmd.PrintOut
+
+Exit_Schaltfläche44_Click:
+    Exit Sub
+
+Err_Schaltfläche44_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche44_Click
+    
+End Sub
+
+
+Private Sub Befehl59_Click()
+    subfrmMembrandetails.Requery
+    subfrmMembrangeschichte.Requery
+    subfrmMembraninstandhaltung.Requery
+End Sub
+
+Private Sub Befehl80_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "frmSucheMembraninformation"
+
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Befehl59.Caption = "Anzeige aktualisieren"
+        Befehl80.Caption = "Hauptmenu"
+        Schaltfläche43.Caption = "Suchfunktionen"
+        Bezeichnungsfeld81.Caption = "Membrandetails"
+        subfrmMembrangeschichteBeschriftung.Caption = "Membrangeschichte"
+        Bezeichnungsfeld85.Caption = "Membraninstandhaltung"
+    
+    Else
+        Befehl59.Caption = "Update Display"
+        Befehl80.Caption = "Main Menu"
+        Schaltfläche43.Caption = "Search"
+        Bezeichnungsfeld81.Caption = "Membrane Details"
+        subfrmMembrangeschichteBeschriftung.Caption = "Membrane History"
+        Bezeichnungsfeld85.Caption = "Membrane Maintenance"
+    End If
+    
+    Me!Befehl59.SetFocus
+
+End Sub
+
+Private Sub Schaltfläche43_Click()
+    DoCmd.OpenForm "Suchübersicht"
+    DoCmd.Close acForm, "frmSucheMembraninformation"
+End Sub

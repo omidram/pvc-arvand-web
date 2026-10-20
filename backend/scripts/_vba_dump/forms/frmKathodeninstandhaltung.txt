@@ -1,0 +1,409 @@
+Version =19
+VersionRequired =19
+Checksum =122868191
+Begin Form
+    OrderByOn = NotDefault
+    GridX =5
+    GridY =5
+    Width =14173
+    ItemSuffix =123
+    Top =528
+    Right =11856
+    Bottom =6720
+    OrderBy ="tblKathodeninstandhaltung.[Kathoden Nr] DESC"
+    RecSrcDt = Begin
+        0x56be05edde93e240
+    End
+    RecordSource ="tblKathodeninstandhaltung"
+    Caption ="Abschaltungen"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =1380
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    SpecialEffect =3
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =5670
+                    Height =570
+                    FontSize =14
+                    ForeColor =4194304
+                    Name ="Text8"
+                    Caption ="Cathode Maintenance"
+                End
+                Begin TextBox
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12018
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld68"
+                    ControlSource ="=Date()"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =9070
+                    Top =113
+                    Height =576
+                    TabIndex =1
+                    Name ="Hauptmenue"
+                    Caption ="Element Administration"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2986
+                    Top =1136
+                    Width =3825
+                    Height =240
+                    Name ="Bezeichnungsfeld101"
+                    Caption ="Findings"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =1276
+                    Top =1136
+                    Width =1605
+                    Height =240
+                    Name ="Bezeichnungsfeld105"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9630
+                    Top =1140
+                    Width =1725
+                    Height =240
+                    Name ="Bezeichnungsfeld107"
+                    Caption ="Despatch"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6916
+                    Top =1133
+                    Width =2625
+                    Height =240
+                    Name ="Bezeichnungsfeld109"
+                    Caption ="Action"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =135
+                    Top =1140
+                    Width =1155
+                    Height =240
+                    Name ="Bezeichnungsfeld110"
+                    Caption ="Cathode No."
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11451
+                    Top =1133
+                    Width =1725
+                    Height =240
+                    Name ="Bezeichnungsfeld122"
+                    Caption ="Despatch"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1140
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12018
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =1230
+                    Top =900
+                    Width =1635
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6900
+                    Top =900
+                    Width =2655
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Action"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =135
+                    Top =900
+                    Width =1155
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Cathode No."
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9630
+                    Top =900
+                    Width =1725
+                    Height =240
+                    Name ="Bezeichnungsfeld100"
+                    Caption ="Despatch"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2940
+                    Top =900
+                    Width =3870
+                    Height =240
+                    Name ="Bezeichnungsfeld111"
+                    Caption ="Findings"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11430
+                    Top =900
+                    Width =1755
+                    Height =240
+                    Name ="Bezeichnungsfeld120"
+                    Caption ="Return"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =221
+                    Width =900
+                    Name ="Datum"
+                    ControlSource ="Kathoden Nr"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2948
+                    Width =3855
+                    TabIndex =1
+                    Name ="Cc"
+                    ControlSource ="Befund"
+                    Format ="General Date"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9651
+                    Width =1695
+                    TabIndex =2
+                    Name ="Un"
+                    ControlSource ="Versanddatum"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1247
+                    Width =1590
+                    TabIndex =3
+                    Name ="Text112"
+                    ControlSource ="Datum"
+                    Format ="General Date"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =6924
+                    Width =2601
+                    TabIndex =4
+                    Name ="Text119"
+                    ControlSource ="Aktion"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11451
+                    Width =1695
+                    TabIndex =5
+                    Name ="Text121"
+                    ControlSource ="Rücklieferung"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =9637
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =1048
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Form_Open(Cancel As Integer)
+
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Kathodeninstandhaltung"
+        Bezeichnungsfeld110.Caption = "Kathoden Nr."
+        Bezeichnungsfeld93.Caption = "Kathoden Nr."
+        Bezeichnungsfeld105.Caption = "Datum"
+        Bezeichnungsfeld66.Caption = "Datum"
+        Bezeichnungsfeld101.Caption = "Befund"
+        Bezeichnungsfeld111.Caption = "Befund"
+        Bezeichnungsfeld109.Caption = "Aktion"
+        Bezeichnungsfeld68.Caption = "Aktion"
+        Bezeichnungsfeld107.Caption = "Versanddatum"
+        Bezeichnungsfeld100.Caption = "Versanddatum"
+        Bezeichnungsfeld122.Caption = "Rücklieferung"
+        Bezeichnungsfeld120.Caption = "Rücklieferung"
+        
+        
+        Hauptmenue.Caption = "Zellen-verwaltung"
+        
+    Else
+        Text8.Caption = "Cathode Maintenance"
+        Bezeichnungsfeld110.Caption = "Anode No."
+        Bezeichnungsfeld93.Caption = "Anode No."
+        Bezeichnungsfeld105.Caption = "Date"
+        Bezeichnungsfeld66.Caption = "Date"
+        Bezeichnungsfeld101.Caption = "Findings"
+        Bezeichnungsfeld111.Caption = "Findings"
+        Bezeichnungsfeld109.Caption = "Action"
+        Bezeichnungsfeld68.Caption = "Action"
+        Bezeichnungsfeld107.Caption = "Despatch"
+        Bezeichnungsfeld100.Caption = "Despatch"
+        Bezeichnungsfeld122.Caption = "Return"
+        Bezeichnungsfeld120.Caption = "Return"
+        
+        Hauptmenue.Caption = "Element Administration"
+        
+    End If
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "frmZellenverwaltung"
+    DoCmd.Close acForm, "frmKathodeninstandhaltung"
+End Sub

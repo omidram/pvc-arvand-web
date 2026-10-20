@@ -1,0 +1,236 @@
+Version =17
+VersionRequired =17
+Checksum =122846185
+Begin Form
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =14173
+    ItemSuffix =123
+    Top =525
+    Right =14460
+    Bottom =8160
+    RecSrcDt = Begin
+        0x98b9227570b0e240
+    End
+    RecordSource ="qryAnodeninstandhaltung"
+    Caption ="subfrmAnodeninstandhaltung"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin FormHeader
+            Height =240
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =113
+                    Width =975
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Anode No."
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1247
+                    Width =1635
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Date"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6908
+                    Width =2655
+                    Height =240
+                    Name ="Bezeichnungsfeld68"
+                    Caption ="Action"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9638
+                    Width =1725
+                    Height =240
+                    Name ="Bezeichnungsfeld100"
+                    Caption ="Despatch"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2948
+                    Width =3870
+                    Height =240
+                    Name ="Bezeichnungsfeld111"
+                    Caption ="Findings"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11438
+                    Width =1755
+                    Height =240
+                    Name ="Bezeichnungsfeld120"
+                    Caption ="Return"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    DecimalPlaces =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =221
+                    Width =900
+                    BackColor =16777164
+                    Name ="Datum"
+                    ControlSource ="Anoden Nr"
+                    Format ="General Number"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2948
+                    Width =3855
+                    TabIndex =1
+                    Name ="Cc"
+                    ControlSource ="Befund"
+                    Format ="General Date"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9651
+                    Width =1695
+                    TabIndex =2
+                    Name ="Un"
+                    ControlSource ="Versanddatum"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =1247
+                    Width =1590
+                    TabIndex =3
+                    Name ="Text112"
+                    ControlSource ="Datum"
+                    Format ="General Date"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =6924
+                    Width =2601
+                    TabIndex =4
+                    Name ="Text119"
+                    ControlSource ="Aktion"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11451
+                    Width =1695
+                    TabIndex =5
+                    Name ="Text121"
+                    ControlSource ="Rücklieferung"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private Sub Form_Open(Cancel As Integer)
+
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Bezeichnungsfeld93.Caption = "Anoden Nr."
+        Bezeichnungsfeld66.Caption = "Datum"
+        Bezeichnungsfeld111.Caption = "Befund"
+        Bezeichnungsfeld68.Caption = "Aktion"
+        Bezeichnungsfeld100.Caption = "Versanddatum"
+        Bezeichnungsfeld120.Caption = "Rücklieferung"
+        
+    Else
+        Bezeichnungsfeld93.Caption = "Anode No."
+        Bezeichnungsfeld66.Caption = "Date"
+        Bezeichnungsfeld111.Caption = "Findings"
+        Bezeichnungsfeld68.Caption = "Action"
+        Bezeichnungsfeld100.Caption = "Despatch"
+        Bezeichnungsfeld120.Caption = "Return"
+        
+    End If
+
+End Sub

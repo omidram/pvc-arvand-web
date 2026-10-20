@@ -1,0 +1,363 @@
+{
+  "Gesamt Normierung": {
+    "rs": "Norm (Um)",
+    "caption": "Master",
+    "controls": [
+      {
+        "name": "Elektrolyseur",
+        "type": 109,
+        "controlsource": "Elektrolyseur",
+        "top": 0,
+        "left": 226
+      },
+      {
+        "name": "Position",
+        "type": 109,
+        "controlsource": "Position",
+        "format": "Standard",
+        "top": 0,
+        "left": 1474
+      },
+      {
+        "name": "Datum",
+        "type": 109,
+        "controlsource": "Datum",
+        "format": "Short Date",
+        "top": 0,
+        "left": 2040
+      },
+      {
+        "name": "Zeit",
+        "type": 109,
+        "controlsource": "Zeit",
+        "format": "Short Time",
+        "top": 0,
+        "left": 3061
+      },
+      {
+        "name": "I Gesamt",
+        "type": 109,
+        "controlsource": "I Gesamt",
+        "format": "Standard",
+        "top": 0,
+        "left": 3741
+      },
+      {
+        "name": "i",
+        "type": 109,
+        "controlsource": "i",
+        "top": 0,
+        "left": 4422
+      },
+      {
+        "name": "Cc",
+        "type": 109,
+        "controlsource": "Cc",
+        "format": "Standard",
+        "top": 0,
+        "left": 4988
+      },
+      {
+        "name": "t An",
+        "type": 109,
+        "controlsource": "t An",
+        "format": "Standard",
+        "top": 0,
+        "left": 5669
+      },
+      {
+        "name": "t Ka",
+        "type": 109,
+        "controlsource": "t Ka",
+        "format": "Standard",
+        "top": 0,
+        "left": 6349
+      },
+      {
+        "name": "tm",
+        "type": 109,
+        "controlsource": "tm",
+        "format": "Standard",
+        "top": 0,
+        "left": 7029
+      },
+      {
+        "name": "Ui",
+        "type": 109,
+        "controlsource": "Ui",
+        "format": "Standard",
+        "top": 0,
+        "left": 7710
+      },
+      {
+        "name": "Um",
+        "type": 109,
+        "controlsource": "Mittelwert von Ui",
+        "format": "Standard",
+        "top": 0,
+        "left": 8390
+      },
+      {
+        "name": "t out",
+        "type": 109,
+        "controlsource": "ti",
+        "format": "Standard",
+        "top": 0,
+        "left": 9070
+      },
+      {
+        "name": "Un",
+        "type": 109,
+        "controlsource": "Un",
+        "format": "Standard",
+        "top": 0,
+        "left": 9864
+      },
+      {
+        "name": "Schaltfläche41",
+        "type": 104,
+        "caption": "Standardized\r\nVoltage",
+        "top": 113,
+        "left": 8163
+      },
+      {
+        "name": "Feld80",
+        "type": 109,
+        "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+        "top": 113,
+        "left": 9751
+      },
+      {
+        "name": "Befehl59",
+        "type": 104,
+        "caption": "ti >90°",
+        "top": 113,
+        "left": 9977
+      },
+      {
+        "name": "Feld58",
+        "type": 109,
+        "controlsource": "=Date()",
+        "top": 113,
+        "left": 10318
+      },
+      {
+        "name": "Text8",
+        "type": 100,
+        "caption": "Standarized Voltage All Elements",
+        "top": 120,
+        "left": 225
+      },
+      {
+        "name": "Text50",
+        "type": 100,
+        "caption": "tm [°C]",
+        "top": 450,
+        "left": 7035
+      },
+      {
+        "name": "Bezeichnungsfeld65",
+        "type": 100,
+        "caption": "Basis: Table all Elements per Electrolyzer",
+        "top": 453,
+        "left": 340
+      },
+      {
+        "name": "Text46",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "top": 453,
+        "left": 4325
+      },
+      {
+        "name": "Text53",
+        "type": 100,
+        "caption": "Ui [V]",
+        "top": 453,
+        "left": 7823
+      },
+      {
+        "name": "Text54",
+        "type": 100,
+        "caption": "Um [V]",
+        "top": 453,
+        "left": 8390
+      },
+      {
+        "name": "Text56",
+        "type": 100,
+        "caption": "to [°C]",
+        "top": 453,
+        "left": 9184
+      },
+      {
+        "name": "Text55",
+        "type": 100,
+        "caption": "Un [V]",
+        "top": 453,
+        "left": 9864
+      },
+      {
+        "name": "Text45",
+        "type": 100,
+        "caption": " I total [kA]",
+        "top": 455,
+        "left": 3636
+      },
+      {
+        "name": "Text47",
+        "type": 100,
+        "caption": "Cc [%]",
+        "top": 455,
+        "left": 5102
+      },
+      {
+        "name": "Text48",
+        "type": 100,
+        "caption": "t An [°C]",
+        "top": 455,
+        "left": 5669
+      },
+      {
+        "name": "Text49",
+        "type": 100,
+        "caption": "t Ka [°C]",
+        "top": 455,
+        "left": 6349
+      },
+      {
+        "name": "Text42",
+        "type": 100,
+        "caption": "Electrolyser",
+        "top": 678,
+        "left": 226
+      },
+      {
+        "name": "Text52",
+        "type": 100,
+        "caption": "Pos",
+        "top": 680,
+        "left": 1474
+      },
+      {
+        "name": "Text43",
+        "type": 100,
+        "caption": "Date",
+        "top": 680,
+        "left": 2154
+      },
+      {
+        "name": "Text44",
+        "type": 100,
+        "caption": "Time",
+        "top": 680,
+        "left": 3061
+      },
+      {
+        "name": "subfrmAnlageAnzeigen",
+        "type": 112,
+        "sourceobject": "subfrmAnlageAnzeigen",
+        "top": 793,
+        "left": 226
+      },
+      {
+        "name": "Text16",
+        "type": 100,
+        "caption": " I total [kA]",
+        "top": 1360,
+        "left": 3628
+      },
+      {
+        "name": "Text20",
+        "type": 100,
+        "caption": "Cc [%]",
+        "top": 1360,
+        "left": 5102
+      },
+      {
+        "name": "Text22",
+        "type": 100,
+        "caption": "t An [°C]",
+        "top": 1360,
+        "left": 5669
+      },
+      {
+        "name": "Text24",
+        "type": 100,
+        "caption": "t Ka [°C]",
+        "top": 1360,
+        "left": 6349
+      },
+      {
+        "name": "Text32",
+        "type": 100,
+        "caption": "Ui [V]",
+        "top": 1360,
+        "left": 7710
+      },
+      {
+        "name": "Text35",
+        "type": 100,
+        "caption": "Um [V]",
+        "top": 1360,
+        "left": 8390
+      },
+      {
+        "name": "Text39",
+        "type": 100,
+        "caption": "to [°C]",
+        "top": 1360,
+        "left": 9070
+      },
+      {
+        "name": "Text37",
+        "type": 100,
+        "caption": "Un [V]",
+        "top": 1360,
+        "left": 9864
+      },
+      {
+        "name": "Text18",
+        "type": 100,
+        "caption": "i [kA/m²]",
+        "top": 1362,
+        "left": 4320
+      },
+      {
+        "name": "Text26",
+        "type": 100,
+        "caption": "tm [°C]",
+        "top": 1362,
+        "left": 7035
+      },
+      {
+        "name": "Text10",
+        "type": 100,
+        "caption": "Electrolyser",
+        "top": 1585,
+        "left": 226
+      },
+      {
+        "name": "Text30",
+        "type": 100,
+        "caption": "Pos",
+        "top": 1585,
+        "left": 1474
+      },
+      {
+        "name": "Text12",
+        "type": 100,
+        "caption": "Date",
+        "top": 1585,
+        "left": 2154
+      },
+      {
+        "name": "Text14",
+        "type": 100,
+        "caption": "Time",
+        "top": 1585,
+        "left": 3061
+      }
+    ]
+  }
+}

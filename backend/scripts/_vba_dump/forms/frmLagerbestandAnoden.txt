@@ -1,0 +1,229 @@
+Version =19
+VersionRequired =19
+Checksum =-122992724
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =14630
+    ItemSuffix =83
+    Left =735
+    Top =165
+    Right =15360
+    Bottom =9450
+    RecSrcDt = Begin
+        0x390d16acd3cfe240
+    End
+    RecordSource ="qryStatistikElementeUnAbweichungElek"
+    Caption =" "
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x130b0000dc080000890500008905000000000000bf280000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x5072696e743246696c6500000000000000000000000000000000000000000000 ,
+        0x010400059c00340203070000020009009a0b3408640001000100fcff00000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c002700010047656e65726963202f2054657874204f6e6c79005072696e ,
+        0x743246696c650046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1474
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0x4a58896703035140b36df3cebe6ec205
+            End
+            Begin
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =10998
+                    Top =226
+                    Width =1704
+                    Height =576
+                    Name ="Schaltfläche43"
+                    Caption ="Search"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x0dc842a1b66d884c8e5fe6a54afafe9a
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf0"
+            GUID = Begin
+                0x564a8a42d4f0964998f8cfefd58119c7
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7823
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0x82034a19bc682847abe93512604b8c3a
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =2494
+                    Width =14055
+                    Height =5220
+                    Name ="subfrmSuchergebnisMontagedatum"
+                    SourceObject ="Form.subfrmAnodendetails2"
+                    GUID = Begin
+                        0xc186f368fb9dfe41934f763f19c0d7bc
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =113
+                    Top =113
+                    Width =6690
+                    Height =2250
+                    TabIndex =1
+                    Name ="subfrmStatistikElementeUnAbweichungElek"
+                    SourceObject ="Form.subfrmLagerbestandAnoden2"
+                    GUID = Begin
+                        0x38ef4a02c7a0374a9f4f431161006c0c
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenfuß1"
+            GUID = Begin
+                0x15b40029645a6e4f87e22fa916703de8
+            End
+        End
+        Begin FormFooter
+            CanGrow = NotDefault
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0xd165608c5e479b499fd2b8afce5e7bae
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl59_Click()
+    KorrekturfaktorenAktualisieren
+    subfrmSuchergebnisMontagedatum.Requery
+    subfrmStatistikElementeUnAbweichungElek.Requery
+End Sub
+
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache() = 1 Then
+        Schaltfläche43.Caption = "Suchfunktionen"
+    
+    Else
+        Schaltfläche43.Caption = "Search"
+    End If
+
+End Sub
+
+Private Sub Schaltfläche43_Click()
+    DoCmd.OpenForm "Suchübersicht"
+    DoCmd.Close acForm, "frmLagerbestandAnoden"
+End Sub

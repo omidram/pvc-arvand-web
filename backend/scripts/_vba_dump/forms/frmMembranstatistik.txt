@@ -1,0 +1,704 @@
+Version =19
+VersionRequired =19
+Checksum =122913175
+Begin Form
+    AutoCenter = NotDefault
+    GridX =5
+    GridY =5
+    Width =19275
+    ItemSuffix =174
+    Left =-390
+    Top =165
+    Right =14490
+    Bottom =7770
+    RecSrcDt = Begin
+        0xa0d32dd8d3d2e240
+    End
+    RecordSource ="qryMembranstatistik"
+    Caption ="Montage"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0xc60100006e040000960200006e040000000000006f5a0000ff00000001000000 ,
+        0x010000006801000000000000a10700000100000000000000
+    End
+    PrtDevMode = Begin
+        0x4850204c617365724a6574203420506c75732028436f70792032290000000000 ,
+        0x0004010494004000037700060200090000000000000001000901580201000100 ,
+        0x5802040000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000006010000020000000000000000000000010040004d5355444f034850 ,
+        0x204c617365724a6574203420506c75730000000000000000000000000000e401 ,
+        0x0000000000003c0100000000040064000a000000
+    End
+    PrtDevNames = Begin
+        0x080011002d00000057494e53504f4f4c004850204c617365724a657420342050 ,
+        0x6c75732028436f7079203229005c5c53686c6e61615c73686c30313900000000 ,
+        0x00000000000000000000000000000000000000000000000000000000
+    End
+    OnLoad ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin FormHeader
+            Height =3061
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    Top =113
+                    Width =4875
+                    Height =405
+                    FontSize =14
+                    Name ="Text8"
+                    Caption ="Membrane Statistics"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =8844
+                    Top =113
+                    Width =1926
+                    Height =681
+                    Name ="Schaltfläche27"
+                    Caption ="Statistics"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =226
+                    Top =2267
+                    Width =1695
+                    Height =570
+                    FontSize =10
+                    Name ="Bezeichnungsfeld158"
+                    Caption ="Membrane Type"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =7705
+                    Top =2607
+                    Width =570
+                    Height =225
+                    Name ="Bezeichnungsfeld159"
+                    Caption ="Mean"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2047
+                    Top =2267
+                    Width =915
+                    Height =570
+                    Name ="Bezeichnungsfeld160"
+                    Caption ="Total Number"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =6351
+                    Top =2612
+                    Width =690
+                    Height =225
+                    Name ="Bezeichnungsfeld161"
+                    Caption ="Min"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =7031
+                    Top =2607
+                    Width =675
+                    Height =225
+                    Name ="Bezeichnungsfeld162"
+                    Caption ="Max"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =6350
+                    Top =2265
+                    Width =2835
+                    Height =345
+                    Name ="Bezeichnungsfeld163"
+                    Caption ="DOL"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =12359
+                    Top =2607
+                    Width =675
+                    Height =225
+                    Name ="Bezeichnungsfeld173"
+                    Caption ="Mean"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =10998
+                    Top =2612
+                    Width =690
+                    Height =225
+                    Name ="Bezeichnungsfeld174"
+                    Caption ="Min"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =11678
+                    Top =2607
+                    Width =675
+                    Height =225
+                    Name ="Bezeichnungsfeld175"
+                    Caption ="Max"
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =10998
+                    Top =2267
+                    Width =2955
+                    Height =345
+                    Name ="Bezeichnungsfeld176"
+                    Caption ="DOL"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =3065
+                    Top =2259
+                    Width =1470
+                    Height =570
+                    Name ="Bezeichnungsfeld177"
+                    Caption ="Number"
+                    FontName ="Arial"
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =4875
+                    Top =2267
+                    Width =1485
+                    Height =570
+                    Name ="Bezeichnungsfeld178"
+                    Caption ="Number"
+                    FontName ="Arial"
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =9524
+                    Top =2267
+                    Width =1455
+                    Height =570
+                    Name ="Bezeichnungsfeld179"
+                    Caption ="Number"
+                    FontName ="Arial"
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =9537
+                    Top =1700
+                    Width =4416
+                    Height =567
+                    FontSize =10
+                    Name ="Bezeichnungsfeld193"
+                    Caption ="Passive Cells"
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =4875
+                    Top =1700
+                    Width =4311
+                    Height =567
+                    FontSize =10
+                    Name ="Bezeichnungsfeld194"
+                    Caption ="Active Cells"
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =3061
+                    Top =1700
+                    Width =1476
+                    Height =567
+                    FontSize =10
+                    Name ="Bezeichnungsfeld195"
+                    Caption ="Cells without DOL"
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =8273
+                    Top =2610
+                    Width =915
+                    Height =225
+                    Name ="Label156"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0xfc787c5761e1cc42aad26f998dd96487
+                    End
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =13040
+                    Top =2610
+                    Width =915
+                    Height =225
+                    Name ="Label158"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0xbdfb667435fafe4daeb1f3de5d1733e6
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =17121
+                    Top =2607
+                    Width =675
+                    Height =225
+                    Name ="Label160"
+                    Caption ="Mean"
+                    GUID = Begin
+                        0x3bdf89a7f4e8574db363980b5f682a56
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =15760
+                    Top =2612
+                    Width =690
+                    Height =225
+                    Name ="Label161"
+                    Caption ="Min"
+                    GUID = Begin
+                        0xd474decd94626d41a7862ea88f2bc9d6
+                    End
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =16440
+                    Top =2607
+                    Width =675
+                    Height =225
+                    Name ="Label162"
+                    Caption ="Max"
+                    GUID = Begin
+                        0x6bd7ecb8e8f57d4daff6dd20f5bf1f03
+                    End
+                End
+                Begin Label
+                    OverlapFlags =95
+                    TextAlign =2
+                    Left =15760
+                    Top =2267
+                    Width =2955
+                    Height =345
+                    Name ="Label163"
+                    Caption ="DOL"
+                    GUID = Begin
+                        0xa4e2fc84d436f34394746206e97cf008
+                    End
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =14286
+                    Top =2267
+                    Width =1455
+                    Height =570
+                    Name ="Label164"
+                    Caption ="Number"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0xf6b476e76727ce40a08de6fe2446f807
+                    End
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =14299
+                    Top =1700
+                    Width =4416
+                    Height =567
+                    FontSize =10
+                    Name ="Label165"
+                    Caption ="Aktive and Passive Cells"
+                    GUID = Begin
+                        0xd7a34dd45fe5eb4fa5591e7025c68391
+                    End
+                End
+                Begin Label
+                    OverlapFlags =87
+                    TextAlign =2
+                    Left =17802
+                    Top =2610
+                    Width =915
+                    Height =225
+                    Name ="Label166"
+                    Caption ="Std. Dev."
+                    GUID = Begin
+                        0xa861c8082486334e8f00e141fc121f64
+                    End
+                End
+            End
+        End
+        Begin Section
+            Height =340
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7711
+                    Width =562
+                    Name ="Text164"
+                    ControlSource ="qryMembranstatistikAtiv.AvgOfGesamtDOL"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Width =1692
+                    TabIndex =1
+                    Name ="Text165"
+                    ControlSource ="Membrantyp"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2047
+                    Width =914
+                    TabIndex =2
+                    Name ="Text166"
+                    ControlSource ="qryMembranstatistikGesamtzahl.ElementeGesamt"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6350
+                    Width =574
+                    TabIndex =3
+                    Name ="Text167"
+                    ControlSource ="qryMembranstatistikAtiv.MinOfGesamtDOL"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =7031
+                    Width =561
+                    TabIndex =4
+                    Name ="Text168"
+                    ControlSource ="qryMembranstatistikAtiv.MaxOfGesamtDOL"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3061
+                    Width =1469
+                    TabIndex =5
+                    Name ="Text180"
+                    ControlSource ="qryMembranstatistikElOhneLaufzeit.ElementeGesamt"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4988
+                    Width =1259
+                    TabIndex =6
+                    Name ="Text181"
+                    ControlSource ="qryMembranstatistikAtiv.CountOfGesamtDOL"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =9637
+                    Width =1349
+                    TabIndex =7
+                    Name ="Text182"
+                    ControlSource ="qryMembranstatistikPassiv.CountOfGesamtDOL"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11106
+                    Width =569
+                    TabIndex =8
+                    Name ="Text183"
+                    ControlSource ="qryMembranstatistikPassiv.MinOfGesamtDOL"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =11786
+                    Width =569
+                    TabIndex =9
+                    Name ="Text184"
+                    ControlSource ="qryMembranstatistikPassiv.MaxOfGesamtDOL"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =12467
+                    Width =569
+                    TabIndex =10
+                    Name ="Text185"
+                    ControlSource ="qryMembranstatistikPassiv.AvgOfGesamtDOL"
+                End
+                Begin TextBox
+                    DecimalPlaces =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =8391
+                    Width =697
+                    TabIndex =11
+                    Name ="Text157"
+                    ControlSource ="qryMembranstatistikAtiv.StDevOfGesamtDOL"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x0c48cb330d894f4eafeb14d5a00764a6
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =13147
+                    Width =914
+                    TabIndex =12
+                    Name ="Text159"
+                    ControlSource ="qryMembranstatistikPassiv.StDevOfGesamtDOL"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x6720c0b27d06c34d97677d8317b47abc
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =14286
+                    Width =1349
+                    TabIndex =13
+                    Name ="Text169"
+                    ControlSource ="qryMembranstatistikAlle.CountOfGesamtDOL"
+                    GUID = Begin
+                        0x7d16b6947fa0f44f98dd185e3d7afea7
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =15755
+                    Width =569
+                    TabIndex =14
+                    Name ="Text170"
+                    ControlSource ="qryMembranstatistikAlle.MinOfGesamtDOL"
+                    GUID = Begin
+                        0x75ed9303bafc86419926375d620dd769
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =16435
+                    Width =569
+                    TabIndex =15
+                    Name ="Text171"
+                    ControlSource ="qryMembranstatistikAlle.MaxOfGesamtDOL"
+                    GUID = Begin
+                        0x9ba72fa4492310468b8790c967cbc6bc
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =17116
+                    Width =569
+                    TabIndex =16
+                    Name ="Text172"
+                    ControlSource ="qryMembranstatistikAlle.AvgOfGesamtDOL"
+                    GUID = Begin
+                        0xa1f4b359018272499b8e2d6d094360d4
+                    End
+                End
+                Begin TextBox
+                    DecimalPlaces =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =17796
+                    Width =914
+                    TabIndex =17
+                    Name ="Text173"
+                    ControlSource ="qryMembranstatistikAlle.StDevOfGesamtDOL"
+                    Format ="Standard"
+                    GUID = Begin
+                        0x9958decc04484c4b939d28b3de27b415
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =453
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+Option Explicit
+
+
+Private Sub Befehl155_Click()
+    DoCmd.OpenForm "frmKathodeninstandhaltung"
+    DoCmd.Close acForm, "Montage"
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    If GetIDGewSprache = 1 Then
+        
+        Text8.Caption = "Membranstatistik"
+        Bezeichnungsfeld158.Caption = "Membrantyp"
+        Bezeichnungsfeld160.Caption = "Gesamt-zahl"
+        Bezeichnungsfeld195.Caption = "Elemente ohne Laufzeit"
+        Bezeichnungsfeld177.Caption = "Anzahl"
+        
+        Bezeichnungsfeld194.Caption = "Aktive Zellen"
+        Bezeichnungsfeld178.Caption = "Anzahl"
+        Bezeichnungsfeld163.Caption = "DOL"
+        Bezeichnungsfeld161.Caption = "Min."
+        Bezeichnungsfeld162.Caption = "Max."
+        Bezeichnungsfeld159.Caption = "Mittel"
+        Label156.Caption = "Std. Abw."
+        
+        Bezeichnungsfeld193.Caption = "Passive Zellen"
+        Bezeichnungsfeld179.Caption = "Anzahl"
+        Bezeichnungsfeld176.Caption = "DOL"
+        Bezeichnungsfeld174.Caption = "Min."
+        Bezeichnungsfeld175.Caption = "Max."
+        Bezeichnungsfeld173.Caption = "Mittel"
+        Label158.Caption = "Std. Abw."
+        
+        Label165.Caption = "Aktive und Passive Zellen"
+        Label164.Caption = "Anzahl"
+        Label163.Caption = "DOL"
+        Label161.Caption = "Min."
+        Label162.Caption = "Max."
+        Label160.Caption = "Mittel"
+        Label166.Caption = "Std. Abw."
+        
+        
+        Schaltfläche27.Caption = "Statistiken"
+    
+    Else
+        
+        Text8.Caption = "Membrane Statistics"
+        Bezeichnungsfeld158.Caption = "Membrane Type"
+        Bezeichnungsfeld160.Caption = "Total Number"
+        
+        Bezeichnungsfeld195.Caption = "Elements without DOL"
+        Bezeichnungsfeld177.Caption = "Number"
+        
+        Bezeichnungsfeld194.Caption = "Active Elements"
+        Bezeichnungsfeld178.Caption = "Number"
+        Bezeichnungsfeld163.Caption = "DOL"
+        Bezeichnungsfeld161.Caption = "Min."
+        Bezeichnungsfeld162.Caption = "Max."
+        Bezeichnungsfeld159.Caption = "Avg."
+        Label156.Caption = "Std. Dev."
+        
+        Bezeichnungsfeld193.Caption = "Passive Elements"
+        Bezeichnungsfeld179.Caption = "Number"
+        Bezeichnungsfeld176.Caption = "DOL"
+        Bezeichnungsfeld174.Caption = "Min."
+        Bezeichnungsfeld175.Caption = "Max."
+        Bezeichnungsfeld173.Caption = "Avg."
+        Label158.Caption = "Std. Dev."
+        
+        Label165.Caption = "Active and Passive Elements"
+        Label164.Caption = "Number"
+        Label163.Caption = "DOL"
+        Label161.Caption = "Min."
+        Label162.Caption = "Max."
+        Label160.Caption = "Avg."
+        Label166.Caption = "Std. Dev."
+        
+        Schaltfläche27.Caption = "Statistics"
+        
+        
+    End If
+End Sub
+
+Private Sub Schaltfläche27_Click()
+
+    DoCmd.OpenForm "frmMenuStatistik"
+    DoCmd.Close acForm, "frmMembranstatistik"
+    
+End Sub

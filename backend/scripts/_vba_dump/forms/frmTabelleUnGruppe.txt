@@ -1,0 +1,402 @@
+Version =19
+VersionRequired =19
+Checksum =122846185
+Begin Form
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =12585
+    ItemSuffix =110
+    Top =420
+    Right =12870
+    Bottom =8400
+    RecSrcDt = Begin
+        0x9054073833d2e240
+    End
+    RecordSource ="UnGruppen"
+    Caption ="frmTabelleUnGruppe"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1607
+            BackColor =12632256
+            Name ="Formularkopf1"
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =7815
+                    Height =570
+                    FontSize =14
+                    Name ="Text8"
+                    Caption ="Standardized Voltage Group"
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =8163
+                    Top =113
+                    Width =1716
+                    Height =576
+                    Name ="Hauptmenue"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10091
+                    Top =113
+                    Width =1821
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl89"
+                    Caption ="Standardized\015\012Voltage"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5230
+                    Top =1360
+                    Width =1590
+                    Height =240
+                    Name ="Bezeichnungsfeld101"
+                    Caption ="Membrane Type"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2040
+                    Top =1360
+                    Width =1155
+                    Height =240
+                    Name ="Bezeichnungsfeld104"
+                    Caption ="Group"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3312
+                    Top =1367
+                    Width =795
+                    Height =240
+                    Name ="Bezeichnungsfeld105"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4245
+                    Top =1360
+                    Width =885
+                    Height =240
+                    Name ="Bezeichnungsfeld106"
+                    Caption ="Number"
+                End
+                Begin Label
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6931
+                    Top =1360
+                    Width =1035
+                    Height =240
+                    Name ="Bezeichnungsfeld107"
+                    Caption ="Un [V]"
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =113
+                    Top =793
+                    Width =7815
+                    Height =360
+                    TabIndex =2
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =1155
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            Begin
+                Begin TextBox
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =10318
+                    Top =226
+                    Width =1116
+                    Height =345
+                    FontSize =10
+                    Name ="Feld49"
+                    ControlSource ="=Date()"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5329
+                    Top =907
+                    Width =1425
+                    Height =240
+                    Name ="Bezeichnungsfeld66"
+                    Caption ="Membrane Type"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2025
+                    Top =915
+                    Width =1155
+                    Height =240
+                    Name ="Bezeichnungsfeld92"
+                    Caption ="Group"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3297
+                    Top =914
+                    Width =795
+                    Height =240
+                    Name ="Bezeichnungsfeld93"
+                    Caption ="Date"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4260
+                    Top =915
+                    Width =885
+                    Height =240
+                    Name ="Bezeichnungsfeld94"
+                    Caption ="Number"
+                End
+                Begin Label
+                    DisplayWhen =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6916
+                    Top =907
+                    Width =1035
+                    Height =240
+                    Name ="Bezeichnungsfeld100"
+                    Caption ="Un [V]"
+                End
+            End
+        End
+        Begin Section
+            Height =255
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =2154
+                    Width =915
+                    Name ="Elektrolyseur"
+                    ControlSource ="Gruppe"
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3283
+                    Width =870
+                    TabIndex =1
+                    Name ="Datum"
+                    ControlSource ="Datum"
+                    Format ="Short Date"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =4322
+                    Width =795
+                    TabIndex =2
+                    Name ="i"
+                    ControlSource ="Anzahl von Element Nr"
+                    Format ="Standard"
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =5329
+                    Width =1380
+                    TabIndex =3
+                    Name ="Cc"
+                    ControlSource ="Membrantyp"
+                    Format ="Fixed"
+                End
+                Begin TextBox
+                    DecimalPlaces =3
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =6916
+                    Width =1050
+                    TabIndex =4
+                    Name ="Un"
+                    ControlSource ="Un Mittel"
+                    Format ="Fixed"
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =567
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =9637
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl89_Click()
+    DoCmd.OpenForm "Betriebsdaten"
+    DoCmd.Close acForm, "frmTabelleUnGruppe"
+End
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Normierte Spannung Gruppe"
+        Bezeichnungsfeld104.Caption = "Gruppe"
+        Bezeichnungsfeld92.Caption = "Gruppe"
+        Bezeichnungsfeld105.Caption = "Datum"
+        Bezeichnungsfeld93.Caption = "Datum"
+        Bezeichnungsfeld106.Caption = "Anzahl"
+        Bezeichnungsfeld94.Caption = "Anzahl"
+        Bezeichnungsfeld101.Caption = "Membrantyp"
+        Bezeichnungsfeld66.Caption = "Membrantyp"
+        Bezeichnungsfeld107.Caption = "Un [V]"
+        Bezeichnungsfeld100.Caption = "Un [V]"
+        
+        Befehl89.Caption = "Normierte Spannung"
+        Hauptmenue.Caption = "Hauptmenu"
+        
+    Else
+        Text8.Caption = "Standardized Voltage Group"
+        Bezeichnungsfeld104.Caption = "Group"
+        Bezeichnungsfeld92.Caption = "Group"
+        Bezeichnungsfeld105.Caption = "Date"
+        Bezeichnungsfeld93.Caption = "Date"
+        Bezeichnungsfeld106.Caption = "Anzahl"
+        Bezeichnungsfeld94.Caption = "Anzahl"
+        Bezeichnungsfeld101.Caption = "Membrane Type"
+        Bezeichnungsfeld66.Caption = "Membrane Type"
+        Bezeichnungsfeld107.Caption = "Un [V]"
+        Bezeichnungsfeld100.Caption = "Un [V]"
+      
+        Befehl89.Caption = "Standardized Voltage"
+        Hauptmenue.Caption = "Main Menu"
+        
+    End If
+
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "frmTabelleUnGruppe"
+End Sub

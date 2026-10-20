@@ -1,0 +1,386 @@
+Version =17
+VersionRequired =17
+Checksum =122868191
+Begin Form
+    RecordSelectors = NotDefault
+    OrderByOn = NotDefault
+    DefaultView =0
+    GridX =5
+    GridY =5
+    Width =11457
+    ItemSuffix =44
+    Top =750
+    Right =11745
+    Bottom =7785
+    RecSrcDt = Begin
+        0x287f46cb1ca8e240
+    End
+    Caption ="Normierung"
+    OnOpen ="[Event Procedure]"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            TextAlign =3
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin CheckBox
+            AddColon = NotDefault
+            SpecialEffect =2
+            LabelAlign =3
+            Width =187
+            Height =187
+            LabelX =-236
+        End
+        Begin TextBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin ListBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =1417
+            LabelX =-236
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            LabelAlign =3
+            Width =1701
+            Height =255
+            LabelX =-236
+        End
+        Begin Subform
+            Width =1701
+            Height =1701
+        End
+        Begin FormHeader
+            Height =0
+            BackColor =12632256
+            Name ="Formularkopf1"
+        End
+        Begin Section
+            Height =6236
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =566
+                    Top =1700
+                    Width =2841
+                    Height =576
+                    FontSize =8
+                    Name ="Befehl42"
+                    Caption ="Read Data from File"
+                End
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =226
+                    Top =226
+                    Width =7020
+                    Height =465
+                    FontSize =14
+                    Name ="Text13"
+                    Caption ="Read Single Element Voltages from File"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =7596
+                    Top =226
+                    Width =3171
+                    Height =576
+                    FontSize =8
+                    TabIndex =1
+                    Name ="Schaltfläche39"
+                    Caption ="Data Input Elements"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    TextFontFamily =34
+                    Left =566
+                    Top =2834
+                    Width =2841
+                    Height =576
+                    FontSize =8
+                    TabIndex =2
+                    Name ="Befehl43"
+                    Caption ="Update Analytical Values"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+Private Sub Befehl42_Click()
+    'Dim db As Database
+    'Dim td As TableDef
+    'Set db = CurrentDb()
+    'Set td = db.CreateTableDef()
+    'td.Connect = "MExcel 8.0;Database = c:\Uhde\byl\el11"
+    Dim rst1, rst2, rst3 As DAO.Recordset
+    Dim Einlesedatei As Variant
+    Dim Einzelspannung(162) As Double
+    Dim i As Long
+    Dim fld As DAO.Field
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblDateinamenUElement")
+    Set rst3 = CurrentDb.OpenRecordset("Spannungen")
+    Do Until rst1.EOF
+        Einlesedatei = rst1!Dateiname
+        Set rst2 = CurrentDb.OpenRecordset(Einlesedatei)
+        Einzelspannung(1) = rst2!F3
+        Einzelspannung(2) = rst2!F4
+        Einzelspannung(3) = rst2!F5
+        Einzelspannung(4) = rst2!F6
+        Einzelspannung(5) = rst2!F7
+        Einzelspannung(6) = rst2!F8
+        Einzelspannung(7) = rst2!F9
+        Einzelspannung(8) = rst2!F10
+        Einzelspannung(9) = rst2!F11
+        Einzelspannung(10) = rst2!F12
+        Einzelspannung(11) = rst2!F13
+        Einzelspannung(12) = rst2!F14
+        Einzelspannung(13) = rst2!F15
+        Einzelspannung(14) = rst2!F16
+        Einzelspannung(15) = rst2!F17
+        Einzelspannung(16) = rst2!F18
+        Einzelspannung(17) = rst2!F19
+        Einzelspannung(18) = rst2!F20
+        Einzelspannung(19) = rst2!F21
+        Einzelspannung(20) = rst2!F22
+        Einzelspannung(21) = rst2!F23
+        Einzelspannung(22) = rst2!F24
+        Einzelspannung(23) = rst2!F25
+        Einzelspannung(24) = rst2!F26
+        Einzelspannung(25) = rst2!F27
+        Einzelspannung(26) = rst2!F28
+        Einzelspannung(27) = rst2!F29
+        Einzelspannung(28) = rst2!F30
+        Einzelspannung(29) = rst2!F31
+        Einzelspannung(30) = rst2!F32
+        Einzelspannung(31) = rst2!F33
+        Einzelspannung(32) = rst2!F34
+        Einzelspannung(33) = rst2!F35
+        Einzelspannung(34) = rst2!F36
+        Einzelspannung(35) = rst2!F37
+        Einzelspannung(36) = rst2!F38
+        Einzelspannung(37) = rst2!F39
+        Einzelspannung(38) = rst2!F40
+        Einzelspannung(39) = rst2!F41
+        Einzelspannung(40) = rst2!F42
+        Einzelspannung(41) = rst2!F43
+        Einzelspannung(42) = rst2!F44
+        Einzelspannung(43) = rst2!F45
+        Einzelspannung(44) = rst2!F46
+        Einzelspannung(45) = rst2!F47
+        Einzelspannung(46) = rst2!F48
+        Einzelspannung(47) = rst2!F49
+        Einzelspannung(48) = rst2!F50
+        Einzelspannung(49) = rst2!F51
+        Einzelspannung(50) = rst2!F52
+        Einzelspannung(51) = rst2!F53
+        Einzelspannung(52) = rst2!F54
+        Einzelspannung(53) = rst2!F55
+        Einzelspannung(54) = rst2!F56
+        Einzelspannung(55) = rst2!F57
+        Einzelspannung(56) = rst2!F58
+        Einzelspannung(57) = rst2!F59
+        Einzelspannung(58) = rst2!F60
+        Einzelspannung(59) = rst2!F61
+        Einzelspannung(60) = rst2!F62
+        Einzelspannung(61) = rst2!F63
+        Einzelspannung(62) = rst2!F64
+        Einzelspannung(63) = rst2!F65
+        Einzelspannung(64) = rst2!F66
+        Einzelspannung(65) = rst2!F67
+        Einzelspannung(66) = rst2!F68
+        Einzelspannung(67) = rst2!F69
+        Einzelspannung(68) = rst2!F70
+        Einzelspannung(69) = rst2!F71
+        Einzelspannung(70) = rst2!F72
+        Einzelspannung(71) = rst2!F73
+        Einzelspannung(72) = rst2!F74
+        Einzelspannung(73) = rst2!F75
+        Einzelspannung(74) = rst2!F76
+        Einzelspannung(75) = rst2!F77
+        Einzelspannung(76) = rst2!F78
+        Einzelspannung(77) = rst2!F79
+        Einzelspannung(78) = rst2!F80
+        Einzelspannung(79) = rst2!F81
+        Einzelspannung(80) = rst2!F82
+        Einzelspannung(81) = rst2!F83
+        Einzelspannung(82) = rst2!F84
+        Einzelspannung(83) = rst2!F85
+        Einzelspannung(84) = rst2!F86
+        Einzelspannung(85) = rst2!F87
+        Einzelspannung(86) = rst2!F88
+        Einzelspannung(87) = rst2!F89
+        Einzelspannung(88) = rst2!F90
+        Einzelspannung(89) = rst2!F91
+        Einzelspannung(90) = rst2!F92
+        Einzelspannung(91) = rst2!F93
+        Einzelspannung(92) = rst2!F94
+        Einzelspannung(93) = rst2!F95
+        Einzelspannung(94) = rst2!F96
+        Einzelspannung(95) = rst2!F97
+        Einzelspannung(96) = rst2!F98
+        Einzelspannung(97) = rst2!F99
+        Einzelspannung(98) = rst2!F100
+        Einzelspannung(99) = rst2!F101
+        Einzelspannung(100) = rst2!F102
+        Einzelspannung(101) = rst2!F103
+        Einzelspannung(102) = rst2!F104
+        Einzelspannung(103) = rst2!F105
+        Einzelspannung(104) = rst2!F106
+        Einzelspannung(105) = rst2!F107
+        Einzelspannung(106) = rst2!F108
+        Einzelspannung(107) = rst2!F109
+        Einzelspannung(108) = rst2!F110
+        Einzelspannung(109) = rst2!F111
+        Einzelspannung(110) = rst2!F112
+        Einzelspannung(111) = rst2!F113
+        Einzelspannung(112) = rst2!F114
+        Einzelspannung(113) = rst2!F115
+        Einzelspannung(114) = rst2!F116
+        Einzelspannung(115) = rst2!F117
+        Einzelspannung(116) = rst2!F118
+        Einzelspannung(117) = rst2!F119
+        Einzelspannung(118) = rst2!F120
+        Einzelspannung(119) = rst2!F121
+        Einzelspannung(120) = rst2!F122
+        Einzelspannung(121) = rst2!F123
+        Einzelspannung(122) = rst2!F124
+        Einzelspannung(123) = rst2!F125
+        Einzelspannung(124) = rst2!F126
+        Einzelspannung(125) = rst2!F127
+        Einzelspannung(126) = rst2!F128
+        Einzelspannung(127) = rst2!F129
+        Einzelspannung(128) = rst2!F130
+        Einzelspannung(129) = rst2!F131
+        Einzelspannung(130) = rst2!F132
+        Einzelspannung(131) = rst2!F133
+        Einzelspannung(132) = rst2!F134
+        Einzelspannung(133) = rst2!F135
+        Einzelspannung(134) = rst2!F136
+        Einzelspannung(135) = rst2!F137
+        Einzelspannung(136) = rst2!F138
+        Einzelspannung(137) = rst2!F139
+        Einzelspannung(138) = rst2!F140
+        Einzelspannung(139) = rst2!F141
+        Einzelspannung(140) = rst2!F142
+        Einzelspannung(141) = rst2!F143
+        Einzelspannung(142) = rst2!F144
+        Einzelspannung(143) = rst2!F145
+        Einzelspannung(144) = rst2!F146
+        Einzelspannung(145) = rst2!F147
+        Einzelspannung(146) = rst2!F148
+        Einzelspannung(147) = rst2!F149
+        Einzelspannung(148) = rst2!F150
+        Einzelspannung(149) = rst2!F151
+        Einzelspannung(150) = rst2!F152
+        Einzelspannung(151) = rst2!F153
+        Einzelspannung(152) = rst2!F154
+        Einzelspannung(153) = rst2!F155
+        Einzelspannung(154) = rst2!F156
+        Einzelspannung(155) = rst2!F157
+        Einzelspannung(156) = rst2!F158
+        Einzelspannung(157) = rst2!F159
+        Einzelspannung(158) = rst2!F160
+        Einzelspannung(159) = rst2!F161
+        Einzelspannung(160) = rst2!F162
+        Einzelspannung(161) = rst2!F163
+        Einzelspannung(162) = rst2!F164
+        For i = 1 To 162
+            With rst3
+                .AddNew
+                !Elektrolyseur = rst1!Elektrolyseur
+                !Datum = rst2!Datum
+                !Zeit = rst2!Zeit
+                !Position = i
+                !Ui = Einzelspannung(i)
+                .Update
+            End With
+        Next
+        rst2.Close
+        rst1.MoveNext
+    Loop
+    rst1.Close
+    rst3.Close
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text13.Caption = "Einzelelementspannungen aus Datei einlesen"
+        Schaltfläche39.Caption = "Dateneingabe Einzelelementspannungen"
+        Befehl42.Caption = "Daten einlesen"
+        
+    Else
+        Text13.Caption = "Read Single Element Voltages from File"
+        Schaltfläche39.Caption = "Input Voltage Single Elements"
+        Befehl42.Caption = "Read Data from File"
+    
+    End If
+
+
+
+End Sub
+
+Private Sub Schaltfläche39_Click()
+On Error GoTo Err_Schaltfläche39_Click
+
+    Dim DocName As String
+    Dim LinkCriteria As String
+
+    DocName = "Datenerfassung Elemente"
+    DoCmd.OpenForm DocName, , , LinkCriteria
+    DoCmd.Close acForm, "DateneinlesenElemente"
+
+Exit_Schaltfläche39_Click:
+    Exit Sub
+
+Err_Schaltfläche39_Click:
+    MsgBox Error$
+    Resume Exit_Schaltfläche39_Click
+    
+End Sub

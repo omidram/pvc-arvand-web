@@ -1,0 +1,540 @@
+Version =17
+VersionRequired =17
+Checksum =-122771775
+Begin Form
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    AllowDeletions = NotDefault
+    AllowAdditions = NotDefault
+    DataEntry = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    GridX =5
+    GridY =5
+    Width =17221
+    ItemSuffix =229
+    Right =14880
+    Bottom =8640
+    RecSrcDt = Begin
+        0x757b225d5488e140
+    End
+    OnOpen ="[Event Procedure]"
+    OnClose ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x4850204465736b4a6574203639304320536572696573205072696e7465720000 ,
+        0x000437039400060103ff800701000900000000006400010001002c0102000100 ,
+        0x2c01010000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000001000000 ,
+        0x03000000010000000100000000000000000000004850204465736b4a65742036 ,
+        0x39304320536572696573205072696e7465720000000000000000000000000000 ,
+        0x00000000000000000000000000000000000000004c5054310000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000000001000000b30d ,
+        0xb009000004000200010000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000002c012c01000000000000
+    End
+    PrtDevNames = Begin
+        0x080011003000010077696e73706f6f6c004850204465736b4a65742036393043 ,
+        0x20536572696573205072696e746572004c5054313a0000000000000000000000 ,
+        0x00000000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+        End
+        Begin Rectangle
+            Width =850
+            Height =850
+        End
+        Begin Line
+            Width =1701
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+        End
+        Begin BoundObjectFrame
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            Width =1701
+            LabelX =-1701
+        End
+        Begin ListBox
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            SpecialEffect =2
+            Width =1701
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            Width =4536
+            Height =2835
+        End
+        Begin PageBreak
+            Width =283
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =9637
+            BackColor =12632256
+            Name ="Detail0"
+            Begin
+                Begin Label
+                    SpecialEffect =1
+                    BackStyle =1
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =660
+                    Top =345
+                    Width =11700
+                    Height =690
+                    FontSize =22
+                    BackColor =12632256
+                    Name ="Text0"
+                    Caption ="Transfer Pure Brine Analysis"
+                    FontName ="Arial"
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10318
+                    Top =7823
+                    Width =2034
+                    Height =561
+                    Name ="Schaltfläche29"
+                    Caption ="Pure Brine Analysis El."
+                    OnClick ="[Event Procedure]"
+                End
+                Begin CommandButton
+                    OverlapFlags =93
+                    Left =2267
+                    Top =3741
+                    Width =2271
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl191"
+                    Caption ="Transfer Anal. Values"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =3741
+                    Top =5215
+                    Width =5567
+                    Height =3396
+                    Name ="Rechteck207"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    Left =3855
+                    Top =5569
+                    Width =5340
+                    Height =2835
+                    TabIndex =2
+                    Name ="subfrmInfoUebertrageneReinstsoleAnalysen"
+                    SourceObject ="Form.subfrmInfoUebertrageneReinstsoleAnalysen"
+                    Begin
+                        Begin Label
+                            OverlapFlags =223
+                            Left =3855
+                            Top =5329
+                            Width =2430
+                            Height =240
+                            Name ="subfrmInfoUebertrageneAnalysenBeschriftung"
+                            Caption ="Transferred Analytical Data"
+                        End
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =3
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =680
+                    Top =1247
+                    Width =5567
+                    Height =1356
+                    Name ="Rechteck218"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =793
+                    Top =1465
+                    Width =5325
+                    Height =1020
+                    FontSize =12
+                    FontWeight =700
+                    Name ="Bezeichnungsfeld219"
+                    Caption ="Transfer Pure Brine Analytical Data from Table for Total Plant to Table for Elek"
+                        "trolyzers"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    SpecialEffect =3
+                    Left =800
+                    Top =2941
+                    Width =5325
+                    Height =585
+                    TabIndex =3
+                    Name ="subfrmSucheDemontagedatum"
+                    SourceObject ="Form.subfrmDatumReinstsoleanalyseGesamtanlage"
+                End
+                Begin Rectangle
+                    SpecialEffect =3
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =6803
+                    Top =1247
+                    Width =5567
+                    Height =1356
+                    Name ="Rechteck222"
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =6916
+                    Top =1480
+                    Width =5340
+                    Height =1005
+                    FontSize =12
+                    FontWeight =700
+                    Name ="Bezeichnungsfeld223"
+                    Caption ="Transfer Pure Brine Analytical Data from Table for Train to Table for Electrolyz"
+                        "ers"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =223
+                    Left =680
+                    Top =2834
+                    Width =5567
+                    Height =1821
+                    Name ="Rechteck224"
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    OverlapFlags =93
+                    Left =6803
+                    Top =2834
+                    Width =5567
+                    Height =1821
+                    Name ="Rechteck225"
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8390
+                    Top =3855
+                    Width =2271
+                    Height =576
+                    TabIndex =4
+                    Name ="Befehl226"
+                    Caption ="Transfer Anal. Values"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Formular öffnen"
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    SpecialEffect =3
+                    Left =6916
+                    Top =2948
+                    Width =5325
+                    Height =570
+                    TabIndex =5
+                    Name ="subfrmGewTeilanlageDatenuebertragung"
+                    SourceObject ="Form.subfrmDatumReinstsoleanalyseTeilanlage"
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl191_Click()
+Dim rst1, rst2, rst3, rst4, rst5, rst6, rst12 As DAO.Recordset
+Dim dbs As Database
+
+'Sprache ermitteln
+Set rst12 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+GewSprache = rst12!IDSprache
+rst12.Close
+
+Set dbs = CurrentDb
+dbs.Execute (" Delete * From tblInfoUebertrageneReinstsoleAnalysen ")
+Set rst4 = CurrentDb.OpenRecordset("Select * from tblGewDaten Order by DatumReinstsoleanalyseGesamtanlage")
+' Set rst1 = CurrentDb.OpenRecordset(" Select * from Normierung Where [I Gesamt] = Null ")
+Set rst1 = CurrentDb.OpenRecordset(" SELECT * FROM [Analyse pure brine Ges] WHERE" & _
+        " (([Analyse pure brine Ges].Datum)=" & Format$(rst4!DatumReinstsoleanalyseGesamtanlage, "\#m\/d\/yy\#") & ") ")
+Set rst5 = CurrentDb.OpenRecordset("Select Bezeichnung from tblElektrolyseurbezeichnung")
+Set rst3 = CurrentDb.OpenRecordset("tblInfoUebertrageneReinstsoleAnalysen")
+Set rst6 = CurrentDb.OpenRecordset("Select * from [Analyse pure brine]")
+If (rst1.BOF And rst1.EOF) Then
+    If GewSprache = 1 Then
+        MsgBox "Keine Reinstsole-Analysedaten der Gesamtanlage zum gewählten Datum gefunden"
+    Else
+        MsgBox "No pure brine analysis of total plant for chosen date found"
+    End If
+    Exit Sub
+End If
+Do Until rst5.EOF
+    Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM [Analyse pure brine] WHERE" & _
+        "((([Analyse pure brine]!Elektrolyseur)='" & rst5![Bezeichnung] & "')" & _
+        "AND (([Analyse pure brine]!Datum)=" & Format$(rst4!DatumReinstsoleanalyseGesamtanlage, "\#m\/d\/yy\#") & ")) ")
+        
+    If (rst2.BOF And rst2.EOF) Then
+        rst1.MoveFirst
+        rst6.AddNew
+        rst6![Elektrolyseur] = rst5![Bezeichnung]
+        rst6!Datum = rst1!Datum
+        rst6!Zeit = rst1!Zeit
+        rst6![NaClO3 Pb] = rst1![NaClO3]
+        rst6![Na2SO4 Pb] = rst1![Na2SO4]
+        rst6![NaOH Pb] = rst1!NaOH
+        rst6![Na2CO3 Pb] = rst1![Na2CO3]
+        rst6![NaOCl Pb] = rst1!NaOCl
+        rst6!temperature = rst1!temperature
+        rst6!pH = rst1!pH
+        rst6![density at 20 °C] = rst1![density at 20 °C]
+        rst6![NaCl Pb] = rst1![NaCl]
+        rst6![Ca +Mg] = rst1![Ca +Mg]
+        rst6![Ba] = rst1![Ba]
+        rst6![Sr] = rst1![Sr]
+        rst6![Ni] = rst1![Ni]
+        rst6![Fe] = rst1![Fe]
+        rst6![Al] = rst1![Al]
+        rst6![SiO2] = rst1![SiO2]
+        rst6![i] = rst1![i]
+        rst6![Ba] = rst1![Ba]
+        rst6![F] = rst1![F]
+        rst6![Br] = rst1![Br]
+        rst6![Organics] = rst1![Organics]
+        rst6.Update
+        rst3.AddNew
+        rst3!Elektrolyseur = rst5!Bezeichnung
+        rst3!Datum = rst1!Datum
+        If GewSprache = 1 Then
+            rst3!DatenUebertragen = "Analysen übertragen"
+        Else
+            rst3!DatenUebertragen = "Analytical data transferred"
+        End If
+        rst3.Update
+    Else
+        rst3.AddNew
+        rst3!Elektrolyseur = rst5!Bezeichnung
+        rst3!Datum = rst1!Datum
+        If GewSprache = 1 Then
+            rst3!DatenUebertragen = "Daten bereits vorhanden"
+        Else
+            rst3!DatenUebertragen = "Data already existing"
+        End If
+        rst3.Update
+    End If
+    subfrmInfoUebertrageneReinstsoleAnalysen.Requery
+    rst2.Close
+    rst5.MoveNext
+Loop
+rst1.Close
+rst3.Close
+rst4.Close
+If GewSprache = 1 Then
+    MsgBox "Reinstsole-Analysedaten für Einzelelektrolyseure übertragen"
+Else
+    MsgBox "Pure brine analytical data for single electrolyzers transferred"
+End If
+End Sub
+
+
+Private Sub Befehl226_Click()
+Dim rst1, rst2, rst3, rst4, rst5, rst6, rst7, rst8, rst12 As DAO.Recordset
+Dim dbs As Database
+
+Set dbs = CurrentDb
+dbs.Execute (" Delete * From tblInfoUebertrageneReinstsoleAnalysen ")
+Set rst4 = CurrentDb.OpenRecordset("Select * from tblGewDaten Order by DatumReinstsoleanalyseTeilanlage")
+Set rst1 = CurrentDb.OpenRecordset(" SELECT * FROM [Analyse pure brine Teilanlage] WHERE" & _
+        " (([Analyse pure brine Teilanlage].Datum)=" & Format$(rst4!DatumReinstsoleanalyseTeilanlage, "\#m\/d\/yy\#") & ") ")
+Set rst5 = CurrentDb.OpenRecordset("Select Bezeichnung from tblElektrolyseurbezeichnung")
+Set rst3 = CurrentDb.OpenRecordset("tblInfoUebertrageneReinstsoleAnalysen")
+Set rst6 = CurrentDb.OpenRecordset("Select * from [Analyse pure brine]")
+Set rst8 = CurrentDb.OpenRecordset(" Select * from tblElektrolyseuranordnung")
+
+'Sprache ermitteln
+Set rst12 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+GewSprache = rst12!IDSprache
+rst12.Close
+
+If (rst1.BOF And rst1.EOF) Then
+    If GewSprache = 1 Then
+        MsgBox "Keine Reinstsole-Analysedaten der Teilanlage zum gewählten Datum gefunden"
+    Else
+        MsgBox "No pure brine analysis of train for chosen date found"
+    End If
+    Exit Sub
+End If
+
+If Not rst1.BOF And rst1.EOF Then
+    rst1.MoveFirst
+End If
+
+Do Until rst1.EOF
+    Do Until rst5.EOF
+        'Prüfen, ob Daten für einzelne Eletrolyseure bereits vorhanden sind
+        Set rst2 = CurrentDb.OpenRecordset(" SELECT * FROM [Analyse pure brine] WHERE" & _
+            "((([Analyse pure brine]!Elektrolyseur)='" & rst5![Bezeichnung] & "')" & _
+            "AND (([Analyse pure brine]!Datum)=" & Format$(rst4!DatumReinstsoleanalyseTeilanlage, "\#m\/d\/yy\#") & ")) ")
+        Set rst7 = CurrentDb.OpenRecordset("SELECT * FROM tblElektrolyseuranordnung WHERE" & _
+                   " ( tblElektrolyseuranordnung!Bezeichnung ='" & rst5![Bezeichnung] & "' ) AND " & _
+                   " ( tblElektrolyseuranordnung!Teilanlage = '" & rst1!Teilanlage & "') ")
+        
+        If (rst2.BOF And rst2.EOF) Then
+        
+            If Not (rst7.BOF And rst7.EOF) Then
+                rst6.AddNew
+                rst6![Elektrolyseur] = rst5![Bezeichnung]
+                rst6!Datum = rst1!Datum
+                rst6!Zeit = rst1!Zeit
+                rst6![NaClO3 Pb] = rst1![NaClO3 Pb]
+                rst6![Na2SO4 Pb] = rst1![Na2SO4 Pb]
+                rst6![NaOH Pb] = rst1![NaOH Pb]
+                rst6![Na2CO3 Pb] = rst1![Na2CO3 Pb]
+                rst6![NaOCl Pb] = rst1![NaOCl Pb]
+                rst6!temperature = rst1!temperature
+                rst6!pH = rst1!pH
+                rst6![density at 20 °C] = rst1![density at 20 °C]
+                rst6![NaCl Pb] = rst1![NaCl Pb]
+                rst6![Ca +Mg] = rst1![Ca +Mg]
+                rst6![Ba] = rst1![Ba]
+                rst6![Sr] = rst1![Sr]
+                rst6![Ni] = rst1![Ni]
+                rst6![Fe] = rst1![Fe]
+                rst6![Al] = rst1![Al]
+                rst6![SiO2] = rst1![SiO2]
+                rst6![i] = rst1![i]
+                rst6![Ba] = rst1![Ba]
+                rst6![F] = rst1![F]
+                rst6![Br] = rst1![Br]
+                rst6![Organics] = rst1![Organics]
+                rst6.Update
+                ' Anzeige aktualisieren
+                rst3.AddNew
+                rst3!Elektrolyseur = rst5!Bezeichnung
+                rst3!Datum = rst1!Datum
+                If GewSprache = 1 Then
+                    rst3!DatenUebertragen = "Analysen Übertragen"
+                Else
+                    rst3!DatenUebertragen = "Analytical data transferred"
+                End If
+                rst3.Update
+            End If
+        Else
+            rst3.AddNew
+            rst3!Elektrolyseur = rst5!Bezeichnung
+            rst3!Datum = rst1!Datum
+            If GewSprache = 1 Then
+                rst3!DatenUebertragen = "Daten bereits vorhanden"
+            Else
+                rst3!DatenUebertragen = "Data already existing"
+            End If
+            rst3.Update
+        End If
+        subfrmInfoUebertrageneReinstsoleAnalysen.Requery
+        rst2.Close
+        rst7.Close
+        rst5.MoveNext
+    Loop
+    rst5.MoveFirst
+    rst1.MoveNext
+Loop
+rst1.Close
+rst3.Close
+rst4.Close
+rst6.Close
+rst8.Close
+If GewSprache = 1 Then
+    MsgBox "Übertragung der Reinstsole-Analysedaten abgeschlossen"
+Else
+    MsgBox "Transfer of pure brine analytical data completed"
+End If
+
+End Sub
+
+Private Sub Form_Close()
+    Dim dbs As Database
+    Set dbs = CurrentDb
+    dbs.Execute (" Delete * From tblInfoUebertrageneReinstsoleAnalysen ")
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text0.Caption = "Reinstsole-Analysen Übertragen"
+        Befehl191.Caption = "Analysedaten übertragen"
+        Befehl226.Caption = "Analysedaten übertragen"
+        Bezeichnungsfeld219.Caption = "Reinstsoleanalysen aus Tabelle für Gesamtanlage in Tabelle für Elektrolyseure übertragen"
+        Bezeichnungsfeld223.Caption = "Reinstsoleanalysen aus Tabelle für Teilanlage in Tabelle für Elektrolyseure übertragen"
+        subfrmInfoUebertrageneAnalysenBeschriftung.Caption = "Übertragene Analysen"
+        Schaltfläche29.Caption = "Analyse Reinstsole El."
+        
+        
+    Else
+        Text0.Caption = "Transfer Pure Brine Analysis"
+        Befehl191.Caption = "Transfer Anal. Values"
+        Befehl226.Caption = "Transfer Anal. Values"
+        Bezeichnungsfeld219.Caption = "Transfer Pure Brine Analytical Data from Table for Total Plant to Table for Elektrolyzers"
+        Bezeichnungsfeld223.Caption = "Transfer Pure Brine Analytical Data from Table for Train to Table for Elektrolyzers"
+        subfrmInfoUebertrageneAnalysenBeschriftung.Caption = "Transferred Analytical Data"
+        Schaltfläche29.Caption = "Pure Brine Analysis El."
+    End If
+
+End Sub
+
+
+Private Sub Schaltfläche29_Click()
+    DoCmd.OpenForm "An Reinsole"
+    DoCmd.Close acForm, "frmReinstsoleAnUebertragen"
+End Sub

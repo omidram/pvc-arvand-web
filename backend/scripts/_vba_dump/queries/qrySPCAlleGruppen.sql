@@ -1,0 +1,2 @@
+SELECT qryCEAlleGruppen.Gruppe, qryCEAlleGruppen.Datum, ListGr2.[Mittelwert von i] AS [i Mittel], SPCBer([ListGr2]![Mittelwert von Un],[qryCEAlleGruppen]![µNaOH]) AS Energieverbrauch, ListGr2.[Mittelwert von Un] AS [Un Mittel], qryCEAlleGruppen.µNaOH AS CE, GetGewIRef() AS iRefSPC
+FROM qryCEAlleGruppen INNER JOIN ListGr2 ON (qryCEAlleGruppen.Datum = ListGr2.Datum) AND (qryCEAlleGruppen.Gruppe = ListGr2.Gruppe);

@@ -1,0 +1,1276 @@
+{
+  "forms": {
+    "DiaUnCEA": {
+      "found": true,
+      "controls": [
+        {
+          "name": "OLEUngebunden0",
+          "type": 114,
+          "rowsource": "SELECT (Format([Datum],\"DDDDD\")),Avg([Un]) AS [MittelwertVonUn],Avg([CE]) AS [MittelwertVonCE] FROM [EVA]   GROUP BY (Int([Datum])),(Format([Datum],\"DDDDD\"));",
+          "left": 65,
+          "top": 65,
+          "width": 12063,
+          "height": 6348
+        },
+        {
+          "name": "Bezeichnungsfeld1",
+          "type": 100,
+          "caption": "CE (%)",
+          "left": 113,
+          "top": 226,
+          "width": 512,
+          "height": 227
+        },
+        {
+          "name": "Bezeichnungsfeld2",
+          "type": 100,
+          "caption": "Un (V)",
+          "left": 11451,
+          "top": 226,
+          "width": 512,
+          "height": 227
+        },
+        {
+          "name": "Befehl3",
+          "type": 104,
+          "caption": "Menue",
+          "left": 10204,
+          "top": 6462,
+          "width": 1926,
+          "height": 576
+        }
+      ],
+      "record_source": "",
+      "caption": "",
+      "default_view": 0
+    },
+    "UnCE": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Text0",
+          "type": 100,
+          "caption": "Un / CE",
+          "left": 1133,
+          "top": 226,
+          "width": 7590,
+          "height": 1260
+        },
+        {
+          "name": "Schaltfläche29",
+          "type": 104,
+          "caption": "Menue",
+          "left": 4320,
+          "top": 6015,
+          "width": 2034,
+          "height": 561
+        },
+        {
+          "name": "Rechteck105",
+          "type": 101,
+          "left": 1133,
+          "top": 2616,
+          "width": 2495,
+          "height": 4191
+        },
+        {
+          "name": "Bezeichnungsfeld106",
+          "type": 100,
+          "caption": "Electrolyzer",
+          "left": 1135,
+          "top": 1815,
+          "width": 2490,
+          "height": 570
+        },
+        {
+          "name": "Befehl211",
+          "type": 104,
+          "caption": "Graph",
+          "left": 1360,
+          "top": 4195,
+          "width": 2046,
+          "height": 576
+        },
+        {
+          "name": "subfrmUnCE1",
+          "type": 112,
+          "left": 1360,
+          "top": 2948,
+          "width": 2040,
+          "height": 1140
+        },
+        {
+          "name": "subfrmAuswertungszeitraum",
+          "type": 112,
+          "left": 1700,
+          "top": 793,
+          "width": 6435,
+          "height": 525
+        },
+        {
+          "name": "Command222",
+          "type": 104,
+          "caption": "Graph",
+          "left": 1365,
+          "top": 6015,
+          "width": 2046,
+          "height": 576
+        },
+        {
+          "name": "Label223",
+          "type": 100,
+          "caption": "All Electrolyzers",
+          "left": 1365,
+          "top": 5550,
+          "width": 2040,
+          "height": 330
+        }
+      ],
+      "record_source": "",
+      "caption": "",
+      "default_view": 0
+    },
+    "frmDiagrammUnCE": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Befehl3",
+          "type": 104,
+          "caption": "Un / CE",
+          "left": 10200,
+          "top": 285,
+          "width": 1926,
+          "height": 576
+        },
+        {
+          "name": "subfrmAnlageAnzeigen",
+          "type": 112,
+          "left": 165,
+          "top": 915,
+          "width": 7830,
+          "height": 360
+        },
+        {
+          "name": "Bezeichnungsfeld19",
+          "type": 100,
+          "caption": "Standardized Voltage of all Electrolyzers",
+          "left": 165,
+          "top": 165,
+          "width": 7824,
+          "height": 680
+        },
+        {
+          "name": "Bezeichnungsfeld20",
+          "type": 100,
+          "caption": "Basis: Table Un Electrolyzers",
+          "left": 283,
+          "top": 623,
+          "width": 7540,
+          "height": 227
+        },
+        {
+          "name": "OLEUngebunden0",
+          "type": 114,
+          "rowsource": "SELECT (Format([Datum],\"DDDDD\")),Avg([Un]) AS [U n],Avg([CE]) AS [C E] FROM [qrySPCElektrolyseur]   GROUP BY (Int([Datum])),(Format([Datum],\"DDDDD\"));",
+          "left": 65,
+          "top": 65,
+          "width": 12063,
+          "height": 6348
+        },
+        {
+          "name": "Bezeichnungsfeld1",
+          "type": 100,
+          "caption": "CE (%)",
+          "left": 113,
+          "top": 226,
+          "width": 512,
+          "height": 227
+        },
+        {
+          "name": "Bezeichnungsfeld2",
+          "type": 100,
+          "caption": "Un (V)",
+          "left": 11451,
+          "top": 226,
+          "width": 512,
+          "height": 227
+        },
+        {
+          "name": "Text4",
+          "type": 109,
+          "controlsource": "Elektrolyseur",
+          "left": 6009,
+          "top": 170,
+          "width": 1701,
+          "height": 285
+        },
+        {
+          "name": "Bezeichnungsfeld5",
+          "type": 100,
+          "caption": "CE / Un Electrolyzer",
+          "left": 3120,
+          "top": 165,
+          "width": 2895,
+          "height": 315
+        }
+      ],
+      "record_source": "qrySPCElektrolyseur",
+      "caption": "",
+      "default_view": 0
+    },
+    "frmDiagrammUnCEAlleElektrolyseure": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Befehl3",
+          "type": 104,
+          "caption": "Un / CE",
+          "left": 10200,
+          "top": 285,
+          "width": 1926,
+          "height": 576
+        },
+        {
+          "name": "subfrmAnlageAnzeigen",
+          "type": 112,
+          "left": 165,
+          "top": 915,
+          "width": 7830,
+          "height": 360
+        },
+        {
+          "name": "Bezeichnungsfeld19",
+          "type": 100,
+          "caption": "Standardized Voltage of all Electrolyzers",
+          "left": 165,
+          "top": 165,
+          "width": 7824,
+          "height": 680
+        },
+        {
+          "name": "Bezeichnungsfeld20",
+          "type": 100,
+          "caption": "Basis: Table Un Electrolyzers",
+          "left": 283,
+          "top": 623,
+          "width": 7540,
+          "height": 227
+        },
+        {
+          "name": "OLEUngebunden0",
+          "type": 114,
+          "rowsource": "SELECT (Format([Datum],\"DDDDD\")),Avg([Un]) AS [U n],Avg([CE]) AS [C E] FROM [qrySPCAlleElektrolyseure]   GROUP BY (Int([Datum])),(Format([Datum],\"DDDDD\"));",
+          "left": 65,
+          "top": 65,
+          "width": 12063,
+          "height": 6348
+        },
+        {
+          "name": "Bezeichnungsfeld1",
+          "type": 100,
+          "caption": "CE (%)",
+          "left": 113,
+          "top": 226,
+          "width": 512,
+          "height": 227
+        },
+        {
+          "name": "Bezeichnungsfeld2",
+          "type": 100,
+          "caption": "Un (V)",
+          "left": 11451,
+          "top": 226,
+          "width": 512,
+          "height": 227
+        }
+      ],
+      "record_source": "qrySPCElektrolyseur",
+      "caption": "",
+      "default_view": 0
+    },
+    "frmTabelleEingabeCEElektrolyseurNaOH": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Text8",
+          "type": 100,
+          "caption": "Current Efficiency Electrolyzer",
+          "left": 120,
+          "top": 120,
+          "width": 7815,
+          "height": 570
+        },
+        {
+          "name": "Hauptmenue",
+          "type": 104,
+          "caption": "Current Efficiency",
+          "left": 9070,
+          "top": 113,
+          "width": 1716,
+          "height": 576
+        },
+        {
+          "name": "Bezeichnungsfeld101",
+          "type": 100,
+          "caption": "Teilanlage",
+          "left": 4195,
+          "top": 1360,
+          "width": 2265,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld105",
+          "type": 100,
+          "caption": "Datum",
+          "left": 3288,
+          "top": 1360,
+          "width": 825,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld109",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 6576,
+          "top": 1360,
+          "width": 1065,
+          "height": 240
+        },
+        {
+          "name": "subfrmAnlageAnzeigen",
+          "type": 112,
+          "left": 113,
+          "top": 793,
+          "width": 7815,
+          "height": 360
+        },
+        {
+          "name": "Bezeichnungsfeld114",
+          "type": 100,
+          "caption": "Basis: NaOH Production",
+          "left": 226,
+          "top": 453,
+          "width": 7597,
+          "height": 227
+        },
+        {
+          "name": "Bezeichnungsfeld66",
+          "type": 100,
+          "caption": "Teilanlage",
+          "left": 4305,
+          "top": 900,
+          "width": 2175,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld68",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 6555,
+          "top": 900,
+          "width": 1035,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld93",
+          "type": 100,
+          "caption": "Datum",
+          "left": 3285,
+          "top": 915,
+          "width": 915,
+          "height": 240
+        },
+        {
+          "name": "Datum",
+          "type": 109,
+          "controlsource": "Datum",
+          "left": 3283,
+          "top": 0,
+          "width": 870,
+          "height": 255
+        },
+        {
+          "name": "t An",
+          "type": 109,
+          "controlsource": "CE",
+          "left": 6571,
+          "top": 0,
+          "width": 1020,
+          "height": 255
+        },
+        {
+          "name": "Kombinationsfeld110",
+          "type": 111,
+          "controlsource": "Elektrolyseur",
+          "rowsource": "SELECT DISTINCTROW [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichnung].[Bezeichnung] FROM [tblElektrolyseurbezeichnung];",
+          "left": 4308,
+          "top": 0,
+          "width": 2154,
+          "height": 226
+        },
+        {
+          "name": "Feld47",
+          "type": 109,
+          "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+          "left": 9637,
+          "top": 113,
+          "width": 1701,
+          "height": 255
+        }
+      ],
+      "record_source": "tblEingabeCEElektrolyseurNaOH",
+      "caption": "Tabelle Leistungstests",
+      "default_view": 1
+    },
+    "frmTabelleEingabeCEElementNaOH": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Text8",
+          "type": 100,
+          "caption": "Current Efficiency Element",
+          "left": 120,
+          "top": 120,
+          "width": 7815,
+          "height": 570
+        },
+        {
+          "name": "Hauptmenue",
+          "type": 104,
+          "caption": "Current Efficiency",
+          "left": 9070,
+          "top": 113,
+          "width": 1716,
+          "height": 576
+        },
+        {
+          "name": "Bezeichnungsfeld101",
+          "type": 100,
+          "caption": "Elektrolyzer",
+          "left": 4185,
+          "top": 1365,
+          "width": 2295,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld105",
+          "type": 100,
+          "caption": "Date",
+          "left": 3270,
+          "top": 1365,
+          "width": 855,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld109",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 7937,
+          "top": 1360,
+          "width": 1065,
+          "height": 240
+        },
+        {
+          "name": "subfrmAnlageAnzeigen",
+          "type": 112,
+          "left": 113,
+          "top": 793,
+          "width": 7815,
+          "height": 360
+        },
+        {
+          "name": "Bezeichnungsfeld114",
+          "type": 100,
+          "caption": "Basis: NaOH Production",
+          "left": 226,
+          "top": 453,
+          "width": 7597,
+          "height": 227
+        },
+        {
+          "name": "Bezeichnungsfeld115",
+          "type": 100,
+          "caption": "Position",
+          "left": 6555,
+          "top": 1365,
+          "width": 1275,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld66",
+          "type": 100,
+          "caption": "Electrolyzer",
+          "left": 4290,
+          "top": 900,
+          "width": 2205,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld68",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 7937,
+          "top": 907,
+          "width": 1035,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld93",
+          "type": 100,
+          "caption": "Date",
+          "left": 3270,
+          "top": 915,
+          "width": 945,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld116",
+          "type": 100,
+          "caption": "Position",
+          "left": 6555,
+          "top": 900,
+          "width": 1275,
+          "height": 240
+        },
+        {
+          "name": "Datum",
+          "type": 109,
+          "controlsource": "Datum",
+          "left": 3283,
+          "top": 0,
+          "width": 870,
+          "height": 255
+        },
+        {
+          "name": "t An",
+          "type": 109,
+          "controlsource": "CE",
+          "left": 7937,
+          "top": 0,
+          "width": 1020,
+          "height": 255
+        },
+        {
+          "name": "Kombinationsfeld110",
+          "type": 111,
+          "controlsource": "Elektrolyseur",
+          "rowsource": "SELECT DISTINCTROW [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichnung].[Bezeichnung] FROM [tblElektrolyseurbezeichnung];",
+          "left": 4308,
+          "top": 0,
+          "width": 2154,
+          "height": 226
+        },
+        {
+          "name": "Text117",
+          "type": 109,
+          "controlsource": "Position",
+          "left": 6576,
+          "top": 0,
+          "width": 1245,
+          "height": 255
+        },
+        {
+          "name": "Feld47",
+          "type": 109,
+          "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+          "left": 9637,
+          "top": 113,
+          "width": 1701,
+          "height": 255
+        }
+      ],
+      "record_source": "tblEingabeCEElementNaOH",
+      "caption": "Tabelle Leistungstests",
+      "default_view": 1
+    },
+    "frmTabelleEingabeCEGesamtanlageNaOH": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Text8",
+          "type": 100,
+          "caption": "Current Efficiency Total Plant",
+          "left": 120,
+          "top": 120,
+          "width": 7815,
+          "height": 570
+        },
+        {
+          "name": "Hauptmenue",
+          "type": 104,
+          "caption": "Current Efficiency",
+          "left": 9070,
+          "top": 113,
+          "width": 1716,
+          "height": 576
+        },
+        {
+          "name": "Bezeichnungsfeld105",
+          "type": 100,
+          "caption": "Datum",
+          "left": 3288,
+          "top": 1360,
+          "width": 825,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld109",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 4422,
+          "top": 1360,
+          "width": 1065,
+          "height": 240
+        },
+        {
+          "name": "subfrmAnlageAnzeigen",
+          "type": 112,
+          "left": 113,
+          "top": 793,
+          "width": 7815,
+          "height": 360
+        },
+        {
+          "name": "Bezeichnungsfeld114",
+          "type": 100,
+          "caption": "Basis: NaOH Production",
+          "left": 226,
+          "top": 453,
+          "width": 7597,
+          "height": 227
+        },
+        {
+          "name": "Bezeichnungsfeld68",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 4422,
+          "top": 907,
+          "width": 1035,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld93",
+          "type": 100,
+          "caption": "Datum",
+          "left": 3285,
+          "top": 915,
+          "width": 915,
+          "height": 240
+        },
+        {
+          "name": "Datum",
+          "type": 109,
+          "controlsource": "Datum",
+          "left": 3283,
+          "top": 0,
+          "width": 870,
+          "height": 255
+        },
+        {
+          "name": "t An",
+          "type": 109,
+          "controlsource": "CE",
+          "left": 4422,
+          "top": 0,
+          "width": 1020,
+          "height": 255
+        },
+        {
+          "name": "Feld47",
+          "type": 109,
+          "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+          "left": 9637,
+          "top": 113,
+          "width": 1701,
+          "height": 255
+        }
+      ],
+      "record_source": "tblEingabeCEGesamtanlageNaOH",
+      "caption": "Tabelle Leistungstests",
+      "default_view": 1
+    },
+    "frmTabelleEingabeCEGruppeNaOH": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Text8",
+          "type": 100,
+          "caption": "Current Efficiency Group",
+          "left": 120,
+          "top": 120,
+          "width": 7815,
+          "height": 570
+        },
+        {
+          "name": "Hauptmenue",
+          "type": 104,
+          "caption": "Current Efficiency",
+          "left": 9070,
+          "top": 113,
+          "width": 1716,
+          "height": 576
+        },
+        {
+          "name": "Bezeichnungsfeld101",
+          "type": 100,
+          "caption": "Group",
+          "left": 4170,
+          "top": 1365,
+          "width": 2325,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld105",
+          "type": 100,
+          "caption": "Datum",
+          "left": 3288,
+          "top": 1360,
+          "width": 825,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld109",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 6576,
+          "top": 1360,
+          "width": 1065,
+          "height": 240
+        },
+        {
+          "name": "subfrmAnlageAnzeigen",
+          "type": 112,
+          "left": 113,
+          "top": 793,
+          "width": 7815,
+          "height": 360
+        },
+        {
+          "name": "Bezeichnungsfeld114",
+          "type": 100,
+          "caption": "Basis: NaOH Production",
+          "left": 226,
+          "top": 453,
+          "width": 7597,
+          "height": 227
+        },
+        {
+          "name": "Bezeichnungsfeld66",
+          "type": 100,
+          "caption": "Group",
+          "left": 4275,
+          "top": 900,
+          "width": 2235,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld68",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 6555,
+          "top": 900,
+          "width": 1035,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld93",
+          "type": 100,
+          "caption": "Datum",
+          "left": 3285,
+          "top": 915,
+          "width": 915,
+          "height": 240
+        },
+        {
+          "name": "Datum",
+          "type": 109,
+          "controlsource": "Datum",
+          "left": 3283,
+          "top": 0,
+          "width": 870,
+          "height": 255
+        },
+        {
+          "name": "t An",
+          "type": 109,
+          "controlsource": "CE",
+          "left": 6571,
+          "top": 0,
+          "width": 1020,
+          "height": 255
+        },
+        {
+          "name": "Text115",
+          "type": 109,
+          "controlsource": "Gruppe",
+          "left": 4308,
+          "top": 0,
+          "width": 2154,
+          "height": 226
+        },
+        {
+          "name": "Feld47",
+          "type": 109,
+          "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+          "left": 9637,
+          "top": 113,
+          "width": 1701,
+          "height": 255
+        }
+      ],
+      "record_source": "tblEingabeCEGruppeNaOH",
+      "caption": "Tabelle Leistungstests",
+      "default_view": 1
+    },
+    "frmTabelleEingabeCETeilanlageNaOH": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Text8",
+          "type": 100,
+          "caption": "Current Efficiency Train",
+          "left": 120,
+          "top": 120,
+          "width": 7815,
+          "height": 570
+        },
+        {
+          "name": "Hauptmenue",
+          "type": 104,
+          "caption": "Current Efficiency",
+          "left": 9070,
+          "top": 113,
+          "width": 1716,
+          "height": 576
+        },
+        {
+          "name": "Bezeichnungsfeld101",
+          "type": 100,
+          "caption": "Train",
+          "left": 4185,
+          "top": 1365,
+          "width": 2295,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld105",
+          "type": 100,
+          "caption": "Datum",
+          "left": 3288,
+          "top": 1360,
+          "width": 825,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld109",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 6576,
+          "top": 1360,
+          "width": 1065,
+          "height": 240
+        },
+        {
+          "name": "subfrmAnlageAnzeigen",
+          "type": 112,
+          "left": 113,
+          "top": 793,
+          "width": 7815,
+          "height": 360
+        },
+        {
+          "name": "Bezeichnungsfeld114",
+          "type": 100,
+          "caption": "Basis: NaOH Production",
+          "left": 226,
+          "top": 453,
+          "width": 7597,
+          "height": 227
+        },
+        {
+          "name": "Bezeichnungsfeld66",
+          "type": 100,
+          "caption": "Train",
+          "left": 4290,
+          "top": 900,
+          "width": 2205,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld68",
+          "type": 100,
+          "caption": "CE [%]",
+          "left": 6555,
+          "top": 900,
+          "width": 1035,
+          "height": 240
+        },
+        {
+          "name": "Bezeichnungsfeld93",
+          "type": 100,
+          "caption": "Datum",
+          "left": 3285,
+          "top": 915,
+          "width": 915,
+          "height": 240
+        },
+        {
+          "name": "Datum",
+          "type": 109,
+          "controlsource": "Datum",
+          "left": 3283,
+          "top": 0,
+          "width": 870,
+          "height": 255
+        },
+        {
+          "name": "t An",
+          "type": 109,
+          "controlsource": "CE",
+          "left": 6571,
+          "top": 0,
+          "width": 1020,
+          "height": 255
+        },
+        {
+          "name": "Kombinationsfeld110",
+          "type": 111,
+          "controlsource": "Teilanlage",
+          "rowsource": "SELECT DISTINCTROW [tblTeilanlagenbezeichnung].[Nr], [tblTeilanlagenbezeichnung].[Bezeichnung] FROM [tblTeilanlagenbezeichnung];",
+          "left": 4308,
+          "top": 0,
+          "width": 2154,
+          "height": 226
+        },
+        {
+          "name": "Feld47",
+          "type": 109,
+          "controlsource": "=\"Seite \" & [Page] & \" von \" & [Pages]",
+          "left": 9637,
+          "top": 113,
+          "width": 1701,
+          "height": 255
+        }
+      ],
+      "record_source": "tblEingabeCETeilanlageNaOH",
+      "caption": "Tabelle Leistungstests",
+      "default_view": 1
+    },
+    "subfrmElektrolyseureUnCeSpc": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Bezeichnungsfeld12",
+          "type": 100,
+          "caption": "Elektrolyseur",
+          "left": 113,
+          "top": 0,
+          "width": 1695,
+          "height": 225
+        },
+        {
+          "name": "Kombinationsfeld10",
+          "type": 111,
+          "controlsource": "Bezeichnung",
+          "rowsource": "SELECT DISTINCTROW [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichnung].[Bezeichnung] FROM [tblElektrolyseurbezeichnung];",
+          "left": 56,
+          "top": 0,
+          "width": 2026,
+          "height": 226
+        }
+      ],
+      "record_source": "tblGewElektrolyseureUnCeSpc",
+      "caption": "subfrmElektrolyseureUnCeSpc",
+      "default_view": 1
+    },
+    "subfrmUnCE1": {
+      "found": true,
+      "controls": [
+        {
+          "name": "Kombinationsfeld10",
+          "type": 111,
+          "controlsource": "IDElektrolyseurUnCeSpcElektrolyseur",
+          "rowsource": "SELECT DISTINCTROW [tblElektrolyseurbezeichnung].[Nr], [tblElektrolyseurbezeichnung].[Bezeichnung] FROM [tblElektrolyseurbezeichnung];",
+          "left": 174,
+          "top": 510,
+          "width": 1641,
+          "height": 300
+        },
+        {
+          "name": "Elektrolyseur_Label",
+          "type": 100,
+          "caption": "Electrolyser",
+          "left": 170,
+          "top": 170,
+          "width": 1665,
+          "height": 255
+        }
+      ],
+      "record_source": "SELECT DISTINCTROW tblGewDaten.IDiRef, tblGewDaten.IDElektrolyseurUnCeSpcElektrolyseur FROM tblGewDaten;",
+      "caption": "subfrmUnCE1",
+      "default_view": 0
+    }
+  },
+  "tables": {
+    "tblCEElektrolyseur": [
+      {
+        "name": "Elektrolyseur",
+        "type": 10,
+        "size": 50
+      },
+      {
+        "name": "Datum",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "Zeit",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "VAnolyt",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "ConcCl2",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "ConcO2",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "µNaClO3",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "µNaOCl",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "µAlkali",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "µNa2CO3",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "µHCl",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "µO2",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "µO2alt",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "µNaOH",
+        "type": 7,
+        "size": 8
+      },
+      {
+        "name": "CheckAKF",
+        "type": 10,
+        "size": 255
+      },
+      {
+        "name": "CheckClO",
+        "type": 10,
+        "size": 255
+      },
+      {
+        "name": "CheckAnsaeurung",
+        "type": 10,
+        "size": 255
+      }
+    ],
+    "tblEingabeCEElektrolyseurNaOH": [
+      {
+        "name": "Datum",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 10,
+        "size": 50
+      },
+      {
+        "name": "CE",
+        "type": 7,
+        "size": 8
+      }
+    ],
+    "tblEingabeCEElementNaOH": [
+      {
+        "name": "Datum",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "Zeit",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 10,
+        "size": 50
+      },
+      {
+        "name": "Position",
+        "type": 4,
+        "size": 4
+      },
+      {
+        "name": "CE",
+        "type": 7,
+        "size": 8
+      }
+    ],
+    "tblEingabeCEElementNaOH alt": [
+      {
+        "name": "Datum",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "Zeit",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "Elektrolyseur",
+        "type": 10,
+        "size": 50
+      },
+      {
+        "name": "Position",
+        "type": 4,
+        "size": 4
+      },
+      {
+        "name": "CE",
+        "type": 7,
+        "size": 8
+      }
+    ],
+    "tblEingabeCEGesamtanlageNaOH": [
+      {
+        "name": "Datum",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "CE",
+        "type": 7,
+        "size": 8
+      }
+    ],
+    "tblEingabeCEGruppeNaOH": [
+      {
+        "name": "Datum",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "Gruppe",
+        "type": 4,
+        "size": 4
+      },
+      {
+        "name": "CE",
+        "type": 7,
+        "size": 8
+      }
+    ],
+    "tblEingabeCEGruppeNaOH alt": [
+      {
+        "name": "Datum",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "Gruppe",
+        "type": 4,
+        "size": 4
+      },
+      {
+        "name": "CE",
+        "type": 7,
+        "size": 8
+      }
+    ],
+    "tblEingabeCETeilanlageNaOH": [
+      {
+        "name": "Datum",
+        "type": 8,
+        "size": 8
+      },
+      {
+        "name": "Teilanlage",
+        "type": 10,
+        "size": 50
+      },
+      {
+        "name": "CE",
+        "type": 7,
+        "size": 8
+      }
+    ]
+  },
+  "sample_rows": {
+    "tblCEElektrolyseur": [],
+    "tblEingabeCEElektrolyseurNaOH": [
+      {
+        "Datum": null,
+        "Elektrolyseur": null,
+        "CE": null
+      }
+    ],
+    "tblEingabeCEElementNaOH": [],
+    "tblEingabeCEElementNaOH alt": [],
+    "tblEingabeCEGesamtanlageNaOH": [],
+    "tblEingabeCEGruppeNaOH": [],
+    "tblEingabeCEGruppeNaOH alt": [],
+    "tblEingabeCETeilanlageNaOH": []
+  },
+  "form_names": [
+    "DiaUnCEA",
+    "UnCE",
+    "frmDiagrammUnCE",
+    "frmDiagrammUnCEAlleElektrolyseure",
+    "frmTabelleEingabeCEElektrolyseurNaOH",
+    "frmTabelleEingabeCEElementNaOH",
+    "frmTabelleEingabeCEGesamtanlageNaOH",
+    "frmTabelleEingabeCEGruppeNaOH",
+    "frmTabelleEingabeCETeilanlageNaOH",
+    "subfrmElektrolyseureUnCeSpc",
+    "subfrmUnCE1"
+  ],
+  "table_names": [
+    "tblCEElektrolyseur",
+    "tblEingabeCEElektrolyseurNaOH",
+    "tblEingabeCEElementNaOH",
+    "tblEingabeCEElementNaOH alt",
+    "tblEingabeCEGesamtanlageNaOH",
+    "tblEingabeCEGruppeNaOH",
+    "tblEingabeCEGruppeNaOH alt",
+    "tblEingabeCETeilanlageNaOH"
+  ]
+}

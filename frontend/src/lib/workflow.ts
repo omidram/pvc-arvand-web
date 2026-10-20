@@ -3,7 +3,7 @@ import { apiClient } from "./api-client";
 import type { PipelineItem } from "./types";
 
 export type WfFlow = "coating" | "purchase" | "cell" | "inspection";
-export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "operation" | "cellshop";
+export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "operation" | "cellshop" | "process";
 export type WfKind = "anode" | "cathode";
 
 export const COATING_STEPS = ["c90_select", "code_generate", "await_company", "await_indent", "await_dispatch", "await_return", "await_inspection", "await_approval", "completed"] as const;
@@ -234,15 +234,41 @@ export interface InspectionRequest extends WfDeadline {
   disassembly_date: string | null;
   reason: string | null;
   report_id: number | null;
+  decisions?: PieceDecisions;
   created_by: string | null;
   created_at: string | null;
   updated_at: string | null;
   last_note: string | null;
 }
 
+export interface PieceVerdict {
+  healthy?: boolean;
+  result?: string;
+}
+
+export interface PieceDecisions {
+  inspection?: { anode?: PieceVerdict; cathode?: PieceVerdict };
+  process?: { anode?: PieceVerdict; cathode?: PieceVerdict };
+}
+
+export interface InspectionCellCard {
+  assembly_date: string | null;
+  commissioning_date: string | null;
+  disassembly_date: string | null;
+  membrane_type: string | null;
+  gap_mm: string | null;
+  anode_coating: string | null;
+  cathode_coating: string | null;
+  anode_remark: string | null;
+  cathode_remark: string | null;
+  decommission_reason: string | null;
+  dol_days: number | null;
+}
+
 export interface InspectionRequestDetail extends InspectionRequest {
   completed_at: string | null;
   report: InspectionBrief | null;
+  cell?: InspectionCellCard | null;
   candidates: InspectionBrief[];
   files: WfFile[];
   events: WfEvent[];

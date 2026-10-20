@@ -1,0 +1,422 @@
+Version =19
+VersionRequired =19
+Checksum =-122992724
+Begin Form
+    RecordSelectors = NotDefault
+    NavigationButtons = NotDefault
+    DefaultView =0
+    ScrollBars =2
+    GridX =5
+    GridY =5
+    Width =12132
+    ItemSuffix =111
+    Top =810
+    Right =12135
+    Bottom =8835
+    RecSrcDt = Begin
+        0x4361788cfcd1e240
+    End
+    RecordSource ="qrySPCElektrolyseur"
+    Caption ="frmTabelleSPC"
+    OnOpen ="[Event Procedure]"
+    PrtMip = Begin
+        0x8905000089050000890500008905000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x010400059c003402033f8002010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200000034020000ba9173ca0000000000000000000000000000000000000000 ,
+        0x0000000000000000050000000200000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001c0027000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000046494c453a00
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            FontWeight =700
+            BackColor =12632256
+        End
+        Begin Rectangle
+            SpecialEffect =2
+            Width =850
+            Height =850
+        End
+        Begin CommandButton
+            TextFontFamily =2
+            Width =1701
+            Height =283
+        End
+        Begin OptionButton
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin CheckBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =187
+            Height =187
+        End
+        Begin TextBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin ListBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =1417
+            LabelX =-1701
+        End
+        Begin ComboBox
+            AutoLabel = NotDefault
+            SpecialEffect =2
+            Width =1701
+            Height =255
+            LabelX =-1701
+        End
+        Begin Subform
+            SpecialEffect =2
+            Width =1701
+            Height =1701
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="Tahoma"
+        End
+        Begin FormHeader
+            CanGrow = NotDefault
+            Height =1247
+            BackColor =12632256
+            Name ="Formularkopf1"
+            GUID = Begin
+                0x05a1129ef2276e47aeda9bc4dfd1aae3
+            End
+            Begin
+                Begin Label
+                    BackStyle =0
+                    OldBorderStyle =1
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =120
+                    Top =120
+                    Width =7815
+                    Height =570
+                    FontSize =14
+                    Name ="Text8"
+                    Caption ="Specific Power Consumpt. Electrolyzer"
+                    GUID = Begin
+                        0x74f2587d87e300458725adf6375767f3
+                    End
+                End
+                Begin CommandButton
+                    DisplayWhen =2
+                    OverlapFlags =85
+                    Left =8163
+                    Top =113
+                    Width =1716
+                    Height =576
+                    Name ="Hauptmenue"
+                    Caption ="Menue"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x5668f3e7139b3943b2d2b4c5062b3488
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =9977
+                    Top =113
+                    Width =2061
+                    Height =576
+                    TabIndex =1
+                    Name ="Befehl89"
+                    Caption ="Power Consumption"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Formular öffnen"
+                    GUID = Begin
+                        0x934f9672e408f046a7247368b765e6b2
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =113
+                    Top =793
+                    Width =7815
+                    Height =360
+                    TabIndex =2
+                    Name ="subfrmAnlageAnzeigen"
+                    SourceObject ="Form.subfrmAnlageAnzeigen"
+                    GUID = Begin
+                        0xb42847c637905a4b8b3e1c0672945acf
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =226
+                    Top =453
+                    Width =7597
+                    Height =227
+                    Name ="Bezeichnungsfeld100"
+                    Caption ="Basis: Table Un Electrolyzers, Anodic Balance Electrolyzers"
+                    GUID = Begin
+                        0x4bd7e9ce59a83946bfc072fbc070b70c
+                    End
+                End
+            End
+        End
+        Begin PageHeader
+            DisplayWhen =1
+            Height =0
+            BackColor =12632256
+            Name ="Seitenkopf3"
+            GUID = Begin
+                0x0690229ef615024bbc38fedd861e3b07
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7823
+            BackColor =12632256
+            Name ="Detail0"
+            GUID = Begin
+                0xeea395b306bc844d90effa542105cd81
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    SpecialEffect =0
+                    Left =120
+                    Top =120
+                    Width =7695
+                    Height =7470
+                    Name ="subfrmTabelleSPC"
+                    SourceObject ="Form.subfrmTabelleSPC"
+                    GUID = Begin
+                        0x23fed450fc6a1e40af9fcd3e361224fd
+                    End
+                End
+                Begin Rectangle
+                    SpecialEffect =1
+                    BackStyle =0
+                    BorderWidth =3
+                    OverlapFlags =93
+                    Left =9195
+                    Top =120
+                    Width =2721
+                    Height =7483
+                    Name ="Rechteck202"
+                    GUID = Begin
+                        0x99c2287e52747b4d8361d658e6c76d00
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =215
+                    OldBorderStyle =0
+                    SpecialEffect =0
+                    Left =9420
+                    Top =3405
+                    Width =2265
+                    Height =405
+                    TabIndex =1
+                    Name ="1"
+                    SourceObject ="Form.subfrmSPC1"
+                    EventProcPrefix ="Ctl1"
+                    GUID = Begin
+                        0x6ab5dad19974384c8b16feb442b1fcd5
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =9420
+                    Top =6690
+                    Width =2271
+                    Height =576
+                    TabIndex =2
+                    Name ="Command105"
+                    Caption ="Display Results"
+                    OnClick ="[Event Procedure]"
+                    ObjectPalette = Begin
+                        0x0003100000000000800000000080000080800000000080008000800000808000 ,
+                        0x80808000c0c0c000ff000000c0c0c000ffff00000000ff00c0c0c00000ffff00 ,
+                        0xffffff0000000000
+                    End
+                    ControlTipText ="Find Next"
+                    GUID = Begin
+                        0x1efacfd86c779741815a182cab791659
+                    End
+                End
+                Begin ToggleButton
+                    OverlapFlags =215
+                    Left =9525
+                    Top =225
+                    Width =2143
+                    TabIndex =3
+                    Name ="Toggle106"
+                    Caption ="Total Plant"
+                    GUID = Begin
+                        0x70705cefca3b0b4789d80c27777f90b8
+                    End
+                End
+                Begin ToggleButton
+                    OverlapFlags =215
+                    Left =9525
+                    Top =570
+                    Width =2143
+                    TabIndex =4
+                    Name ="Toggle107"
+                    Caption ="Train"
+                    GUID = Begin
+                        0x5ae1f54235491b4da4e3d4d67452146a
+                    End
+                End
+                Begin ToggleButton
+                    OverlapFlags =215
+                    Left =9526
+                    Top =910
+                    Width =2143
+                    TabIndex =5
+                    Name ="Toggle108"
+                    Caption ="Electrolyzer"
+                    GUID = Begin
+                        0x2ff78c47873f5749b7e7918fbe6fc74e
+                    End
+                End
+                Begin ToggleButton
+                    OverlapFlags =215
+                    Left =9526
+                    Top =1240
+                    Width =2143
+                    TabIndex =6
+                    Name ="Toggle109"
+                    Caption ="Group"
+                    GUID = Begin
+                        0xa2473a800c2ccc4dbd7d5bc7e21d97f4
+                    End
+                End
+                Begin ToggleButton
+                    OverlapFlags =215
+                    Left =9526
+                    Top =1585
+                    Width =2143
+                    TabIndex =7
+                    Name ="Toggle110"
+                    Caption ="Element"
+                    GUID = Begin
+                        0xfdc75dfafe145846a3cf5fb0f91318c3
+                    End
+                End
+            End
+        End
+        Begin PageFooter
+            DisplayWhen =1
+            Height =453
+            BackColor =12632256
+            Name ="Seitenfuß4"
+            GUID = Begin
+                0xfe7c551f4658a643899956add2602e5b
+            End
+            Begin
+                Begin TextBox
+                    OverlapFlags =85
+                    Left =9751
+                    Top =113
+                    Name ="Feld47"
+                    ControlSource ="=\"Seite \" & [Page] & \" von \" & [Pages]"
+                    GUID = Begin
+                        0x8a22703e52b049498d3453ae109f3d45
+                    End
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            BackColor =12632256
+            Name ="Formularfuß2"
+            GUID = Begin
+                0xd1233a47183051469dd582fd00c3c8b3
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database   'Verwenden der Datenbank-Sortierreihenfolge beim Vergleich von Zeichenfolgen.
+
+
+Private Sub Befehl89_Click()
+    DoCmd.OpenForm "Energieverbrauch"
+    DoCmd.Close acForm, "frmTabelleSPC"
+
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+  Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    If GewSprache = 1 Then
+        Text8.Caption = "Spez. Energieverbrauch Elektrolyseur"
+        Bezeichnungsfeld100.Caption = "Basis: Tabelle Un Elektrolyseur, Anodische Bilanz Elektrolyseur"
+        Hauptmenue.Caption = "Hauptmenu"
+        Befehl89.Caption = "Energieverbrauch"
+        Command105.Caption = "Ergebnisse anzeigen"
+       
+    Else
+        Text8.Caption = "Specific Power Cons. Electrolyzer"
+        Bezeichnungsfeld100.Caption = "Basis: Table Un Electrolyzer, Anodic Balance Electrolyzer"
+        Hauptmenue.Caption = "Main Menu"
+        Befehl89.Caption = "Power Consumption"
+        Command105.Caption = "Display Results"
+     End If
+
+End Sub
+
+Private Sub Hauptmenue_Click()
+    DoCmd.OpenForm "Header"
+    DoCmd.Close acForm, "frmTabelleSPC"
+End Sub
+Private Sub Command105_Click()
+    KorrekturfaktorenAktualisieren
+    Me!subfrmTabelleSPC.Requery
+End Sub

@@ -1,0 +1,2 @@
+SELECT PLS.[Anfangsdatum der Messung], PLS.[Zeit Beginn], PLS.[Enddatum der Messung], PLS.[Zeit Ende], ([PLS]![Enddatum der Messung]-[PLS]![Anfangsdatum der Messung]+[PLS]![Zeit Ende]-[PLS]![Zeit Beginn])*24 AS h, ([PLS]![Produktion]*1000*[PLS]![Mittlere NaOH Konzentration])/([PLS]![kAh  Gesamtanlage]*1.4923*[PLS]![Elemente pro Elektrolyseur]) AS CE, [PLS]![kAh  Gesamtanlage]/([h]*[PLS]![Elektrolyseure in Betrieb]*2.721) AS [Last]
+FROM PLS;

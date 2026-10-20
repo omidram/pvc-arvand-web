@@ -1,0 +1,4 @@
+SELECT tblEingabeCEElementNaOH.Elektrolyseur, tblEingabeCEElementNaOH.Position, "El. "+[tblEingabeCEElementNaOH]![Elektrolyseur]+" Pos. "+Format([tblEingabeCEElementNaOH]![Position],"0") AS Bezeichnung, tblEingabeCEElementNaOH.Datum, tblEingabeCEElementNaOH.Zeit, tblEingabeCEElementNaOH.CE
+FROM tblGewDaten, tblElektrolyseurbezeichnung, tblEingabeCEElementNaOH
+WHERE (((tblEingabeCEElementNaOH.Elektrolyseur)=(SELECT Bezeichnung FROM tblElektrolyseurbezeichnung WHERE tblGewDaten.IDElektrolyseurUnCeSpcElement = tblElektrolyseurbezeichnung.Nr)) AND ((tblEingabeCEElementNaOH.Position) Like (Select IDPositionUnCeSpcElement FROM tblGewDaten)) AND ((tblEingabeCEElementNaOH.Datum)>=[tblGewDaten].[Anfangsdatum] And (tblEingabeCEElementNaOH.Datum)<=[tblGewDaten].[Enddatum]) AND ((tblEingabeCEElementNaOH.CE)<>(-1)))
+ORDER BY tblEingabeCEElementNaOH.Datum;

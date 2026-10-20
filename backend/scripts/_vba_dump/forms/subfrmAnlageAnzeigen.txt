@@ -1,0 +1,243 @@
+Version =19
+VersionRequired =19
+Checksum =122913175
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    AllowAdditions = NotDefault
+    AllowEdits = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    PictureAlignment =5
+    PictureSizeMode =1
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =7937
+    DatasheetFontHeight =10
+    ItemSuffix =27
+    Left =405
+    Top =795
+    Right =8205
+    Bottom =1140
+    DatasheetGridlinesColor =12632256
+    PaintPalette = Begin
+        0x000301000000000000000000
+    End
+    RecSrcDt = Begin
+        0x0a2476e2f39de240
+    End
+    RecordSource ="tblBasisdaten"
+    Caption ="subfrmAnlage"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Arial"
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontName ="Arial"
+        End
+        Begin Rectangle
+            BackStyle =0
+            BorderWidth =1
+            Width =850
+            Height =850
+        End
+        Begin Line
+            BorderWidth =1
+            Width =1701
+        End
+        Begin Image
+            SpecialEffect =1
+            BackStyle =0
+            OldBorderStyle =0
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="MS Sans Serif"
+        End
+        Begin OptionButton
+            SpecialEffect =1
+            LabelX =230
+            LabelY =-30
+        End
+        Begin CheckBox
+            SpecialEffect =1
+            BorderWidth =3
+            LabelX =230
+            LabelY =-30
+        End
+        Begin OptionGroup
+            Width =1701
+            Height =1701
+            BorderColor =12632256
+        End
+        Begin BoundObjectFrame
+            SpecialEffect =1
+            OldBorderStyle =0
+            BackStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+        End
+        Begin TextBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin ListBox
+            SpecialEffect =1
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontName ="Arial"
+        End
+        Begin ComboBox
+            BackStyle =0
+            Width =1701
+            LabelX =-1701
+            BorderColor =12632256
+            FontName ="Arial"
+        End
+        Begin Subform
+            SpecialEffect =1
+            Width =1701
+            Height =1701
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =1
+            BackStyle =0
+            Width =4536
+            Height =2835
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            FontSize =8
+            FontWeight =400
+            FontName ="Arial"
+        End
+        Begin Tab
+            BackStyle =0
+            Width =5103
+            Height =3402
+        End
+        Begin FormHeader
+            Height =0
+            Name ="Formularkopf"
+        End
+        Begin Section
+            Height =345
+            BackColor =12632256
+            Name ="Detailbereich"
+            Begin
+                Begin TextBox
+                    Locked = NotDefault
+                    OldBorderStyle =0
+                    OverlapFlags =85
+                    TextAlign =1
+                    BackStyle =1
+                    Left =56
+                    Top =56
+                    Width =3126
+                    FontWeight =700
+                    BackColor =12632256
+                    Name ="Text19"
+                    ControlSource ="Kunde"
+                    FontName ="MS Sans Serif"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OldBorderStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =5045
+                    Top =56
+                    Width =1551
+                    FontWeight =700
+                    TabIndex =1
+                    BackColor =12632256
+                    Name ="Text21"
+                    ControlSource ="UAN"
+                    FontName ="MS Sans Serif"
+                End
+                Begin TextBox
+                    OldBorderStyle =0
+                    OverlapFlags =85
+                    TextAlign =2
+                    BackStyle =1
+                    Left =6696
+                    Top =56
+                    Width =1131
+                    Height =225
+                    FontWeight =700
+                    TabIndex =2
+                    BackColor =12632256
+                    BorderColor =0
+                    Name ="Feld68"
+                    ControlSource ="=Date()"
+                    FontName ="MS Sans Serif"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Left =3288
+                    Top =56
+                    Width =1650
+                    Height =225
+                    FontWeight =700
+                    Name ="Bezeichnungsfeld26"
+                    Caption ="NaCl Electrolysis"
+                    FontName ="MS Sans Serif"
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            Name ="Formularfuß"
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Private Sub Form_Open(Cancel As Integer)
+Dim rst1 As DAO.Recordset
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblGewDaten ORDER BY IDSprache")
+    GewSprache = rst1!IDSprache
+    rst1.Close
+    Set rst1 = CurrentDb.OpenRecordset("Select * From tblBasisdaten ORDER BY Anlagentyp")
+    GewAnlagentyp = rst1!Anlagentyp
+    rst1.Close
+    If GewSprache = 1 Then
+        If GewAnlagentyp = 1 Then
+            Bezeichnungsfeld26.Caption = "NaCl Elektrolyse"
+        Else
+            Bezeichnungsfeld26.Caption = "KCl Elektrolyse"
+        End If
+    Else
+        If GewAnlagentyp = 1 Then
+            Bezeichnungsfeld26.Caption = "NaCl Electrolysis"
+        Else
+            Bezeichnungsfeld26.Caption = "KCl Elektrolysis"
+        End If
+    End If
+    
+    
+End Sub

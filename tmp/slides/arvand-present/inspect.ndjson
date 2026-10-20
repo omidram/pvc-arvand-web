@@ -1,0 +1,276 @@
+{"kind":"image","slide":1,"role":"cover plate","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-01.jpg","bbox":[0,0,1280,720]}
+{"kind":"textbox","slide":1,"role":"kicker","text":"پتروشیمی اروند  ·  واحد کلر–آلکالی","textChars":34,"textLines":1,"bbox":[760,150,460,24]}
+{"kind":"textbox","slide":1,"role":"title","text":"از سلول\nتا تصمیم","textChars":16,"textLines":2,"bbox":[760,186,460,130]}
+{"kind":"textbox","slide":1,"role":"subtitle","text":"سامانه مدیریت سل‌های الکترولیز\nبر پایه UHDE Administration\nبرای بهره‌برداری امروز کارخانه","textChars":89,"textLines":3,"bbox":[760,352,460,90]}
+{"kind":"textbox","slide":1,"role":"brand","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[760,620,460,22]}
+{"kind":"textbox","slide":1,"role":"version","text":"نسخه V 1.32","textChars":11,"textLines":1,"bbox":[760,644,460,22]}
+{"kind":"textbox","slide":2,"role":"kicker","text":"۰۱  ·  واحد","textChars":11,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":2,"role":"title","text":"الکترولیز، در کلی‌ترین نگاه","textChars":27,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":2,"role":"art","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-02.jpg","bbox":[56,130,460,520]}
+{"kind":"textbox","slide":2,"role":"lead","text":"نمک و جریان برق وارد سل می‌شود.\nسه محصول از همین سلول بیرون می‌آید.","textChars":67,"textLines":2,"bbox":[548,140,676,64]}
+{"kind":"textbox","slide":2,"role":"product","text":"کلر","textChars":3,"textLines":1,"bbox":[620,244,500,32]}
+{"kind":"textbox","slide":2,"role":"product-note","text":"محصول گازی سمت آند","textChars":18,"textLines":1,"bbox":[620,276,500,24]}
+{"kind":"textbox","slide":2,"role":"product","text":"سود سوزآور","textChars":10,"textLines":1,"bbox":[620,340,500,32]}
+{"kind":"textbox","slide":2,"role":"product-note","text":"محصول مایع سمت کاتد","textChars":19,"textLines":1,"bbox":[620,372,500,24]}
+{"kind":"textbox","slide":2,"role":"product","text":"هیدروژن","textChars":7,"textLines":1,"bbox":[620,436,500,32]}
+{"kind":"textbox","slide":2,"role":"product-note","text":"گاز همراه سود","textChars":13,"textLines":1,"bbox":[620,468,500,24]}
+{"kind":"textbox","slide":2,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":2,"role":"page","text":"2","textChars":1,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":3,"role":"kicker","text":"۰۲  ·  الکترولایزر","textChars":18,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":3,"role":"title","text":"بیست‌وچهار الکترولایزر، چهارهزار سل","textChars":35,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":3,"role":"arrangement","path":"C:\\Users\\Omid\\AppData\\Local\\Temp\\cursor\\screenshots\\04-arrangement.png","bbox":[56,124,700,400]}
+{"kind":"textbox","slide":3,"role":"caption","text":"چیدمان زنده A1  ·  ۱۶۸ پوزیشن، ۱۱۳ سل پر","textChars":40,"textLines":1,"bbox":[56,534,700,22]}
+{"kind":"textbox","slide":3,"role":"stat","text":"۲۴","textChars":2,"textLines":1,"bbox":[800,138,404,42]}
+{"kind":"textbox","slide":3,"role":"stat-note","text":"دو ترین، از A1 تا M2","textChars":20,"textLines":1,"bbox":[800,188,404,28]}
+{"kind":"textbox","slide":3,"role":"stat","text":"۱۶۸","textChars":3,"textLines":1,"bbox":[800,266,404,42]}
+{"kind":"textbox","slide":3,"role":"stat-note","text":"پوزیشن؛ دو بلوک ۸۴تایی","textChars":22,"textLines":1,"bbox":[800,316,404,28]}
+{"kind":"textbox","slide":3,"role":"stat","text":"۴٬۰۳۲","textChars":5,"textLines":1,"bbox":[800,394,404,42]}
+{"kind":"textbox","slide":3,"role":"stat-note","text":"جایگاه؛ ۲٬۶۶۳ تای آن پر است","textChars":27,"textLines":1,"bbox":[800,444,404,28]}
+{"kind":"textbox","slide":3,"role":"stat","text":"۲٬۶۵۶","textChars":5,"textLines":1,"bbox":[800,522,404,42]}
+{"kind":"textbox","slide":3,"role":"stat-note","text":"سل در سرویس، روی تابلوی زنده","textChars":28,"textLines":1,"bbox":[800,572,404,28]}
+{"kind":"textbox","slide":3,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":3,"role":"page","text":"3","textChars":1,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":4,"role":"kicker","text":"۰۳  ·  المان","textChars":12,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":4,"role":"title","text":"هر سل یک المان است و سه قطعه دارد","textChars":33,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":4,"role":"art","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-04.jpg","bbox":[56,130,420,520]}
+{"kind":"textbox","slide":4,"role":"part","text":"آند","textChars":3,"textLines":1,"bbox":[860,148,330,40]}
+{"kind":"textbox","slide":4,"role":"count","text":"۵٬۳۷۱","textChars":5,"textLines":1,"bbox":[520,148,320,40]}
+{"kind":"textbox","slide":4,"role":"part-note","text":"سطح کلر. سریال، پوشش و عمر جدا دارد.","textChars":36,"textLines":1,"bbox":[520,202,680,44]}
+{"kind":"textbox","slide":4,"role":"part","text":"کاتد","textChars":4,"textLines":1,"bbox":[860,298,330,40]}
+{"kind":"textbox","slide":4,"role":"count","text":"۵٬۴۲۷","textChars":5,"textLines":1,"bbox":[520,298,320,40]}
+{"kind":"textbox","slide":4,"role":"part-note","text":"سطح سود و هیدروژن. پوشش، سابقه جدا دارد.","textChars":40,"textLines":1,"bbox":[520,352,680,44]}
+{"kind":"textbox","slide":4,"role":"part","text":"غشا","textChars":3,"textLines":1,"bbox":[860,448,330,40]}
+{"kind":"textbox","slide":4,"role":"count","text":"۹٬۸۳۳","textChars":5,"textLines":1,"bbox":[520,448,320,40]}
+{"kind":"textbox","slide":4,"role":"part-note","text":"دیواره دو نیمه. هر تعویض یک سابقه است.","textChars":38,"textLines":1,"bbox":[520,502,680,44]}
+{"kind":"textbox","slide":4,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":4,"role":"page","text":"4","textChars":1,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":5,"role":"kicker","text":"۰۴  ·  طراح","textChars":11,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":5,"role":"title","text":"طراح، سازوکار همین قطعات را نرم‌افزار کرد","textChars":41,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":5,"role":"art","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-05.jpg","bbox":[56,140,520,500]}
+{"kind":"textbox","slide":5,"role":"product","text":"UHDE Administration","textChars":19,"textLines":1,"bbox":[610,160,610,48]}
+{"kind":"textbox","slide":5,"role":"lead","text":"نرم‌افزار اصلی واحد روی Microsoft Access.\nنام آشنای کارخانه برای آن EAP است.","textChars":76,"textLines":2,"bbox":[610,220,610,64]}
+{"kind":"textbox","slide":5,"role":"uhde-point","text":"هویت هر آند، کاتد و غشا با سریال","textChars":32,"textLines":1,"bbox":[640,336,490,28]}
+{"kind":"textbox","slide":5,"role":"uhde-point","text":"سرهم‌بندی المان و چیدمان سل","textChars":27,"textLines":1,"bbox":[640,406,490,28]}
+{"kind":"textbox","slide":5,"role":"uhde-point","text":"ولتاژ استاندارد، بازده و انرژی","textChars":30,"textLines":1,"bbox":[640,476,490,28]}
+{"kind":"textbox","slide":5,"role":"uhde-point","text":"آنالیز شیمیایی و علت توقف","textChars":25,"textLines":1,"bbox":[640,546,490,28]}
+{"kind":"textbox","slide":5,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":5,"role":"page","text":"5","textChars":1,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":6,"role":"kicker","text":"۰۵  ·  عمق UHDE","textChars":15,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":6,"role":"title","text":"یک فرم نبود؛ نقشه کارخانه بود","textChars":29,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"textbox","slide":6,"role":"tab","text":"مدیریت المان","textChars":12,"textLines":1,"bbox":[872,146,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"مونتاژ، آند، کاتد، غشا، بازرسی","textChars":30,"textLines":1,"bbox":[872,190,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"چیدمان سلول","textChars":11,"textLines":1,"bbox":[472,146,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"سل، پوزیشن، قطعه نصب‌شده","textChars":24,"textLines":1,"bbox":[472,190,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"ولتاژ استاندارد","textChars":15,"textLines":1,"bbox":[72,146,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"الکترولایزر، گروه، المان","textChars":24,"textLines":1,"bbox":[72,190,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"بازده جریان","textChars":11,"textLines":1,"bbox":[872,278,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"از تولید سود، با فرمول طراح","textChars":27,"textLines":1,"bbox":[872,322,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"مصرف انرژی","textChars":10,"textLines":1,"bbox":[472,278,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"کیلووات‌ساعت بر تن","textChars":18,"textLines":1,"bbox":[472,322,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"Un / Ce","textChars":7,"textLines":1,"bbox":[72,278,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"ولتاژ استاندارد و بازده","textChars":23,"textLines":1,"bbox":[72,322,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"آنالیز","textChars":6,"textLines":1,"bbox":[872,410,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"آنولیت، کاتولیت، کلر، آب دمین","textChars":29,"textLines":1,"bbox":[872,454,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"آمار","textChars":4,"textLines":1,"bbox":[472,410,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"جدول و نمودار واحد","textChars":18,"textLines":1,"bbox":[472,454,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"توقف واحد","textChars":9,"textLines":1,"bbox":[72,410,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"دلیل، دسته، علت تریپ","textChars":20,"textLines":1,"bbox":[72,454,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"انبار و پوشش","textChars":12,"textLines":1,"bbox":[872,542,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"موجودی، بازپوشش، تفکیک","textChars":22,"textLines":1,"bbox":[872,586,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"جستجو","textChars":5,"textLines":1,"bbox":[472,542,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"سریال، تاریخ، الکترولایزر","textChars":25,"textLines":1,"bbox":[472,586,352,32]}
+{"kind":"textbox","slide":6,"role":"tab","text":"تنظیمات واحد","textChars":12,"textLines":1,"bbox":[72,542,352,36]}
+{"kind":"textbox","slide":6,"role":"tab-note","text":"زبان، جریان مرجع، تاریخ","textChars":23,"textLines":1,"bbox":[72,586,352,32]}
+{"kind":"textbox","slide":6,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":6,"role":"page","text":"6","textChars":1,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":7,"role":"kicker","text":"۰۶  ·  ارزش طراح","textChars":16,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":7,"role":"title","text":"ارزشمند بود، چون حافظه کارخانه بود","textChars":34,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":7,"role":"art","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-07.jpg","bbox":[56,130,380,520]}
+{"kind":"textbox","slide":7,"role":"why","text":"فرمول، نه سلیقه","textChars":15,"textLines":1,"bbox":[480,146,724,34]}
+{"kind":"textbox","slide":7,"role":"why-note","text":"بازده کاتدی، انرژی و ولتاژ هر المان از رابطه طراح می‌آید، نه از یک جمع ساده.","textChars":76,"textLines":1,"bbox":[480,188,724,44]}
+{"kind":"textbox","slide":7,"role":"why","text":"سریال گم نمی‌شود","textChars":16,"textLines":1,"bbox":[480,276,724,34]}
+{"kind":"textbox","slide":7,"role":"why-note","text":"آند و کاتد و غشا اسم دارند. مونتاژ، دمونتاژ و پوشش به همان اسم برمی‌گردد.","textChars":73,"textLines":1,"bbox":[480,318,724,44]}
+{"kind":"textbox","slide":7,"role":"why","text":"سل در متن واحد","textChars":14,"textLines":1,"bbox":[480,406,724,34]}
+{"kind":"textbox","slide":7,"role":"why-note","text":"از کل واحد تا ترین، الکترولایزر، گروه و یک المان، همان سلسله‌مراتب Access.","textChars":74,"textLines":1,"bbox":[480,448,724,44]}
+{"kind":"textbox","slide":7,"role":"why","text":"توقف دلیل دارد","textChars":14,"textLines":1,"bbox":[480,536,724,34]}
+{"kind":"textbox","slide":7,"role":"why-note","text":"فهرست خاموشی، دسته، و علت تریپ از اول جزو طراحی بود.","textChars":52,"textLines":1,"bbox":[480,578,724,44]}
+{"kind":"textbox","slide":7,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":7,"role":"page","text":"7","textChars":1,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":8,"role":"kicker","text":"۰۷  ·  سال‌های میانی","textChars":20,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":8,"role":"title","text":"بعد از آن، داده جزیره جزیره شد","textChars":30,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":8,"role":"art","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-08.jpg","bbox":[860,130,364,520]}
+{"kind":"textbox","slide":8,"role":"island","text":"فایل‌های اکسل","textChars":13,"textLines":1,"bbox":[76,140,740,34]}
+{"kind":"textbox","slide":8,"role":"island-note","text":"مونتاژ، تفکیک و بازرسی هر کدام فایل جدا بود.","textChars":44,"textLines":1,"bbox":[76,182,740,50]}
+{"kind":"textbox","slide":8,"role":"island","text":"بازرسی جزیره‌ای","textChars":15,"textLines":1,"bbox":[76,276,740,34]}
+{"kind":"textbox","slide":8,"role":"island-note","text":"نتیجه بازرسی به سریال همان آند وصل نبود.","textChars":40,"textLines":1,"bbox":[76,318,740,50]}
+{"kind":"textbox","slide":8,"role":"island","text":"پارسه","textChars":5,"textLines":1,"bbox":[76,412,740,34]}
+{"kind":"textbox","slide":8,"role":"island-note","text":"تغذیه می‌شد، اما گزارش متعدد از آن درنمی‌آمد.","textChars":45,"textLines":1,"bbox":[76,454,740,50]}
+{"kind":"textbox","slide":8,"role":"island","text":"اکسس، روی یک میز","textChars":16,"textLines":1,"bbox":[76,548,740,34]}
+{"kind":"textbox","slide":8,"role":"island-note","text":"شیفت، کارگاه و انبار همزمان به آن نمی‌رسیدند.","textChars":45,"textLines":1,"bbox":[76,590,740,50]}
+{"kind":"textbox","slide":8,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":8,"role":"page","text":"8","textChars":1,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":9,"role":"kicker","text":"۰۸  ·  پروژه","textChars":12,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":9,"role":"title","text":"برنامه‌ای تحت وب، بر پایه همان اکسس","textChars":35,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":9,"role":"art","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-09.jpg","bbox":[56,140,500,500]}
+{"kind":"textbox","slide":9,"role":"claim","text":"پروژه این نبود که فرم‌ها را از نو اختراع کند.","textChars":45,"textLines":1,"bbox":[590,160,630,80]}
+{"kind":"textbox","slide":9,"role":"claim-body","text":"قرار شد هرچه طراح در UHDE Administration خواسته، در برنامه‌ای باشد که شیفت، کارگاه، فرآیند، تدارکات و انبار همزمان ببینند.","textChars":122,"textLines":1,"bbox":[590,250,630,90]}
+{"kind":"textbox","slide":9,"role":"pill","text":"زبان فرم‌ها","textChars":11,"textLines":1,"bbox":[610,380,590,28]}
+{"kind":"textbox","slide":9,"role":"pill-note","text":"همان نام‌های کارخانه، فارسی و انگلیسی","textChars":37,"textLines":1,"bbox":[610,410,590,24]}
+{"kind":"textbox","slide":9,"role":"pill","text":"داده طراح","textChars":9,"textLines":1,"bbox":[610,470,590,28]}
+{"kind":"textbox","slide":9,"role":"pill-note","text":"مونتاژ، ولتاژ، آنالیز، توقف، قطعات","textChars":34,"textLines":1,"bbox":[610,500,590,24]}
+{"kind":"textbox","slide":9,"role":"pill","text":"جای دسترسی","textChars":10,"textLines":1,"bbox":[610,560,590,28]}
+{"kind":"textbox","slide":9,"role":"pill-note","text":"شبکه کارخانه، نه یک فایل روی یک کامپیوتر","textChars":40,"textLines":1,"bbox":[610,590,590,24]}
+{"kind":"textbox","slide":9,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":9,"role":"page","text":"9","textChars":1,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":10,"role":"kicker","text":"۰۹  ·  تغذیه داده","textChars":17,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":10,"role":"title","text":"آنچه طراح خواسته بود، داخل برنامه نشست","textChars":38,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"textbox","slide":10,"role":"hero","text":"1,493,351","textChars":9,"textLines":1,"bbox":[76,148,380,64]}
+{"kind":"textbox","slide":10,"role":"hero-note","text":"قرائت ولتاژ در پایگاه برنامه","textChars":28,"textLines":1,"bbox":[76,220,380,28]}
+{"kind":"textbox","slide":10,"role":"hero-sub","text":"از کل واحد تا یک المان","textChars":22,"textLines":1,"bbox":[76,256,380,28]}
+{"kind":"textbox","slide":10,"role":"mini","text":"11,419","textChars":6,"textLines":1,"bbox":[68,372,176,44]}
+{"kind":"textbox","slide":10,"role":"mini-note","text":"رکورد المان","textChars":11,"textLines":1,"bbox":[68,424,176,28]}
+{"kind":"textbox","slide":10,"role":"mini","text":"9,833","textChars":5,"textLines":1,"bbox":[282,372,176,44]}
+{"kind":"textbox","slide":10,"role":"mini-note","text":"سابقه غشا","textChars":9,"textLines":1,"bbox":[282,424,176,28]}
+{"kind":"textbox","slide":10,"role":"mini","text":"5,371","textChars":5,"textLines":1,"bbox":[68,522,176,44]}
+{"kind":"textbox","slide":10,"role":"mini-note","text":"سریال آند","textChars":9,"textLines":1,"bbox":[68,574,176,28]}
+{"kind":"textbox","slide":10,"role":"mini","text":"5,427","textChars":5,"textLines":1,"bbox":[282,522,176,44]}
+{"kind":"textbox","slide":10,"role":"mini-note","text":"سریال کاتد","textChars":10,"textLines":1,"bbox":[282,574,176,28]}
+{"kind":"textbox","slide":10,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":10,"role":"page","text":"10","textChars":2,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":11,"role":"kicker","text":"۱۰  ·  روی میز کار","textChars":18,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":11,"role":"title","text":"همان داده، روی صفحه برنامه","textChars":26,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":11,"role":"menu","path":"C:\\Users\\Omid\\AppData\\Local\\Temp\\cursor\\screenshots\\01-menu.png","bbox":[68,132,548,308]}
+{"kind":"textbox","slide":11,"role":"cap1","text":"منوی اصلی","textChars":9,"textLines":1,"bbox":[68,452,548,30]}
+{"kind":"textbox","slide":11,"role":"cap1b","text":"سل‌های پر، عمر قطعه، صف پوشش\nو همان تب‌های UHDE، یکجا.","textChars":54,"textLines":2,"bbox":[68,488,548,56]}
+{"kind":"image","slide":11,"role":"assembly","path":"C:\\Users\\Omid\\AppData\\Local\\Temp\\cursor\\screenshots\\02-assembly.png","bbox":[664,132,548,308]}
+{"kind":"textbox","slide":11,"role":"cap2","text":"داده‌های مونتاژ","textChars":15,"textLines":1,"bbox":[664,452,548,30]}
+{"kind":"textbox","slide":11,"role":"cap2b","text":"۱۱٬۴۱۹ رکورد. هر مرحله فلو\nجدول زیر خودش را فیلتر می‌کند.","textChars":57,"textLines":2,"bbox":[664,488,548,56]}
+{"kind":"textbox","slide":11,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":11,"role":"page","text":"11","textChars":2,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":12,"role":"kicker","text":"۱۱  ·  مقایسه","textChars":13,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":12,"role":"title","text":"اکسس طراح کنار برنامه‌ای که ساخته شد","textChars":36,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"textbox","slide":12,"role":"th","text":"برنامه وب","textChars":9,"textLines":1,"bbox":[56,134,388,28]}
+{"kind":"textbox","slide":12,"role":"th","text":"UHDE Administration","textChars":19,"textLines":1,"bbox":[456,134,392,28]}
+{"kind":"textbox","slide":12,"role":"th","text":"موضوع","textChars":5,"textLines":1,"bbox":[860,134,364,28]}
+{"kind":"textbox","slide":12,"role":"td","text":"مسیر زنده سل، روی همان سابقه","textChars":28,"textLines":1,"bbox":[68,198,364,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"فرم و سابقه کامل","textChars":16,"textLines":1,"bbox":[468,198,368,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"مونتاژ المان","textChars":12,"textLines":1,"bbox":[872,198,340,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"۱٫۴۹ میلیون قرائت، AriaORMS","textChars":27,"textLines":1,"bbox":[68,276,364,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"ورود، جدول، نمودار","textChars":18,"textLines":1,"bbox":[468,276,368,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"ولتاژ","textChars":5,"textLines":1,"bbox":[872,276,340,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"همان فرمول، قفل کیلوآمپر","textChars":24,"textLines":1,"bbox":[68,354,364,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"فرمول روی شیت","textChars":13,"textLines":1,"bbox":[468,354,368,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"بازده کاتدی","textChars":11,"textLines":1,"bbox":[872,354,340,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"علت تریپ، کنار خود ورود","textChars":23,"textLines":1,"bbox":[68,432,364,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"فهرست، دلیل، علت","textChars":16,"textLines":1,"bbox":[468,432,368,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"توقف","textChars":4,"textLines":1,"bbox":[872,432,340,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"کارتابل خرید، پوشش، انبار","textChars":25,"textLines":1,"bbox":[68,510,364,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"فرم‌های جدا","textChars":11,"textLines":1,"bbox":[468,510,368,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"قطعه و انبار","textChars":12,"textLines":1,"bbox":[872,510,340,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"سیزده نقش؛ دیدن جدا از اقدام","textChars":28,"textLines":1,"bbox":[68,588,364,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"کاربران فایل Access","textChars":19,"textLines":1,"bbox":[468,588,368,36]}
+{"kind":"textbox","slide":12,"role":"td","text":"دسترسی","textChars":6,"textLines":1,"bbox":[872,588,340,36]}
+{"kind":"textbox","slide":12,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":12,"role":"page","text":"12","textChars":2,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":13,"role":"kicker","text":"۱۲  ·  ورک‌فلو المان","textChars":20,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":13,"role":"title","text":"عمر سل، دست‌به‌دست، تا برگردد یا باز شود","textChars":40,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":13,"role":"art","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-13.jpg","bbox":[56,560,1168,100]}
+{"kind":"textbox","slide":13,"role":"step-no","text":"۱","textChars":1,"textLines":1,"bbox":[1068,160,164,36]}
+{"kind":"textbox","slide":13,"role":"step","text":"در سرویس","textChars":8,"textLines":1,"bbox":[1068,210,164,70]}
+{"kind":"textbox","slide":13,"role":"step-note","text":"سرپرست الکترولایزر","textChars":18,"textLines":1,"bbox":[1068,300,164,180]}
+{"kind":"textbox","slide":13,"role":"step-no","text":"۲","textChars":1,"textLines":1,"bbox":[868,160,164,36]}
+{"kind":"textbox","slide":13,"role":"step","text":"خروج از مدار","textChars":12,"textLines":1,"bbox":[868,210,164,70]}
+{"kind":"textbox","slide":13,"role":"step-note","text":"بهره‌بردار","textChars":10,"textLines":1,"bbox":[868,300,164,180]}
+{"kind":"textbox","slide":13,"role":"step-no","text":"۳","textChars":1,"textLines":1,"bbox":[668,160,164,36]}
+{"kind":"textbox","slide":13,"role":"step","text":"کارگاه سل","textChars":9,"textLines":1,"bbox":[668,210,164,70]}
+{"kind":"textbox","slide":13,"role":"step-note","text":"سالم بماند یا باز شود","textChars":21,"textLines":1,"bbox":[668,300,164,180]}
+{"kind":"textbox","slide":13,"role":"step-no","text":"۴","textChars":1,"textLines":1,"bbox":[468,160,164,36]}
+{"kind":"textbox","slide":13,"role":"step","text":"دمونتاژ","textChars":7,"textLines":1,"bbox":[468,210,164,70]}
+{"kind":"textbox","slide":13,"role":"step-note","text":"تاریخ باز شدن ثبت می‌شود","textChars":24,"textLines":1,"bbox":[468,300,164,180]}
+{"kind":"textbox","slide":13,"role":"step-no","text":"۵","textChars":1,"textLines":1,"bbox":[268,160,164,36]}
+{"kind":"textbox","slide":13,"role":"step","text":"بازرسی قطعه","textChars":11,"textLines":1,"bbox":[268,210,164,70]}
+{"kind":"textbox","slide":13,"role":"step-note","text":"کارشناس تعمیرات","textChars":15,"textLines":1,"bbox":[268,300,164,180]}
+{"kind":"textbox","slide":13,"role":"step-no","text":"۶","textChars":1,"textLines":1,"bbox":[68,160,164,36]}
+{"kind":"textbox","slide":13,"role":"step","text":"برگشت به سل","textChars":11,"textLines":1,"bbox":[68,210,164,70]}
+{"kind":"textbox","slide":13,"role":"step-note","text":"پوزیشن نو یا کد نو","textChars":18,"textLines":1,"bbox":[68,300,164,180]}
+{"kind":"textbox","slide":13,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":13,"role":"page","text":"13","textChars":2,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":14,"role":"kicker","text":"۱۳  ·  قطعه و انبار","textChars":19,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":14,"role":"title","text":"خرید و پوشش‌دهی، تا درِ انبار","textChars":29,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":14,"role":"storage","path":"C:\\Users\\Omid\\AppData\\Local\\Temp\\cursor\\screenshots\\05-storage.png","bbox":[56,124,640,360]}
+{"kind":"textbox","slide":14,"role":"caption","text":"کارتابل انبار آند و کاتد، با گروه مسئول هر ردیف","textChars":47,"textLines":1,"bbox":[56,496,640,24]}
+{"kind":"textbox","slide":14,"role":"wh","text":"بازرسی پوشش","textChars":11,"textLines":1,"bbox":[736,138,468,30]}
+{"kind":"textbox","slide":14,"role":"wh-note","text":"کارشناس تعمیرات می‌گوید پوشش خوب است، متوسط است، یا باید برود.","textChars":62,"textLines":1,"bbox":[736,174,468,52]}
+{"kind":"textbox","slide":14,"role":"wh","text":"تدارکات","textChars":7,"textLines":1,"bbox":[736,266,468,30]}
+{"kind":"textbox","slide":14,"role":"wh-note","text":"شرکت پوشش‌دهنده یا خرید نو انتخاب می‌شود و کالا از کارخانه خارج می‌شود.","textChars":71,"textLines":1,"bbox":[736,302,468,52]}
+{"kind":"textbox","slide":14,"role":"wh","text":"برگشت و گارانتی","textChars":15,"textLines":1,"bbox":[736,394,468,30]}
+{"kind":"textbox","slide":14,"role":"wh-note","text":"تاریخ برگشت، تأخیر شرکت، و ضمانت روی همان سریال می‌نشیند.","textChars":57,"textLines":1,"bbox":[736,430,468,52]}
+{"kind":"textbox","slide":14,"role":"wh","text":"ورود انبار","textChars":10,"textLines":1,"bbox":[736,522,468,30]}
+{"kind":"textbox","slide":14,"role":"wh-note","text":"شماره ایندنت و تاریخ ورود را انبار ثبت می‌کند؛ بعد قطعه قابل نصب است.","textChars":69,"textLines":1,"bbox":[736,558,468,52]}
+{"kind":"textbox","slide":14,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":14,"role":"page","text":"14","textChars":2,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":15,"role":"kicker","text":"۱۴  ·  نقش‌ها","textChars":13,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":15,"role":"title","text":"هر مرحله صاحب دارد","textChars":18,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"textbox","slide":15,"role":"lead","text":"سرپرست و کارشناس هر بخش، فعلاً یک دسترسی دارند. اقدام مال کسی است که کارتابل آن مرحله را دارد.","textChars":94,"textLines":1,"bbox":[56,112,1168,28]}
+{"kind":"textbox","slide":15,"role":"role","text":"سرپرست الکترولایزرها","textChars":20,"textLines":1,"bbox":[872,188,352,40]}
+{"kind":"textbox","slide":15,"role":"role-note","text":"Assembly Data و تصویر سل‌های در سرویس","textChars":37,"textLines":1,"bbox":[872,240,352,44]}
+{"kind":"textbox","slide":15,"role":"role","text":"بهره‌بردار","textChars":10,"textLines":1,"bbox":[472,188,352,40]}
+{"kind":"textbox","slide":15,"role":"role-note","text":"خاموشی، درخواست خروج، کارتابل سل","textChars":32,"textLines":1,"bbox":[472,240,352,44]}
+{"kind":"textbox","slide":15,"role":"role","text":"فرآیند","textChars":6,"textLines":1,"bbox":[72,188,352,40]}
+{"kind":"textbox","slide":15,"role":"role-note","text":"آنالیزها و شیت بازده کاتدی","textChars":26,"textLines":1,"bbox":[72,240,352,44]}
+{"kind":"textbox","slide":15,"role":"role","text":"C-90 و کارگاه","textChars":13,"textLines":1,"bbox":[872,348,352,40]}
+{"kind":"textbox","slide":15,"role":"role-note","text":"دمونتاژ، Rate off، مونتاژ المان نو","textChars":34,"textLines":1,"bbox":[872,400,352,44]}
+{"kind":"textbox","slide":15,"role":"role","text":"تدارکات","textChars":7,"textLines":1,"bbox":[472,348,352,40]}
+{"kind":"textbox","slide":15,"role":"role-note","text":"شرکت، ارسال، خرید و گارانتی","textChars":27,"textLines":1,"bbox":[472,400,352,44]}
+{"kind":"textbox","slide":15,"role":"role","text":"انبار","textChars":5,"textLines":1,"bbox":[72,348,352,40]}
+{"kind":"textbox","slide":15,"role":"role-note","text":"موجودی، ایندنت، تاریخ ورود","textChars":26,"textLines":1,"bbox":[72,400,352,44]}
+{"kind":"textbox","slide":15,"role":"role","text":"تعمیرات","textChars":7,"textLines":1,"bbox":[872,508,352,40]}
+{"kind":"textbox","slide":15,"role":"role-note","text":"بازرسی آند و کاتد جداشده","textChars":24,"textLines":1,"bbox":[872,560,352,44]}
+{"kind":"textbox","slide":15,"role":"role","text":"مدیر کارخانه","textChars":12,"textLines":1,"bbox":[472,508,352,40]}
+{"kind":"textbox","slide":15,"role":"role-note","text":"می‌تواند در هر مرحله اقدام کند","textChars":30,"textLines":1,"bbox":[472,560,352,44]}
+{"kind":"textbox","slide":15,"role":"role","text":"مدیریت سازمان","textChars":13,"textLines":1,"bbox":[72,508,352,40]}
+{"kind":"textbox","slide":15,"role":"role-note","text":"همه کارتابل‌ها را می‌بیند، اقدام نمی‌کند","textChars":40,"textLines":1,"bbox":[72,560,352,44]}
+{"kind":"textbox","slide":15,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":15,"role":"page","text":"15","textChars":2,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":16,"role":"kicker","text":"۱۵  ·  مازاد بر اکسس","textChars":20,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":16,"role":"title","text":"چیزهایی که در اکسس جزئی بود یا نبود","textChars":35,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":16,"role":"dashboard","path":"C:\\Users\\Omid\\AppData\\Local\\Temp\\cursor\\screenshots\\06-dashboard.png","bbox":[56,120,760,428]}
+{"kind":"textbox","slide":16,"role":"extra","text":"اتاق سل زنده","textChars":12,"textLines":1,"bbox":[852,132,356,28]}
+{"kind":"textbox","slide":16,"role":"extra-note","text":"مانیتورینگ دو ترین، هشدار، و سلامت سلول","textChars":39,"textLines":1,"bbox":[852,166,356,40]}
+{"kind":"textbox","slide":16,"role":"extra","text":"صف پوشش","textChars":7,"textLines":1,"bbox":[852,236,356,28]}
+{"kind":"textbox","slide":16,"role":"extra-note","text":"۲٬۲۰۰ قطعه آماده ارسال؛ ۲٬۳۴۰ قطعه نزدیک پایان عمر","textChars":50,"textLines":1,"bbox":[852,270,356,40]}
+{"kind":"textbox","slide":16,"role":"extra","text":"نمودار واحد","textChars":11,"textLines":1,"bbox":[852,340,356,28]}
+{"kind":"textbox","slide":16,"role":"extra-note","text":"ولتاژ، آمپر و توان؛ کل واحد، ترین یا یک الکترولایزر","textChars":51,"textLines":1,"bbox":[852,374,356,40]}
+{"kind":"textbox","slide":16,"role":"extra","text":"تقویم شمسی","textChars":10,"textLines":1,"bbox":[852,444,356,28]}
+{"kind":"textbox","slide":16,"role":"extra-note","text":"تاریخ کارخانه، نه فقط میلادی فایل Access","textChars":40,"textLines":1,"bbox":[852,478,356,40]}
+{"kind":"textbox","slide":16,"role":"extra","text":"فایل هر جدول","textChars":12,"textLines":1,"bbox":[852,548,356,28]}
+{"kind":"textbox","slide":16,"role":"extra-note","text":"اکسل همان جدول، با حجم و تعداد رکورد","textChars":36,"textLines":1,"bbox":[852,582,356,40]}
+{"kind":"textbox","slide":16,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":16,"role":"page","text":"16","textChars":2,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"textbox","slide":17,"role":"kicker","text":"۱۶  ·  مسیرها","textChars":13,"textLines":1,"bbox":[56,28,1168,20]}
+{"kind":"textbox","slide":17,"role":"title","text":"کجا را باز کنیم","textChars":15,"textLines":1,"bbox":[56,50,1168,46]}
+{"kind":"image","slide":17,"role":"art","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-17.jpg","bbox":[56,130,360,510]}
+{"kind":"textbox","slide":17,"role":"link","text":"منوی اصلی","textChars":9,"textLines":1,"bbox":[456,138,352,30]}
+{"kind":"textbox","slide":17,"role":"link-note","text":"تصویر واحد، سل‌های پر، صف پوشش","textChars":30,"textLines":1,"bbox":[456,174,352,28]}
+{"kind":"textbox","slide":17,"role":"link","text":"داده‌های مونتاژ","textChars":15,"textLines":1,"bbox":[456,242,352,30]}
+{"kind":"textbox","slide":17,"role":"link-note","text":"فلو کلیک‌خور و سابقه ۱۱٬۴۱۹ المان","textChars":33,"textLines":1,"bbox":[456,278,352,28]}
+{"kind":"textbox","slide":17,"role":"link","text":"چیدمان سلول","textChars":11,"textLines":1,"bbox":[456,346,352,30]}
+{"kind":"textbox","slide":17,"role":"link-note","text":"پوزیشن ۱ تا ۱۶۸، با آند و کاتد و غشا","textChars":36,"textLines":1,"bbox":[456,382,352,28]}
+{"kind":"textbox","slide":17,"role":"link","text":"داشبورد المنت‌ها","textChars":16,"textLines":1,"bbox":[456,450,352,30]}
+{"kind":"textbox","slide":17,"role":"link-note","text":"عمر، DOL، و کارگاه سل","textChars":21,"textLines":1,"bbox":[456,486,352,28]}
+{"kind":"textbox","slide":17,"role":"link","text":"مانیتورینگ","textChars":10,"textLines":1,"bbox":[456,554,352,30]}
+{"kind":"textbox","slide":17,"role":"link-note","text":"سل‌روم دو ترین و صندوق هشدار","textChars":28,"textLines":1,"bbox":[456,590,352,28]}
+{"kind":"textbox","slide":17,"role":"link","text":"انبار آند و کاتد","textChars":16,"textLines":1,"bbox":[856,138,352,30]}
+{"kind":"textbox","slide":17,"role":"link-note","text":"خرید، پوشش، گارانتی، ورود","textChars":25,"textLines":1,"bbox":[856,174,352,28]}
+{"kind":"textbox","slide":17,"role":"link","text":"ولتاژ و بازده","textChars":13,"textLines":1,"bbox":[856,242,352,30]}
+{"kind":"textbox","slide":17,"role":"link-note","text":"قرائت استاندارد و شیت سود","textChars":25,"textLines":1,"bbox":[856,278,352,28]}
+{"kind":"textbox","slide":17,"role":"link","text":"توقف واحد","textChars":9,"textLines":1,"bbox":[856,346,352,30]}
+{"kind":"textbox","slide":17,"role":"link-note","text":"فهرست خاموشی و علت تریپ در ورود","textChars":31,"textLines":1,"bbox":[856,382,352,28]}
+{"kind":"textbox","slide":17,"role":"link","text":"کاربران و نقش‌ها","textChars":16,"textLines":1,"bbox":[856,450,352,30]}
+{"kind":"textbox","slide":17,"role":"link-note","text":"سیزده نقش کارخانه","textChars":17,"textLines":1,"bbox":[856,486,352,28]}
+{"kind":"textbox","slide":17,"role":"footer","text":"Arvand Cell Management","textChars":22,"textLines":1,"bbox":[56,686,420,18]}
+{"kind":"textbox","slide":17,"role":"page","text":"17","textChars":2,"textLines":1,"bbox":[1180,686,40,18]}
+{"kind":"image","slide":18,"role":"close plate","path":"C:\\Users\\Omid\\.cursor\\projects\\c-Users-Omid-Downloads-pvc-arvand-web\\assets\\slide-18.jpg","bbox":[0,0,1280,720]}
+{"kind":"textbox","slide":18,"role":"close","text":"دانش طراح گم نشد","textChars":16,"textLines":1,"bbox":[64,160,640,56]}
+{"kind":"textbox","slide":18,"role":"close-body","text":"جاهایی که فقط طرح شده بود\nاینجا به کارتابل، نقش و تصمیم رسید.","textChars":61,"textLines":2,"bbox":[64,250,640,90]}
+{"kind":"textbox","slide":18,"role":"close-brand","text":"Arvand Cell Management\nپتروشیمی اروند  ·  نسخه V 1.32","textChars":53,"textLines":2,"bbox":[64,436,640,70]}
