@@ -139,7 +139,7 @@ export function WorkflowBell({ classic }: { classic?: boolean }) {
               </button>
             ))}
           </div>
-          <Link href="/storage?section=cartable" className="tk-drop-foot" onClick={() => setOpen(false)}>
+          <Link href="/cartable" className="tk-drop-foot" onClick={() => setOpen(false)}>
             {t("wf.openCartable", { n: waiting })}
           </Link>
         </div>

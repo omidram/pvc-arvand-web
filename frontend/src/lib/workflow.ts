@@ -32,7 +32,7 @@ export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
 
 /** Where a notice opens: cell requests live in the element dashboard, the others in the warehouse. */
 export function workflowHref(flow: string, id: number) {
-  return flow === "cell" ? `/element-dashboard?tab=requests&req=${id}` : `/storage?wf=${flow}:${id}`;
+  return flow === "cell" ? `/element-dashboard?tab=requests&req=${id}` : `/cartable?wf=${flow}:${id}`;
 }
 export const DELAY_PARTIES = ["employer", "company", "transport", "other"] as const;
 /** Any of these opens the warehouse page (workflow groups included). */
@@ -62,6 +62,7 @@ export function refreshWarehouseData(qc: QueryClient) {
 }
 
 export const WAREHOUSE_VIEW_KEYS = ["storage", "anodes", "cathodes", "membranes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection"];
+export const CARTABLE_VIEW_KEYS = [...WAREHOUSE_VIEW_KEYS, "wf_operation", "wf_cellshop", "wf_process", "elements", "inspections"];
 
 export interface WfSummary extends WfDeadline {
   flow: WfFlow;

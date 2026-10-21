@@ -46,7 +46,7 @@ import { monitoringApi } from "@/lib/endpoints";
 import { TopbarClock } from "@/components/layout/topbar-clock";
 import { TicketBell } from "@/components/tickets/ticket-bell";
 import { WorkflowBell } from "@/components/workflow/workflow-bell";
-import { CARTABLE_MS, WAREHOUSE_VIEW_KEYS, workflowApi } from "@/lib/workflow";
+import { CARTABLE_MS, CARTABLE_VIEW_KEYS, WAREHOUSE_VIEW_KEYS, workflowApi } from "@/lib/workflow";
 
 const NAV_GROUPS: {
   groupKey: string;
@@ -78,6 +78,7 @@ const NAV_GROUPS: {
       { href: "/anodes", labelKey: "nav.anodes", icon: CircleDot, formKey: "anodes" },
       { href: "/cathodes", labelKey: "nav.cathodes", icon: CircleDot, formKey: "cathodes" },
       { href: "/membranes", labelKey: "nav.membranes", icon: Layers, formKey: "membranes" },
+      { href: "/cartable", labelKey: "nav.cartable", icon: Inbox, formKey: "storage" },
       { href: "/storage", labelKey: "nav.storage", icon: Warehouse, formKey: "storage" },
     ],
   },
@@ -212,6 +213,7 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
             if (item.href === "/inspections") return canSeeInspections(canView);
             if (item.href === "/segregation") return canSeeSegregation(canView);
             if (item.href === "/storage") return WAREHOUSE_VIEW_KEYS.some((k) => canView(k));
+            if (item.href === "/cartable") return CARTABLE_VIEW_KEYS.some((k) => canView(k));
             return canView(item.formKey);
           });
           if (visibleItems.length === 0) return null;
@@ -225,7 +227,7 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
                   active={navActive(pathname, item.href)}
                   icon={item.icon}
                   label={t(item.labelKey)}
-                  badge={item.href === "/monitoring" ? openAlerts : item.href === "/storage" ? wfWaiting : undefined}
+                  badge={item.href === "/monitoring" ? openAlerts : item.href === "/cartable" ? wfWaiting : undefined}
                   onNavigate={onNavigate}
                 />
               ))}

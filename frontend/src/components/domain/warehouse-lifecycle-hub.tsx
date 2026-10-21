@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ExternalLink, History, Search } from "lucide-react";
 import { InspectionRequestModal, InspectionRequestsPanel } from "@/components/domain/inspection-request";
 import { WarehouseInventoryPanel } from "@/components/domain/warehouse-inventory-panel";
@@ -13,7 +13,6 @@ import {
   WorkflowCartablePanel,
   WorkflowDetailModal,
   WorkflowHistoryPanel,
-  useWorkflowMeta,
 } from "@/components/domain/warehouse-workflow";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { DateInput } from "@/components/ui/date-input";
@@ -45,7 +44,6 @@ export type WhSection =
 
 const SECTIONS: WhSection[] = [
   "dashboard",
-  "cartable",
   "inventory",
   "elements",
   "companies",
@@ -101,7 +99,7 @@ function parseTarget(raw: string | null): { flow: WfFlow; id: number } | null {
   return m ? { flow: m[1] as WfFlow, id: Number(m[2]) } : null;
 }
 
-export function WarehouseLifecycleHub() {
+export function WarehouseLifecycleHub({ page = "warehouse" }: { page?: "warehouse" | "cartable" }) {
   const { t } = useI18n();
   const { canEdit } = useAuth();
   const qc = useQueryClient();
@@ -109,21 +107,23 @@ export function WarehouseLifecycleHub() {
   const pathname = usePathname();
   const params = useSearchParams();
   const editable = canEdit("storage") || canEdit("anodes") || canEdit("cathodes");
-  const meta = useWorkflowMeta();
   const urlSection = params.get("section") as WhSection | null;
   const urlTarget = parseTarget(params.get("wf"));
   const [picked, setPicked] = useState<WhSection | null>(null);
   const [opened, setOpened] = useState<{ flow: WfFlow; id: number } | null>(null);
   const [closedUrlTarget, setClosedUrlTarget] = useState<string | null>(null);
-  const defaultSection: WhSection = (meta.data?.groups.length ?? 0) > 0 ? "cartable" : "dashboard";
+  const defaultSection: WhSection = "dashboard";
   const section: WhSection =
-    picked ?? (urlSection && SECTIONS.includes(urlSection) ? urlSection : urlTarget ? (urlTarget.flow === "inspection" ? "inspection" : urlTarget.flow === "coating" ? "coating" : "purchase") : defaultSection);
+    page === "cartable"
+      ? "cartable"
+      : picked ?? (urlSection && SECTIONS.includes(urlSection) ? urlSection : urlTarget ? (urlTarget.flow === "inspection" ? "inspection" : urlTarget.flow === "coating" ? "coating" : "purchase") : defaultSection);
   const target = opened ?? (urlTarget && params.get("wf") !== closedUrlTarget ? urlTarget : null);
   const [timelineFor, setTimelineFor] = useState<TimelineTarget | null>(null);
-  const dash = useQuery({ queryKey: ["wh", "dashboard"], queryFn: () => warehouseLifecycleApi.dashboard(), refetchInterval: LIVE_MS });
+  const warehousePage = page === "warehouse";
+  const dash = useQuery({ queryKey: ["wh", "dashboard"], queryFn: () => warehouseLifecycleApi.dashboard(), refetchInterval: LIVE_MS, enabled: warehousePage });
   const companies = useQuery({ queryKey: ["wh", "companies"], queryFn: () => warehouseLifecycleApi.companies() });
-  const decommissions = useQuery({ queryKey: ["wh", "decommissions"], queryFn: () => warehouseLifecycleApi.decommissions(), refetchInterval: LIVE_MS });
-  const states = useQuery({ queryKey: ["wh", "states"], queryFn: () => warehouseLifecycleApi.elementStates(), refetchInterval: LIVE_MS });
+  const decommissions = useQuery({ queryKey: ["wh", "decommissions"], queryFn: () => warehouseLifecycleApi.decommissions(), refetchInterval: LIVE_MS, enabled: warehousePage });
+  const states = useQuery({ queryKey: ["wh", "states"], queryFn: () => warehouseLifecycleApi.elementStates(), refetchInterval: LIVE_MS, enabled: warehousePage });
   const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: CARTABLE_MS });
 
   const invalidate = () => refreshWarehouseData(qc);
@@ -139,18 +139,28 @@ export function WarehouseLifecycleHub() {
       router.replace(pathname);
     }
   };
+  useEffect(() => {
+    if (page === "warehouse" && urlSection === "cartable") {
+      const wf = params.get("wf");
+      router.replace(wf ? `/cartable?wf=${encodeURIComponent(wf)}` : "/cartable");
+    }
+  }, [page, urlSection, params, router]);
   const companyList = companies.data ?? [];
 
   return (
     <div className="wh">
-      <header className="wh-hero">
-        <div>
-          <div className="wh-kicker">{t("wh.kicker")}</div>
-          <h2>{t("wh.title")}</h2>
-          <p>{t("wh.subtitle")}</p>
-        </div>
-      </header>
-      <SectionNav section={section} setSection={setPicked} waiting={summary.data?.cartable ?? 0} late={summary.data?.late ?? 0} t={t} />
+      {page === "warehouse" ? (
+        <header className="wh-hero">
+          <div>
+            <div className="wh-kicker">{t("wh.kicker")}</div>
+            <h2>{t("wh.title")}</h2>
+            <p>{t("wh.subtitle")}</p>
+          </div>
+        </header>
+      ) : null}
+      {page === "warehouse" ? (
+        <SectionNav section={section} setSection={setPicked} waiting={summary.data?.cartable ?? 0} late={summary.data?.late ?? 0} t={t} />
+      ) : null}
       {section === "dashboard" ? <DashboardPanel dash={dash} t={t} /> : null}
       {section === "cartable" ? <WorkflowCartablePanel onOpen={openRecord} /> : null}
       {section === "inventory" ? <WarehouseInventoryPanel onOpenRecord={openRecord} onTimeline={openTimeline} /> : null}
