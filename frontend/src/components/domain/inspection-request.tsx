@@ -159,16 +159,85 @@ export function InspectionRequestModal({ id, onClose }: { id: number | null; onC
   );
 }
 
+function verdictText(item: PieceVerdict, t: T) {
+  if (item.usable === true || item.quality) {
+    const quality = item.quality === "medium" ? t("wf.insp.qualityMedium") : item.quality === "good" ? t("wf.insp.qualityGood") : "";
+    return [t("wf.insp.usable"), quality].filter(Boolean).join(" · ");
+  }
+  if (item.usable === false || item.problem) {
+    const problem =
+      item.problem === "mechanical"
+        ? t("wf.insp.problemMechanical")
+        : item.problem === "coating"
+          ? t("wf.insp.problemCoating")
+          : item.problem === "rate_off"
+            ? t("wf.insp.problemRateOff")
+            : "";
+    const warranty = item.warranty === true ? t("wf.insp.underWarranty") : item.warranty === false ? t("wf.insp.noWarranty") : "";
+    return [t("wf.insp.notUsable"), problem, warranty].filter(Boolean).join(" · ");
+  }
+  if (item.result) return `${item.healthy ? t("wf.insp.healthy") : t("wf.insp.notHealthy")} — ${item.result}`;
+  return "";
+}
+
 function sideLabel(d: InspectionRequestDetail, side: "inspection" | "process", t: T) {
   const block = d.decisions?.[side];
   const bits = (["anode", "cathode"] as const)
     .map((kind) => {
       const item = block?.[kind];
-      if (!item?.result) return null;
-      return `${t(kind === "anode" ? "wf.kind.anode" : "wf.kind.cathode")}: ${item.healthy ? t("wf.insp.healthy") : t("wf.insp.notHealthy")} — ${item.result}`;
+      const text = item ? verdictText(item, t) : "";
+      if (!text) return null;
+      return `${t(kind === "anode" ? "wf.kind.anode" : "wf.kind.cathode")}: ${text}`;
     })
     .filter(Boolean);
   return bits.length ? bits.join(" · ") : t("wf.insp.waitingSide");
+}
+
+type PieceDraft = {
+  usable: "" | "yes" | "no";
+  quality: "" | "good" | "medium";
+  problem: "" | "coating" | "mechanical" | "rate_off";
+  warranty: "" | "yes" | "no";
+  problems: string;
+};
+
+function draftFrom(saved?: PieceVerdict): PieceDraft {
+  if (saved?.usable === false || saved?.problem) {
+    return {
+      usable: "no",
+      quality: "",
+      problem: saved.problem || "",
+      warranty: saved.warranty === true ? "yes" : saved.warranty === false ? "no" : "",
+      problems: saved.problems || "",
+    };
+  }
+  if (saved?.usable === true || saved?.quality) {
+    return {
+      usable: "yes",
+      quality: saved.quality || "",
+      problem: "",
+      warranty: "",
+      problems: saved.problems || "",
+    };
+  }
+  return { usable: "", quality: "", problem: "", warranty: "", problems: saved?.problems || "" };
+}
+
+function draftReady(draft: PieceDraft) {
+  if (draft.usable === "yes") return draft.quality === "good" || draft.quality === "medium";
+  if (draft.usable !== "no") return false;
+  if (draft.problem === "rate_off") return true;
+  return (draft.problem === "coating" || draft.problem === "mechanical") && (draft.warranty === "yes" || draft.warranty === "no");
+}
+
+function draftPayload(draft: PieceDraft) {
+  return {
+    usable: draft.usable === "yes",
+    quality: draft.usable === "yes" ? draft.quality : null,
+    problem: draft.usable === "no" ? draft.problem : null,
+    warranty: draft.usable === "no" && draft.problem !== "rate_off" && draft.warranty ? draft.warranty === "yes" : null,
+    problems: draft.problems,
+  };
 }
 
 function PieceDecision({
@@ -183,32 +252,74 @@ function PieceDecision({
   onDone: (next: InspectionRequestDetail) => void;
 }) {
   const saved = d.decisions?.[side];
-  const [anode, setAnode] = useState<PieceVerdict>({ healthy: saved?.anode?.healthy ?? true, result: saved?.anode?.result || "" });
-  const [cathode, setCathode] = useState<PieceVerdict>({ healthy: saved?.cathode?.healthy ?? true, result: saved?.cathode?.result || "" });
+  const [anode, setAnode] = useState<PieceDraft>(() => draftFrom(saved?.anode));
+  const [cathode, setCathode] = useState<PieceDraft>(() => draftFrom(saved?.cathode));
   const run = useMutation({
     mutationFn: () =>
       workflowApi.inspectionStep(d.id, "decide", {
         side,
-        anode: d.anode_nr ? { healthy: !!anode.healthy, result: anode.result || "" } : undefined,
-        cathode: d.cathode_nr ? { healthy: !!cathode.healthy, result: cathode.result || "" } : undefined,
+        anode: d.anode_nr ? draftPayload(anode) : undefined,
+        cathode: d.cathode_nr ? draftPayload(cathode) : undefined,
       }),
     onSuccess: onDone,
   });
-  const field = (kind: "anode" | "cathode", value: PieceVerdict, set: (v: PieceVerdict) => void) => (
-    <div className="wh-form-inline wf-inline-plain">
-      <strong>{t(kind === "anode" ? "wf.kind.anode" : "wf.kind.cathode")}</strong>
+  const ready = (!d.anode_nr || draftReady(anode)) && (!d.cathode_nr || draftReady(cathode));
+  const field = (kind: "anode" | "cathode", serial: string, value: PieceDraft, set: (v: PieceDraft) => void) => (
+    <div className="wf-piece">
+      <strong>
+        {t(kind === "anode" ? "wf.kind.anode" : "wf.kind.cathode")} {serial}
+      </strong>
       <label>
-        <input type="checkbox" checked={!!value.healthy} onChange={(e) => set({ ...value, healthy: e.target.checked })} /> {t("wf.insp.healthy")}
+        {t("wf.insp.chooseStatus")}
+        <select value={value.usable} onChange={(e) => set({ ...value, usable: e.target.value as PieceDraft["usable"] })}>
+          <option value="">{t("wf.insp.chooseStatus")}</option>
+          <option value="yes">{t("wf.insp.usable")}</option>
+          <option value="no">{t("wf.insp.notUsable")}</option>
+        </select>
       </label>
-      <input className="wh-grow" value={value.result || ""} placeholder={t("wf.insp.result")} onChange={(e) => set({ ...value, result: e.target.value })} />
+      {value.usable === "yes" ? (
+        <label>
+          {t("wf.insp.quality")}
+          <select value={value.quality} onChange={(e) => set({ ...value, quality: e.target.value as PieceDraft["quality"] })}>
+            <option value="">{t("wf.insp.quality")}</option>
+            <option value="good">{t("wf.insp.qualityGood")}</option>
+            <option value="medium">{t("wf.insp.qualityMedium")}</option>
+          </select>
+        </label>
+      ) : null}
+      {value.usable === "no" ? (
+        <label>
+          {t("wf.insp.problem")}
+          <select value={value.problem} onChange={(e) => set({ ...value, problem: e.target.value as PieceDraft["problem"] })}>
+            <option value="">{t("wf.insp.problem")}</option>
+            <option value="mechanical">{t("wf.insp.problemMechanical")}</option>
+            <option value="coating">{t("wf.insp.problemCoating")}</option>
+            <option value="rate_off">{t("wf.insp.problemRateOff")}</option>
+          </select>
+        </label>
+      ) : null}
+      {value.usable === "no" && (value.problem === "mechanical" || value.problem === "coating") ? (
+        <label>
+          {t("wf.insp.warranty")}
+          <select value={value.warranty} onChange={(e) => set({ ...value, warranty: e.target.value as PieceDraft["warranty"] })}>
+            <option value="">{t("wf.insp.warranty")}</option>
+            <option value="yes">{t("wf.insp.underWarranty")}</option>
+            <option value="no">{t("wf.insp.noWarranty")}</option>
+          </select>
+        </label>
+      ) : null}
+      <label>
+        {t("wf.insp.problems")}
+        <textarea value={value.problems} onChange={(e) => set({ ...value, problems: e.target.value })} />
+      </label>
     </div>
   );
   return (
     <div className="wf-section">
       <h4>{t(side === "inspection" ? "wf.group.inspection" : "wf.group.process")}</h4>
-      {d.anode_nr ? field("anode", anode, setAnode) : null}
-      {d.cathode_nr ? field("cathode", cathode, setCathode) : null}
-      <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => run.mutate()}>
+      {d.anode_nr ? field("anode", d.anode_nr, anode, setAnode) : null}
+      {d.cathode_nr ? field("cathode", d.cathode_nr, cathode, setCathode) : null}
+      <button type="button" className="wf-btn is-primary" disabled={run.isPending || !ready} onClick={() => run.mutate()}>
         {t("wf.insp.confirmSide")}
       </button>
       {run.error ? <div className="wf-alert">{(run.error as Error).message}</div> : null}
@@ -304,7 +415,7 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
         </section>
       ) : null}
 
-      {open && (acts.includes("decide_inspection") || acts.includes("decide_process")) ? (
+      {open || d.decisions?.inspection || d.decisions?.process ? (
         <section className="wf-section">
           <h4>{t("wf.insp.parallelTitle")}</h4>
           <p className="wh-subdesc">{t("wf.insp.parallelHint")}</p>

@@ -7,10 +7,22 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, JSON, String, Text
+from sqlalchemy import Date, DateTime, Float, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
+
+# Cell-shop labor tracking (C-90 / برنامه‌ریز). Stage keys match the work-order form.
+WO_STAGES = ("generation", "install", "pickup", "store", "disassemble")
+WO_SKILLS = (
+    "مونتاژ المان",
+    "دیس‌اسمبل المان",
+    "جابجایی به کارگاه",
+    "انبارش در کارگاه",
+    "نصب در سل‌روم",
+    "آماده‌سازی قطعه",
+    "سایر",
+)
 
 
 class WfCoatingBatch(Base):
@@ -222,3 +234,54 @@ class WfNotification(Base):
     from_name: Mapped[str | None] = mapped_column(String(150))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
     read_at: Mapped[datetime | None] = mapped_column(DateTime, index=True)
+
+
+class WfWorkOrder(Base):
+    """Cell-shop work order: who did which stage on an element, for how long, and under which skill.
+
+    Code format: wo-{element_nr}-{seq:06d} (sequence is per element, so numbers stay ordered).
+    """
+
+    __tablename__ = "wf_work_orders"
+    __table_args__ = (UniqueConstraint("element_nr", "seq", name="uq_wo_element_seq"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(60), unique=True, index=True)
+    seq: Mapped[int] = mapped_column(Integer, index=True)
+    status: Mapped[str] = mapped_column(String(20), index=True)  # open | completed | cancelled
+    report_date: Mapped[date | None] = mapped_column(Date, index=True)
+    element_nr: Mapped[str] = mapped_column(String(50), index=True)
+    element_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    anode_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    cathode_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    membrane_nr: Mapped[str | None] = mapped_column(String(50))
+    cell_request_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    generation_date: Mapped[date | None] = mapped_column(Date)
+    install_date: Mapped[date | None] = mapped_column(Date)
+    install_cell: Mapped[str | None] = mapped_column(String(40))
+    pickup_date: Mapped[date | None] = mapped_column(Date)
+    store_date: Mapped[date | None] = mapped_column(Date)
+    disassemble_date: Mapped[date | None] = mapped_column(Date, index=True)
+    remarks: Mapped[str | None] = mapped_column(Text)
+    last_note: Mapped[str | None] = mapped_column(Text)
+    created_by_id: Mapped[int | None] = mapped_column(Integer)
+    created_by_name: Mapped[str | None] = mapped_column(String(150))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
+class WfWorkOrderLabor(Base):
+    """One person on one stage of a work order (person code, skill, hours, quantity, notes)."""
+
+    __tablename__ = "wf_work_order_labors"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    work_order_id: Mapped[int] = mapped_column(Integer, ForeignKey("wf_work_orders.id", ondelete="CASCADE"), index=True)
+    stage: Mapped[str] = mapped_column(String(20), index=True)
+    line_no: Mapped[int] = mapped_column(Integer, default=1)
+    person_code: Mapped[str | None] = mapped_column(String(60))
+    person_name: Mapped[str | None] = mapped_column(String(150))
+    skill: Mapped[str | None] = mapped_column(String(80))
+    work_hours: Mapped[float | None] = mapped_column(Float)
+    work_qty: Mapped[str | None] = mapped_column(String(40))
+    description: Mapped[str | None] = mapped_column(Text)

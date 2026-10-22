@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { HelpButton } from "@/components/ui/help-button";
 import { useI18n } from "@/lib/i18n/context";
 import { AccessHub } from "@/components/layout/access-hub";
@@ -27,6 +28,7 @@ export function AccessFormWindow({
   backLabel?: string;
 }) {
   const { t } = useI18n();
+  const router = useRouter();
   if (classic) {
     return (
       <AccessHub
@@ -52,6 +54,17 @@ export function AccessFormWindow({
         <Link href="/" className="access-toolbar-btn h-[18px] px-2 text-[10px] text-black">
           {t("common.mainMenu")}
         </Link>
+        <button
+          type="button"
+          className="access-toolbar-btn access-back-btn h-[18px] px-2 text-[10px] text-black"
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) router.back();
+            else router.push(backHref || "/");
+          }}
+          title={t("common.goBack")}
+        >
+          {t("common.goBack")}
+        </button>
         <span className="truncate">{caption}</span>
         {helpKey ? <HelpButton helpKey={helpKey} /> : null}
         <span className="ms-auto flex items-center gap-1">{commands}</span>

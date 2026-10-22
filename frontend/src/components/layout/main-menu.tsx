@@ -6,7 +6,6 @@ import { settingsApi, statisticsApi } from "@/lib/endpoints";
 import { ticketsApi } from "@/lib/tickets";
 import { CARTABLE_VIEW_KEYS, WAREHOUSE_VIEW_KEYS } from "@/lib/workflow";
 import { useAuth } from "@/lib/auth/context";
-import { UhdeCellBars, UhdeLogoMark } from "@/components/layout/uhde-mark";
 import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
 import { ElementReportPanel } from "@/components/domain/element-report-panel";
 import { useI18n } from "@/lib/i18n/context";
@@ -67,36 +66,17 @@ export function MainMenu() {
   return (
     <div className="access-eap flex h-full min-h-0 flex-1 flex-col" dir="ltr">
       <div className="flex min-h-0 flex-1">
-        <aside className="access-strip flex w-[102px] shrink-0 flex-col items-center px-1.5 pb-3 pt-2">
-          <div className="mb-4 flex justify-center">
-            <UhdeCellBars height={48} />
-          </div>
-          <div className="access-uhde-card space-y-0.5 text-center text-[11px] leading-tight text-black">
-            <div>{t("mainMenu.uhde")}</div>
-            <div>{t("mainMenu.uhdeDept")}</div>
-            <div className="pt-2">{t("mainMenu.uhdeStreet")}</div>
-            <div>{t("mainMenu.uhdeCity")}</div>
-          </div>
-          <div className="mt-auto flex justify-center pt-6">
-            <div className="access-logo-well">
-              <UhdeLogoMark size={48} />
-            </div>
-          </div>
-        </aside>
-
         <section className="flex min-w-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-1">
           <div className="access-header-sunken mb-3 px-4 pb-3 pt-2">
             <div className="mb-2 flex items-center justify-between gap-4">
               <h1 className="min-w-0 flex-1 text-start text-[20px] font-bold leading-tight text-black">
                 {t("mainMenu.programTitle")}
               </h1>
-              <div className="flex h-[72px] w-[200px] shrink-0 items-center justify-end bg-transparent p-0">
+              <div className="access-main-logos" aria-label="Brand logos">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/logo-arvand.png"
-                  alt="Arvand Petrochemical Company"
-                  className="h-full max-h-[72px] w-auto max-w-full object-contain"
-                />
+                <img src="/logo-acm.png" alt="ACM — Arvand Cell Management" className="access-main-logo access-main-logo-acm" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/logo-arvand.png" alt="Arvand Petrochemical Company" className="access-main-logo access-main-logo-arvand" />
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] text-black">

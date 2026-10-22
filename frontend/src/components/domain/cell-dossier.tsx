@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { monitoringApi, type ComponentDossier } from "@/lib/endpoints";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
@@ -67,6 +68,8 @@ function Dossier({ part }: { part: Part }) {
       ) : null}
       <Catalog catalog={data.catalog} />
       <Installations rows={data.installations} kind={data.kind} />
+      <PartInspections rows={data.inspections || []} />
+      <PartSegregations rows={data.segregations || []} />
       <Maintenance rows={data.maintenance} kind={data.kind} />
       <Reports rows={data.reports} />
     </div>
@@ -181,6 +184,74 @@ function Maintenance({ rows, kind }: { rows: ComponentDossier["maintenance"]; ki
                     <td>{row.action || "—"}</td>
                   </>
                 )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null}
+    </div>
+  );
+}
+
+function PartInspections({ rows }: { rows: NonNullable<ComponentDossier["inspections"]> }) {
+  const { t } = useI18n();
+  return (
+    <div className="psm-block">
+      <h4>{t("monitoring.inspectionForms")}</h4>
+      {rows.length === 0 ? <p className="psm-muted">{t("monitoring.noPartHistory")}</p> : null}
+      {rows.length > 0 ? (
+        <table>
+          <thead>
+            <tr>
+              <th>{t("fields.date")}</th>
+              <th>{t("monitoring.elementNr")}</th>
+              <th>{t("fields.inspector")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.id}>
+                <td>
+                  <Link href={`/inspections?id=${row.id}`}>{formatDate(row.inspection_date) || "—"}</Link>
+                </td>
+                <td>{row.element_nr || "—"}</td>
+                <td>{row.inspector_name || "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null}
+    </div>
+  );
+}
+
+function PartSegregations({ rows }: { rows: NonNullable<ComponentDossier["segregations"]> }) {
+  const { t } = useI18n();
+  return (
+    <div className="psm-block">
+      <h4>{t("monitoring.segregationLog")}</h4>
+      {rows.length === 0 ? <p className="psm-muted">{t("monitoring.noPartHistory")}</p> : null}
+      {rows.length > 0 ? (
+        <table>
+          <thead>
+            <tr>
+              <th>{t("fields.date")}</th>
+              <th>{t("segregation.decision")}</th>
+              <th>{t("segregation.coatingQuality")}</th>
+              <th>{t("segregation.warranty")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.id}>
+                <td>
+                  <Link href={`/segregation?serial_nr=${encodeURIComponent(row.serial_nr || "")}`}>
+                    {formatDate(row.inspection_date) || "—"}
+                  </Link>
+                </td>
+                <td>{row.decision || "—"}</td>
+                <td>{row.coating_quality || row.segregation || "—"}</td>
+                <td>{row.warranty || "—"}</td>
               </tr>
             ))}
           </tbody>

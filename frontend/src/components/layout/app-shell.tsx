@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/context";
 import { LoginScreen } from "@/components/auth/login-screen";
@@ -16,11 +16,20 @@ import { useUiStyle } from "@/lib/ui-style/context";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, isLoading, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const { t } = useI18n();
   const { isModern } = useUiStyle();
   const isMainMenu = pathname === "/";
   const [formsOpen, setFormsOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+
+  function goBack() {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push("/");
+  }
 
   useEffect(() => {
     setNavOpen(false);
@@ -54,9 +63,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <ModernSidebar open={navOpen} onNavigate={() => setNavOpen(false)} />
         <main className="modern-main min-w-0 flex-1 overflow-y-auto">
           <div className="modern-content mx-auto w-full max-w-[1760px] px-3 py-4 sm:px-5 sm:py-5 lg:px-7">
-            <button type="button" className="modern-nav-toggle" onClick={() => setNavOpen(true)}>
-              {t("common.mainMenu")}
-            </button>
+            <div className="modern-nav-row mb-3 flex flex-wrap items-center gap-1.5">
+              <button type="button" className="modern-nav-toggle !mb-0" onClick={() => setNavOpen(true)}>
+                {t("common.mainMenu")}
+              </button>
+              {!isMainMenu ? (
+                <button type="button" className="modern-nav-toggle access-back-btn !mb-0" onClick={goBack} title={t("common.goBack")}>
+                  {t("common.goBack")}
+                </button>
+              ) : null}
+            </div>
             {children}
           </div>
         </main>
@@ -74,12 +90,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           isMainMenu ? "border-[#a0a0a0]" : "border-[var(--win-face-dark)]"
         }`}
       >
-        <Link
-          href="/"
-          className={`access-menu-btn access-hub-menu-btn ${isMainMenu ? "is-default-focus" : ""}`}
-        >
-          {t("common.mainMenu")}
-        </Link>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Link
+            href="/"
+            className={`access-menu-btn access-hub-menu-btn ${isMainMenu ? "is-default-focus" : ""}`}
+          >
+            {t("common.mainMenu")}
+          </Link>
+          {!isMainMenu ? (
+            <button
+              type="button"
+              className="access-menu-btn access-hub-menu-btn access-back-btn"
+              onClick={goBack}
+              title={t("common.goBack")}
+            >
+              {t("common.goBack")}
+            </button>
+          ) : null}
+        </div>
         <div className="app-topbar-actions flex min-w-0 flex-wrap items-center justify-end gap-1">
           <button
             type="button"

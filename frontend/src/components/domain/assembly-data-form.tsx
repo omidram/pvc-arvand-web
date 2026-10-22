@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,7 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState } from "@/components/ui/spinner";
-import { formatDate } from "@/lib/utils";
+import { formatDate, sameNr } from "@/lib/utils";
+import { workflowApi, type AssemblyPoolRow } from "@/lib/workflow";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { assemblyPositionError, normalizeCellPosition } from "@/lib/assembly-rules";
@@ -78,8 +80,25 @@ export function AssemblyDataForm() {
     queryKey: ["elements", "next-number"],
     queryFn: () => elementsApi.nextNumber(),
   });
-  const anodes = useQuery({ queryKey: ["relations", "anode-numbers"], queryFn: () => relationsApi.lookup("anode-numbers") });
-  const cathodes = useQuery({ queryKey: ["relations", "cathode-numbers"], queryFn: () => relationsApi.lookup("cathode-numbers") });
+  const pool = useQuery({ queryKey: ["workflow", "assembly-pool"], queryFn: () => workflowApi.assemblyPool() });
+  const stockRows = useMemo<AssemblyPoolRow[]>(() => {
+    const data = pool.data;
+    if (!data) return [];
+    return [...data.reusable, ...data.purchased, ...data.recoated];
+  }, [pool.data]);
+  const stockOptions = (kind: "anode" | "cathode") => {
+    const grouped = new Map<string, string[]>();
+    for (const row of stockRows) {
+      if (row.kind !== kind) continue;
+      const bit = `${t(`assemblyStock.source.${row.source}`)}${row.quality ? ` · ${row.quality}` : ""}`;
+      const list = grouped.get(row.serial) ?? [];
+      if (!list.includes(bit)) list.push(bit);
+      grouped.set(row.serial, list);
+    }
+    return [...grouped.entries()].map(([value, bits]) => ({ value, label: `${value} — ${bits.join(" / ")}` }));
+  };
+  const pickAnode = searchParams.get("pick_anode") || "";
+  const pickCathode = searchParams.get("pick_cathode") || "";
   const membranes = useQuery({ queryKey: ["relations", "membrane-numbers"], queryFn: () => relationsApi.lookup("membrane-numbers") });
   const membraneTypes = useQuery({ queryKey: ["relations", "membrane-types"], queryFn: () => relationsApi.lookup("membrane-types") });
   const groups = useQuery({ queryKey: ["relations", "groups"], queryFn: () => relationsApi.lookup("groups") });
@@ -130,13 +149,13 @@ export function AssemblyDataForm() {
       name: "anode_nr",
       label: t("fields.anodeNr"),
       type: "select",
-      options: (anodes.data || []).map((value) => ({ label: value, value })),
+      options: stockOptions("anode"),
     },
     {
       name: "cathode_nr",
       label: t("fields.cathodeNr"),
       type: "select",
-      options: (cathodes.data || []).map((value) => ({ label: value, value })),
+      options: stockOptions("cathode"),
     },
     {
       name: "membrane_nr",
@@ -230,17 +249,29 @@ export function AssemblyDataForm() {
         idField="id"
         recordParam="element_nr"
         canEdit={editable}
-        newDefaults={() => ({ element_nr: nextNrQuery.data?.element_nr ?? "" })}
-        newDefaultsKey={nextNrQuery.data?.element_nr ?? ""}
-        validate={(values, { isNew }) =>
-          (isNew ? requiredError(values, fields, ELEMENT_REQUIRED, t) : null) ?? assemblyPositionError(values.position, t)
-        }
+        newDefaults={() => ({
+          element_nr: nextNrQuery.data?.element_nr ?? "",
+          ...(pickAnode ? { anode_nr: pickAnode } : {}),
+          ...(pickCathode ? { cathode_nr: pickCathode } : {}),
+        })}
+        newDefaultsKey={`${nextNrQuery.data?.element_nr ?? ""}|${pickAnode}|${pickCathode}`}
+        startNew={Boolean(pickAnode || pickCathode)}
+        validate={(values, { isNew }) => {
+          const required = isNew ? requiredError(values, fields, ELEMENT_REQUIRED, t) : null;
+          const position = assemblyPositionError(values.position, t);
+          if (!isNew || !pool.data) return required ?? position;
+          const allowed = (kind: "anode" | "cathode", serial: unknown) =>
+            !String(serial ?? "").trim() || stockRows.some((row) => row.kind === kind && sameNr(row.serial, String(serial)));
+          if (!allowed("anode", values.anode_nr) || !allowed("cathode", values.cathode_nr)) return t("assemblyStock.notInPool");
+          return required ?? position;
+        }}
         onSave={async (id, values) => {
           await updateMutation.mutateAsync({ id, payload: withAssemblyPayload(values) });
         }}
         onCreate={async (values) => {
           await createMutation.mutateAsync(withAssemblyPayload(values) as never);
           await queryClient.invalidateQueries({ queryKey: ["elements", "next-number"] });
+          await queryClient.invalidateQueries({ queryKey: ["workflow", "assembly-pool"] });
         }}
         onDelete={(id) => removeMutation.mutate(id)}
         confirmDelete={(el) => t("elements.confirmDelete", { nr: el.element_nr })}
@@ -279,19 +310,25 @@ export function AssemblyDataForm() {
         )}
         sheetRelated={(row) => <ElementLifecycleCard row={row} editable={editable} onOpen={openRecord} />}
         commands={
-          editable && isAdmin ? (
-            <>
-              <Button size="sm" variant="secondary" onClick={() => setShowImport("assembly")}>
-                <Upload size={14} /> {t("menus.importMontage")}
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setShowImport("disassembly")}>
-                <Upload size={14} /> {t("menus.importDemontage")}
-              </Button>
-              <Button size="sm" variant="secondary" onClick={() => setShowRelations(true)}>
-                {t("elements.checkRelations")}
-              </Button>
-            </>
-          ) : null
+          <>
+            <span className="text-xs text-[var(--win-muted)]">{t("assemblyStock.formHint")}</span>
+            <Link href="/elements/assembly-stock" className="access-menu-btn !w-auto px-3">
+              {t("assemblyStock.openTables")}
+            </Link>
+            {editable && isAdmin ? (
+              <>
+                <Button size="sm" variant="secondary" onClick={() => setShowImport("assembly")}>
+                  <Upload size={14} /> {t("menus.importMontage")}
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => setShowImport("disassembly")}>
+                  <Upload size={14} /> {t("menus.importDemontage")}
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => setShowRelations(true)}>
+                  {t("elements.checkRelations")}
+                </Button>
+              </>
+            ) : null}
+          </>
         }
       />
       </div>

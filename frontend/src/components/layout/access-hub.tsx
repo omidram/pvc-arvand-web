@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
@@ -22,8 +23,18 @@ export function AccessHub({
   children: ReactNode;
 }) {
   const { t } = useI18n();
-  const back = backLabel || t("common.mainMenu");
+  const router = useRouter();
+  const menuLabel = backLabel || t("common.mainMenu");
   useCalendar();
+
+  function goBack() {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    router.push(backHref || "/");
+  }
+
   return (
     <div className="access-hub" dir="ltr">
       <div className="access-hub-head">
@@ -31,8 +42,11 @@ export function AccessHub({
         <div className="flex flex-wrap items-start gap-2">
           {extraButtons}
           <Link href={backHref} className="access-menu-btn access-hub-menu-btn">
-            {back}
+            {menuLabel}
           </Link>
+          <button type="button" className="access-menu-btn access-hub-menu-btn access-back-btn" onClick={goBack} title={t("common.goBack")}>
+            {t("common.goBack")}
+          </button>
         </div>
       </div>
       {children}

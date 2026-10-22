@@ -51,6 +51,9 @@ function SheetEdit({
         onChange={(event) => onChange(field.name, event.target.value)}
       >
         <option value="">—</option>
+        {String(value ?? "") && !field.options?.some((opt) => opt.value === String(value)) ? (
+          <option value={String(value)}>{String(value)}</option>
+        ) : null}
         {field.options?.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}

@@ -856,6 +856,7 @@ export interface SearchResults {
   membranes: Record<string, unknown>[];
   shutdowns: Record<string, unknown>[];
   inspections: Record<string, unknown>[];
+  segregations?: Record<string, unknown>[];
 }
 
 export interface AnalysisMeta {

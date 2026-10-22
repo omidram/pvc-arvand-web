@@ -4,7 +4,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import func, text
+from sqlalchemy import func, or_, text
 from sqlalchemy.orm import Session
 
 from .. import alerts_engine, models, schemas
@@ -1145,6 +1145,35 @@ def component_dossier(
         )
         file_counts = {report_id: count for report_id, count in counted}
 
+    if kind == "membrane":
+        insp_match = _same_serial(models.InspectionReport.membrane_nr, key)
+    elif kind == "anode":
+        insp_match = or_(
+            _same_serial(models.InspectionReport.anode_nr, key),
+            _same_serial(models.InspectionReport.electrode_nr_anode, key),
+        )
+    else:
+        insp_match = or_(
+            _same_serial(models.InspectionReport.cathode_nr, key),
+            _same_serial(models.InspectionReport.electrode_nr_cathode, key),
+        )
+    inspections = (
+        db.query(models.InspectionReport)
+        .filter(insp_match)
+        .order_by(models.InspectionReport.inspection_date.desc(), models.InspectionReport.id.desc())
+        .limit(40)
+        .all()
+    )
+    segregations = []
+    if kind in {"anode", "cathode"}:
+        segregations = (
+            db.query(models.ElectrodeSegregation)
+            .filter(_same_serial(models.ElectrodeSegregation.serial_nr, key))
+            .order_by(models.ElectrodeSegregation.inspection_date.desc(), models.ElectrodeSegregation.id.desc())
+            .limit(40)
+            .all()
+        )
+
     latest = installations[0] if installations else None
     active = next((row for row in installations if row.disassembly_date is None and (row.electrolyzer or "").strip()), None)
     open_job = next(
@@ -1217,5 +1246,32 @@ def component_dossier(
                 "file_count": file_counts.get(row.id, 0),
             }
             for row in reports[:40]
+        ],
+        "inspections": [
+            {
+                "id": row.id,
+                "inspection_date": _iso(row.inspection_date),
+                "element_nr": row.element_nr,
+                "inspection_reason": row.inspection_reason,
+                "inspector_name": row.inspector_name,
+                "anode_nr": row.anode_nr,
+                "cathode_nr": row.cathode_nr,
+            }
+            for row in inspections
+        ],
+        "segregations": [
+            {
+                "id": row.id,
+                "serial_nr": row.serial_nr,
+                "decision": row.decision,
+                "coating_quality": row.coating_quality,
+                "warranty": row.warranty,
+                "segregation": row.segregation,
+                "problems": row.problems,
+                "inspection_date": _iso(row.inspection_date),
+                "inspection_form_serial": row.inspection_form_serial,
+                "company": row.company,
+            }
+            for row in segregations
         ],
     }

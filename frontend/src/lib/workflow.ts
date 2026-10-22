@@ -2,8 +2,8 @@ import type { QueryClient } from "@tanstack/react-query";
 import { apiClient } from "./api-client";
 import type { PipelineItem } from "./types";
 
-export type WfFlow = "coating" | "purchase" | "cell" | "inspection";
-export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "operation" | "cellshop" | "process";
+export type WfFlow = "coating" | "purchase" | "cell" | "inspection" | "workorder";
+export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "operation" | "cellshop" | "process" | "planner";
 export type WfKind = "anode" | "cathode";
 
 export const COATING_STEPS = ["c90_select", "code_generate", "await_company", "await_indent", "await_dispatch", "await_return", "await_inspection", "await_approval", "completed"] as const;
@@ -28,11 +28,14 @@ export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
   purchase: PURCHASE_STEPS.filter((s) => s !== "completed" && !VIRTUAL_STEPS.has(s)),
   cell: [...CELL_STEPS.filter((s) => s !== "completed"), "await_disassembly", "await_reinstall", "await_numbering"],
   inspection: INSPECTION_STEPS.filter((s) => s !== "completed"),
+  workorder: ["open"],
 };
 
-/** Where a notice opens: cell requests live in the element dashboard, the others in the warehouse. */
+/** Where a notice opens: cell requests live in the element dashboard, work orders on their page, the others in the cartable. */
 export function workflowHref(flow: string, id: number) {
-  return flow === "cell" ? `/element-dashboard?tab=requests&req=${id}` : `/cartable?wf=${flow}:${id}`;
+  if (flow === "cell") return `/element-dashboard?tab=requests&req=${id}`;
+  if (flow === "workorder") return `/work-orders?id=${id}`;
+  return `/cartable?wf=${flow}:${id}`;
 }
 export const DELAY_PARTIES = ["employer", "company", "transport", "other"] as const;
 /** Any of these opens the warehouse page (workflow groups included). */
@@ -62,7 +65,7 @@ export function refreshWarehouseData(qc: QueryClient) {
 }
 
 export const WAREHOUSE_VIEW_KEYS = ["storage", "anodes", "cathodes", "membranes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection"];
-export const CARTABLE_VIEW_KEYS = [...WAREHOUSE_VIEW_KEYS, "wf_operation", "wf_cellshop", "wf_process", "elements", "inspections"];
+export const CARTABLE_VIEW_KEYS = [...WAREHOUSE_VIEW_KEYS, "wf_operation", "wf_cellshop", "wf_process", "wf_planner", "elements", "inspections"];
 
 export interface WfSummary extends WfDeadline {
   flow: WfFlow;
@@ -244,6 +247,11 @@ export interface InspectionRequest extends WfDeadline {
 
 export interface PieceVerdict {
   healthy?: boolean;
+  usable?: boolean;
+  quality?: "good" | "medium" | null;
+  problem?: "coating" | "mechanical" | "rate_off" | null;
+  warranty?: boolean | null;
+  problems?: string;
   result?: string;
 }
 
@@ -353,13 +361,67 @@ export interface WfCoatingCandidate {
   busy: boolean;
 }
 
+export interface AssemblyPoolRow {
+  source: "reusable" | "purchased" | "recoated";
+  kind: "anode" | "cathode";
+  serial: string;
+  company: string | null;
+  quality: string | null;
+  detail: string | null;
+  ref: string | null;
+  date: string | null;
+  pair_serial: string | null;
+  in_catalog: boolean;
+}
+
+export interface AssemblyPool {
+  reusable: AssemblyPoolRow[];
+  purchased: AssemblyPoolRow[];
+  recoated: AssemblyPoolRow[];
+}
+
+export interface CartableElementBrief {
+  id: number;
+  element_nr: string | null;
+  electrolyzer: string | null;
+  position: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  assembly_date: string | null;
+  disassembly_date: string | null;
+  decommissioning_date: string | null;
+}
+
+export interface CartablePoolSnap {
+  reusable: number;
+  purchased: number;
+  recoated: number;
+  reusable_preview: AssemblyPoolRow[];
+  purchased_preview: AssemblyPoolRow[];
+  recoated_preview: AssemblyPoolRow[];
+}
+
+export interface CartableDesk {
+  groups: WfGroup[];
+  edit_groups: WfGroup[];
+  view_groups: WfGroup[];
+  waiting_total: number;
+  late_total: number;
+  waiting: WfSummary[];
+  by_group: Record<string, { waiting: number; late: number; items: WfSummary[] }>;
+  snapshots: Record<string, Record<string, unknown>>;
+}
+
 export const workflowApi = {
+  assemblyPool: async (): Promise<AssemblyPool> => (await apiClient.get("/workflow/assembly-pool")).data,
   meta: async (): Promise<WfMeta> => (await apiClient.get("/workflow/meta")).data,
   summary: async (): Promise<{ cartable: number; unread: number; late?: number; items: WfNotice[] }> => (await apiClient.get("/workflow/summary")).data,
   notifications: async (limit = 20): Promise<WfNotice[]> => (await apiClient.get("/workflow/notifications", { params: { limit } })).data,
   markRead: async (body: { ids?: number[]; flow?: WfFlow; record_id?: number; all?: boolean }) =>
     (await apiClient.post("/workflow/notifications/read", body)).data,
   cartable: async (): Promise<WfSummary[]> => (await apiClient.get("/workflow/cartable")).data,
+  cartableDesk: async (): Promise<CartableDesk> => (await apiClient.get("/workflow/cartable/desk")).data,
   list: async (flow: WfFlow, params?: { status?: string; open_only?: boolean; q?: string }): Promise<WfSummary[]> =>
     (await apiClient.get(`/workflow/${flow}`, { params })).data,
   get: async (flow: WfFlow, id: number): Promise<WfDetail> => (await apiClient.get(`/workflow/${flow}/${id}`)).data,

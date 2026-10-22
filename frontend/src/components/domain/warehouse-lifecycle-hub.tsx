@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { ExternalLink, History, Search } from "lucide-react";
 import { InspectionRequestModal, InspectionRequestsPanel } from "@/components/domain/inspection-request";
 import { WarehouseInventoryPanel } from "@/components/domain/warehouse-inventory-panel";
+import { RoleCartableDesk } from "@/components/domain/role-cartable-desk";
 import {
   CoatingWorkflowPanel,
   PurchaseWorkflowPanel,
@@ -127,7 +128,8 @@ export function WarehouseLifecycleHub({ page = "warehouse" }: { page?: "warehous
   const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: CARTABLE_MS });
 
   const invalidate = () => refreshWarehouseData(qc);
-  const openRecord = (flow: WfFlow, id: number) => (flow === "cell" ? router.push(workflowHref(flow, id)) : setOpened({ flow, id }));
+  const openRecord = (flow: WfFlow, id: number) =>
+    flow === "cell" || flow === "workorder" ? router.push(workflowHref(flow, id)) : setOpened({ flow, id });
   const openTimeline = (kind: string, serial: string) => {
     setTimelineFor({ kind: kind === "cathode" ? "cathode" : "anode", serial });
     setPicked("timeline");
@@ -162,7 +164,9 @@ export function WarehouseLifecycleHub({ page = "warehouse" }: { page?: "warehous
         <SectionNav section={section} setSection={setPicked} waiting={summary.data?.cartable ?? 0} late={summary.data?.late ?? 0} t={t} />
       ) : null}
       {section === "dashboard" ? <DashboardPanel dash={dash} t={t} /> : null}
-      {section === "cartable" ? <WorkflowCartablePanel onOpen={openRecord} /> : null}
+      {section === "cartable" ? (
+        page === "cartable" ? <RoleCartableDesk onOpen={openRecord} /> : <WorkflowCartablePanel onOpen={openRecord} />
+      ) : null}
       {section === "inventory" ? <WarehouseInventoryPanel onOpenRecord={openRecord} onTimeline={openTimeline} /> : null}
       {section === "elements" ? <ElementsPanel states={states} t={t} setSection={setPicked} onTimeline={openTimeline} /> : null}
       {section === "companies" ? <CompaniesPanel companies={companies} editable={editable} t={t} onSaved={invalidate} /> : null}

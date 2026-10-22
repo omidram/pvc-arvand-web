@@ -26,8 +26,10 @@ from ..auth import LEVEL_RANK, get_current_user, user_permission_map
 from ..database import get_db
 from ..paths import data_root
 from ..plant_topology import format_electrolyzer_name
+from ..relations_sync import link_serial
+from ..segregation_enrich import enrich_segregation_fields, format_service_life
 from ..segregation_flow import classify_row
-from ..warehouse import compact_nr, ensure_indexed, load_compact_index
+from ..warehouse import compact_eq, compact_nr, ensure_indexed, load_compact_index
 from ..warehouse_lifecycle import _stamp, log_event, upsert_state
 from ..workflow_excel import build_workbook, parse_report
 from ..workflow_models import (
@@ -42,6 +44,7 @@ from ..workflow_models import (
     WfPurchase,
     WfPurchaseItem,
     WfSettings,
+    WfWorkOrder,
 )
 from .tickets import BLOCKED_EXT, INLINE_TYPES, MAX_BYTES, _safe_name
 
@@ -55,9 +58,10 @@ GROUP_KEYS = {
     "operation": "wf_operation",
     "cellshop": "wf_cellshop",
     "process": "wf_process",
+    "planner": "wf_planner",
 }
 VIEW_KEYS = ("storage", "anodes", "cathodes", "wf_c90", "wf_procurement", "wf_warehouse", "wf_inspection")
-CELL_VIEW_KEYS = ("elements", "wf_operation", "wf_cellshop", "wf_c90")
+CELL_VIEW_KEYS = ("elements", "wf_operation", "wf_cellshop", "wf_c90", "wf_planner")
 
 # Coating hand-off (chart): C-90 selects the piece and the system makes the code, then
 # procurement plans the send, warehouse issues the indent, procurement ships and later
@@ -89,8 +93,17 @@ INSPECTION_STAGES: dict[str, list[str]] = {
     "await_request": ["c90"],
     "await_inspection": ["inspection", "process"],
 }
-STAGES = {"coating": COATING_STAGES, "purchase": PURCHASE_STAGES, "cell": CELL_STAGES, "inspection": INSPECTION_STAGES}
-INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections", "wf_process")
+WORKORDER_STAGES: dict[str, list[str]] = {
+    "open": ["planner"],
+}
+STAGES = {
+    "coating": COATING_STAGES,
+    "purchase": PURCHASE_STAGES,
+    "cell": CELL_STAGES,
+    "inspection": INSPECTION_STAGES,
+    "workorder": WORKORDER_STAGES,
+}
+INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections", "wf_process", "wf_planner")
 # Allowed time per stage in hours (editable in Settings -> Workflow deadlines). A stage that has its own
 # promised date (coater return, supplier delivery) is due on that date instead.
 DEFAULT_SLA: dict[str, dict[str, int]] = {
@@ -98,6 +111,7 @@ DEFAULT_SLA: dict[str, dict[str, int]] = {
     "purchase": {"await_indent": 72, "await_order": 720, "await_registration": 72},
     "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120, "await_disassembly": 72, "await_reinstall": 120, "await_numbering": 72},
     "inspection": {"await_request": 24, "await_inspection": 72},
+    "workorder": {"open": 120},
 }
 DEFAULT_WARN_PERCENT = 25
 CELL_DECISIONS = ("keep", "disassemble", "relocated")
@@ -179,6 +193,8 @@ def _title(flow: str, record: Any, db: Session) -> str:
         return f"{kind}{'⚠ ' if record.urgent else ''}{record.element_nr}{cell}"
     if flow == "inspection":
         return f"{record.code} · {record.element_nr or record.anode_nr or record.cathode_nr or ''}".strip(" ·")
+    if flow == "workorder":
+        return f"{record.code} · {record.element_nr}"
     codes = [p.code for p in db.query(WfCoatingPackage).filter_by(batch_id=record.id).order_by(WfCoatingPackage.seq)]
     if not codes:
         return f"#{record.id}"
@@ -548,6 +564,11 @@ def _cartable(db: Session, user: models.User) -> list[dict]:
     if i_status:
         for r in db.query(WfInspectionRequest).filter(WfInspectionRequest.status.in_(i_status)).order_by(WfInspectionRequest.updated_at).all():
             out.append(_insp_summary(db, r, conf))
+    if "planner" in groups:
+        from .work_orders import _summary as _wo_summary
+
+        for wo in db.query(WfWorkOrder).filter(WfWorkOrder.status == "open").order_by(WfWorkOrder.updated_at).all():
+            out.append(_wo_summary(wo))
     # most urgent first: late, then the nearest deadline
     out.sort(key=lambda r: (r["due_at"] is None, r["due_at"] or "", r["updated_at"] or ""))
     return out
@@ -556,6 +577,137 @@ def _cartable(db: Session, user: models.User) -> list[dict]:
 @router.get("/cartable")
 def cartable(db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     return _cartable(db, user)
+
+
+def _element_brief(el: models.Element) -> dict:
+    return {
+        "id": el.id,
+        "element_nr": el.element_nr,
+        "electrolyzer": el.electrolyzer,
+        "position": el.position,
+        "anode_nr": el.anode_nr,
+        "cathode_nr": el.cathode_nr,
+        "membrane_nr": el.membrane_nr,
+        "assembly_date": _iso(el.assembly_date),
+        "disassembly_date": _iso(el.disassembly_date),
+        "decommissioning_date": _iso(el.decommissioning_date),
+    }
+
+
+def _recent_by_date(db: Session, field: str, limit: int = 8) -> list[dict]:
+    col = getattr(models.Element, field)
+    rows = (
+        db.query(models.Element)
+        .filter(col.isnot(None))
+        .order_by(col.desc(), models.Element.id.desc())
+        .limit(limit)
+        .all()
+    )
+    return [_element_brief(el) for el in rows]
+
+
+def _items_for_group(items: list[dict], group: str) -> list[dict]:
+    return [row for row in items if group in (row.get("groups") or [])]
+
+
+@router.get("/cartable/desk")
+def cartable_desk(db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """Role-specialized cartable home: same waiting list, split and enriched per workflow group."""
+    if not _can_view_any(db, user):
+        raise HTTPException(403, "No workflow access")
+    edit_groups = sorted(_groups(db, user, "edit"))
+    view_groups = sorted(_groups(db, user, "view"))
+    # Prefer actor groups for desk tabs; fall back to view-only groups (e.g. plant management).
+    desk_groups = edit_groups or view_groups
+    waiting = _cartable(db, user)
+    by_group: dict[str, dict] = {}
+    for g in desk_groups:
+        rows = _items_for_group(waiting, g)
+        by_group[g] = {
+            "waiting": len(rows),
+            "late": sum(1 for r in rows if r.get("sla_state") == "late"),
+            "items": rows,
+        }
+
+    snapshots: dict[str, Any] = {}
+    need_pool = bool({"c90", "cellshop"} & set(desk_groups))
+    pool_snap = None
+    if need_pool:
+        pool = assembly_pool(db)
+        pool_snap = {
+            "reusable": len(pool.get("reusable") or []),
+            "purchased": len(pool.get("purchased") or []),
+            "recoated": len(pool.get("recoated") or []),
+            "reusable_preview": (pool.get("reusable") or [])[:6],
+            "purchased_preview": (pool.get("purchased") or [])[:4],
+            "recoated_preview": (pool.get("recoated") or [])[:4],
+        }
+
+    if "c90" in desk_groups:
+        snapshots["c90"] = {
+            "pool": pool_snap,
+            "recent_assemblies": _recent_by_date(db, "assembly_date"),
+            "recent_disassemblies": _recent_by_date(db, "disassembly_date"),
+            "await_disassembly": sum(1 for r in waiting if r.get("flow") == "cell" and r.get("status") == "await_disassembly"),
+            "await_reinstall": sum(1 for r in waiting if r.get("flow") == "cell" and r.get("status") == "await_reinstall"),
+            "await_numbering": sum(1 for r in waiting if r.get("flow") == "cell" and r.get("status") == "await_numbering"),
+            "await_inspection_request": sum(1 for r in waiting if r.get("flow") == "inspection" and r.get("status") == "await_request"),
+            "coating_approval": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_approval"),
+            "purchase_registration": sum(1 for r in waiting if r.get("flow") == "purchase" and r.get("status") == "await_registration"),
+        }
+    if "cellshop" in desk_groups:
+        snapshots["cellshop"] = {
+            "pool": pool_snap,
+            "await_shop": sum(1 for r in waiting if r.get("flow") == "cell" and r.get("status") == "await_shop"),
+            "in_shop": sum(1 for r in waiting if r.get("flow") == "cell" and r.get("status") == "in_shop"),
+            "recent_assemblies": _recent_by_date(db, "assembly_date", 5),
+        }
+    if "inspection" in desk_groups:
+        snapshots["inspection"] = {
+            "await_inspection": sum(
+                1 for r in waiting if r.get("status") == "await_inspection" and "inspection" in (r.get("groups") or [])
+            ),
+            "coating_inspection": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_inspection"),
+            "element_inspection": sum(1 for r in waiting if r.get("flow") == "inspection" and r.get("status") == "await_inspection"),
+        }
+    if "process" in desk_groups:
+        snapshots["process"] = {
+            "await_inspection": sum(
+                1 for r in waiting if r.get("status") == "await_inspection" and "process" in (r.get("groups") or [])
+            ),
+            "element_inspection": sum(1 for r in waiting if r.get("flow") == "inspection" and r.get("status") == "await_inspection"),
+            "coating_inspection": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_inspection"),
+        }
+    if "operation" in desk_groups:
+        snapshots["operation"] = {
+            "await_shutdown": sum(1 for r in waiting if r.get("flow") == "cell" and r.get("status") == "await_shutdown"),
+        }
+    if "procurement" in desk_groups:
+        snapshots["procurement"] = {
+            "await_company": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_company"),
+            "await_dispatch": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_dispatch"),
+            "await_return": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_return"),
+            "await_order": sum(1 for r in waiting if r.get("flow") == "purchase" and r.get("status") == "await_order"),
+        }
+    if "warehouse" in desk_groups:
+        snapshots["warehouse"] = {
+            "await_indent": sum(1 for r in waiting if r.get("status") == "await_indent"),
+        }
+    if "planner" in desk_groups:
+        snapshots["planner"] = {
+            "open_work_orders": sum(1 for r in waiting if r.get("flow") == "workorder"),
+        }
+
+    return {
+        "groups": desk_groups,
+        "edit_groups": edit_groups,
+        "view_groups": view_groups,
+        "waiting_total": len(waiting),
+        "late_total": sum(1 for r in waiting if r.get("sla_state") == "late"),
+        "waiting": waiting,
+        "by_group": by_group,
+        "snapshots": snapshots,
+    }
 
 
 @router.get("/summary")
@@ -2167,7 +2319,12 @@ def cell_dismantle(request_id: int, body: CellDismantleIn, db: Session = Depends
         raise HTTPException(400, str(exc)) from exc
     db.flush()
     inspection_on_element_dismantled(db, r.element_nr, user)
-    _cell_move(db, r, "completed", "dismantle", user, body.note, {"date": body.date.isoformat()}, also=("operation", "cellshop", "inspection"))
+    from .work_orders import ensure_work_order_for_disassembly
+
+    ensure_work_order_for_disassembly(
+        db, r.element_nr, user, disassemble_date=body.date, cell_request_id=r.id
+    )
+    _cell_move(db, r, "completed", "dismantle", user, body.note, {"date": body.date.isoformat()}, also=("operation", "cellshop", "inspection", "planner"))
     db.commit()
     svc.clear_cache()
     return _cell_detail(db, r, user)
@@ -2486,6 +2643,7 @@ def _attach_report(db: Session, r: WfInspectionRequest, report_id: int, actor: A
     r.report_id = report_id
     r.updated_at = _now()
     _event(db, "inspection", r, "report_filled", actor, r.status, note, {"report_id": report_id})
+    _sync_inspection_segregation(db, r)
     if not _finish_if_both(db, r, actor):
         _notify(db, "inspection", r, actor)
 
@@ -2705,8 +2863,13 @@ def inspection_link(request_id: int, body: InspLinkIn, db: Session = Depends(get
 
 
 class PieceCall(BaseModel):
-    healthy: bool = False
+    usable: bool | None = None
+    quality: str | None = None
+    problem: str | None = None
+    warranty: bool | None = None
+    problems: str = ""
     result: str = ""
+    healthy: bool = False
 
 
 class InspDecideIn(NoteIn):
@@ -2715,9 +2878,182 @@ class InspDecideIn(NoteIn):
     cathode: PieceCall | None = None
 
 
+def _normalize_piece(piece: PieceCall, kind: str) -> dict:
+    """One anode or cathode, on the segregation flowchart."""
+    note = (piece.problems or "").strip()[:500]
+    if piece.usable is None and (piece.result or "").strip() and not piece.quality and not piece.problem:
+        text = piece.result.strip()[:300]
+        return {"healthy": bool(piece.healthy), "result": text, "problems": note}
+    if piece.usable:
+        quality = (piece.quality or "").strip().lower()
+        if quality not in ("good", "medium"):
+            raise HTTPException(400, f"Choose coating quality (good or medium) for the {kind}")
+        phrase = "قابل استفاده / کیفیت پوشش خوب" if quality == "good" else "قابل استفاده / کیفیت پوشش متوسط"
+        return {
+            "usable": True,
+            "healthy": True,
+            "quality": quality,
+            "problem": None,
+            "warranty": None,
+            "problems": note,
+            "result": phrase,
+        }
+    problem = (piece.problem or "").strip().lower()
+    if problem not in ("coating", "mechanical", "rate_off"):
+        raise HTTPException(400, f"Choose the problem (mechanical, coating or rate off) for the {kind}")
+    warranty = None
+    if problem in ("coating", "mechanical"):
+        if piece.warranty is None:
+            raise HTTPException(400, f"Say whether the {kind} is under warranty")
+        warranty = bool(piece.warranty)
+    label = {"coating": "coating problem", "mechanical": "mechanical problem", "rate_off": "rate off"}[problem]
+    war = ""
+    if warranty is True:
+        war = " / تحت گارانتی"
+    elif warranty is False:
+        war = " / بدون گارانتی"
+    return {
+        "usable": False,
+        "healthy": False,
+        "quality": None,
+        "problem": problem,
+        "warranty": warranty,
+        "problems": note,
+        "result": f"غیر قابل استفاده / {label}{war}",
+    }
+
+
+def _flow_fields(rec: dict) -> dict:
+    """Texts classify() already understands, so the TAFKIK flowchart lights the same path."""
+    if rec.get("usable"):
+        quality = "خوب" if rec.get("quality") == "good" else "متوسط"
+        return {
+            "decision": "قابل استفاده",
+            "coating_quality": quality,
+            "warranty": None,
+            "segregation": f"کیفیت پوشش دهی {quality}",
+        }
+    if rec.get("problem") == "rate_off":
+        return {"decision": "خارج از رده", "coating_quality": None, "warranty": None, "segregation": "خارج از رده"}
+    war = "تحت گارانتی" if rec.get("warranty") else "بدون گارانتی"
+    if rec.get("problem") == "mechanical":
+        return {
+            "decision": "mechanical problem",
+            "coating_quality": None,
+            "warranty": war,
+            "segregation": f"مشکل مکانیکی — {war}",
+        }
+    return {
+        "decision": "coating problem",
+        "coating_quality": None,
+        "warranty": war,
+        "segregation": f"مشکل پوشش — {war}",
+    }
+
+
+def _same_path(left: dict | None, right: dict | None) -> bool:
+    if not left or not right or "usable" not in left or "usable" not in right:
+        return False
+    keys = ("usable", "quality", "problem", "warranty")
+    return tuple(left.get(k) for k in keys) == tuple(right.get(k) for k in keys)
+
+
+def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
+    """Write each anode and cathode onto Electrode segregation, linked to this request and its inspection form."""
+    dec = _decision_map(r)
+    kinds = _piece_kinds(r)
+    report = db.get(models.InspectionReport, r.report_id) if r.report_id else None
+    form_serial = None
+    if report is not None:
+        form_serial = (report.client or "").strip() or f"IR-{report.id}"
+    marker = f"WF {r.code}"
+    for kind in kinds:
+        serial = (r.anode_nr if kind == "anode" else r.cathode_nr) or ""
+        serial = serial.strip()
+        if not serial:
+            continue
+        inspection = (dec.get("inspection") or {}).get(kind) if isinstance(dec.get("inspection"), dict) else None
+        process = (dec.get("process") or {}).get(kind) if isinstance(dec.get("process"), dict) else None
+        inspection = inspection if isinstance(inspection, dict) else None
+        process = process if isinstance(process, dict) else None
+        if not inspection and not process:
+            continue
+        if "usable" not in (inspection or {}) and "usable" not in (process or {}):
+            continue
+        chosen = inspection if _same_path(inspection, process) or not process else process if not inspection else None
+        if chosen is None and inspection and "usable" in inspection and not process:
+            chosen = inspection
+        if chosen is None and process and "usable" in process and not inspection:
+            chosen = process
+        flow = _flow_fields(chosen) if chosen and "usable" in chosen else {
+            "decision": "بلاتکلیف",
+            "coating_quality": None,
+            "warranty": None,
+            "segregation": None,
+        }
+        if inspection and process and "usable" in inspection and "usable" in process and not _same_path(inspection, process):
+            flow = {"decision": "بلاتکلیف", "coating_quality": None, "warranty": None, "segregation": None}
+        notes = []
+        for label, block in (("بازرسی", inspection), ("فرآیند", process)):
+            text = str((block or {}).get("problems") or "").strip()
+            if text:
+                notes.append(f"{label}: {text}")
+        lines = [marker]
+        for label, block in (("Inspection", inspection), ("Process", process)):
+            lines.append(f"{label}: {(block or {}).get('result') or '—'}")
+        remarks = "\n".join(lines)
+        match = compact_eq(models.ElectrodeSegregation.serial_nr, serial)
+        existing = None
+        if match is not None:
+            for row in (
+                db.query(models.ElectrodeSegregation)
+                .filter(match)
+                .order_by(models.ElectrodeSegregation.id.desc())
+                .all()
+            ):
+                blob = f"{row.remarks or ''}\n{row.inspection_form_serial or ''}"
+                if marker in blob or (r.code and r.code == (row.inspection_form_serial or "")):
+                    existing = row
+                    break
+        fields = enrich_segregation_fields(
+            db,
+            serial_nr=serial,
+            electrode_kind=kind,
+            preserve_service_life=existing.service_life if existing is not None else None,
+        )
+        fields.update(flow)
+        fields["electrode_kind"] = kind
+        fields["serial_nr"] = serial
+        fields["inspection_date"] = date_type.today()
+        fields["inspection_form_serial"] = form_serial or r.code
+        fields["remarks"] = remarks
+        if not fields.get("service_life"):
+            life = format_service_life(fields.get("install_date"), fields.get("decommission_date") or fields.get("disassemble_date"))
+            if life:
+                fields["service_life"] = life
+        if notes:
+            base = str(fields.get("problems") or "").strip()
+            joined = "\n".join(notes)
+            fields["problems"] = f"{joined}\n{base}".strip() if base and base not in joined else joined
+        cols = {c.key for c in models.ElectrodeSegregation.__table__.columns}
+        row = existing or models.ElectrodeSegregation(serial_nr=serial, electrode_kind=kind)
+        for key, value in fields.items():
+            if key not in cols or key == "id":
+                continue
+            if value is None and key not in {"decision", "coating_quality", "warranty", "segregation"} and existing is not None:
+                continue
+            setattr(row, key, value)
+        spelled = link_serial(db, kind, serial)
+        if spelled:
+            row.serial_nr = spelled
+        if existing is None:
+            db.add(row)
+        db.flush()
+
+
 @router.post("/inspection/{request_id}/decide")
 def inspection_decide(request_id: int, body: InspDecideIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    """Inspector and process each say, separately, whether the anode and the cathode are healthy and what the result is."""
+    """Inspector and process each place the anode and the cathode on the segregation flowchart."""
     r = _load_insp(db, request_id)
     if r.status != "await_inspection":
         raise HTTPException(409, "The anode and cathode decision is only open while inspection and process are both working")
@@ -2729,12 +3065,13 @@ def inspection_decide(request_id: int, body: InspDecideIn, db: Session = Depends
     block: dict = {}
     for kind in kinds:
         piece = body.anode if kind == "anode" else body.cathode
-        if piece is None or not (piece.result or "").strip():
-            raise HTTPException(400, f"Write the result for the {kind}")
-        block[kind] = {"healthy": bool(piece.healthy), "result": piece.result.strip()[:300]}
+        if piece is None:
+            raise HTTPException(400, f"Choose the status of the {kind}")
+        block[kind] = _normalize_piece(piece, kind)
     r.decisions = {**_decision_map(r), body.side: block}
     r.updated_at = _now()
     _event(db, "inspection", r, "piece_decision", user, r.status, body.note, {"side": body.side, **block})
+    _sync_inspection_segregation(db, r)
     if not _finish_if_both(db, r, user):
         _notify(db, "inspection", r, user)
     db.commit()
@@ -2812,6 +3149,9 @@ def inspection_on_disassembly(db: Session, el: models.Element, actor: Any) -> No
     day = svc._as_date(el.disassembly_date)
     if day is None or not (0 <= (date.today() - day).days <= AUTO_REQUEST_DAYS):
         return
+    from .work_orders import ensure_work_order_for_disassembly
+
+    ensure_work_order_for_disassembly(db, el.element_nr or "", actor, disassemble_date=day)
     if _open_insp_for(db, el.element_nr, el.anode_nr, el.cathode_nr):
         return
     done = db.query(WfInspectionRequest).filter(WfInspectionRequest.element_id == el.id, WfInspectionRequest.status.in_(CLOSED)).first()
@@ -3065,3 +3405,200 @@ def company_report_one(company_id: int, db: Session = Depends(get_db), user: mod
     if not db.get(models.WhCompany, company_id):
         raise HTTPException(404, "Company not found")
     return _company_stats(db, company_id, None, None)
+
+
+def _pool_day(value: Any) -> date | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return svc._as_date(value)
+
+
+def _side_line(remarks: str | None, label: str) -> str:
+    prefix = f"{label}:"
+    for line in str(remarks or "").splitlines():
+        if line.startswith(prefix):
+            return line.split(":", 1)[1].strip()
+    return ""
+
+
+def _line_reusable(text: str) -> bool:
+    text = text.strip()
+    return text.startswith("قابل استفاده") and not text.startswith("غیر")
+
+
+def _pool_item(**kwargs: Any) -> dict:
+    day = kwargs.get("date")
+    kwargs["date"] = day.isoformat() if hasattr(day, "isoformat") else None
+    return kwargs
+
+
+@router.get("/assembly-pool")
+def assembly_pool(db: Session = Depends(get_db)):
+    """Pieces the cell shop may pick when assembling a new element.
+
+    Three stocks, each still free (not sitting on an open assembly):
+    reusable — inspection and process both called it reusable
+    purchased — registered on a purchase and never mounted
+    recoated — back from a coating company and not assembled since that return
+    """
+    anode_index = load_compact_index(db, models.Anode, "anode_nr")
+    cathode_index = load_compact_index(db, models.Cathode, "cathode_nr")
+    indexes = {"anode": anode_index, "cathode": cathode_index}
+    busy: set[tuple[str, str]] = set()
+    history: dict[tuple[str, str], list[date]] = {}
+    for el in db.query(
+        models.Element.anode_nr,
+        models.Element.cathode_nr,
+        models.Element.assembly_date,
+        models.Element.disassembly_date,
+    ).all():
+        assembled = _pool_day(el.assembly_date)
+        for kind, raw in (("anode", el.anode_nr), ("cathode", el.cathode_nr)):
+            key = compact_nr(raw)
+            if not key:
+                continue
+            if el.disassembly_date is None:
+                busy.add((kind, key))
+            if assembled:
+                history.setdefault((kind, key), []).append(assembled)
+
+    def spelled(kind: str, raw: str) -> str:
+        return indexes[kind].get(compact_nr(raw), raw)
+
+    def used_since(kind: str, key: str, day: date | None) -> bool:
+        if day is None:
+            return False
+        return any(when >= day for when in history.get((kind, key), []))
+
+    reusable: list[dict] = []
+    seen_reusable: set[tuple[str, str]] = set()
+    rows = (
+        db.query(models.ElectrodeSegregation)
+        .order_by(models.ElectrodeSegregation.id.desc())
+        .all()
+    )
+    for row in rows:
+        kind = (row.electrode_kind or "").lower()
+        if kind not in ("anode", "cathode"):
+            continue
+        key = compact_nr(row.serial_nr)
+        if not key or (kind, key) in seen_reusable:
+            continue
+        seen_reusable.add((kind, key))
+        if not (_line_reusable(_side_line(row.remarks, "Inspection")) and _line_reusable(_side_line(row.remarks, "Process"))):
+            continue
+        if not _line_reusable(str(row.decision or "")):
+            continue
+        if (kind, key) in busy or used_since(kind, key, _pool_day(row.inspection_date)):
+            continue
+        reusable.append(
+            _pool_item(
+                source="reusable",
+                kind=kind,
+                serial=spelled(kind, row.serial_nr),
+                company=row.company,
+                quality=row.coating_quality,
+                detail=row.segregation,
+                ref=row.inspection_form_serial,
+                date=_pool_day(row.inspection_date),
+                pair_serial=row.pair_serial_nr,
+                in_catalog=key in indexes[kind],
+            )
+        )
+
+    recoated: list[dict] = []
+    recoated_keys: set[tuple[str, str]] = set()
+    latest: dict[tuple[str, str], Any] = {}
+    for kind, model, field in (
+        ("anode", models.AnodeRecoating, "anode_nr"),
+        ("cathode", models.CathodeRecoating, "cathode_nr"),
+    ):
+        for row in db.query(model).filter(getattr(model, "return_date").isnot(None)).all():
+            key = compact_nr(getattr(row, field))
+            if not key:
+                continue
+            prev = latest.get((kind, key))
+            if prev is None or (row.return_date or datetime.min) > (prev.return_date or datetime.min):
+                latest[(kind, key)] = row
+    for (kind, key), row in latest.items():
+        back = _pool_day(row.return_date)
+        if (kind, key) in busy or used_since(kind, key, back):
+            continue
+        recoated_keys.add((kind, key))
+        serial = spelled(kind, getattr(row, "anode_nr" if kind == "anode" else "cathode_nr"))
+        recoated.append(
+            _pool_item(
+                source="recoated",
+                kind=kind,
+                serial=serial,
+                company=row.manufacturer,
+                quality=None,
+                detail=getattr(row, "coating_nr", None),
+                ref=getattr(row, "coating_nr", None) or row.remarks,
+                date=back,
+                pair_serial=None,
+                in_catalog=key in indexes[kind],
+            )
+        )
+
+    purchased: list[dict] = []
+    seen_buy: set[tuple[str, str]] = set()
+    purchase_by_id = {p.id: p for p in db.query(WfPurchase).all()}
+    companies = {c.id: c.name for c in db.query(models.WhCompany).all()}
+    for item in db.query(WfPurchaseItem).order_by(WfPurchaseItem.id.desc()).all():
+        kind = (item.element_kind or "").lower()
+        key = compact_nr(item.serial)
+        if kind not in ("anode", "cathode") or not key or (kind, key) in seen_buy:
+            continue
+        seen_buy.add((kind, key))
+        if (kind, key) in busy or (kind, key) in history or (kind, key) in recoated_keys:
+            continue
+        parent = purchase_by_id.get(item.purchase_id)
+        purchased.append(
+            _pool_item(
+                source="purchased",
+                kind=kind,
+                serial=spelled(kind, item.serial),
+                company=item.manufacturer or (companies.get(parent.supplier_id) if parent else None),
+                quality=item.coating,
+                detail=parent.code if parent else None,
+                ref=parent.code if parent else None,
+                date=_pool_day(item.registered_at) or (parent.delivery_date if parent else None),
+                pair_serial=None,
+                in_catalog=key in indexes[kind],
+            )
+        )
+    for purchase in db.query(models.WhPurchase).all():
+        kind = (purchase.element_kind or "").lower()
+        if kind not in ("anode", "cathode"):
+            continue
+        for item in db.query(models.WhPurchaseItem).filter_by(purchase_id=purchase.id).all():
+            key = compact_nr(item.serial)
+            if not key or (kind, key) in seen_buy:
+                continue
+            seen_buy.add((kind, key))
+            if (kind, key) in busy or (kind, key) in history or (kind, key) in recoated_keys:
+                continue
+            purchased.append(
+                _pool_item(
+                    source="purchased",
+                    kind=kind,
+                    serial=spelled(kind, item.serial),
+                    company=companies.get(purchase.supplier_id),
+                    quality=None,
+                    detail=purchase.purchase_no,
+                    ref=purchase.purchase_no,
+                    date=purchase.purchase_date,
+                    pair_serial=None,
+                    in_catalog=key in indexes[kind],
+                )
+            )
+
+    def newest(items: list[dict]) -> list[dict]:
+        return sorted(items, key=lambda row: row.get("date") or "", reverse=True)
+
+    return {"reusable": newest(reusable), "purchased": newest(purchased), "recoated": newest(recoated)}

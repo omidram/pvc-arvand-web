@@ -50,6 +50,8 @@ FORM_KEYS: list[str] = [
     "wf_operation",
     "wf_cellshop",
     "wf_process",
+    # Cell-shop labor / work orders — برنامه‌ریز fills who worked which stage
+    "wf_planner",
 ]
 
 # Per-form table fields that can be granted view/edit independently of the
@@ -347,6 +349,19 @@ _C90_ACCESS = {
     "storage": "view",
     "wf_c90": "edit",
     "wf_cellshop": "edit",
+    "wf_planner": "view",
+}
+_PLANNER_ACCESS = {
+    "dashboard": "view",
+    "elements": "view",
+    "anodes": "view",
+    "cathodes": "view",
+    "membranes": "view",
+    "storage": "view",
+    "search": "view",
+    "wf_planner": "edit",
+    "wf_c90": "view",
+    "wf_cellshop": "view",
 }
 _PROCUREMENT_ACCESS = {
     "dashboard": "view",
@@ -385,6 +400,7 @@ _PLANT_VIEW = {
     "wf_operation": "view",
     "wf_cellshop": "view",
     "wf_process": "view",
+    "wf_planner": "view",
 }
 
 DEFAULT_ROLES: list[dict] = [
@@ -524,6 +540,7 @@ DEFAULT_ROLES: list[dict] = [
             "membranes": "view",
             "inspections": "view",
             "wf_cellshop": "edit",
+            "wf_planner": "view",
         },
     },
     {
@@ -619,7 +636,14 @@ DEFAULT_ROLES: list[dict] = [
             "wf_operation": "edit",
             "wf_cellshop": "edit",
             "wf_process": "edit",
+            "wf_planner": "edit",
         },
+    },
+    {
+        "name": "برنامه‌ریز",
+        "description": "Registers cell-shop labor on work orders (who, hours, skill) after dismantling and other shop stages",
+        "is_system": True,
+        "permissions": _PLANNER_ACCESS,
     },
     {
         "name": "مدیریت سازمان",

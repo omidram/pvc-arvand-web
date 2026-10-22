@@ -68,8 +68,10 @@ const NAV_GROUPS: {
     items: [
       { href: "/element-dashboard", labelKey: "nav.elementDashboard", icon: Activity, formKey: "elements" },
       { href: "/elements", labelKey: "nav.elements", icon: Boxes, formKey: "elements" },
+      { href: "/elements/assembly-stock", labelKey: "nav.assemblyStock", icon: ListChecks, formKey: "elements" },
       { href: "/inspections", labelKey: "nav.inspections", icon: ClipboardCheck, formKey: "inspections" },
       { href: "/segregation", labelKey: "nav.segregation", icon: SplitSquareVertical, formKey: "elements" },
+      { href: "/work-orders", labelKey: "nav.workOrders", icon: ClipboardCheck, formKey: "wf_planner" },
     ],
   },
   {

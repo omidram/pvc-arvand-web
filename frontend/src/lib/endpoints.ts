@@ -1517,6 +1517,27 @@ export interface ComponentDossier {
     return_date: string | null;
   }[];
   reports: { id: number; report_date: string | null; title: string | null; notes: string | null; file_count: number }[];
+  inspections?: {
+    id: number;
+    inspection_date: string | null;
+    element_nr: string | null;
+    inspection_reason: string | null;
+    inspector_name: string | null;
+    anode_nr: string | null;
+    cathode_nr: string | null;
+  }[];
+  segregations?: {
+    id: number;
+    serial_nr: string | null;
+    decision: string | null;
+    coating_quality: string | null;
+    warranty: string | null;
+    segregation: string | null;
+    problems: string | null;
+    inspection_date: string | null;
+    inspection_form_serial: string | null;
+    company: string | null;
+  }[];
 }
 
 export interface ElectrolyzerProperties {
@@ -1862,4 +1883,94 @@ export const elementDashboardApi = {
     (await apiClient.get("/element-dashboard/relations", { params: refresh ? { refresh: true } : undefined })).data,
   repair: async (payload: { mode: "all" | "links" | "fill"; only?: string[] }): Promise<T.AuditRepairResult> =>
     (await apiClient.post("/element-dashboard/relations/repair", payload)).data,
+};
+
+// ---------------------------------------------------------------- Cell-shop work orders (کارکرد / برنامه‌ریز)
+
+export type WoStage = "generation" | "install" | "pickup" | "store" | "disassemble";
+
+export interface WoLaborLine {
+  id?: number | null;
+  stage: WoStage | string;
+  person_code?: string | null;
+  person_name?: string | null;
+  skill?: string | null;
+  work_hours?: number | null;
+  work_qty?: string | null;
+  description?: string | null;
+  line_no?: number;
+}
+
+export interface WorkOrderDetail {
+  id: number;
+  code: string;
+  seq: number;
+  status: string;
+  report_date: string | null;
+  element_nr: string;
+  element_id: number | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  cell_request_id: number | null;
+  generation_date: string | null;
+  install_date: string | null;
+  install_cell: string | null;
+  pickup_date: string | null;
+  store_date: string | null;
+  disassemble_date: string | null;
+  remarks: string | null;
+  last_note: string | null;
+  created_by: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  completed_at: string | null;
+  labors: Record<string, WoLaborLine[]>;
+  skills: string[];
+  stages: string[];
+}
+
+export interface WorkOrderSummary {
+  id: number;
+  code: string;
+  status: string;
+  element_nr?: string | null;
+  anode_nr?: string | null;
+  cathode_nr?: string | null;
+  created_by?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  last_note?: string | null;
+  actual_date?: string | null;
+}
+
+export type WorkOrderWrite = {
+  report_date?: string | null;
+  element_nr: string;
+  anode_nr?: string | null;
+  cathode_nr?: string | null;
+  membrane_nr?: string | null;
+  generation_date?: string | null;
+  install_date?: string | null;
+  install_cell?: string | null;
+  pickup_date?: string | null;
+  store_date?: string | null;
+  disassemble_date?: string | null;
+  remarks?: string | null;
+  labors: WoLaborLine[];
+};
+
+export const workOrdersApi = {
+  meta: async (): Promise<{ stages: string[]; skills: string[]; can_edit: boolean }> =>
+    (await apiClient.get("/work-orders/meta")).data,
+  list: async (params?: { q?: string; status?: string; element_nr?: string; limit?: number }): Promise<WorkOrderSummary[]> =>
+    (await apiClient.get("/work-orders", { params })).data,
+  get: async (id: number): Promise<WorkOrderDetail> => (await apiClient.get(`/work-orders/${id}`)).data,
+  create: async (payload: WorkOrderWrite): Promise<WorkOrderDetail> => (await apiClient.post("/work-orders", payload)).data,
+  update: async (id: number, payload: WorkOrderWrite): Promise<WorkOrderDetail> =>
+    (await apiClient.put(`/work-orders/${id}`, payload)).data,
+  complete: async (id: number, note?: string): Promise<WorkOrderDetail> =>
+    (await apiClient.post(`/work-orders/${id}/complete`, { note: note || null })).data,
+  cancel: async (id: number, note?: string): Promise<WorkOrderDetail> =>
+    (await apiClient.post(`/work-orders/${id}/cancel`, { note: note || null })).data,
 };

@@ -236,6 +236,20 @@ export default function SearchPage() {
               title={t("search.results.inspections", { n: results.inspections.length })}
               rows={results.inspections}
               keyField="id"
+              onOpen={(row) => {
+                window.location.href = `/inspections?id=${row.id}`;
+              }}
+            />
+          )}
+          {(results.segregations?.length ?? 0) > 0 && (
+            <ResultCard
+              title={t("search.results.segregations", { n: results.segregations?.length ?? 0 })}
+              rows={results.segregations ?? []}
+              keyField="id"
+              onOpen={(row) => {
+                const serial = String(row.serial_nr || "");
+                window.location.href = `/segregation?serial_nr=${encodeURIComponent(serial)}`;
+              }}
             />
           )}
           {(results.shutdowns?.length ?? 0) > 0 && (
@@ -246,7 +260,8 @@ export default function SearchPage() {
             results.cathodes?.length === 0 &&
             results.membranes?.length === 0 &&
             results.inspections?.length === 0 &&
-            results.shutdowns?.length === 0 && <EmptyState title={t("common.noRecordsFound")} />}
+            results.shutdowns?.length === 0 &&
+            (results.segregations?.length ?? 0) === 0 && <EmptyState title={t("common.noRecordsFound")} />}
         </div>
       )}
 
@@ -284,10 +299,12 @@ function ResultCard({
   title,
   rows,
   keyField,
+  onOpen,
 }: {
   title: string;
   rows: Record<string, unknown>[];
   keyField: string;
+  onOpen?: (row: Record<string, unknown>) => void;
 }) {
   const { t } = useI18n();
   const columns = Object.keys(rows[0] || {}).map((key) => ({
@@ -305,7 +322,7 @@ function ResultCard({
         {rows.length === 0 ? (
           <EmptyState title={t("common.noRecordsFound")} />
         ) : (
-          <DataTable columns={columns} data={rows} keyField={keyField as never} />
+          <DataTable columns={columns} data={rows} keyField={keyField as never} onRowClick={onOpen} />
         )}
       </CardContent>
     </Card>

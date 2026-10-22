@@ -212,6 +212,39 @@ function warrantyText(
   return `${under ? t("fields.underWarranty") : t("fields.outOfWarranty")} · ${months}`;
 }
 
+function InspectionTable({ serial, side }: { serial: string; side: "anode" | "cathode" }) {
+  const { t } = useI18n();
+  const query = useQuery({
+    queryKey: ["inspections", { q: serial, limit: 200 }],
+    queryFn: () => inspectionsApi.list({ q: serial, limit: 200 }),
+    enabled: !!serial,
+  });
+  const rows = (query.data || []).filter((row) =>
+    side === "anode"
+      ? sameNr(row.anode_nr, serial) || sameNr(row.electrode_nr_anode, serial)
+      : sameNr(row.cathode_nr, serial) || sameNr(row.electrode_nr_cathode, serial)
+  );
+  return (
+    <AccessSubform caption={t("access.relatedInspections")}>
+      <DataTable
+        columns={[
+          { key: "inspection_date", header: t("fields.date"), render: (r: InspectionReport) => formatDate(r.inspection_date) },
+          { key: "element_nr", header: t("fields.elementNr") },
+          { key: "inspection_reason", header: t("fields.inspectionReason"), render: (r: InspectionReport) => inspectionReasonLabel(r.inspection_reason, t) },
+          { key: "inspector_name", header: t("fields.inspector") },
+        ]}
+        data={rows}
+        keyField="id"
+        isLoading={query.isLoading}
+        onRowClick={(row) => {
+          window.location.href = `/inspections?id=${row.id}`;
+        }}
+        emptyTitle={t("common.noRecordsFound")}
+      />
+    </AccessSubform>
+  );
+}
+
 export function AnodeRelations({ anodeNr }: { anodeNr: string }) {
   const { t } = useI18n();
   const elementsQuery = useQuery({
@@ -305,6 +338,7 @@ export function AnodeRelations({ anodeNr }: { anodeNr: string }) {
           emptyTitle={t("common.noRecordsFound")}
         />
       </AccessSubform>
+      <InspectionTable serial={anodeNr} side="anode" />
       <TafkikTable serial={anodeNr} kind="anode" />
     </>
   );
@@ -398,6 +432,7 @@ export function CathodeRelations({ cathodeNr }: { cathodeNr: string }) {
           emptyTitle={t("common.noRecordsFound")}
         />
       </AccessSubform>
+      <InspectionTable serial={cathodeNr} side="cathode" />
       <TafkikTable serial={cathodeNr} kind="cathode" />
     </>
   );
@@ -478,6 +513,7 @@ export function SegregationRelations({ row }: { row: ElectrodeSegregation }) {
         anodeNr={row.electrode_kind === "cathode" ? null : serial}
         cathodeNr={row.electrode_kind === "anode" ? null : serial}
       />
+      <InspectionTable serial={serial} side={row.electrode_kind === "cathode" ? "cathode" : "anode"} />
       <AccessSubform caption={t("access.relatedElements")}>
         <DataTable
           columns={[

@@ -29,6 +29,75 @@ ELEMENT_FIELDS = [
 ]
 
 
+INSPECTION_FIELDS = [
+    "id",
+    "element_nr",
+    "anode_nr",
+    "cathode_nr",
+    "membrane_nr",
+    "inspection_reason",
+    "inspection_date",
+    "inspector_name",
+]
+SEGREGATION_FIELDS = [
+    "id",
+    "serial_nr",
+    "electrode_kind",
+    "company",
+    "decision",
+    "coating_quality",
+    "warranty",
+    "segregation",
+    "problems",
+    "inspection_date",
+    "inspection_form_serial",
+]
+
+
+def _element_text(like: str):
+    return or_(
+        models.Element.element_nr.ilike(like),
+        models.Element.anode_nr.ilike(like),
+        models.Element.cathode_nr.ilike(like),
+        models.Element.membrane_nr.ilike(like),
+        models.Element.remarks.ilike(like),
+    )
+
+
+def _inspection_text(like: str):
+    return or_(
+        models.InspectionReport.element_nr.ilike(like),
+        models.InspectionReport.anode_nr.ilike(like),
+        models.InspectionReport.cathode_nr.ilike(like),
+        models.InspectionReport.electrode_nr_anode.ilike(like),
+        models.InspectionReport.electrode_nr_cathode.ilike(like),
+        models.InspectionReport.membrane_nr.ilike(like),
+        models.InspectionReport.client.ilike(like),
+        models.InspectionReport.inspection_reason.ilike(like),
+    )
+
+
+def _inspections_for(db: Session, like: str | None, limit: int):
+    query = db.query(models.InspectionReport)
+    if like:
+        query = query.filter(_inspection_text(like))
+    return query.order_by(models.InspectionReport.inspection_date.desc()).limit(limit).all()
+
+
+def _segregations_for(db: Session, like: str | None, limit: int):
+    query = db.query(models.ElectrodeSegregation)
+    if like:
+        query = query.filter(
+            or_(
+                models.ElectrodeSegregation.serial_nr.ilike(like),
+                models.ElectrodeSegregation.pair_serial_nr.ilike(like),
+                models.ElectrodeSegregation.inspection_form_serial.ilike(like),
+                models.ElectrodeSegregation.decision.ilike(like),
+            )
+        )
+    return query.order_by(models.ElectrodeSegregation.id.desc()).limit(limit).all()
+
+
 def _dump(items, fields):
     out = []
     for i in items:
@@ -86,9 +155,8 @@ def search_all(q: str = Query(min_length=1), db: Session = Depends(get_db)):
         .limit(100)
         .all()
     )
-    inspections = (
-        db.query(models.InspectionReport).filter(models.InspectionReport.element_nr.ilike(like)).limit(100).all()
-    )
+    inspections = _inspections_for(db, like, 100)
+    segregations = _segregations_for(db, like, 100)
 
     return {
         "kind": "all",
@@ -97,7 +165,8 @@ def search_all(q: str = Query(min_length=1), db: Session = Depends(get_db)):
         "cathodes": _dump(cathodes, ["cathode_nr", "manufacturer", "coating", "batch"]),
         "membranes": _dump(membranes, ["membrane_nr", "membrane_type", "batch"]),
         "shutdowns": _dump(shutdowns, ["nr", "plant_part", "cause", "category", "shutdown_time"]),
-        "inspections": _dump(inspections, ["id", "element_nr", "inspection_reason", "inspection_date"]),
+        "inspections": _dump(inspections, INSPECTION_FIELDS),
+        "segregations": _dump(segregations, SEGREGATION_FIELDS),
     }
 
 
@@ -130,7 +199,7 @@ def search_by_kind(
     like = f"%{q.strip()}%" if q and q.strip() and q.strip() != "*" else None
     kind = kind.strip().lower()
 
-    def elements_result(items, title: str):
+    def elements_result(items, title: str, piece_like: str | None = None):
         return {
             "kind": kind,
             "title": title,
@@ -139,20 +208,16 @@ def search_by_kind(
             "cathodes": [],
             "membranes": [],
             "shutdowns": [],
-            "inspections": [],
+            "inspections": _dump(_inspections_for(db, piece_like, limit), INSPECTION_FIELDS) if piece_like else [],
+            "segregations": _dump(_segregations_for(db, piece_like, limit), SEGREGATION_FIELDS) if piece_like else [],
             "extra": {},
         }
 
     if kind in {"element", "search-element"}:
         query = db.query(models.Element)
         if like:
-            query = query.filter(
-                or_(
-                    models.Element.element_nr.ilike(like),
-                    models.Element.remarks.ilike(like),
-                )
-            )
-        return elements_result(query.order_by(models.Element.element_nr).all(), "Elements")
+            query = query.filter(_element_text(like))
+        return elements_result(query.order_by(models.Element.element_nr).all(), "Elements", like)
 
     if kind == "anode":
         query = db.query(models.Anode)
@@ -169,7 +234,8 @@ def search_by_kind(
             "cathodes": [],
             "membranes": [],
             "shutdowns": [],
-            "inspections": [],
+            "inspections": _dump(_inspections_for(db, like, limit), INSPECTION_FIELDS) if like else [],
+            "segregations": _dump(_segregations_for(db, like, limit), SEGREGATION_FIELDS) if like else [],
             "extra": {},
         }
 
@@ -192,7 +258,8 @@ def search_by_kind(
             "cathodes": _dump(rows, ["cathode_nr", "manufacturer", "coating", "batch", "generation", "received_date"]),
             "membranes": [],
             "shutdowns": [],
-            "inspections": [],
+            "inspections": _dump(_inspections_for(db, like, limit), INSPECTION_FIELDS) if like else [],
+            "segregations": _dump(_segregations_for(db, like, limit), SEGREGATION_FIELDS) if like else [],
             "extra": {},
         }
 
@@ -228,28 +295,28 @@ def search_by_kind(
     if kind == "assembly":
         query = db.query(models.Element).filter(models.Element.assembly_date.isnot(None))
         if like:
-            query = query.filter(models.Element.element_nr.ilike(like))
-        return elements_result(query.order_by(models.Element.assembly_date.desc()).all(), "Assembled elements")
+            query = query.filter(_element_text(like))
+        return elements_result(query.order_by(models.Element.assembly_date.desc()).all(), "Assembled elements", like)
 
     if kind == "commissioning":
         query = db.query(models.Element).filter(models.Element.commissioning_date.isnot(None))
         if like:
-            query = query.filter(models.Element.element_nr.ilike(like))
-        return elements_result(query.order_by(models.Element.commissioning_date.desc()).all(), "Commissioned elements")
+            query = query.filter(_element_text(like))
+        return elements_result(query.order_by(models.Element.commissioning_date.desc()).all(), "Commissioned elements", like)
 
     if kind == "decommissioning":
         query = db.query(models.Element).filter(models.Element.decommissioning_date.isnot(None))
         if like:
-            query = query.filter(models.Element.element_nr.ilike(like))
+            query = query.filter(_element_text(like))
         return elements_result(
-            query.order_by(models.Element.decommissioning_date.desc()).all(), "Decommissioned elements"
+            query.order_by(models.Element.decommissioning_date.desc()).all(), "Decommissioned elements", like
         )
 
     if kind == "disassembly":
         query = db.query(models.Element).filter(models.Element.disassembly_date.isnot(None))
         if like:
-            query = query.filter(models.Element.element_nr.ilike(like))
-        return elements_result(query.order_by(models.Element.disassembly_date.desc()).all(), "Disassembled elements")
+            query = query.filter(_element_text(like))
+        return elements_result(query.order_by(models.Element.disassembly_date.desc()).all(), "Disassembled elements", like)
 
     if kind == "group":
         query = db.query(models.Element).filter(models.Element.group_nr.isnot(None))
@@ -268,12 +335,7 @@ def search_by_kind(
     if kind == "inspection":
         query = db.query(models.InspectionReport)
         if like:
-            query = query.filter(
-                or_(
-                    models.InspectionReport.element_nr.ilike(like),
-                    models.InspectionReport.inspection_reason.ilike(like),
-                )
-            )
+            query = query.filter(_inspection_text(like))
         rows = query.order_by(models.InspectionReport.inspection_date.desc()).limit(limit).all()
         return {
             "kind": kind,
@@ -283,7 +345,8 @@ def search_by_kind(
             "cathodes": [],
             "membranes": [],
             "shutdowns": [],
-            "inspections": _dump(rows, ["id", "element_nr", "inspection_reason", "inspection_date", "inspector_name"]),
+            "inspections": _dump(rows, INSPECTION_FIELDS),
+            "segregations": _dump(_segregations_for(db, like, limit), SEGREGATION_FIELDS) if like else [],
             "extra": {},
         }
 
@@ -514,8 +577,8 @@ def search_by_kind(
     if kind == "dol-list":
         query = db.query(models.Element).filter(models.Element.dol_days.isnot(None))
         if like:
-            query = query.filter(models.Element.element_nr.ilike(like))
-        return elements_result(query.order_by(models.Element.dol_days.desc()).limit(limit).all(), "DOL")
+            query = query.filter(_element_text(like))
+        return elements_result(query.order_by(models.Element.dol_days.desc()).limit(limit).all(), "DOL", like)
 
     if kind == "inspection-code":
         if not like:

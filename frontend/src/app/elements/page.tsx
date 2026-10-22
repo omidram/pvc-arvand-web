@@ -19,6 +19,12 @@ export default function ElementAdministrationMenu() {
         in the original form, well below the main 4-row grid).
       */}
       <div className="access-admin-grid pt-4">
+        <AccessBtn href="/elements/assembly-stock">{t("menus.assemblyStock")}</AccessBtn>
+        <span />
+        <span />
+        <span />
+        <span />
+        <span />
         <AccessBtn href="/elements/assembly">{t("menus.assemblyData")}</AccessBtn>
         <AccessBtn href="/settings?tab=groups">{t("menus.groupDefinition")}</AccessBtn>
         <AccessBtn href="/anodes">{t("menus.anodeDetails")}</AccessBtn>

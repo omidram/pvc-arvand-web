@@ -120,7 +120,7 @@ export function Stepper({ flow, status, t }: { flow: WfFlow; status: string; t: 
   );
 }
 
-function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
+export function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
   const cols: Column<WfSummary>[] = [
     { key: "title", header: t("wf.col.code"), render: (r) => <strong className="wf-code">{r.title}</strong> },
     { key: "status", header: t("wf.col.status"), render: (r) => <StatusBadge row={r} t={t} />, filterText: (r) => t(`wf.status.${r.status}`) },
@@ -144,7 +144,9 @@ function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
           ? r.reason || "—"
           : r.flow === "inspection"
             ? [r.element_nr && t("wf.insp.elementShort", { n: r.element_nr }), r.anode_nr, r.cathode_nr].filter(Boolean).join(" · ") || "—"
-            : t("wf.piecesShort", { a: r.anode_count, k: r.cathode_count }),
+            : r.flow === "workorder"
+              ? [r.element_nr, r.anode_nr, r.cathode_nr].filter(Boolean).join(" · ") || "—"
+              : t("wf.piecesShort", { a: r.anode_count, k: r.cathode_count }),
     },
     { key: "company_name", header: t("wf.col.company"), render: (r) => r.company_name || "—" },
     { key: "indent_no", header: t("wf.col.indent"), render: (r) => r.indent_no || "—" },
