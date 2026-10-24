@@ -8,6 +8,8 @@ type T = (path: string) => string;
 
 type Tone = "green" | "red" | "amber" | "slate" | "blue" | "violet" | "teal";
 
+export type PiecePick = "good" | "medium" | "rateOff" | "coating" | "mechanical";
+
 function Step({
   id,
   label,
@@ -47,6 +49,8 @@ export function ElementWorkflowChart({
   counts,
   waiting,
   pieces,
+  piece,
+  onPiece,
 }: {
   t: T;
   picked: LifePick | null;
@@ -54,6 +58,8 @@ export function ElementWorkflowChart({
   counts?: Partial<Record<ElementStage | "assembled", number>>;
   waiting?: { anode: number; cathode: number } | null;
   pieces?: { good: number; medium: number; rateOff: number; coating: number; mechanical: number } | null;
+  piece?: PiecePick | null;
+  onPiece?: (piece: PiecePick | null) => void;
 }) {
   const n = (key: ElementStage | "assembled") => {
     if (key === "awaiting_assembly" && waiting) return waiting.anode + waiting.cathode;
@@ -61,6 +67,16 @@ export function ElementWorkflowChart({
   };
   const step = (id: LifePick, label: string, tone: Tone, role?: string) => (
     <Step id={id} label={label} role={role} count={n(id)} tone={tone} picked={picked} onPick={onPick} />
+  );
+  const pieceStep = (id: PiecePick, label: string, tone: Tone, count: number) => (
+    <button
+      type="button"
+      className={cn("ewc-step", `is-${tone}`, piece === id && "is-on")}
+      onClick={() => onPiece?.(piece === id ? null : id)}
+    >
+      <strong>{formatNumber(count, 0)}</strong>
+      <span>{label}</span>
+    </button>
   );
 
   return (
@@ -118,26 +134,11 @@ export function ElementWorkflowChart({
         <div className="ewc-track">
           <h4>{t("ewChart.lanePieces")}</h4>
           <div className="ewc-line">
-            <div className="ewc-step is-green">
-              <strong>{pieces.good}</strong>
-              <span>{t("ewChart.reusableGood")}</span>
-            </div>
-            <div className="ewc-step is-teal">
-              <strong>{pieces.medium}</strong>
-              <span>{t("ewChart.reusableMedium")}</span>
-            </div>
-            <div className="ewc-step is-slate">
-              <strong>{pieces.rateOff}</strong>
-              <span>{t("ewChart.pieceRateOff")}</span>
-            </div>
-            <div className="ewc-step is-amber">
-              <strong>{pieces.coating}</strong>
-              <span>{t("ewChart.pieceCoating")}</span>
-            </div>
-            <div className="ewc-step is-violet">
-              <strong>{pieces.mechanical}</strong>
-              <span>{t("ewChart.pieceMechanical")}</span>
-            </div>
+            {pieceStep("good", t("ewChart.reusableGood"), "green", pieces.good)}
+            {pieceStep("medium", t("ewChart.reusableMedium"), "teal", pieces.medium)}
+            {pieceStep("rateOff", t("ewChart.pieceRateOff"), "slate", pieces.rateOff)}
+            {pieceStep("coating", t("ewChart.pieceCoating"), "amber", pieces.coating)}
+            {pieceStep("mechanical", t("ewChart.pieceMechanical"), "violet", pieces.mechanical)}
           </div>
         </div>
       ) : null}

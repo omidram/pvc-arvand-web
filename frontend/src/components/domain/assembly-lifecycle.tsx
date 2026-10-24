@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
-import { ElementWorkflowChart } from "@/components/domain/element-workflow-chart";
+import { ElementWorkflowChart, type PiecePick } from "@/components/domain/element-workflow-chart";
 import { elementDashboardApi } from "@/lib/endpoints";
 import { workflowApi } from "@/lib/workflow";
-import type { Element, ElementStage, PipelineItem } from "@/lib/types";
+import type { Element, ElementStage, FlowNode, PipelineItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
 import { useI18n } from "@/lib/i18n/context";
@@ -60,8 +60,18 @@ function useCounts() {
 }
 
 /** The element workflow chart on Assembly Data. Picking a counted step filters the sheet underneath. */
+const PIECE_NODES: Record<PiecePick, FlowNode[]> = {
+  good: ["reusable_good"],
+  medium: ["reusable_medium"],
+  rateOff: ["rate_off"],
+  coating: ["coating_warranty", "coating_no_warranty"],
+  mechanical: ["mechanical_warranty", "mechanical_no_warranty"],
+};
+
 export function AssemblyLifecycleStrip({ picked, onPick }: { picked: LifePick | null; onPick: (stage: LifePick | null) => void }) {
   const { t } = useI18n();
+  const [piece, setPiece] = useState<PiecePick | null>(null);
+  const [needle, setNeedle] = useState("");
   const counts = useCounts().data?.counts;
   const pool = useQuery({ queryKey: ["workflow", "assembly-pool"], queryFn: workflowApi.assemblyPool, staleTime: 30_000 });
   const flow = useQuery({ queryKey: ["element-dashboard", "flow"], queryFn: elementDashboardApi.flow, staleTime: 30_000 });
@@ -82,18 +92,94 @@ export function AssemblyLifecycleStrip({ picked, onPick }: { picked: LifePick | 
         mechanical: (electrodes.mechanical_warranty?.total ?? 0) + (electrodes.mechanical_no_warranty?.total ?? 0),
       }
     : null;
+  const list = useQuery({
+    queryKey: ["element-dashboard", "flow", "pieces", piece],
+    queryFn: async () => {
+      const nodes = PIECE_NODES[piece!];
+      const pages = await Promise.all(nodes.map((node) => elementDashboardApi.flowList({ node, limit: 2000 })));
+      return pages.flatMap((page) => page.items);
+    },
+    enabled: Boolean(piece),
+  });
+  const q = needle.trim().toLowerCase();
+  const rows = (list.data ?? []).filter((row) => {
+    if (!q) return true;
+    return [row.serial, row.kind, row.element_nr, row.decision, row.vendor, row.destination].some((value) =>
+      String(value ?? "").toLowerCase().includes(q),
+    );
+  });
   return (
-    <ElementWorkflowChart
-      t={t}
-      picked={picked}
-      onPick={(stage) => {
-        if (stage === "awaiting_assembly") return;
-        onPick(stage);
-      }}
-      counts={counts}
-      waiting={waiting}
-      pieces={pieces}
-    />
+    <>
+      <ElementWorkflowChart
+        t={t}
+        picked={picked}
+        onPick={(stage) => {
+          if (stage === "awaiting_assembly") return;
+          setPiece(null);
+          onPick(stage);
+        }}
+        counts={counts}
+        waiting={waiting}
+        pieces={pieces}
+        piece={piece}
+        onPiece={(next) => {
+          setNeedle("");
+          setPiece(next);
+          if (next) onPick(null);
+        }}
+      />
+      {piece ? (
+        <section className="asm-card">
+          <div className="asm-card-head">
+            <strong>{t(`ewChart.${piece === "good" ? "reusableGood" : piece === "medium" ? "reusableMedium" : piece === "rateOff" ? "pieceRateOff" : piece === "coating" ? "pieceCoating" : "pieceMechanical"}`)}</strong>
+            <input className="ew-search" value={needle} onChange={(e) => setNeedle(e.target.value)} placeholder={t("elDash.search")} />
+            <span className="asm-mute">{t("elDash.matched", { count: rows.length })}</span>
+          </div>
+          {list.isLoading ? <p className="asm-mute">…</p> : null}
+          {!list.isLoading && !rows.length ? <p className="asm-mute">{t("elFlow.empty")}</p> : null}
+          {rows.length ? (
+            <div className="ed-table-wrap">
+              <table className="ed-table">
+                <thead>
+                  <tr>
+                    <th>{t("elDash.col.piece")}</th>
+                    <th>{t("elDash.col.type")}</th>
+                    <th>{t("fields.elementNr")}</th>
+                    <th>{t("elFlow.path")}</th>
+                    <th>{t("segregation.decision")}</th>
+                    <th>{t("fields.date")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => (
+                    <tr key={`${row.kind}-${row.key}-${row.date ?? ""}`}>
+                      <td>
+                        <Link className="asm-link" href={`/segregation?serial_nr=${encodeURIComponent(row.serial)}`}>
+                          {row.serial}
+                        </Link>
+                      </td>
+                      <td>{t(`elDash.kind.${row.kind}`)}</td>
+                      <td>
+                        {row.element_nr ? (
+                          <Link className="asm-link" href={`/elements/assembly?element_nr=${encodeURIComponent(row.element_nr)}`}>
+                            {row.element_nr}
+                          </Link>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td>{row.steps.map((step) => t(`elFlow.step.${step}`)).join(" → ")}</td>
+                      <td>{row.decision || row.segregation || "—"}</td>
+                      <td>{formatDate(row.date)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+    </>
   );
 }
 
