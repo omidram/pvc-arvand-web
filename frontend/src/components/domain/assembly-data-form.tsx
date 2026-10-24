@@ -278,7 +278,8 @@ export function AssemblyDataForm() {
         submitting={createMutation.isPending || updateMutation.isPending}
         exportPrefix="/elements"
         filenameBase="elements"
-        onLookup={async (name, _value, values) => {
+        onLookup={async (name, _value, values, ctx) => {
+          if (ctx.isNew && (name === "anode_nr" || name === "cathode_nr")) return null;
           const focus = [
             "element_nr",
             "anode_nr",

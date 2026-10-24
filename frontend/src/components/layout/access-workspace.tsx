@@ -157,7 +157,12 @@ export function AccessWorkspace<T extends object>({
   exportPrefix?: string;
   exportParams?: Record<string, unknown>;
   filenameBase?: string;
-  onLookup?: (name: string, value: unknown, values: Record<string, unknown>) => Promise<T | null>;
+  onLookup?: (
+    name: string,
+    value: unknown,
+    values: Record<string, unknown>,
+    ctx: { isNew: boolean }
+  ) => Promise<T | null>;
   /** Patch form fields from a live lookup (e.g. serial → Assembly fill) without changing the current record. */
   onSuggest?: (
     name: string,
@@ -383,7 +388,7 @@ export function AccessWorkspace<T extends object>({
 
     if (!onLookup) return;
     try {
-      const found = await onLookup(name, value, nextValues);
+      const found = await onLookup(name, value, nextValues, { isNew });
       if (seq !== lookupSeq.current || !found) return;
       skipUrlSync.current = true;
       setValues(valuesFromRecord(fields, found));

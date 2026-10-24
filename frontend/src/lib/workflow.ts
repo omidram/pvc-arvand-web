@@ -91,6 +91,7 @@ export interface WfSummary extends WfDeadline {
   warranty_start?: string | null;
   registered?: number;
   reason?: string;
+  problem?: string | null;
   element_nr?: string | null;
   anode_nr?: string | null;
   cathode_nr?: string | null;
@@ -437,6 +438,8 @@ export const workflowApi = {
     (await apiClient.post("/workflow/purchase", body)).data,
   step: async (flow: WfFlow, id: number, action: string, body: Record<string, unknown>): Promise<WfDetail> =>
     (await apiClient.post(`/workflow/${flow}/${id}/${action}`, body)).data,
+  update: async (flow: WfFlow, id: number, body: Record<string, unknown>): Promise<WfDetail> =>
+    (await apiClient.patch(`/workflow/${flow}/${id}`, body)).data,
   uploadReport: async (id: number, files: File[], packageId?: number | null, note?: string): Promise<{ rows_filled: number; detail: WfDetail }> =>
     (await apiClient.post(`/workflow/coating/${id}/report`, filesForm(files, { package_id: packageId, note }), multipart)).data,
   attach: async (flow: WfFlow, id: number, files: File[], note?: string) =>

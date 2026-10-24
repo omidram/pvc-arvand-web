@@ -1057,8 +1057,18 @@ def coating_from_board(db: Session, kind: str, serial: str, user: models.User, n
     return {"wf_id": b.id, "wf_code": pkg.code, "wf_status": b.status, "added": not created}
 
 
+def _can_manage(db: Session, user: models.User, flow: str, status: str) -> bool:
+    """Admin, or a section supervisor who can edit the group that currently owns this step."""
+    if status in CLOSED:
+        return False
+    if user.role == "admin":
+        return True
+    stage = set(STAGES.get(flow, {}).get(status, []))
+    return bool(stage and _groups(db, user) & stage)
+
+
 def _can_cancel(user: models.User, status: str, created_by_id: int | None, first_status: str, also: bool = False) -> bool:
-    """The requester may drop a new request on its first step. An admin may cancel any open step."""
+    """The requester may drop a new request on its first step. An admin or the section supervisor may cancel any open step."""
     if status in CLOSED:
         return False
     if user.role == "admin":
@@ -1068,8 +1078,9 @@ def _can_cancel(user: models.User, status: str, created_by_id: int | None, first
     return also
 
 
-def _admin_cancel_note(user: models.User, note: str | None) -> None:
-    if user.role == "admin" and not (note or "").strip():
+def _admin_cancel_note(user: models.User, note: str | None, *, required: bool | None = None) -> None:
+    must = user.role == "admin" if required is None else required
+    if must and not (note or "").strip():
         raise HTTPException(400, "Write why this request is cancelled")
 
 
@@ -1093,8 +1104,11 @@ def _coating_actions(db: Session, b: WfCoatingBatch, user: models.User) -> list[
     early = b.status in ("await_company", "await_indent", "await_dispatch")
     if early and ("c90" in groups or user.role == "admin"):
         acts.append("request_inspections")
-    if _can_cancel(user, b.status, b.created_by_id, "await_company", also=early and "c90" in groups):
+    managed = _can_manage(db, user, "coating", b.status)
+    if _can_cancel(user, b.status, b.created_by_id, "await_company", also=(early and "c90" in groups) or managed):
         acts.append("cancel")
+    if managed:
+        acts.append("edit")
     if b.status not in CLOSED and groups:
         acts.append("attach")
     return acts
@@ -1558,10 +1572,11 @@ def coating_reject(batch_id: int, body: NoteIn, db: Session = Depends(get_db), u
 @router.post("/coating/{batch_id}/cancel")
 def coating_cancel(batch_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     b = _load_batch(db, batch_id)
+    managed = _can_manage(db, user, "coating", b.status)
     early = b.status in ("await_company", "await_indent", "await_dispatch") and "c90" in _groups(db, user)
-    if not _can_cancel(user, b.status, b.created_by_id, "await_company", also=early):
-        raise HTTPException(409, "Only the requester can cancel a new request, or an admin at any open step")
-    _admin_cancel_note(user, body.note)
+    if not _can_cancel(user, b.status, b.created_by_id, "await_company", also=early or managed):
+        raise HTTPException(409, "Only the requester, the section supervisor, or an admin can cancel this request")
+    _admin_cancel_note(user, body.note, required=managed)
     day = date.today()
     for it in _batch_items(db, b):
         upsert_state(db, it.element_kind, it.serial, lifecycle_status="in_plant", company_id=None)
@@ -1680,8 +1695,11 @@ def _purchase_actions(db: Session, p: WfPurchase, user: models.User) -> list[str
     if mine and p.status in ("await_indent", "await_order", "await_registration"):
         acts.append({"await_indent": "indent", "await_order": "order", "await_registration": "register"}[p.status])
     early = p.status in ("await_indent", "await_order") and "procurement" in groups
-    if _can_cancel(user, p.status, p.created_by_id, "await_indent", also=early):
+    managed = _can_manage(db, user, "purchase", p.status)
+    if _can_cancel(user, p.status, p.created_by_id, "await_indent", also=early or managed):
         acts.append("cancel")
+    if managed:
+        acts.append("edit")
     if p.status not in CLOSED and groups:
         acts.append("attach")
     return acts
@@ -1914,10 +1932,11 @@ def purchase_register(purchase_id: int, body: RegisterIn, db: Session = Depends(
 @router.post("/purchase/{purchase_id}/cancel")
 def purchase_cancel(purchase_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     p = _load_purchase(db, purchase_id)
+    managed = _can_manage(db, user, "purchase", p.status)
     early = p.status in ("await_indent", "await_order") and "procurement" in _groups(db, user)
-    if not _can_cancel(user, p.status, p.created_by_id, "await_indent", also=early):
-        raise HTTPException(409, "Only the requester can cancel a new purchase, or an admin at any open step")
-    _admin_cancel_note(user, body.note)
+    if not _can_cancel(user, p.status, p.created_by_id, "await_indent", also=early or managed):
+        raise HTTPException(409, "Only the requester, the section supervisor, or an admin can cancel this request")
+    _admin_cancel_note(user, body.note, required=managed)
     _move(db, "purchase", p, "cancelled", "cancel", user, body.note, notify_creator=True)
     db.commit()
     return _purchase_detail(db, p, user)
@@ -1976,8 +1995,11 @@ def _cell_actions(db: Session, r: WfCellRequest, user: models.User) -> list[str]
     if (getattr(r, "request_kind", None) or "removal") == "numbering":
         if r.status == "await_numbering" and "c90" in groups:
             acts.append("review")
-        if _can_cancel(user, r.status, r.created_by_id, "await_numbering"):
+        managed = _can_manage(db, user, "cell", r.status)
+        if _can_cancel(user, r.status, r.created_by_id, "await_numbering", also=managed):
             acts.append("cancel")
+        if managed:
+            acts.append("edit")
         if r.status not in CLOSED and (groups or r.created_by_id == user.id):
             acts.extend(["comment", "attach"])
         return acts
@@ -1991,8 +2013,11 @@ def _cell_actions(db: Session, r: WfCellRequest, user: models.User) -> list[str]
         acts.append("receive")
     if r.status in ("await_shop", "in_shop") and "cellshop" in groups:
         acts.append("decide")
-    if _can_cancel(user, r.status, r.created_by_id, "await_shutdown", also=r.status == "await_shutdown" and "operation" in groups):
+    managed = _can_manage(db, user, "cell", r.status)
+    if _can_cancel(user, r.status, r.created_by_id, "await_shutdown", also=(r.status == "await_shutdown" and "operation" in groups) or managed):
         acts.append("cancel")
+    if managed:
+        acts.append("edit")
     if r.status not in CLOSED and (groups or r.created_by_id == user.id):
         acts.extend(["comment", "attach"])
     return acts
@@ -2399,8 +2424,8 @@ def cell_comment(request_id: int, body: CellCommentIn, db: Session = Depends(get
 def cell_cancel(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     r = _load_cell(db, request_id)
     if "cancel" not in _cell_actions(db, r, user):
-        raise HTTPException(409, "Only the requester can cancel a new cell request, or an admin at any open step")
-    _admin_cancel_note(user, body.note)
+        raise HTTPException(409, "Only the requester, the section supervisor, or an admin can cancel this request")
+    _admin_cancel_note(user, body.note, required=_can_manage(db, user, "cell", r.status))
     _cell_move(db, r, "cancelled", "cancel", user, body.note, also=("cellshop",))
     db.commit()
     return _cell_detail(db, r, user)
@@ -2658,8 +2683,11 @@ def _insp_actions(db: Session, r: WfInspectionRequest, user: models.User) -> lis
     if r.status == "await_inspection" and "process" in groups:
         acts.append("decide_process")
     early = (r.status == "await_request" and "c90" in groups) or (r.status == "await_inspection" and ("c90" in groups or r.created_by_id == user.id))
-    if _can_cancel(user, r.status, r.created_by_id, "await_request", also=early):
+    managed = _can_manage(db, user, "inspection", r.status)
+    if _can_cancel(user, r.status, r.created_by_id, "await_request", also=early or managed):
         acts.append("cancel")
+    if managed:
+        acts.append("edit")
     if r.status not in CLOSED and (groups or r.created_by_id == user.id):
         acts += ["comment", "attach"]
     return acts
@@ -3201,6 +3229,105 @@ def _record(db: Session, flow: str, record_id: int):
     if flow == "inspection":
         return _load_insp(db, record_id)
     raise HTTPException(404, "Unknown workflow")
+
+
+def _detail_for(db: Session, flow: str, record: Any, user: models.User) -> dict:
+    if flow == "coating":
+        return _coating_detail(db, record, user)
+    if flow == "purchase":
+        return _purchase_detail(db, record, user)
+    if flow == "cell":
+        return _cell_detail(db, record, user)
+    if flow == "inspection":
+        return _insp_detail(db, record, user)
+    raise HTTPException(404, "Unknown workflow")
+
+
+class RequestEditIn(BaseModel):
+    remarks: str | None = None
+    reason: str | None = None
+    problem: str | None = None
+    indent_no: str | None = None
+    approval_ref: str | None = None
+    expected_date: str | None = None
+
+
+def _clip(value: str | None, limit: int) -> str | None:
+    text = (value or "").strip()
+    return text[:limit] or None
+
+
+def _edit_date(value: str | None) -> date | None:
+    text = (value or "").strip()
+    if not text:
+        return None
+    try:
+        return date.fromisoformat(text[:10])
+    except ValueError:
+        raise HTTPException(400, "Date must be yyyy-mm-dd") from None
+
+
+@router.patch("/{flow}/{record_id}")
+def edit_request(
+    flow: str,
+    record_id: int,
+    body: RequestEditIn,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    """Admin or the section supervisor of the current step may correct an open request."""
+    rec = _record(db, flow, record_id)
+    if not _can_manage(db, user, flow, rec.status):
+        raise HTTPException(403, "Only an admin or the section supervisor can edit this request")
+    data = body.model_dump(exclude_unset=True)
+    changed: dict[str, Any] = {}
+    if flow == "coating":
+        if "remarks" in data:
+            rec.remarks = _clip(data["remarks"], 4000)
+            changed["remarks"] = rec.remarks
+        if "indent_no" in data:
+            rec.indent_no = _clip(data["indent_no"], 60)
+            changed["indent_no"] = rec.indent_no
+        if "expected_date" in data:
+            rec.expected_return_date = _edit_date(data["expected_date"])
+            changed["expected_date"] = _iso(rec.expected_return_date)
+    elif flow == "purchase":
+        if "remarks" in data:
+            rec.remarks = _clip(data["remarks"], 4000)
+            changed["remarks"] = rec.remarks
+        if "indent_no" in data:
+            rec.indent_no = _clip(data["indent_no"], 60)
+            changed["indent_no"] = rec.indent_no
+        if "approval_ref" in data:
+            rec.approval_ref = _clip(data["approval_ref"], 120)
+            changed["approval_ref"] = rec.approval_ref
+        if "expected_date" in data:
+            rec.expected_delivery_date = _edit_date(data["expected_date"])
+            changed["expected_date"] = _iso(rec.expected_delivery_date)
+    elif flow == "cell":
+        if "reason" in data:
+            reason = _clip(data["reason"], 200)
+            if reason:
+                rec.reason = reason
+                changed["reason"] = rec.reason
+        if "problem" in data:
+            rec.problem = _clip(data["problem"], 4000)
+            changed["problem"] = rec.problem
+        if "expected_date" in data:
+            rec.planned_date = _edit_date(data["expected_date"])
+            changed["expected_date"] = _iso(rec.planned_date)
+    elif flow == "inspection":
+        if "reason" in data:
+            rec.reason = _clip(data["reason"], 200)
+            changed["reason"] = rec.reason
+    else:
+        raise HTTPException(404, "Unknown workflow")
+    if not changed:
+        raise HTTPException(400, "Nothing to change")
+    rec.updated_at = _now()
+    _event(db, flow, rec, "edit", user, rec.status, None, changed)
+    db.commit()
+    return _detail_for(db, flow, rec, user)
 
 
 @router.post("/{flow}/{record_id}/files")

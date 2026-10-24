@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Ban, ClipboardCheck, FileText, Link2, MessageSquare, Paperclip, Plus, Send } from "lucide-react";
-import { DeadlineBadge, Stepper, useWorkflowMeta } from "@/components/domain/warehouse-workflow";
+import { DeadlineBadge, RequestEditForm, Stepper, useWorkflowMeta } from "@/components/domain/warehouse-workflow";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Modal } from "@/components/ui/modal";
@@ -473,6 +473,7 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
               </ul>
             </div>
           ) : null}
+          {acts.includes("edit") ? <RequestEditForm d={d} t={t} /> : null}
           <div className="wh-form-inline wf-inline-plain">
             <label className="wh-grow">
               {acts.includes("cancel") ? t("wf.insp.noteOrReason") : t("wf.note")}
@@ -494,10 +495,10 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
                 className="wf-btn is-bad"
                 disabled={run.isPending || !note.trim()}
                 onClick={() => {
-                  if (window.confirm(t("wf.confirmCancel"))) go("cancel");
+                  if (window.confirm(t("wf.confirmDelete"))) go("cancel");
                 }}
               >
-                <Ban size={14} /> {t("wf.action.cancel")}
+                <Ban size={14} /> {t("wf.action.delete")}
               </button>
             ) : null}
           </div>

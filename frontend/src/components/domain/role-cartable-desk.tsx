@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Package,
   Power,
+  Search,
   ShieldCheck,
   ShoppingCart,
   Sparkles,
@@ -23,7 +24,7 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
-import { summaryColumns } from "@/components/domain/warehouse-workflow";
+import { matchesCartableQuery, summaryColumns } from "@/components/domain/warehouse-workflow";
 import { DataTable } from "@/components/ui/data-table";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
@@ -367,6 +368,7 @@ export function RoleCartableDesk({ onOpen }: { onOpen: (flow: WfFlow, id: number
 
   const urlGroup = params.get("group") as WfGroup | null;
   const [active, setActive] = useState<WfGroup | "all">("all");
+  const [q, setQ] = useState("");
 
   useEffect(() => {
     if (urlGroup && groups.includes(urlGroup)) setActive(urlGroup);
@@ -377,7 +379,9 @@ export function RoleCartableDesk({ onOpen }: { onOpen: (flow: WfFlow, id: number
   if (desk.isError) return <ErrorState message={(desk.error as Error).message} />;
   const data = desk.data as CartableDesk;
   const snap = active === "all" ? undefined : data.snapshots?.[active];
-  const items: WfSummary[] = active === "all" ? data.waiting : data.by_group?.[active]?.items ?? [];
+  const items: WfSummary[] = (active === "all" ? data.waiting : data.by_group?.[active]?.items ?? []).filter((row) =>
+    matchesCartableQuery(row, q, t)
+  );
   const late = active === "all" ? data.late_total : data.by_group?.[active]?.late ?? 0;
   const ActiveIcon = GROUP_ICON[active] || Inbox;
 
@@ -454,6 +458,10 @@ export function RoleCartableDesk({ onOpen }: { onOpen: (flow: WfFlow, id: number
             <p className="rcd-eyebrow">{t("wf.desk.waitingList")}</p>
             <h3>{active === "all" ? t("wf.desk.all") : t(`wf.group.${active}`)}</h3>
           </div>
+          <label className="rcd-search">
+            <Search size={14} aria-hidden />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("wf.searchPlaceholder")} />
+          </label>
           <span className="rcd-count-pill">{items.length}</span>
         </div>
         <DataTable

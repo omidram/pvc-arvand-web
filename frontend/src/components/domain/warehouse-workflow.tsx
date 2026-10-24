@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Ban, Check, ClipboardCheck, Clock, Download, FileSpreadsheet, FileText, Inbox, Paperclip, Plus, RotateCcw, Search, Send, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -158,6 +158,126 @@ export function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
   return cols;
 }
 
+export function matchesCartableQuery(row: WfSummary, query: string, t: T): boolean {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return true;
+  const pieces = [row.element_nr, row.anode_nr, row.cathode_nr, row.reason, row.problem, String(row.anode_count ?? ""), String(row.cathode_count ?? "")]
+    .filter(Boolean)
+    .join(" ");
+  const blob = [
+    row.title,
+    row.code,
+    ...(row.codes || []),
+    t(`wf.flow.${row.flow}`),
+    t(`wf.status.${row.status}`),
+    row.groups.map((g) => t(`wf.group.${g}`)).join(" "),
+    pieces,
+    row.company_name,
+    row.indent_no,
+    row.last_note,
+    row.created_by,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return blob.includes(needle);
+}
+
+export function RequestEditForm({
+  d,
+  t,
+}: {
+  d: {
+    flow: WfFlow;
+    id: number;
+    remarks?: string | null;
+    reason?: string | null;
+    problem?: string | null;
+    indent_no?: string | null;
+    approval_ref?: string | null;
+    expected_date?: string | null;
+    planned_date?: string | null;
+  };
+  t: T;
+}) {
+  const qc = useQueryClient();
+  const [remarks, setRemarks] = useState(d.remarks || "");
+  const [reason, setReason] = useState(d.reason || "");
+  const [problem, setProblem] = useState(d.problem || "");
+  const [indent, setIndent] = useState(d.indent_no || "");
+  const [approval, setApproval] = useState(d.approval_ref || "");
+  const [expected, setExpected] = useState((d.expected_date || d.planned_date || "").slice(0, 10));
+  useEffect(() => {
+    setRemarks(d.remarks || "");
+    setReason(d.reason || "");
+    setProblem(d.problem || "");
+    setIndent(d.indent_no || "");
+    setApproval(d.approval_ref || "");
+    setExpected((d.expected_date || d.planned_date || "").slice(0, 10));
+  }, [d.id, d.flow, d.remarks, d.reason, d.problem, d.indent_no, d.approval_ref, d.expected_date, d.planned_date]);
+  const save = useMutation({
+    mutationFn: () => {
+      const body: Record<string, unknown> = {};
+      if (d.flow === "coating" || d.flow === "purchase") body.remarks = remarks;
+      if (d.flow === "cell" || d.flow === "inspection") body.reason = reason;
+      if (d.flow === "cell") body.problem = problem;
+      if (d.flow === "coating" || d.flow === "purchase") body.indent_no = indent;
+      if (d.flow === "purchase") body.approval_ref = approval;
+      if (d.flow !== "inspection") body.expected_date = expected || null;
+      return workflowApi.update(d.flow, d.id, body);
+    },
+    onSuccess: (next) => {
+      qc.setQueryData(["wf", "detail", next.flow, next.id], next);
+      refreshWarehouseData(qc);
+    },
+  });
+  return (
+    <div className="wf-edit">
+      <h4>{t("wf.editTitle")}</h4>
+      {d.flow === "cell" || d.flow === "inspection" ? (
+        <label>
+          {t("wf.editReason")}
+          <input value={reason} onChange={(e) => setReason(e.target.value)} />
+        </label>
+      ) : (
+        <label>
+          {t("fields.remarks")}
+          <input value={remarks} onChange={(e) => setRemarks(e.target.value)} />
+        </label>
+      )}
+      {d.flow === "cell" ? (
+        <label>
+          {t("wf.editProblem")}
+          <input value={problem} onChange={(e) => setProblem(e.target.value)} />
+        </label>
+      ) : null}
+      {d.flow === "coating" || d.flow === "purchase" ? (
+        <label>
+          {t("wf.col.indent")}
+          <input value={indent} onChange={(e) => setIndent(e.target.value)} />
+        </label>
+      ) : null}
+      {d.flow === "purchase" ? (
+        <label>
+          {t("wf.editApproval")}
+          <input value={approval} onChange={(e) => setApproval(e.target.value)} />
+        </label>
+      ) : null}
+      {d.flow !== "inspection" ? (
+        <label>
+          {t("wf.col.expected")}
+          <DateInput type="date" value={expected} onChange={(e) => setExpected(e.target.value)} />
+        </label>
+      ) : null}
+      <button type="button" className="wf-btn is-primary" disabled={save.isPending} onClick={() => save.mutate()}>
+        <Check size={14} /> {t("wf.editSave")}
+      </button>
+      {save.isSuccess ? <span className="wf-info">{t("wf.editSaved")}</span> : null}
+      {save.error ? <span className="wf-alert">{(save.error as Error).message}</span> : null}
+    </div>
+  );
+}
+
 // ------------------------------------------------------------------ cartable
 
 export function WorkflowCartablePanel({ onOpen }: { onOpen: (flow: WfFlow, id: number) => void }) {
@@ -166,6 +286,8 @@ export function WorkflowCartablePanel({ onOpen }: { onOpen: (flow: WfFlow, id: n
   const cartable = useQuery({ queryKey: ["wf", "cartable"], queryFn: workflowApi.cartable, refetchInterval: CARTABLE_MS });
   const late = (cartable.data ?? []).filter((r) => r.sla_state === "late").length;
   const groups = meta.data?.groups ?? [];
+  const [q, setQ] = useState("");
+  const rows = (cartable.data ?? []).filter((r) => matchesCartableQuery(r, q, t));
   return (
     <div className="wh-panel-block">
       <div className="wf-head">
@@ -178,10 +300,14 @@ export function WorkflowCartablePanel({ onOpen }: { onOpen: (flow: WfFlow, id: n
       </div>
       <p className="wh-subdesc">{t("wf.cartableHint")}</p>
       {late ? <div className="wf-alert">{t("wf.sla.lateCount", { n: late })}</div> : null}
+      <label className="rcd-search">
+        <Search size={14} />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("wf.searchPlaceholder")} />
+      </label>
       {cartable.isError ? <ErrorState message={(cartable.error as Error).message} /> : null}
       <DataTable
         columns={summaryColumns(t, true)}
-        data={(cartable.data ?? []).map((r) => ({ ...r, _key: `${r.flow}:${r.id}` }))}
+        data={rows.map((r) => ({ ...r, _key: `${r.flow}:${r.id}` }))}
         keyField="_key"
         isLoading={cartable.isLoading}
         onRowClick={(r) => onOpen(r.flow, r.id)}
@@ -778,9 +904,11 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
     ...parseSerialLines(regCathodes).map((l) => ({ element_kind: "cathode", serial: l.serial, coating: regCoating || undefined, manufacturer: regMaker || undefined })),
   ];
 
+  const mustReason = isAdmin || acts.includes("edit");
   return (
     <section className="wf-actions">
       <h4>{t("wf.yourStep")}</h4>
+      {acts.includes("edit") ? <RequestEditForm d={d} t={t} /> : null}
       {formsMissing > 0 && (acts.includes("request_inspections") || main.includes("dispatch")) ? (
         <div className="wf-alert wf-insp-alert">
           <span>{t("wf.insp.missingAlert", { n: formsMissing, total: d.inspections_total ?? 0 })}</span>
@@ -1081,8 +1209,8 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
 
       <div className="wh-form-inline wf-inline-plain">
         <label className="wh-grow">
-          {main.includes("reject") || main.includes("inspect_reject") ? t("wf.noteReject") : isAdmin && acts.includes("cancel") ? t("wf.cancelReason") : t("wf.note")}
-          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={isAdmin && acts.includes("cancel") ? t("wf.cancelReason") : undefined} />
+          {main.includes("reject") || main.includes("inspect_reject") ? t("wf.noteReject") : mustReason && acts.includes("cancel") ? t("wf.cancelReason") : t("wf.note")}
+          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={mustReason && acts.includes("cancel") ? t("wf.cancelReason") : undefined} />
         </label>
         {main.includes("submit") ? (
           <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("submit")}>
@@ -1113,14 +1241,14 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
           <button
             type="button"
             className="wf-btn is-bad"
-            disabled={run.isPending || (isAdmin && !note.trim())}
-            title={isAdmin ? t("wf.cancelReason") : undefined}
+            disabled={run.isPending || (mustReason && !note.trim())}
+            title={mustReason ? t("wf.cancelReason") : undefined}
             onClick={() => {
-              if (isAdmin && !note.trim()) return;
-              if (window.confirm(t("wf.confirmCancel"))) go("cancel");
+              if (mustReason && !note.trim()) return;
+              if (window.confirm(t("wf.confirmDelete"))) go("cancel");
             }}
           >
-            <Ban size={14} /> {t("wf.action.cancel")}
+            <Ban size={14} /> {t("wf.action.delete")}
           </button>
         ) : null}
       </div>

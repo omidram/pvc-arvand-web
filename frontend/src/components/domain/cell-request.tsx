@@ -18,7 +18,7 @@ import type { PipelineItem } from "@/lib/types";
 import { cn, formatDate, formatDateTime } from "@/lib/utils";
 import { CARTABLE_MS, cellPath, workflowApi, workflowHref, type CellRequest, type CellRequestDetail, type WfGroup } from "@/lib/workflow";
 import { StageBadge } from "./element-dashboard-ui";
-import { DeadlineBadge } from "./warehouse-workflow";
+import { DeadlineBadge, RequestEditForm } from "./warehouse-workflow";
 
 type ApiErr = Error & { response?: { data?: { detail?: string } } };
 type T = (k: string, vars?: Record<string, string | number | null | undefined>) => string;
@@ -508,9 +508,10 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
 
   return (
     <>
-      {stepActs.length ? (
+      {acts.includes("edit") || stepActs.length ? (
         <section className="wf-actions">
           <h4>{t("wf.yourStep")}</h4>
+          {acts.includes("edit") ? <RequestEditForm d={d} t={t} /> : null}
           {acts.includes("shutdown") || acts.includes("receive") ? (
             <div className="wh-form-inline wf-inline-plain">
               <label>
@@ -622,8 +623,8 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
             </div>
           ) : null}
           <label className="ed-filters">
-            <span className="text-xs font-bold">{isAdmin && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.note")}</span>
-            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={isAdmin && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.noteHint")} />
+            <span className="text-xs font-bold">{(isAdmin || acts.includes("edit")) && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.note")}</span>
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={(isAdmin || acts.includes("edit")) && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.noteHint")} />
           </label>
         </section>
       ) : d.status !== "completed" && d.status !== "cancelled" ? (
@@ -649,8 +650,17 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
               </>
             ) : null}
             {acts.includes("cancel") ? (
-              <button type="button" className="wf-btn is-bad" disabled={run.isPending || (isAdmin && !note.trim())} title={isAdmin ? t("wf.cancelReason") : undefined} onClick={() => go("cancel")}>
-                <Ban size={14} /> {t("cellReq.cancelBtn")}
+              <button
+                type="button"
+                className="wf-btn is-bad"
+                disabled={run.isPending || ((isAdmin || acts.includes("edit")) && !note.trim())}
+                title={(isAdmin || acts.includes("edit")) ? t("wf.cancelReason") : undefined}
+                onClick={() => {
+                  if ((isAdmin || acts.includes("edit")) && !note.trim()) return;
+                  if (window.confirm(t("wf.confirmDelete"))) go("cancel");
+                }}
+              >
+                <Ban size={14} /> {t("wf.action.delete")}
               </button>
             ) : null}
           </div>

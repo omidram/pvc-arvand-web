@@ -6976,6 +6976,46 @@ html[data-theme="dark"] .ewc-step.is-on { background: #1d4ed8; color: #fff; }
   gap: 0.65rem;
   margin-bottom: 0.7rem;
 }
+
+.rcd-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-inline-start: auto;
+  min-width: min(100%, 16rem);
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 0.45rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.rcd-search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-size: 0.78rem;
+  outline: none;
+}
+
+.wf-edit {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.45rem;
+  background: #f8fafc;
+}
+
+.wf-edit h4 {
+  margin: 0;
+}
+
+.wf-edit label {
+  display: grid;
+  gap: 0.15rem;
+  font-size: 0.75rem;
+}
 .rcd-card-head h3,
 .rcd-card-head h4 {
   margin: 0.15rem 0 0;
@@ -7155,6 +7195,15 @@ html[data-theme="dark"] .rcd-piece,
 html[data-theme="dark"] .rcd-all-hint {
   background: #1e293b;
   border-color: #334155;
+}
+html[data-theme="dark"] .rcd-search,
+html[data-theme="dark"] .wf-edit {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+html[data-theme="dark"] .rcd-search input {
+  color: #e2e8f0;
 }
 @media (max-width: 900px) {
   .rcd-hero { grid-template-columns: 1fr; }
