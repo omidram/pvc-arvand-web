@@ -609,6 +609,7 @@ export interface ElectrodeSegregation {
 export interface DashboardVoltageStats {
   plant_total_voltage: number | null;
   plant_total_ka: number | null;
+  plant_power_kw?: number | null;
   plant_energy_kwh_24h: number | null;
   report_date?: string | null;
   online_count?: number;

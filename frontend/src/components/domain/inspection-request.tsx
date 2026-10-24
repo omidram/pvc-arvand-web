@@ -176,6 +176,7 @@ function verdictText(item: PieceVerdict, t: T) {
     const warranty = item.warranty === true ? t("wf.insp.underWarranty") : item.warranty === false ? t("wf.insp.noWarranty") : "";
     return [t("wf.insp.notUsable"), problem, warranty].filter(Boolean).join(" · ");
   }
+  if (item.xrf || item.problems) return [item.xrf ? `XRF ${item.xrf}` : "", item.problems].filter(Boolean).join(" · ");
   if (item.result) return `${item.healthy ? t("wf.insp.healthy") : t("wf.insp.notHealthy")} — ${item.result}`;
   return "";
 }
@@ -254,16 +255,33 @@ function PieceDecision({
   const saved = d.decisions?.[side];
   const [anode, setAnode] = useState<PieceDraft>(() => draftFrom(saved?.anode));
   const [cathode, setCathode] = useState<PieceDraft>(() => draftFrom(saved?.cathode));
+  const [xrfAnode, setXrfAnode] = useState(saved?.anode?.xrf || "");
+  const [xrfCathode, setXrfCathode] = useState(saved?.cathode?.xrf || "");
+  const [noteAnode, setNoteAnode] = useState(saved?.anode?.problems || "");
+  const [noteCathode, setNoteCathode] = useState(saved?.cathode?.problems || "");
+  const inspectionPayload = (xrf: string, note: string) => ({ usable: null, xrf: xrf.trim(), problems: note.trim() });
   const run = useMutation({
     mutationFn: () =>
       workflowApi.inspectionStep(d.id, "decide", {
         side,
-        anode: d.anode_nr ? draftPayload(anode) : undefined,
-        cathode: d.cathode_nr ? draftPayload(cathode) : undefined,
+        anode: d.anode_nr
+          ? side === "inspection"
+            ? inspectionPayload(xrfAnode, noteAnode)
+            : draftPayload(anode)
+          : undefined,
+        cathode: d.cathode_nr
+          ? side === "inspection"
+            ? inspectionPayload(xrfCathode, noteCathode)
+            : draftPayload(cathode)
+          : undefined,
       }),
     onSuccess: onDone,
   });
-  const ready = (!d.anode_nr || draftReady(anode)) && (!d.cathode_nr || draftReady(cathode));
+  const inspectionReady = (serial: string | null, xrf: string, note: string) => !serial || (Boolean(xrf.trim()) && Boolean(note.trim()));
+  const ready =
+    side === "inspection"
+      ? inspectionReady(d.anode_nr, xrfAnode, noteAnode) && inspectionReady(d.cathode_nr, xrfCathode, noteCathode)
+      : (!d.anode_nr || draftReady(anode)) && (!d.cathode_nr || draftReady(cathode));
   const field = (kind: "anode" | "cathode", serial: string, value: PieceDraft, set: (v: PieceDraft) => void) => (
     <div className="wf-piece">
       <strong>
@@ -314,11 +332,48 @@ function PieceDecision({
       </label>
     </div>
   );
+  const inspectionField = (kind: "anode" | "cathode", serial: string, xrf: string, setXrf: (v: string) => void, note: string, setNote: (v: string) => void) => (
+    <div className="wf-piece">
+      <strong>
+        {t(kind === "anode" ? "wf.kind.anode" : "wf.kind.cathode")} {serial}
+      </strong>
+      <label>
+        XRF
+        <input value={xrf} inputMode="decimal" onChange={(e) => setXrf(e.target.value)} />
+      </label>
+      <label>
+        {t("wf.insp.inspectionComment")}
+        <textarea value={note} onChange={(e) => setNote(e.target.value)} />
+      </label>
+    </div>
+  );
   return (
     <div className="wf-section">
       <h4>{t(side === "inspection" ? "wf.group.inspection" : "wf.group.process")}</h4>
-      {d.anode_nr ? field("anode", d.anode_nr, anode, setAnode) : null}
-      {d.cathode_nr ? field("cathode", d.cathode_nr, cathode, setCathode) : null}
+      {side === "inspection" ? <p className="wh-subdesc">{t("wf.insp.inspectionOnly")}</p> : <p className="wh-subdesc">{t("wf.insp.processFinal")}</p>}
+      {side === "inspection" ? (
+        <>
+          {d.anode_nr ? inspectionField("anode", d.anode_nr, xrfAnode, setXrfAnode, noteAnode, setNoteAnode) : null}
+          {d.cathode_nr ? inspectionField("cathode", d.cathode_nr, xrfCathode, setXrfCathode, noteCathode, setNoteCathode) : null}
+        </>
+      ) : (
+        <>
+          {d.anode_nr ? field("anode", d.anode_nr, anode, setAnode) : null}
+          {d.cathode_nr ? field("cathode", d.cathode_nr, cathode, setCathode) : null}
+          <div className="wh-form-inline wf-inline-plain">
+            {d.anode_nr ? (
+              <Link className="wf-btn" href={`/segregation?new=1&serial_nr=${encodeURIComponent(d.anode_nr)}&kind=anode`} target="_blank">
+                {t("wf.insp.openSegregation")} · {d.anode_nr}
+              </Link>
+            ) : null}
+            {d.cathode_nr ? (
+              <Link className="wf-btn" href={`/segregation?new=1&serial_nr=${encodeURIComponent(d.cathode_nr)}&kind=cathode`} target="_blank">
+                {t("wf.insp.openSegregation")} · {d.cathode_nr}
+              </Link>
+            ) : null}
+          </div>
+        </>
+      )}
       <button type="button" className="wf-btn is-primary" disabled={run.isPending || !ready} onClick={() => run.mutate()}>
         {t("wf.insp.confirmSide")}
       </button>

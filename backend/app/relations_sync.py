@@ -88,6 +88,53 @@ def multi_hook(*pairs: tuple[str, str]) -> Callable[[Session, Any], None]:
     return _hook
 
 
+_COATING_ALIAS = {
+    "ancan": "ancan",
+    "آنکان": "ancan",
+    "انکان": "ancan",
+    "انكان": "ancan",
+}
+
+
+def _group_token(value: Any) -> str:
+    text = str(value or "").strip().lower().replace(" ", "").replace("\u200c", "")
+    return _COATING_ALIAS.get(text, text)
+
+
+def match_defined_group(
+    db: Session,
+    *,
+    anode_coating: Any = None,
+    cathode_coating: Any = None,
+    membrane_type: Any = None,
+    gap_mm: Any = None,
+) -> str | None:
+    """Group number whose defined coating, membrane and gap match this element.
+
+    A definition with no characteristics is ignored, so an empty group is not applied to every element.
+    """
+    best: tuple[int, str] | None = None
+    for group in db.query(models.GroupDefinition).all():
+        pairs = (
+            (group.anode_coating, anode_coating),
+            (group.cathode_coating, cathode_coating),
+            (group.membrane_type, membrane_type),
+            (group.gap_mm, gap_mm),
+        )
+        score = 0
+        ok = True
+        for defined, actual in pairs:
+            if not str(defined or "").strip():
+                continue
+            score += 1
+            if _group_token(defined) != _group_token(actual):
+                ok = False
+                break
+        if ok and score and (best is None or score > best[0]):
+            best = (score, group.group_nr)
+    return best[1] if best else None
+
+
 def link_group(db: Session, raw: Any) -> Any:
     """Group number as Group Definition has it (not created here - groups are defined on purpose)."""
     key = compact_nr(raw)

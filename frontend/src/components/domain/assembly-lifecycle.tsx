@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { ElementWorkflowChart } from "@/components/domain/element-workflow-chart";
 import { elementDashboardApi } from "@/lib/endpoints";
+import { workflowApi } from "@/lib/workflow";
 import type { Element, ElementStage, PipelineItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
@@ -62,7 +63,38 @@ function useCounts() {
 export function AssemblyLifecycleStrip({ picked, onPick }: { picked: LifePick | null; onPick: (stage: LifePick | null) => void }) {
   const { t } = useI18n();
   const counts = useCounts().data?.counts;
-  return <ElementWorkflowChart t={t} picked={picked} onPick={onPick} counts={counts} />;
+  const pool = useQuery({ queryKey: ["workflow", "assembly-pool"], queryFn: workflowApi.assemblyPool, staleTime: 30_000 });
+  const flow = useQuery({ queryKey: ["element-dashboard", "flow"], queryFn: elementDashboardApi.flow, staleTime: 30_000 });
+  const stock = [...(pool.data?.reusable ?? []), ...(pool.data?.purchased ?? []), ...(pool.data?.recoated ?? [])];
+  const waiting = pool.data
+    ? {
+        anode: stock.filter((row) => row.kind === "anode").length,
+        cathode: stock.filter((row) => row.kind === "cathode").length,
+      }
+    : null;
+  const electrodes = flow.data?.electrodes;
+  const pieces = electrodes
+    ? {
+        good: electrodes.reusable_good?.total ?? 0,
+        medium: electrodes.reusable_medium?.total ?? 0,
+        rateOff: electrodes.rate_off?.total ?? 0,
+        coating: (electrodes.coating_warranty?.total ?? 0) + (electrodes.coating_no_warranty?.total ?? 0),
+        mechanical: (electrodes.mechanical_warranty?.total ?? 0) + (electrodes.mechanical_no_warranty?.total ?? 0),
+      }
+    : null;
+  return (
+    <ElementWorkflowChart
+      t={t}
+      picked={picked}
+      onPick={(stage) => {
+        if (stage === "awaiting_assembly") return;
+        onPick(stage);
+      }}
+      counts={counts}
+      waiting={waiting}
+      pieces={pieces}
+    />
+  );
 }
 
 function DismantledParts({ row }: { row: Element }) {

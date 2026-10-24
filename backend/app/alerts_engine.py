@@ -520,9 +520,12 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     e24 = energy_since(db, tehran_now() - timedelta(hours=24)) if live_loads else {}
     plant_ka = 0.0
     plant_kwh = 0.0
+    plant_kw = 0.0
     for el, item in live_loads.items():
         plant_ka += float(item.get("current_ka") or 0)
         plant_kwh += float((e24.get(el) or {}).get("energy_kwh") or 0)
+        # Same MW as one electrolyzer: stack voltage (V) × current (kA) = kW. Sum only those units.
+        plant_kw += float(item.get("power_kw") or 0)
 
     names = sorted(set(by_el) | set(live_loads))
     electrolyzers = []
@@ -560,6 +563,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     return {
         "plant_total_voltage": round(plant_total, 2) if plant_total else None,
         "plant_total_ka": round(plant_ka, 3) if plant_ka else None,
+        "plant_power_kw": round(plant_kw, 1) if plant_kw else None,
         "plant_energy_kwh_24h": round(plant_kwh, 1) if plant_kwh else None,
         "report_date": today.isoformat(),
         "online_count": len(names),

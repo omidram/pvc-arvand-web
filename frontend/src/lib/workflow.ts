@@ -254,6 +254,7 @@ export interface PieceVerdict {
   warranty?: boolean | null;
   problems?: string;
   result?: string;
+  xrf?: string | null;
 }
 
 export interface PieceDecisions {

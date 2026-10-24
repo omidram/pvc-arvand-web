@@ -45,13 +45,20 @@ export function ElementWorkflowChart({
   picked,
   onPick,
   counts,
+  waiting,
+  pieces,
 }: {
   t: T;
   picked: LifePick | null;
   onPick: (stage: LifePick | null) => void;
   counts?: Partial<Record<ElementStage | "assembled", number>>;
+  waiting?: { anode: number; cathode: number } | null;
+  pieces?: { good: number; medium: number; rateOff: number; coating: number; mechanical: number } | null;
 }) {
-  const n = (key: ElementStage | "assembled") => (counts ? counts[key] ?? 0 : undefined);
+  const n = (key: ElementStage | "assembled") => {
+    if (key === "awaiting_assembly" && waiting) return waiting.anode + waiting.cathode;
+    return counts ? counts[key] ?? 0 : undefined;
+  };
   const step = (id: LifePick, label: string, tone: Tone, role?: string) => (
     <Step id={id} label={label} role={role} count={n(id)} tone={tone} picked={picked} onPick={onPick} />
   );
@@ -88,7 +95,12 @@ export function ElementWorkflowChart({
       <div className="ewc-track">
         <h4>{t("ewChart.laneBuild")}</h4>
         <div className="ewc-line">
-          {step("awaiting_assembly", t("ewChart.waitAsm"), "violet", t("ewChart.roleShop"))}
+          {step(
+            "awaiting_assembly",
+            t("ewChart.waitAsm"),
+            "violet",
+            waiting ? `${waiting.anode} A · ${waiting.cathode} K` : t("ewChart.roleShop"),
+          )}
           <Join />
           {step("assembling", t("ewChart.assembling"), "blue", t("ewChart.roleShop"))}
           <Join />
@@ -101,6 +113,34 @@ export function ElementWorkflowChart({
           <span className="ewc-back">{t("ewChart.backToService")}</span>
         </div>
       </div>
+
+      {pieces ? (
+        <div className="ewc-track">
+          <h4>{t("ewChart.lanePieces")}</h4>
+          <div className="ewc-line">
+            <div className="ewc-step is-green">
+              <strong>{pieces.good}</strong>
+              <span>{t("ewChart.reusableGood")}</span>
+            </div>
+            <div className="ewc-step is-teal">
+              <strong>{pieces.medium}</strong>
+              <span>{t("ewChart.reusableMedium")}</span>
+            </div>
+            <div className="ewc-step is-slate">
+              <strong>{pieces.rateOff}</strong>
+              <span>{t("ewChart.pieceRateOff")}</span>
+            </div>
+            <div className="ewc-step is-amber">
+              <strong>{pieces.coating}</strong>
+              <span>{t("ewChart.pieceCoating")}</span>
+            </div>
+            <div className="ewc-step is-violet">
+              <strong>{pieces.mechanical}</strong>
+              <span>{t("ewChart.pieceMechanical")}</span>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

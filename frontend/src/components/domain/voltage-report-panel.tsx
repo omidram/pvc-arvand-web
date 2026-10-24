@@ -123,9 +123,11 @@ export function VoltageReportPanel({
           <div>
             <div className="dash-total-label">{t("dashboard.plantTotalEnergy")}</div>
             <div className="dash-total-value">
-              {live.plant_energy_kwh_24h != null
-                ? formatNumber(live.plant_energy_kwh_24h / 24_000, 1)
-                : "—"}
+              {live.plant_power_kw != null
+                ? formatNumber(live.plant_power_kw / 1000, 2)
+                : live.plant_energy_kwh_24h != null
+                  ? formatNumber(live.plant_energy_kwh_24h / 24_000, 1)
+                  : "—"}
               <span className="dash-total-unit">MW</span>
             </div>
           </div>

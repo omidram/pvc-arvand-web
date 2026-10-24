@@ -581,6 +581,22 @@ ELEMENT_REQUIRED = [
 ]
 
 
+def _apply_defined_group(db: Session, data: dict, existing: models.Element | None = None) -> None:
+    """Fill a blank group number from Group Definition (coating + membrane + gap)."""
+    from ..relations_sync import match_defined_group
+
+    current = data.get("group_nr", getattr(existing, "group_nr", None) if existing is not None else None)
+    if not _blank(current):
+        return
+    anode = data.get("anode_coating", getattr(existing, "anode_coating", None) if existing is not None else None)
+    cathode = data.get("cathode_coating", getattr(existing, "cathode_coating", None) if existing is not None else None)
+    membrane = data.get("membrane_type", getattr(existing, "membrane_type", None) if existing is not None else None)
+    gap = data.get("gap_mm", getattr(existing, "gap_mm", None) if existing is not None else None)
+    found = match_defined_group(db, anode_coating=anode, cathode_coating=cathode, membrane_type=membrane, gap_mm=gap)
+    if found:
+        data["group_nr"] = found
+
+
 def _blank(value) -> bool:
     return value is None or (isinstance(value, str) and not value.strip())
 
@@ -602,9 +618,10 @@ def _check_required(data: dict, existing: models.Element | None = None) -> None:
 def create_element(payload: schemas.ElementBase, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     from .workflow import cell_on_element_saved
 
-    _check_required(payload.model_dump())
-    _ensure_group(db, payload.group_nr)
     data = payload.model_dump()
+    _apply_defined_group(db, data)
+    _check_required(data)
+    _ensure_group(db, data.get("group_nr"))
     data["position"] = _normalize_position(data.get("position"))
     if not str(data.get("element_nr") or "").strip():
         data["element_nr"] = _next_element_nr(db)
@@ -628,6 +645,7 @@ def update_element(item_id: int, payload: schemas.ElementBase, db: Session = Dep
         raise HTTPException(status_code=404, detail="Not found")
     had_decommission, had_disassembly = obj.decommissioning_date is not None, obj.disassembly_date is not None
     data = payload.model_dump(exclude_unset=True)
+    _apply_defined_group(db, data, obj)
     _check_required(data, obj)
     if "group_nr" in data:
         _ensure_group(db, data.get("group_nr"))

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { electrodeSegregationsApi, type ImportProgress } from "@/lib/endpoints";
 import { ImportProgressBar } from "@/components/domain/import-progress";
 import { useCrudResource } from "@/lib/use-resource";
@@ -25,6 +26,14 @@ export default function SegregationPage() {
   const { canEdit, canView, isAdmin } = useAuth();
   const allowed = canSeeSegregation(canView);
   const editable = canWorkSegregation(canEdit);
+  const params = useSearchParams();
+  const freshSerial = params.get("new") === "1" ? params.get("serial_nr") || "" : "";
+  const freshKind = params.get("kind") || "";
+  const prefill = useQuery({
+    queryKey: ["segregation", "from-assembly", freshSerial],
+    queryFn: () => electrodeSegregationsApi.fromAssembly(freshSerial),
+    enabled: freshSerial.length >= 4,
+  });
   const [showImport, setShowImport] = useState(false);
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<ElectrodeSegregation>(
     "electrode-segregations",
@@ -72,16 +81,18 @@ export default function SegregationPage() {
     { key: "serial_nr", header: t("segregation.serialNr") },
     { key: "electrode_kind", header: t("segregation.kind") },
     { key: "company", header: t("segregation.company") },
+    { key: "service_life", header: t("segregation.serviceLife") },
+    { key: "install_date", header: t("segregation.installDate"), render: (r) => formatDate(r.install_date) },
+    { key: "decommission_date", header: t("segregation.decommissionDate"), render: (r) => formatDate(r.decommission_date) },
+    { key: "disassemble_date", header: t("segregation.disassembleDate"), render: (r) => formatDate(r.disassemble_date) },
+    { key: "xrf", header: "XRF" },
     { key: "pair_serial_nr", header: t("segregation.pairSerial") },
-    { key: "voltage_quality", header: t("segregation.voltageQuality") },
+    { key: "pair_xrf", header: t("segregation.pairXrf") },
+    { key: "decommission_voltage", header: t("segregation.decommissionVoltage") },
+    { key: "decommission_ka", header: t("segregation.decommissionKa") },
     { key: "decision", header: t("segregation.decision") },
-    {
-      key: "flow_outcome",
-      header: t("elFlow.path"),
-      render: (r) => (r.flow_outcome ? `${t(`elFlow.outcome.${r.flow_outcome}`)}${r.flow_vendor ? ` · ${r.flow_vendor}` : ""}` : "—"),
-    },
-    { key: "pallet", header: t("segregation.pallet") },
-    { key: "inspection_date", header: t("fields.date"), render: (r) => formatDate(r.inspection_date) },
+    { key: "coating_quality", header: t("segregation.coatingQuality") },
+    { key: "problems", header: t("segregation.problems") },
   ];
 
   return (
@@ -99,6 +110,13 @@ export default function SegregationPage() {
         idField="id"
         recordParam="serial_nr"
         canEdit={editable}
+        startNew={Boolean(freshSerial)}
+        newDefaults={() => ({
+          ...(prefill.data || {}),
+          serial_nr: freshSerial,
+          ...(freshKind ? { electrode_kind: freshKind } : {}),
+        })}
+        newDefaultsKey={`${freshSerial}|${freshKind}|${prefill.dataUpdatedAt}`}
         onSave={(id, values) => updateMutation.mutateAsync({ id, payload: values })}
         onCreate={(values) => createMutation.mutateAsync(values as never)}
         onDelete={(id) => removeMutation.mutate(id)}

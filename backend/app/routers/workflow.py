@@ -2898,6 +2898,7 @@ class PieceCall(BaseModel):
     problems: str = ""
     result: str = ""
     healthy: bool = False
+    xrf: str | None = None
 
 
 class InspDecideIn(NoteIn):
@@ -2906,9 +2907,18 @@ class InspDecideIn(NoteIn):
     cathode: PieceCall | None = None
 
 
-def _normalize_piece(piece: PieceCall, kind: str) -> dict:
-    """One anode or cathode, on the segregation flowchart."""
+def _normalize_piece(piece: PieceCall, kind: str, side: str = "process") -> dict:
+    """One anode or cathode. Inspection records XRF and a comment. Process records the final path."""
     note = (piece.problems or "").strip()[:500]
+    if side == "inspection" and piece.usable is None and not piece.quality and not piece.problem:
+        xrf = (piece.xrf or "").strip()[:100]
+        if not xrf and not note:
+            raise HTTPException(400, f"Enter the XRF value and the inspection comment for the {kind}")
+        if not xrf:
+            raise HTTPException(400, f"Enter the XRF value for the {kind}")
+        if not note:
+            raise HTTPException(400, f"Enter the inspection comment for the {kind}")
+        return {"xrf": xrf, "problems": note, "result": f"XRF {xrf} — {note}", "usable": None}
     if piece.usable is None and (piece.result or "").strip() and not piece.quality and not piece.problem:
         text = piece.result.strip()[:300]
         return {"healthy": bool(piece.healthy), "result": text, "problems": note}
@@ -3006,21 +3016,18 @@ def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
         process = process if isinstance(process, dict) else None
         if not inspection and not process:
             continue
-        if "usable" not in (inspection or {}) and "usable" not in (process or {}):
+        inspection_note = bool(inspection and (inspection.get("xrf") or inspection.get("problems") or "usable" in inspection))
+        process_note = bool(process and "usable" in process)
+        if not inspection_note and not process_note:
             continue
-        chosen = inspection if _same_path(inspection, process) or not process else process if not inspection else None
-        if chosen is None and inspection and "usable" in inspection and not process:
-            chosen = inspection
-        if chosen is None and process and "usable" in process and not inspection:
+        # The process wording is the final segregation decision.
+        if process and "usable" in process:
             chosen = process
-        flow = _flow_fields(chosen) if chosen and "usable" in chosen else {
-            "decision": "بلاتکلیف",
-            "coating_quality": None,
-            "warranty": None,
-            "segregation": None,
-        }
-        if inspection and process and "usable" in inspection and "usable" in process and not _same_path(inspection, process):
-            flow = {"decision": "بلاتکلیف", "coating_quality": None, "warranty": None, "segregation": None}
+        elif inspection and "usable" in inspection:
+            chosen = inspection
+        else:
+            chosen = None
+        flow = _flow_fields(chosen) if chosen and "usable" in chosen else None
         notes = []
         for label, block in (("بازرسی", inspection), ("فرآیند", process)):
             text = str((block or {}).get("problems") or "").strip()
@@ -3049,7 +3056,10 @@ def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
             electrode_kind=kind,
             preserve_service_life=existing.service_life if existing is not None else None,
         )
-        fields.update(flow)
+        if flow:
+            fields.update(flow)
+        if inspection and inspection.get("xrf"):
+            fields["xrf"] = inspection["xrf"]
         fields["electrode_kind"] = kind
         fields["serial_nr"] = serial
         fields["inspection_date"] = date_type.today()
@@ -3095,7 +3105,7 @@ def inspection_decide(request_id: int, body: InspDecideIn, db: Session = Depends
         piece = body.anode if kind == "anode" else body.cathode
         if piece is None:
             raise HTTPException(400, f"Choose the status of the {kind}")
-        block[kind] = _normalize_piece(piece, kind)
+        block[kind] = _normalize_piece(piece, kind, body.side)
     r.decisions = {**_decision_map(r), body.side: block}
     r.updated_at = _now()
     _event(db, "inspection", r, "piece_decision", user, r.status, body.note, {"side": body.side, **block})
@@ -3616,9 +3626,9 @@ def assembly_pool(db: Session = Depends(get_db)):
         if not key or (kind, key) in seen_reusable:
             continue
         seen_reusable.add((kind, key))
-        if not (_line_reusable(_side_line(row.remarks, "Inspection")) and _line_reusable(_side_line(row.remarks, "Process"))):
-            continue
-        if not _line_reusable(str(row.decision or "")):
+        decision_ok = _line_reusable(str(row.decision or ""))
+        sides_ok = _line_reusable(_side_line(row.remarks, "Inspection")) and _line_reusable(_side_line(row.remarks, "Process"))
+        if not (decision_ok or sides_ok):
             continue
         if (kind, key) in busy or used_since(kind, key, _pool_day(row.inspection_date)):
             continue
