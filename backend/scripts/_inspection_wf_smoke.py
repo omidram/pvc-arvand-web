@@ -106,12 +106,62 @@ assert ok(client.get("/workflow/summary"))["unread"] >= 1
 assert set(ok(client.get(f"/workflow/inspection/{req['id']}"))["actions"]) >= {"fill", "link"}
 print("C-90 send -> inspection cartable + notification")
 
-# saving the Element Inspection form closes the request
-rep = ok(client.post("/inspections", json={"element_nr": "301", "anode_nr": "A-1", "cathode_nr": "K-1", "inspection_date": today.isoformat(), "inspector_name": "Insp"}), 201)
+# saving a form filled through the signature closes the request
+def filled_form(**over):
+    body = {
+        "client": "PVC",
+        "electrolyzer": "E1",
+        "position": "1",
+        "operation_days": "10",
+        "membrane_nr": "M",
+        "membrane_type": "N2030",
+        "electrode_nr_anode": "EA",
+        "electrode_nr_cathode": "EC",
+        "inspection_reason": "Dismantled",
+        "blister_anode_area": "0",
+        "blister_periphery_top": "0",
+        "blister_periphery_bottom": "0",
+        "blister_periphery_side": "0",
+        "blister_corners": "0",
+        "folds": "0",
+        "pressure_marks": "0",
+        "visible_holes": "0",
+        "cracks": "0",
+        "xrf_anode": "0",
+        "xrf_cathode": "0",
+        "deformation_pan": "0",
+        "deformation_electrode": "0",
+        "coloured_area": "0",
+        "coloured_electrode": "0",
+        "coloured_pan": "0",
+        "leakage_pan": "0",
+        "leakage_web": "0",
+        "leakage_corner": "0",
+        "leakage_outlet": "0",
+        "leakage_inlet": "0",
+        "sample_cathode_note": "-",
+        "sample_anode_note": "-",
+        "sample_membrane_note": "-",
+        "anode_tube_remark": "-",
+        "cathode_tube_remark": "-",
+        "anode_spacer_remark": "-",
+        "cathode_spacer_remark": "-",
+        "frame_gasket_remark": "-",
+        "inspector_name": "Insp",
+        "sign_insp_name": "Insp",
+        "sign_insp_image": "data:image/png;base64,aa",
+        "inspection_date": today.isoformat(),
+    }
+    body.update(over)
+    return body
+
+bare = client.post("/inspections", json={"element_nr": "301", "anode_nr": "A-1", "cathode_nr": "K-1"})
+assert bare.status_code == 422 and "Signature" in bare.json()["detail"], bare.text
+rep = ok(client.post("/inspections", json=filled_form(element_nr="301", anode_nr="A-1", cathode_nr="K-1")), 201)
 done = ok(client.get(f"/workflow/inspection/{req['id']}"))
-assert done["status"] == "completed" and done["report"]["id"] == rep["id"], done
-assert cart() == []
-print("form saved -> request completed")
+assert done["report"]["id"] == rep["id"] and done["status"] == "await_inspection", done
+assert any(ev["action"] == "report_filled" for ev in done["events"])
+print("form saved -> report attached; request stays open until both sides confirm")
 
 # recoating pallet: dispatch needs one form per piece
 current["name"] = "admin"
@@ -131,7 +181,7 @@ asked = ok(client.post(f"/workflow/coating/{wid}/request_inspections", json={"no
 assert asked["created"] == 1, asked
 item = next(i for p in asked["detail"]["packages"] for i in p["items"] if i["serial"] == "A-2")
 assert item["inspection_request"], item
-ok(client.post("/inspections", json={"element_nr": "302", "anode_nr": "A-2", "cathode_nr": "K-2", "inspection_date": today.isoformat()}), 201)
+ok(client.post("/inspections", json=filled_form(element_nr="302", anode_nr="A-2", cathode_nr="K-2")), 201)
 ok(client.post(f"/workflow/coating/{wid}/dispatch", json=body))
 print("pallet dispatch blocked until every piece has its form")
 

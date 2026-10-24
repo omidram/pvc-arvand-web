@@ -417,7 +417,7 @@ def replace_elements_workbook(db: Session, content: bytes, progress) -> dict:
     """Drop every assembly row, then load the new workbook."""
     db.query(models.Element).delete(synchronize_session=False)
     db.commit()
-    parsed = parse_assembly_excel(content)
+    parsed = parse_assembly_excel(content, from_year=None)
     if parsed.get("recognized"):
         result = _apply_assembly_import(db, parsed, "upsert", progress)
         result["contractor_repairs"] = import_contractor_repairs(db, content)
@@ -434,7 +434,7 @@ def _remember_elements(db: Session, filename: str | None, content: bytes, upload
 @router.post("/import.xlsx", include_in_schema=False)
 async def import_elements(_admin=Depends(require_admin), file: UploadFile = File(...)):
     content = await read_xlsx(file)
-    parsed = parse_assembly_excel(content)
+    parsed = parse_assembly_excel(content, from_year=None)
     filename = file.filename
     who = _admin.username
 
@@ -462,14 +462,14 @@ async def import_assembly_excel(
     Disassembly updates the matching installation's dismantle date.
     """
     content = await file.read()
-    parsed = parse_assembly_excel(content)
+    parsed = parse_assembly_excel(content, from_year=None)
     if not parsed.get("recognized"):
         raise HTTPException(
             status_code=400,
             detail=(
                 "This Excel file does not match Assembly Data. "
                 "Expected the montage / demontage sheet (ANODE, CATHODE, شماره المنت, تاریخ مونتاژ در C90, تاریخ دی مونتاژ). "
-                "فایل با فرم مونتاژ جور نیست. از سال ۱۳۹۵ روی تاریخ C90 وارد می‌شود."
+                "فایل با فرم مونتاژ جور نیست. همه سال‌های تاریخ C90 وارد می‌شوند."
             ),
         )
     mode = (mode or "assembly").strip().lower()

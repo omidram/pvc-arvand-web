@@ -6,6 +6,7 @@ from ..crud import build_crud_router
 from ..database import get_db
 from ..relations_sync import multi_hook
 from ..export_utils import ExportFilters, build_export_meta, export_xlsx, rows_to_dicts
+from ..inspection_complete import missing_inspection_labels
 from ..inspection_pdf import inspection_pdf_response
 
 _serial_links = multi_hook(
@@ -24,6 +25,16 @@ def _after_save(db: Session, obj: models.InspectionReport) -> None:
     inspection_report_saved(db, obj)
 
 
+def _require_filled(obj: models.InspectionReport) -> None:
+    missing = missing_inspection_labels(obj)
+    if missing:
+        raise HTTPException(
+            status_code=422,
+            detail="The inspection form cannot be saved until it is filled through the signature. Missing: "
+            + ", ".join(missing),
+        )
+
+
 router = build_crud_router(
     model=models.InspectionReport,
     read_schema=schemas.InspectionReportRead,
@@ -32,6 +43,7 @@ router = build_crud_router(
     tags=["inspections"],
     search_fields=["element_nr", "inspector_name", "anode_nr", "cathode_nr", "membrane_nr", "client", "electrolyzer"],
     default_order="inspection_date",
+    prepare=_require_filled,
     after_save=_after_save,
 )
 

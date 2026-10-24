@@ -724,7 +724,7 @@ def _ymd_from_row(row: list[Any], day_i: int, month_i: int, year_i: int) -> date
         return None
 
 
-ASSEMBLY_FROM_YEAR = 1395  # Jalali; plant asked to load C90 dates from 95 onward
+ASSEMBLY_FROM_YEAR = None  # keep every C90 year in the workbook
 DENORA_SHELL = "دنوار(ایتالیا)"
 BLUESTAR_SHELL = "بلو استار (چین)"
 BLUESTAR_ELECTROLYZERS = {"M2", "L2"}
@@ -1015,8 +1015,8 @@ def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSE
 def parse_assembly_excel(content: bytes, *, from_year: int | None = ASSEMBLY_FROM_YEAR) -> dict[str, Any]:
     """Read the plant montage / demontage workbook into assembly-form fields.
 
-    C90 day/month/year (تاریخ مونتاژ در C90) is Assembly Date. The default
-    keeps Jalali years from 1395 onward. Pass from_year=None to keep every row.
+    C90 day/month/year (تاریخ مونتاژ در C90) is Assembly Date. Every year in
+    the sheet is kept. Pass from_year to drop rows older than that Jalali year.
     Site install is commissioning. Dismantle date fills both decommissioning
     and disassembly.
     """

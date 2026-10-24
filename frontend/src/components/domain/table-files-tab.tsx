@@ -23,7 +23,7 @@ function tableLabel(row: TableFileRow, t: (path: string) => string, locale: stri
 
 function exactBytes(value: number | null): string {
   if (value == null) return "—";
-  return value.toLocaleString("en-US");
+  return `${value.toLocaleString("en-US")} B`;
 }
 
 export function TableFilesTab() {

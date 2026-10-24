@@ -462,7 +462,7 @@ const en = {
     relationsFix: "Fix now",
     relationsFixed: "Fixed: {dup} duplicates removed, {closed} installations closed, {pad} positions corrected.",
     importAssemblyHelp:
-      "Upload the montage / demontage workbook. Assembly Date is the C90 date from 1395 onward. Dismantle date fills Decommission and Disassembly; توضیحات → Decommission Reason; وضعیت فعلی المان → Remarks; membrane use → Membrane Remark; coating company → Anode/Cathode Coating (آند و کاتد X becomes آند X and کاتد X); shells are Denora Italy except L2/M2 (Bluestar China).",
+      "Upload the montage / demontage workbook. Assembly Date is the C90 date, every year in the sheet. Dismantle date fills Decommission and Disassembly; توضیحات → Decommission Reason; وضعیت فعلی المان → Remarks; membrane use → Membrane Remark; coating company → Anode/Cathode Coating (آند و کاتد X becomes آند X and کاتد X); shells are Denora Italy except L2/M2 (Bluestar China).",
     importDisassemblyTitle: "Import Disassembly Data (Demontagedaten)",
     importDisassemblyHelp:
       "Same montage / demontage workbook. The dismantle date is saved on the matching installation.",
@@ -739,6 +739,7 @@ const en = {
       "CZ-03 membrane/anode/cathode inspection grid: rows A–M (skip I), columns 18→1. Click a cell to cycle defect codes w (wrinkle), pm (pressure marks), vh (visible holes), T (tears).",
     clickHint: "Click a cell: w wrinkle, pm pressure marks, vh visible holes, T tears.",
     saveFailed: "Could not save the inspection report.",
+    needSignature: "Save is blocked until the inspection form is filled through the signature. Still empty: {list}",
     invalidJson: "Invalid JSON — please fix before saving.",
     reason: "Reason",
     blisterSection: "Blister findings",
@@ -3357,7 +3358,7 @@ const fa: DeepPartialStrings<typeof en> = {
     relationsFix: "اصلاح کن",
     relationsFixed: "اصلاح شد: {dup} تکراری حذف، {closed} نصب بسته، {pad} شماره سلول اصلاح شد.",
     importAssemblyHelp:
-      "فایل مونتاژ و دمونتاژ را بارگذاری کنید. تاریخ Assembly از تاریخ C90 از سال ۱۳۹۵ به بعد است. تاریخ دی‌مونتاژ روی Decommission و Disassembly می‌نشیند؛ توضیحات → دلیل خروج؛ وضعیت فعلی المان → Remarks؛ استفاده از ممبران → Membrane Remark؛ شرکت پوشش‌دهنده → پوشش آند/کاتد (آند و کاتد … می‌شود آند … و کاتد …)؛ پوسته برای همه دنوار ایتالیا است مگر L2 و M2 که بلو استار چین است.",
+      "فایل مونتاژ و دمونتاژ را بارگذاری کنید. تاریخ Assembly همان تاریخ C90 است و همه سال‌های فایل وارد می‌شوند. تاریخ دی‌مونتاژ روی Decommission و Disassembly می‌نشیند؛ توضیحات → دلیل خروج؛ وضعیت فعلی المان → Remarks؛ استفاده از ممبران → Membrane Remark؛ شرکت پوشش‌دهنده → پوشش آند/کاتد (آند و کاتد … می‌شود آند … و کاتد …)؛ پوسته برای همه دنوار ایتالیا است مگر L2 و M2 که بلو استار چین است.",
     importDisassemblyTitle: "وارد کردن داده‌های دمونتاژ (Demontagedaten)",
     importDisassemblyHelp:
       "همان فایل مونتاژ و دمونتاژ. تاریخ دی‌مونتاژ روی نصب متناظر ذخیره می‌شود.",
@@ -3634,6 +3635,7 @@ const fa: DeepPartialStrings<typeof en> = {
       "شبکه بازرسی CZ-03: ردیف‌های A–M (بدون I)، ستون‌های ۱۸→۱. با کلیک روی سلول کدهای عیب w (چین)، pm (فشار)، vh (سوراخ)، T (پارگی) را بچرخانید.",
     clickHint: "کلیک روی سلول: w چین، pm اثر فشار، vh سوراخ، T پارگی.",
     saveFailed: "گزارش بازرسی ذخیره نشد.",
+    needSignature: "تا وقتی فرم بازرسی تا قسمت امضا پر نشود، ذخیره ممکن نیست. هنوز خالی: {list}",
     invalidJson: "JSON نامعتبر است — لطفاً قبل از ذخیره اصلاح کنید.",
     reason: "دلیل",
     blisterSection: "یافته‌های تاول",

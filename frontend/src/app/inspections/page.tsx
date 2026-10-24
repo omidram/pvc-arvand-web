@@ -13,6 +13,7 @@ import {
   inspectionDatasheetFields,
   inspectionSheetGrids,
   inspectionSheetPayload,
+  inspectionSheetSaveError,
 } from "@/components/domain/inspection-sheet";
 import type { Column } from "@/components/ui/data-table";
 import { formatDateTime } from "@/lib/utils";
@@ -111,6 +112,7 @@ function InspectionsWorkspace() {
       idField="id"
       canEdit={editable}
       submitting={saving || removeMutation.isPending}
+      validate={(values) => inspectionSheetSaveError(values, t)}
       onSave={(id, values) => persist(id, values)}
       onCreate={(values) => persist(null, values)}
       onDelete={(id) => removeMutation.mutate(id)}

@@ -133,6 +133,77 @@ export function inspectionSheetPayload(values: Record<string, unknown>): Record<
   return payload;
 }
 
+/** Same order as backend/app/inspection_complete.py. flag counts as filled when the note is empty. */
+const INSPECTION_REQUIRED_LINES: { key: string; label: string; flag?: string }[] = [
+  { key: "client", label: "Client" },
+  { key: "anode_nr", label: "Anode NO" },
+  { key: "inspection_date", label: "Date" },
+  { key: "electrolyzer", label: "electrolyzer No" },
+  { key: "cathode_nr", label: "Cathode No" },
+  { key: "operation_days", label: "Operation days" },
+  { key: "position", label: "Position" },
+  { key: "membrane_nr", label: "membrane No" },
+  { key: "electrode_nr_anode", label: "Electrode No (Anode)" },
+  { key: "element_nr", label: "Element no" },
+  { key: "membrane_type", label: "membrane Type" },
+  { key: "electrode_nr_cathode", label: "Electrode No (Cathode)" },
+  { key: "inspection_reason", label: "Reason for inspection" },
+  { key: "blister_anode_area", label: "Blister anode surface %" },
+  { key: "blister_periphery_top", label: "Blister periphery % (1)" },
+  { key: "blister_periphery_bottom", label: "Blister periphery % (2)" },
+  { key: "blister_periphery_side", label: "Blister periphery % (3)" },
+  { key: "blister_corners", label: "Blister corner %" },
+  { key: "folds", label: "Wrinkle (w)" },
+  { key: "pressure_marks", label: "Pressure marks (pm)" },
+  { key: "visible_holes", label: "Visible holes (vh)" },
+  { key: "cracks", label: "Tears (T)" },
+  { key: "xrf_anode", label: "XRF.Anode" },
+  { key: "xrf_cathode", label: "XRF.Cathode" },
+  { key: "deformation_pan", label: "Deformation pan (DP)" },
+  { key: "deformation_electrode", label: "Deformation electrode (DP)" },
+  { key: "coloured_area", label: "coloured area (CA)" },
+  { key: "coloured_electrode", label: "coloured electrode (CE)" },
+  { key: "coloured_pan", label: "coloured pan (CP)" },
+  { key: "leakage_pan", label: "Leakage pan (LP)" },
+  { key: "leakage_web", label: "Leakage Web area (Lw)" },
+  { key: "leakage_corner", label: "Leakage corner area (LC)" },
+  { key: "leakage_outlet", label: "Leakage outlet nozzle (LO)" },
+  { key: "leakage_inlet", label: "Leakage inlet nozzle (LI)" },
+  { key: "sample_cathode_note", label: "sample cathode", flag: "sample_cathode" },
+  { key: "anode_tube_remark", label: "insert pipe (Anode)", flag: "anode_tube_ok" },
+  { key: "sample_anode_note", label: "sample anode", flag: "sample_anode" },
+  { key: "cathode_tube_remark", label: "insert pipe (cathode)", flag: "cathode_tube_ok" },
+  { key: "anode_spacer_remark", label: "spacer strip (Anode)", flag: "anode_spacer_ok" },
+  { key: "sample_membrane_note", label: "sample membrane", flag: "sample_membrane" },
+  { key: "cathode_spacer_remark", label: "spacer strip (cathode)", flag: "cathode_spacer_ok" },
+  { key: "frame_gasket_remark", label: "Frame gasket", flag: "frame_gasket_ok" },
+];
+
+function filledValue(value: unknown): boolean {
+  if (value == null || value === false) return false;
+  if (typeof value === "string") return value.trim() !== "";
+  return true;
+}
+
+/** Null when the sheet is filled through the inspector signature and may be saved. */
+export function inspectionSheetSaveError(
+  values: Record<string, unknown>,
+  t: (path: string, vars?: Record<string, string | number | null | undefined>) => string
+): string | null {
+  const missing: string[] = [];
+  for (const line of INSPECTION_REQUIRED_LINES) {
+    const note = filledValue(values[line.key]);
+    const flag = line.flag ? values[line.flag] === true : false;
+    if (!note && !flag) missing.push(line.label);
+  }
+  const nameOk =
+    filledValue(values.inspector_name) || filledValue(values.sign_insp_name) || filledValue(values.signature);
+  if (!nameOk) missing.push("Name");
+  if (!filledValue(values.sign_insp_image)) missing.push("Signature (Insp.)");
+  if (!missing.length) return null;
+  return t("inspections.needSignature", { list: missing.join(", ") });
+}
+
 export function inspectionSheetGrids(values: Record<string, unknown>): Record<string, Record<string, unknown>> {
   const raw = values.__grids;
   if (!raw || typeof raw !== "object") return {};
