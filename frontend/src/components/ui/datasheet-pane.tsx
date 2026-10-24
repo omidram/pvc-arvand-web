@@ -16,12 +16,29 @@ function cellText<T extends object>(column: Column<T>, row: T): string {
   return String(raw);
 }
 
+/** A link such as ?serial_nr=UA30751 must match that column, not the row id and not the paired serial. */
+function matchesReveal<T extends object>(
+  columns: Column<T>[],
+  row: T,
+  keyField: keyof T,
+  reveal: string,
+  revealField?: string
+): boolean {
+  const record = row as Record<string, unknown>;
+  if (sameNr(record[keyField as string] as string, reveal)) return true;
+  if (!revealField || revealField === String(keyField)) return false;
+  const column = columns.find((item) => item.key === revealField);
+  if (column && sameNr(cellText(column, row), reveal)) return true;
+  return sameNr(record[revealField] as string, reveal);
+}
+
 export function DatasheetPane<T extends object>({
   columns,
   rows,
   keyField,
   selectedKey,
   revealQuery,
+  revealField,
   canEdit,
   onSelect,
   onOpen,
@@ -34,6 +51,8 @@ export function DatasheetPane<T extends object>({
   selectedKey?: string | number | null;
   /** When a link opens one serial, filter the sheet to that value so the row is on screen. */
   revealQuery?: string;
+  /** Column the link names, for example serial_nr. Matching the row id alone hides the record. */
+  revealField?: string;
   canEdit?: boolean;
   onSelect?: (row: T) => void;
   onOpen?: (row: T) => void;
@@ -64,8 +83,11 @@ export function DatasheetPane<T extends object>({
     const reveal = (revealQuery || "").trim();
     const exactOnly = Boolean(reveal) && needle === reveal.toLowerCase();
     let next = rows.filter((row) => {
-      if (exactOnly && !sameNr((row as Record<string, unknown>)[keyField as string] as string, reveal)) return false;
-      if (needle && !columns.some((column) => cellText(column, row).toLowerCase().includes(needle))) return false;
+      if (exactOnly) {
+        if (!matchesReveal(columns, row, keyField, reveal, revealField)) return false;
+      } else if (needle && !columns.some((column) => cellText(column, row).toLowerCase().includes(needle))) {
+        return false;
+      }
       return columns.every((column) => {
         const text = cellText(column, row);
         const filter = (filters[column.key] || "").trim().toLowerCase();
@@ -87,7 +109,7 @@ export function DatasheetPane<T extends object>({
       }
     }
     return next;
-  }, [rows, columns, query, filters, valueFilters, sortKey, sortDir, revealQuery, keyField]);
+  }, [rows, columns, query, filters, valueFilters, sortKey, sortDir, revealQuery, revealField, keyField]);
 
   useEffect(() => {
     if (selectedKey == null) {

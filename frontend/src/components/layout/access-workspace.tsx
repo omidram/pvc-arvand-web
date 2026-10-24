@@ -567,6 +567,7 @@ export function AccessWorkspace<T extends object>({
           keyField={idField}
           selectedKey={current ? readId(current) : null}
           revealQuery={linkSerial}
+          revealField={paramName}
           canEdit={canEdit}
           emptyTitle={t("common.noRecordsFound")}
           onSelect={selectSheetRow}
