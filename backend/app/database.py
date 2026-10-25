@@ -16,14 +16,19 @@ engine = create_engine(settings.DATABASE_URL, connect_args=connect_args, pool_pr
 
 @event.listens_for(engine, "connect")
 def _sqlite_on_connect(dbapi_connection, connection_record) -> None:
-    """WAL lets a reader and a writer proceed together. busy_timeout waits out a brief lock."""
+    """Wait out a brief lock instead of failing the password update immediately.
+
+    journal_mode=WAL is not set here. On the plant server that pragma re-reads
+    the schema and aborts startup with "malformed database schema (K1)" even
+    though the same file opens and serves requests in rollback mode.
+    """
     if not _sqlite:
         return
     cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA journal_mode=WAL")
-    cursor.execute("PRAGMA synchronous=NORMAL")
-    cursor.execute("PRAGMA busy_timeout=30000")
-    cursor.close()
+    try:
+        cursor.execute("PRAGMA busy_timeout=30000")
+    finally:
+        cursor.close()
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
