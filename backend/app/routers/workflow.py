@@ -27,7 +27,7 @@ from ..database import get_db
 from ..paths import data_root
 from ..plant_topology import format_electrolyzer_name
 from ..relations_sync import link_serial
-from ..segregation_enrich import enrich_segregation_fields, format_service_life
+from ..segregation_enrich import disassembly_monitoring, enrich_segregation_fields, format_service_life
 from ..segregation_flow import classify_row
 from ..warehouse import compact_eq, compact_nr, ensure_indexed, load_compact_index
 from ..warehouse_lifecycle import _stamp, log_event, upsert_state
@@ -3069,6 +3069,16 @@ def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
             life = format_service_life(fields.get("install_date"), fields.get("decommission_date") or fields.get("disassemble_date"))
             if life:
                 fields["service_life"] = life
+        # The cell that was dismantled, even when the newest assembly row has no electrolyzer yet.
+        fields.update(
+            disassembly_monitoring(
+                db,
+                element_nr=r.element_nr,
+                electrolyzer=r.electrolyzer,
+                position=r.position,
+                on=r.disassembly_date or fields.get("disassemble_date") or fields.get("decommission_date"),
+            )
+        )
         if notes:
             base = str(fields.get("problems") or "").strip()
             joined = "\n".join(notes)

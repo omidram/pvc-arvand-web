@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+from types import SimpleNamespace
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -245,6 +246,94 @@ def _voltage_at(
         if _pos_key(row.position) == pos:
             return float(row.voltage) if row.voltage is not None else None
     return None
+
+
+def operating_point(
+    db: Session,
+    *,
+    electrolyzer: str | None,
+    position: str | None,
+    on: date | None,
+) -> tuple[float | None, float | None, float | None]:
+    """Cell voltage, kA and temperature at a dismantling, when that cell has monitoring rows."""
+    elo = str(electrolyzer or "").strip()
+    if not elo or on is None:
+        return None, None, None
+    probe = SimpleNamespace(electrolyzer=elo, position=(str(position).strip() if position else None))
+    return monitoring_at_decommission(db, probe, on)
+
+
+def cell_on_disassembly(
+    db: Session,
+    *,
+    element_nr: str | None,
+    electrolyzer: str | None,
+    position: str | None,
+    on: date | None,
+) -> tuple[str | None, str | None, date | None]:
+    """The cell that was taken apart. A later blank assembly row must not hide it."""
+    from .plant_topology import format_electrolyzer_name
+    from .workflow_models import WfCellRequest
+
+    elo = format_electrolyzer_name(electrolyzer) if str(electrolyzer or "").strip() else None
+    pos = str(position or "").strip() or None
+    at = _as_date(on)
+    key = compact_nr(element_nr)
+    lives: list[models.Element] = []
+    if element_nr:
+        lives = db.query(models.Element).filter(models.Element.element_nr == element_nr).all()
+        if not lives and key:
+            lives = [
+                row
+                for row in db.query(models.Element).filter(models.Element.element_nr.isnot(None)).all()
+                if compact_nr(row.element_nr) == key
+            ]
+    placed = [row for row in lives if str(row.electrolyzer or "").strip()]
+    if placed and (not elo or at is None):
+        row = max(
+            placed,
+            key=lambda item: (
+                _as_date(item.disassembly_date) or _as_date(item.decommissioning_date) or date.min,
+                item.id or 0,
+            ),
+        )
+        elo = elo or (format_electrolyzer_name(row.electrolyzer) if str(row.electrolyzer or "").strip() else None)
+        pos = pos or (str(row.position or "").strip() or None)
+        at = at or _as_date(row.decommissioning_date) or _as_date(row.disassembly_date)
+    if not elo and key:
+        cells = [
+            row
+            for row in db.query(WfCellRequest).all()
+            if compact_nr(row.element_nr) == key and str(row.electrolyzer or "").strip()
+        ]
+        if cells:
+            cell = max(cells, key=lambda item: item.id or 0)
+            elo = format_electrolyzer_name(cell.electrolyzer)
+            pos = pos or (str(cell.position or "").strip() or None)
+    return elo, pos, at
+
+
+def disassembly_monitoring(
+    db: Session,
+    *,
+    element_nr: str | None,
+    electrolyzer: str | None,
+    position: str | None,
+    on: date | None,
+) -> dict[str, float]:
+    """Voltage, kA and temperature to store on the new segregation row. Empty when the cell has no reading."""
+    elo, pos, at = cell_on_disassembly(
+        db, element_nr=element_nr, electrolyzer=electrolyzer, position=position, on=on
+    )
+    voltage, ka, temp = operating_point(db, electrolyzer=elo, position=pos, on=at)
+    found: dict[str, float] = {}
+    if voltage is not None:
+        found["decommission_voltage"] = voltage
+    if ka is not None:
+        found["decommission_ka"] = ka
+    if temp is not None:
+        found["decommission_temp"] = temp
+    return found
 
 
 def monitoring_at_decommission(

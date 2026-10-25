@@ -2,13 +2,30 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import String, TypeDecorator, create_engine
+from sqlalchemy import String, TypeDecorator, create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from .config import settings
 
-connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
+_sqlite = settings.DATABASE_URL.startswith("sqlite")
+# timeout is SQLite's busy wait, in seconds. Without it a short password update
+# fails as soon as a report or import still holds the file.
+connect_args = {"check_same_thread": False, "timeout": 30} if _sqlite else {}
 engine = create_engine(settings.DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
+
+
+@event.listens_for(engine, "connect")
+def _sqlite_on_connect(dbapi_connection, connection_record) -> None:
+    """WAL lets a reader and a writer proceed together. busy_timeout waits out a brief lock."""
+    if not _sqlite:
+        return
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA journal_mode=WAL")
+    cursor.execute("PRAGMA synchronous=NORMAL")
+    cursor.execute("PRAGMA busy_timeout=30000")
+    cursor.close()
+
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
