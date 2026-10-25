@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AccessBtn, AccessGroup, AccessRadio } from "@/components/layout/access-hub";
+import { DataTable, type Column } from "@/components/ui/data-table";
 import { formatDisplayedDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
@@ -95,36 +96,22 @@ export function AccessDataTable({
   rows: Record<string, unknown>[];
   caption?: string;
 }) {
+  const tableCols: Column<Record<string, unknown> & { _rowKey: number }>[] = useMemo(
+    () =>
+      columns.map((c) => ({
+        key: c.key,
+        header: c.header,
+        className: c.align === "right" ? "text-right" : c.align === "center" ? "text-center" : undefined,
+        filterText: (row) => cellText(c, row),
+        render: (row) => cellText(c, row) || "—",
+      })),
+    [columns]
+  );
+  const data = useMemo(() => rows.map((row, index) => ({ ...row, _rowKey: index })), [rows]);
   return (
-    <div className="overflow-x-auto">
+    <div>
       {caption ? <div className="mb-1 text-[11px] text-[#404040]">{caption}</div> : null}
-      <table className="access-cont-table">
-        <thead>
-          <tr>
-            {columns.map((c) => (
-              <th key={c.key} className={c.align === "right" ? "text-right" : c.align === "center" ? "text-center" : undefined}>
-                {c.header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i}>
-              {columns.map((c) => (
-                <td
-                  key={c.key}
-                  className={
-                    c.align === "right" ? "text-right tabular-nums" : c.align === "center" ? "text-center tabular-nums" : undefined
-                  }
-                >
-                  {cellText(c, row)}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <DataTable columns={tableCols} data={data} keyField="_rowKey" maxHeight="min(58vh, 640px)" />
     </div>
   );
 }
@@ -168,25 +155,18 @@ export function ResultsPane({
             <Bar dataKey={yKey} name={yLabel} fill="#0a246a" />
           </BarChart>
         </ResponsiveContainer>
-      ) : columns?.length ? (
-        <AccessDataTable columns={columns} rows={rows} />
       ) : (
-        <table className="access-cont-table">
-          <thead>
-            <tr>
-              <th>{xKey}</th>
-              <th>{yLabel}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr key={i}>
-                <td>{formatDisplayedDate(row[xKey])}</td>
-                <td>{row[yKey] == null ? "" : String(row[yKey])}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <AccessDataTable
+          columns={
+            columns?.length
+              ? columns
+              : [
+                  { key: xKey, header: xKey },
+                  { key: yKey, header: yLabel, align: "right" },
+                ]
+          }
+          rows={rows}
+        />
       )}
     </div>
   );

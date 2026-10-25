@@ -90,6 +90,7 @@ export default function SegregationPage() {
     { key: "pair_xrf", header: t("segregation.pairXrf") },
     { key: "decommission_voltage", header: t("segregation.decommissionVoltage") },
     { key: "decommission_ka", header: t("segregation.decommissionKa") },
+    { key: "decommission_temp", header: t("segregation.decommissionTemp") },
     { key: "decision", header: t("segregation.decision") },
     { key: "coating_quality", header: t("segregation.coatingQuality") },
     { key: "problems", header: t("segregation.problems") },

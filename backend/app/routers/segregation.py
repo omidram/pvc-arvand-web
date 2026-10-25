@@ -2,6 +2,7 @@
 from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from pydantic import BaseModel, Field
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -15,6 +16,7 @@ from ..plant_import import parse_tafkik_excel
 from ..segregation_enrich import (
     apply_enrichment_to_row,
     build_latest_element_index,
+    disassembly_monitoring,
     enrich_segregation_fields,
 )
 from ..relations_sync import MASTERS, find_master, link_serial
@@ -289,6 +291,74 @@ async def import_tafkik_excel(
         }
 
     return spawn_import(work)
+
+
+class SegregationEnsure(BaseModel):
+    serial_nr: str = Field(min_length=1)
+    electrode_kind: str | None = None
+    element_nr: str | None = None
+    electrolyzer: str | None = None
+    position: str | None = None
+    on: date | None = None
+
+
+def _monitoring_fields(db: Session, body: SegregationEnsure) -> dict:
+    """Latest cell voltage, kA and temperature from AriaORMS for this piece."""
+    found = disassembly_monitoring(
+        db,
+        element_nr=body.element_nr,
+        electrolyzer=body.electrolyzer,
+        position=body.position,
+        on=body.on or date.today(),
+    )
+    if found or body.on is None:
+        return found
+    return disassembly_monitoring(
+        db,
+        element_nr=body.element_nr,
+        electrolyzer=body.electrolyzer,
+        position=body.position,
+        on=date.today(),
+    )
+
+
+@router.post("/ensure", response_model=schemas.ElectrodeSegregationRead)
+def ensure_segregation(body: SegregationEnsure, db: Session = Depends(get_db)):
+    """Open TAFKIK for a serial: keep its row, or create one and fill the latest ORMS voltage, kA and temperature."""
+    serial = body.serial_nr.strip()
+    if not serial:
+        raise HTTPException(status_code=400, detail="serial_nr required")
+    kind = (body.electrode_kind or "").strip().lower() or None
+    match = compact_eq(models.ElectrodeSegregation.serial_nr, serial)
+    existing = None
+    if match is not None:
+        existing = (
+            db.query(models.ElectrodeSegregation)
+            .filter(match)
+            .order_by(models.ElectrodeSegregation.id.desc())
+            .first()
+        )
+    fields = enrich_segregation_fields(db, serial_nr=serial, electrode_kind=kind)
+    fields.update(_monitoring_fields(db, body))
+    if kind:
+        fields["electrode_kind"] = kind
+    fields["serial_nr"] = serial
+    if existing is None:
+        obj = models.ElectrodeSegregation(**_row_kwargs(fields))
+        _link_master(db, obj)
+        db.add(obj)
+        db.commit()
+        db.refresh(obj)
+        return _safe_read(obj)
+    changed = False
+    for key in _SEG_FLOAT_FIELDS:
+        if getattr(existing, key) is None and fields.get(key) is not None:
+            setattr(existing, key, fields[key])
+            changed = True
+    if changed:
+        db.commit()
+        db.refresh(existing)
+    return _safe_read(existing)
 
 
 @router.get("/{item_id}", response_model=schemas.ElectrodeSegregationRead)

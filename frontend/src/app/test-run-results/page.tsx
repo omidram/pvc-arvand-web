@@ -11,6 +11,8 @@ import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
 import { DateInput } from "@/components/ui/date-input";
 import { PlantPartCombo } from "@/components/ui/plant-part-combo";
+import { FilterHeadCell } from "@/components/ui/data-table";
+import { useSheetFilters } from "@/components/ui/table-sheet";
 
 type Draft = {
   date: string;
@@ -33,6 +35,13 @@ export default function TestRunResultsPage() {
   const [active, setActive] = useState<number | "new" | null>(null);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const rows = listQuery.data || [];
+  const sheetCols = [
+    { key: "date", header: t("menus.date") },
+    { key: "plant_part", header: t("menus.partOfPlant"), filterText: (row: PerformanceTest) => row.plant_part || "" },
+    { key: "ce_pct", header: "CE [%]", filterText: (row: PerformanceTest) => (row.ce_pct == null ? "" : String(row.ce_pct)) },
+    { key: "spc_kwh", header: "SPC", filterText: (row: PerformanceTest) => (row.spc_kwh == null ? "" : String(row.spc_kwh)) },
+  ];
+  const sheet = useSheetFilters(sheetCols, rows);
   const s = settingsQuery.data;
   const editable = canEdit("voltage");
 
@@ -75,9 +84,24 @@ export default function TestRunResultsPage() {
             <th className="w-28">CE [%]</th>
             <th className="w-40">SPC [kWh/t NaOH]</th>
           </tr>
+          <tr>
+            <th />
+            {sheetCols.map((col) => (
+              <th key={col.key}>
+                <FilterHeadCell
+                  columnKey={col.key}
+                  filters={sheet.filters}
+                  valueFilters={sheet.valueFilters}
+                  onFilter={sheet.onFilter}
+                  onValueFilter={sheet.onValueFilter}
+                  getFilterOptions={sheet.getFilterOptions}
+                />
+              </th>
+            ))}
+          </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {sheet.shown.map((row) => (
             <tr key={row.id} onClick={() => setActive(row.id)} className={active === row.id ? "is-active-row" : undefined}>
               <td className="access-selector">{active === row.id ? "►" : ""}</td>
               <td onClick={(e) => e.stopPropagation()}>

@@ -14,6 +14,8 @@ from ..assembly_integrity import (
     close_all_superseded,
     close_superseded_by,
     find_same_installation,
+    is_open,
+    occupant_of_cell,
     plan_repairs,
     summarize,
 )
@@ -155,6 +157,18 @@ def _reject_same_installation(db: Session, obj: models.Element) -> None:
                 f"This installation already exists (Element {other.element_nr or other.id}: "
                 f"{other.electrolyzer} / {other.position}, anode {other.anode_nr}, cathode {other.cathode_nr})."
             ),
+        )
+
+
+def _reject_occupied_cell(db: Session, obj: models.Element) -> None:
+    if not is_open(obj):
+        return
+    busy = occupant_of_cell(db, obj.electrolyzer, obj.position, exclude_id=obj.id)
+    if busy is not None:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail=f"Cell {obj.electrolyzer}-{obj.position} is occupied by element {busy.element_nr}",
         )
 
 
@@ -492,6 +506,39 @@ def next_element_number(db: Session = Depends(get_db)):
     return {"element_nr": _next_element_nr(db)}
 
 
+@router.get("/free-positions")
+def free_positions(
+    electrolyzer: str,
+    exclude_id: int | None = None,
+    db: Session = Depends(get_db),
+):
+    """Empty cells (001–168) on one electrolyzer. The current row can be excluded while editing."""
+    from ..assembly_integrity import cell_key, is_open
+    from ..plant_topology import format_electrolyzer_name
+
+    name = format_electrolyzer_name((electrolyzer or "").strip())
+    occupied: dict[int, dict] = {}
+    if name:
+        probe_elz = models.Element(electrolyzer=name, position="001")
+        want = cell_key(probe_elz)
+        want_elz = want[0] if want else None
+        for el in db.query(models.Element).filter(models.Element.electrolyzer.isnot(None)).all():
+            if exclude_id is not None and el.id == exclude_id:
+                continue
+            if not is_open(el):
+                continue
+            key = cell_key(el)
+            if not key or key[0] != want_elz:
+                continue
+            occupied[key[1]] = {"position": f"{key[1]:03d}", "element_nr": el.element_nr, "id": el.id}
+    empty = [f"{n:03d}" for n in range(CELL_POSITION_MIN, CELL_POSITION_MAX + 1) if n not in occupied]
+    return {
+        "electrolyzer": name or electrolyzer,
+        "empty": empty,
+        "occupied": [occupied[n] for n in sorted(occupied)],
+    }
+
+
 _MATCH_FIELDS = (
     "element_nr",
     "anode_nr",
@@ -627,6 +674,7 @@ def create_element(payload: schemas.ElementBase, db: Session = Depends(get_db), 
         data["element_nr"] = _next_element_nr(db)
     obj = models.Element(**data)
     _reject_same_installation(db, obj)
+    _reject_occupied_cell(db, obj)
     db.add(obj)
     _sync_saved_element(db, obj)
     db.flush()
@@ -654,6 +702,7 @@ def update_element(item_id: int, payload: schemas.ElementBase, db: Session = Dep
     for key, value in data.items():
         setattr(obj, key, value)
     _reject_same_installation(db, obj)
+    _reject_occupied_cell(db, obj)
     _sync_saved_element(db, obj)
     cell_on_element_saved(db, obj, user, had_decommission, had_disassembly)
     db.commit()

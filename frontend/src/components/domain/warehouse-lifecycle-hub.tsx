@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ExternalLink, History, Search } from "lucide-react";
+import { AssembleRequestModal } from "@/components/domain/assemble-request";
 import { InspectionRequestModal, InspectionRequestsPanel } from "@/components/domain/inspection-request";
 import { WarehouseInventoryPanel } from "@/components/domain/warehouse-inventory-panel";
 import { RoleCartableDesk } from "@/components/domain/role-cartable-desk";
@@ -96,7 +97,7 @@ function SectionNav({
 }
 
 function parseTarget(raw: string | null): { flow: WfFlow; id: number } | null {
-  const m = raw?.match(/^(coating|purchase|inspection):(\d+)$/);
+  const m = raw?.match(/^(coating|purchase|inspection|assemble):(\d+)$/);
   return m ? { flow: m[1] as WfFlow, id: Number(m[2]) } : null;
 }
 
@@ -179,8 +180,9 @@ export function WarehouseLifecycleHub({ page = "warehouse" }: { page?: "warehous
       ) : null}
       {section === "timeline" ? <TimelinePanel key={timelineFor ? `${timelineFor.kind}:${timelineFor.serial}` : ""} t={t} initial={timelineFor} /> : null}
       {section === "search" ? <SearchPanel t={t} companies={companyList} /> : null}
-      <WorkflowDetailModal target={target?.flow === "inspection" ? null : target} companies={companyList} onClose={closeRecord} />
+      <WorkflowDetailModal target={target?.flow === "inspection" || target?.flow === "assemble" ? null : target} companies={companyList} onClose={closeRecord} />
       <InspectionRequestModal id={target?.flow === "inspection" ? target.id : null} onClose={closeRecord} />
+      <AssembleRequestModal id={target?.flow === "assemble" ? target.id : null} onClose={closeRecord} />
     </div>
   );
 }

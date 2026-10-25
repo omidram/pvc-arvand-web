@@ -8,6 +8,7 @@ import type { PipelineItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
+import { PositionCombo } from "@/components/ui/position-combo";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { todayIsoLocal } from "@/lib/date-range";
@@ -153,7 +154,7 @@ export function RelocateForm({
           </label>
           <label className="ed-filters">
             <span className="text-xs font-bold">{t("elDash.cartable.position")}</span>
-            <input value={position} onChange={(e) => setPosition(e.target.value)} placeholder="001–168" inputMode="numeric" />
+            <PositionCombo electrolyzer={electrolyzer} value={position} onChange={setPosition} excludeId={item.row_id} required />
           </label>
           <label className="ed-filters">
             <span className="text-xs font-bold">{t("elDash.cartable.date")}</span>

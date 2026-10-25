@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { Input, Select, Textarea } from "@/components/ui/input";
+import { PositionCombo } from "@/components/ui/position-combo";
 import type { FieldDef } from "@/components/ui/resource-form";
 import { cn } from "@/lib/utils";
 
@@ -128,6 +129,20 @@ export function AccessFields({
                       </option>
                     ))}
                   </Select>
+                ) : f.type === "position" ? (
+                  <PositionCombo
+                    variant="access"
+                    electrolyzer={String(values.electrolyzer ?? "")}
+                    value={String(values[f.name] ?? "")}
+                    excludeId={typeof values.id === "number" ? values.id : Number(values.id) || null}
+                    required={f.required}
+                    disabled={locked}
+                    onChange={(value) => {
+                      onChange(f.name, value);
+                      scheduleCommit(f.name, value);
+                    }}
+                    onBlur={(value) => flushCommit(f.name, value)}
+                  />
                 ) : f.type === "combo" ? (
                   <>
                     <Input

@@ -152,6 +152,11 @@ export const inspectionFindingsApi = resource<T.InspectionFinding>("/inspection-
 
 export const elementsApi = {
   ...resource<T.Element>("/elements"),
+  freePositions: async (
+    electrolyzer: string,
+    excludeId?: number | null,
+  ): Promise<{ electrolyzer: string; empty: string[]; occupied: { position: string; element_nr: string | null; id: number }[] }> =>
+    (await apiClient.get("/elements/free-positions", { params: { electrolyzer, exclude_id: excludeId || undefined } })).data,
   history: async (elementNr: string): Promise<T.Element[]> =>
     (await apiClient.get(`/elements/by-element-nr/${encodeURIComponent(elementNr)}/history`)).data,
   duplicates: async (componentType: "anode" | "cathode" | "membrane"): Promise<Record<string, T.Element[]>> =>
@@ -457,6 +462,14 @@ export const electrodeSegregationsApi = {
   },
   enrichFromAssembly: async (): Promise<{ checked: number; updated: number }> =>
     (await apiClient.post("/electrode-segregations/enrich-from-assembly")).data,
+  ensure: async (body: {
+    serial_nr: string;
+    electrode_kind?: string | null;
+    element_nr?: string | null;
+    electrolyzer?: string | null;
+    position?: string | null;
+    on?: string | null;
+  }): Promise<T.ElectrodeSegregation> => (await apiClient.post("/electrode-segregations/ensure", body)).data,
   fromAssembly: async (
     serialNr: string,
     preserveServiceLife?: string | null
@@ -1860,6 +1873,8 @@ export const elementDashboardApi = {
     (await apiClient.get("/element-dashboard/flow/list", { params })).data,
   events: async (elementNr?: string): Promise<T.ShopEvent[]> =>
     (await apiClient.get("/element-dashboard/shop/events", { params: elementNr ? { element_nr: elementNr } : undefined })).data,
+  lifeLog: async (elementNr: string): Promise<{ element_nr: string; items: T.LifeLogItem[] }> =>
+    (await apiClient.get("/element-dashboard/life-log", { params: { element_nr: elementNr } })).data,
   parts: async (params: {
     kind: "anode" | "cathode" | "membrane";
     where?: string;

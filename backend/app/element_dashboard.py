@@ -185,7 +185,7 @@ def _base_state(el: models.Element) -> str:
         return "decommissioned"
     if el.commissioning_date:
         return "in_service"
-    if el.assembly_date or _valid_electrolyzer(el.electrolyzer):
+    if _valid_electrolyzer(el.electrolyzer):
         return "installed"
     return "new"
 
@@ -593,6 +593,7 @@ def electrode_rows(db: Session, kind: str, settings: dict[str, Any] | None = Non
                 "last_electrolyzer": item.get("electrolyzer"),
                 "position": item["position"] if item["bucket"] == "on_rack" else None,
                 "commissioning_date": item["commissioning_date"],
+                "disassembly_date": item.get("disassembly_date"),
                 "runs": runs,
                 "total_dol": total_dol,
                 "coating_dol": coating_dol,
@@ -1172,6 +1173,114 @@ def cells_overview(db: Session) -> dict[str, Any]:
 # ---------------------------------------------------------------- the headline overview
 
 
+_BOARD_CAP = 24
+_PALLET_READY = ("await_company", "await_indent", "await_dispatch")
+
+
+def _board_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
+    return {
+        "anode": sum(1 for r in rows if r.get("kind") == "anode"),
+        "cathode": sum(1 for r in rows if r.get("kind") == "cathode"),
+        "total": len(rows),
+    }
+
+
+def _board_piece(row: dict[str, Any], **extra: Any) -> dict[str, Any]:
+    item = {"kind": row.get("kind"), "serial": row.get("serial")}
+    item.update({k: v for k, v in extra.items() if v not in (None, "")})
+    return item
+
+
+def _packing_pallets(db: Session) -> list[dict[str, Any]]:
+    """Pallets packed for coating that have not left the plant yet."""
+    from .workflow_models import WfCoatingBatch, WfCoatingItem, WfCoatingPackage
+
+    batches = (
+        db.query(WfCoatingBatch)
+        .filter(WfCoatingBatch.status.in_(_PALLET_READY))
+        .order_by(WfCoatingBatch.created_at.desc())
+        .limit(40)
+        .all()
+    )
+    if not batches:
+        return []
+    ids = [b.id for b in batches]
+    by_id = {b.id: b for b in batches}
+    packages = db.query(WfCoatingPackage).filter(WfCoatingPackage.batch_id.in_(ids)).order_by(WfCoatingPackage.pallet_no).all()
+    lines: dict[int, list] = defaultdict(list)
+    for item in db.query(WfCoatingItem).filter(WfCoatingItem.batch_id.in_(ids)).order_by(WfCoatingItem.line_no).all():
+        lines[item.package_id].append(item)
+    companies = {c.id: c.name for c in db.query(models.WhCompany).all()}
+    out: list[dict[str, Any]] = []
+    for package in packages:
+        batch = by_id.get(package.batch_id)
+        if batch is None:
+            continue
+        packed = lines.get(package.id, [])
+        anodes = [it.serial for it in packed if it.element_kind == "anode" and it.serial]
+        cathodes = [it.serial for it in packed if it.element_kind == "cathode" and it.serial]
+        out.append(
+            {
+                "batch_id": batch.id,
+                "code": package.code,
+                "pallet_no": package.pallet_no,
+                "status": batch.status,
+                "company": companies.get(batch.company_id) if batch.company_id else None,
+                "anodes": anodes[:40],
+                "cathodes": cathodes[:40],
+                "anode_count": len(anodes),
+                "cathode_count": len(cathodes),
+            }
+        )
+    out.sort(key=lambda row: (row["code"] or "", row["pallet_no"] or 0))
+    return out[:20]
+
+
+def management_board(
+    anode_rows: list[dict[str, Any]],
+    cathode_rows: list[dict[str, Any]],
+    membranes: list[dict[str, Any]],
+    db: Session,
+) -> dict[str, Any]:
+    """Short lists a manager can read without opening each register."""
+    pieces = anode_rows + cathode_rows
+    spare = [r for r in pieces if not r["installed"] and not r["at_coater"]]
+    ready = [r for r in pieces if r.get("wh_status") == "ready_dispatch"]
+    ready.sort(key=lambda r: (r.get("kind") or "", r.get("serial") or ""))
+    taken_apart = [r for r in spare if r.get("disassembly_date") and r.get("bucket") != "not_ok"]
+    taken_apart.sort(key=lambda r: (r.get("disassembly_date") or "", r.get("serial") or ""), reverse=True)
+    rate_off = [r for r in spare if r.get("bucket") == "not_ok"]
+    rate_off.sort(key=lambda r: (r.get("kind") or "", r.get("serial") or ""))
+    waiting = [r for r in spare if r.get("bucket") == "pending"]
+    waiting.sort(key=lambda r: (r.get("kind") or "", r.get("serial") or ""))
+    away = [r for r in pieces if r.get("at_coater")]
+    away.sort(key=lambda r: (r.get("days_away") or 0), reverse=True)
+    stock = [r for r in membranes if not r["installed"] and r.get("bucket") == "ok"]
+    stock.sort(key=lambda r: ((r.get("membrane_type") or ""), r.get("serial") or ""))
+
+    def pack(rows: list[dict[str, Any]], **fields: str) -> dict[str, Any]:
+        items = []
+        for row in rows[:_BOARD_CAP]:
+            extra = {name: row.get(src) for name, src in fields.items()}
+            items.append(_board_piece(row, **extra))
+        return {**_board_counts(rows), "shown": len(items), "items": items}
+
+    return {
+        "ready_send": pack(ready),
+        "disassembled": pack(taken_apart, date="disassembly_date", element_nr="last_element_nr"),
+        "rate_off": pack(rate_off, reason="reason"),
+        "awaiting_check": pack(waiting),
+        "at_coater": pack(away, company="coater", days="days_away"),
+        "membranes": {
+            "stock": len(stock),
+            "installed": sum(1 for r in membranes if r["installed"]),
+            "shown": min(len(stock), _BOARD_CAP),
+            "items": [{"serial": r.get("serial"), "type": (r.get("membrane_type") or "").strip() or "—"} for r in stock[:_BOARD_CAP]],
+        },
+        "pallets": _packing_pallets(db),
+    }
+
+
 def _monthly_flow(db: Session, months: int = 12) -> list[dict[str, Any]]:
     today = date.today()
     first = today.replace(day=1)
@@ -1346,10 +1455,60 @@ def overview(db: Session) -> dict[str, Any]:
         "workshop": workshop_inventory(db, pipeline, prepared_rows["anode"], prepared_rows["cathode"], mem),
         "alerts": {"danger": alerts.get("danger", 0), "warning": alerts.get("warning", 0), "info": alerts.get("info", 0)},
         "by_electrolyzer": [{"electrolyzer": name, "cells": by_electrolyzer.get(name, 0), "capacity": CELLS_PER_ELECTROLYZER} for name in all_electrolyzers()],
-        "monthly_flow": _monthly_flow(db),
+        "monthly_flow": _monthly_flow(db, 36),
+        "board": management_board(prepared_rows["anode"], prepared_rows["cathode"], mem, db),
         "events": [
             {"id": e.id, "element_nr": e.element_nr, "from_stage": e.from_stage, "to_stage": e.to_stage, "note": e.note, "user": e.user, "at": e.created_at.isoformat(timespec="seconds") if e.created_at else None}
             for e in events
         ],
         "settings": cfg,
     }
+
+
+def life_log(db: Session, element_nr: str) -> list[dict[str, Any]]:
+    """What happened to this element number: shop moves, workflow steps, and Assembly Data dates."""
+    key = compact_nr(element_nr)
+    if not key:
+        return []
+    items: list[dict[str, Any]] = []
+
+    def add(at: datetime | date | None, kind: str, title: str, *, detail: str | None = None, actor: str | None = None) -> None:
+        if at is None:
+            return
+        stamp = at.isoformat(timespec="seconds") if isinstance(at, datetime) else f"{at.isoformat()}T00:00:00"
+        items.append({"at": stamp, "kind": kind, "title": title, "detail": (detail or "").strip() or None, "actor": (actor or "").strip() or None})
+
+    lives = [el for el in db.query(models.Element).all() if compact_nr(el.element_nr) == key]
+    lives.sort(key=lambda el: (_as_date(el.assembly_date) or date.min, el.id or 0))
+    for el in lives:
+        cell = "-".join(part for part in (el.electrolyzer, el.position) if part) or None
+        add(_as_date(el.assembly_date), "life", "assembled")
+        if el.electrolyzer:
+            add(_as_date(el.commissioning_date) or _as_date(el.assembly_date), "life", "installed_on_cell", detail=cell)
+        add(_as_date(el.commissioning_date), "life", "commissioned", detail=cell)
+        add(_as_date(el.decommissioning_date), "life", "decommissioned", detail=cell or el.decommission_reason)
+        add(_as_date(el.disassembly_date), "life", "disassembled", detail=cell)
+
+    for ev in db.query(models.ElementShopEvent).all():
+        if compact_nr(ev.element_nr) != key:
+            continue
+        add(ev.created_at, "shop", ev.to_stage or "shop", detail=ev.note or ev.from_stage, actor=ev.user)
+
+    from .workflow_models import WfAssembleRequest, WfCellRequest, WfEvent, WfInspectionRequest
+
+    def workflow_rows(flow: str, record_id: int, code: str | None) -> None:
+        for ev in db.query(WfEvent).filter(WfEvent.flow == flow, WfEvent.record_id == record_id).all():
+            add(ev.created_at, "workflow", ev.action or ev.to_status or flow, detail=" · ".join(part for part in (code, ev.to_status, ev.note) if part), actor=ev.actor_name)
+
+    for r in db.query(WfAssembleRequest).all():
+        if compact_nr(r.element_nr) == key:
+            workflow_rows("assemble", r.id, r.code)
+    for r in db.query(WfCellRequest).all():
+        if compact_nr(r.element_nr) == key:
+            workflow_rows("cell", r.id, r.code)
+    for r in db.query(WfInspectionRequest).all():
+        if compact_nr(r.element_nr) == key:
+            workflow_rows("inspection", r.id, r.code)
+
+    items.sort(key=lambda row: (row["at"] or "", row["title"]))
+    return items

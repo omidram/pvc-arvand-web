@@ -25,7 +25,7 @@ from .. import models
 from ..auth import LEVEL_RANK, get_current_user, user_permission_map
 from ..database import get_db
 from ..paths import data_root
-from ..plant_topology import format_electrolyzer_name
+from ..plant_topology import all_electrolyzers, format_electrolyzer_name
 from ..relations_sync import link_serial
 from ..segregation_enrich import disassembly_monitoring, enrich_segregation_fields, format_service_life
 from ..segregation_flow import classify_row
@@ -33,6 +33,7 @@ from ..warehouse import compact_eq, compact_nr, ensure_indexed, load_compact_ind
 from ..warehouse_lifecycle import _stamp, log_event, upsert_state
 from ..workflow_excel import build_workbook, parse_report
 from ..workflow_models import (
+    WfAssembleRequest,
     WfCellRequest,
     WfCoatingBatch,
     WfCoatingItem,
@@ -93,6 +94,11 @@ INSPECTION_STAGES: dict[str, list[str]] = {
     "await_request": ["c90"],
     "await_inspection": ["inspection", "process"],
 }
+ASSEMBLE_STAGES: dict[str, list[str]] = {
+    "await_assembly": ["c90"],
+    "await_inspection": ["inspection", "process"],
+    "await_position": ["c90"],
+}
 WORKORDER_STAGES: dict[str, list[str]] = {
     "open": ["planner"],
 }
@@ -101,6 +107,7 @@ STAGES = {
     "purchase": PURCHASE_STAGES,
     "cell": CELL_STAGES,
     "inspection": INSPECTION_STAGES,
+    "assemble": ASSEMBLE_STAGES,
     "workorder": WORKORDER_STAGES,
 }
 INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections", "wf_process", "wf_planner")
@@ -111,6 +118,7 @@ DEFAULT_SLA: dict[str, dict[str, int]] = {
     "purchase": {"await_indent": 72, "await_order": 720, "await_registration": 72},
     "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120, "await_disassembly": 72, "await_reinstall": 120, "await_numbering": 72},
     "inspection": {"await_request": 24, "await_inspection": 72},
+    "assemble": {"await_assembly": 72, "await_inspection": 72, "await_position": 120},
     "workorder": {"open": 120},
 }
 DEFAULT_WARN_PERCENT = 25
@@ -193,6 +201,8 @@ def _title(flow: str, record: Any, db: Session) -> str:
         return f"{kind}{'⚠ ' if record.urgent else ''}{record.element_nr}{cell}"
     if flow == "inspection":
         return f"{record.code} · {record.element_nr or record.anode_nr or record.cathode_nr or ''}".strip(" ·")
+    if flow == "assemble":
+        return f"{record.code} · {record.element_nr or record.anode_nr or ''}".strip(" ·")
     if flow == "workorder":
         return f"{record.code} · {record.element_nr}"
     codes = [p.code for p in db.query(WfCoatingPackage).filter_by(batch_id=record.id).order_by(WfCoatingPackage.seq)]
@@ -472,8 +482,10 @@ def meta(db: Session = Depends(get_db), user: models.User = Depends(get_current_
         "purchase_stages": PURCHASE_STAGES,
         "cell_stages": CELL_STAGES,
         "inspection_stages": INSPECTION_STAGES,
+        "assemble_stages": ASSEMBLE_STAGES,
         "can_view_inspection": _can_view(db, user, INSPECTION_VIEW_KEYS),
         "can_request_inspection": _can_request_inspection(db, user),
+        "can_request_assemble": _can_request_assemble(db, user),
         "delay_parties": list(DELAY_PARTIES),
         "sla": sla_config(db),
     }
@@ -564,6 +576,10 @@ def _cartable(db: Session, user: models.User) -> list[dict]:
     if i_status:
         for r in db.query(WfInspectionRequest).filter(WfInspectionRequest.status.in_(i_status)).order_by(WfInspectionRequest.updated_at).all():
             out.append(_insp_summary(db, r, conf))
+    a_status = [s for s, g in ASSEMBLE_STAGES.items() if groups & set(g)]
+    if a_status:
+        for r in db.query(WfAssembleRequest).filter(WfAssembleRequest.status.in_(a_status)).order_by(WfAssembleRequest.updated_at).all():
+            out.append(_assemble_summary(db, r, conf))
     if "planner" in groups:
         from .work_orders import _summary as _wo_summary
 
@@ -654,6 +670,8 @@ def cartable_desk(db: Session = Depends(get_db), user: models.User = Depends(get
             "await_inspection_request": sum(1 for r in waiting if r.get("flow") == "inspection" and r.get("status") == "await_request"),
             "coating_approval": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_approval"),
             "purchase_registration": sum(1 for r in waiting if r.get("flow") == "purchase" and r.get("status") == "await_registration"),
+            "await_assembly": sum(1 for r in waiting if r.get("flow") == "assemble" and r.get("status") == "await_assembly"),
+            "await_position": sum(1 for r in waiting if r.get("flow") == "assemble" and r.get("status") == "await_position"),
         }
     if "cellshop" in desk_groups:
         snapshots["cellshop"] = {
@@ -1951,6 +1969,39 @@ def _can_request_cell(db: Session, user: models.User) -> bool:
     return user_permission_map(db, user).get("elements") == "edit"
 
 
+def _plant_reason(db: Session, element_nr: str | None, element_id: int | None) -> str | None:
+    """The Assembly Data decommission reason is the reason shown on cell and inspection requests."""
+    el = db.get(models.Element, element_id) if element_id else None
+    if el is None and element_nr:
+        el = _life_of(db, element_nr=element_nr)
+    text = (el.decommission_reason or "").strip() if el is not None else ""
+    return text[:200] or None
+
+
+def _write_plant_reason(db: Session, element_nr: str | None, element_id: int | None, reason: str | None) -> None:
+    if not reason:
+        return
+    el = db.get(models.Element, element_id) if element_id else None
+    if el is None and element_nr:
+        el = _life_of(db, element_nr=element_nr)
+    if el is not None:
+        el.decommission_reason = reason[:200]
+
+
+def _latest_xrf(db: Session, serial: str | None) -> str | None:
+    match = compact_eq(models.ElectrodeSegregation.serial_nr, serial or "")
+    if match is None:
+        return None
+    row = (
+        db.query(models.ElectrodeSegregation)
+        .filter(match, models.ElectrodeSegregation.xrf.isnot(None), models.ElectrodeSegregation.xrf != "")
+        .order_by(models.ElectrodeSegregation.id.desc())
+        .first()
+    )
+    text = (row.xrf or "").strip() if row is not None else ""
+    return text[:100] or None
+
+
 def _cell_summary(db: Session, r: WfCellRequest, conf: dict | None = None) -> dict:
     return {
         "flow": "cell",
@@ -1965,7 +2016,7 @@ def _cell_summary(db: Session, r: WfCellRequest, conf: dict | None = None) -> di
         "element_id": r.element_id,
         "electrolyzer": r.electrolyzer,
         "position": r.position,
-        "reason": r.reason,
+        "reason": _plant_reason(db, r.element_nr, r.element_id) or r.reason,
         "urgent": r.urgent,
         "problem": r.problem,
         "planned_date": _iso(r.planned_date),
@@ -2595,7 +2646,7 @@ def _insp_summary(db: Session, r: WfInspectionRequest, conf: dict | None = None)
         "cathode_nr": r.cathode_nr,
         "membrane_nr": r.membrane_nr,
         "disassembly_date": _iso(r.disassembly_date),
-        "reason": r.reason,
+        "reason": _plant_reason(db, r.element_nr, r.element_id) or r.reason,
         "report_id": r.report_id,
         "anode_count": 1 if r.anode_nr else 0,
         "cathode_count": 1 if r.cathode_nr else 0,
@@ -2640,6 +2691,7 @@ def _cell_card(db: Session, r: WfInspectionRequest) -> dict | None:
     return {
         "assembly_date": _iso(el.assembly_date),
         "commissioning_date": _iso(el.commissioning_date),
+        "decommissioning_date": _iso(el.decommissioning_date),
         "disassembly_date": _iso(el.disassembly_date),
         "membrane_type": el.membrane_type,
         "gap_mm": el.gap_mm,
@@ -2710,6 +2762,8 @@ def _insp_detail(db: Session, r: WfInspectionRequest, user: models.User) -> dict
         {
             "completed_at": _iso(r.completed_at),
             "remarks": None,
+            "anode_xrf": _latest_xrf(db, r.anode_nr),
+            "cathode_xrf": _latest_xrf(db, r.cathode_nr),
             "report": _report_brief(db, r.report_id),
             "decisions": _decision_map(r),
             "cell": _cell_card(db, r),
@@ -3060,6 +3114,11 @@ def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
             fields.update(flow)
         if inspection and inspection.get("xrf"):
             fields["xrf"] = inspection["xrf"]
+            if report is not None:
+                if kind == "anode":
+                    report.xrf_anode = inspection["xrf"]
+                elif kind == "cathode":
+                    report.xrf_cathode = inspection["xrf"]
         fields["electrode_kind"] = kind
         fields["serial_nr"] = serial
         fields["inspection_date"] = date_type.today()
@@ -3205,7 +3264,7 @@ def inspection_on_disassembly(db: Session, el: models.Element, actor: Any) -> No
     done = db.query(WfInspectionRequest).filter(WfInspectionRequest.element_id == el.id, WfInspectionRequest.status.in_(CLOSED)).first()
     if done is not None:
         return
-    r = _new_insp(db, actor, "await_request", el, reason="Dismantled")
+    r = _new_insp(db, actor, "await_request", el, reason=(el.decommission_reason or "").strip()[:200] or "Dismantled")
     _event(db, "inspection", r, "auto_created", actor, None, None, {"date": _iso(svc._as_date(el.disassembly_date))})
     if not _close_if_reported(db, r, actor):
         _notify(db, "inspection", r, actor)
@@ -3236,6 +3295,383 @@ def inspection_report_saved(db: Session, report: models.InspectionReport) -> Non
         _attach_report(db, r, report.id, actor)
 
 
+# ------------------------------------------------------------------ assemble a new element (C-90 -> inspection/process -> cell)
+
+
+def _can_request_assemble(db: Session, user: models.User) -> bool:
+    return user.role == "admin" or "c90" in _groups(db, user)
+
+
+def _load_assemble(db: Session, request_id: int) -> WfAssembleRequest:
+    r = db.get(WfAssembleRequest, request_id)
+    if not r:
+        raise HTTPException(404, "Assemble request not found")
+    return r
+
+
+def _assemble_summary(db: Session, r: WfAssembleRequest, conf: dict | None = None) -> dict:
+    return {
+        "flow": "assemble",
+        "id": r.id,
+        "title": _title("assemble", r, db),
+        "code": r.code,
+        "codes": [r.code],
+        "status": r.status,
+        "groups": ASSEMBLE_STAGES.get(r.status, []),
+        "element_nr": r.element_nr,
+        "element_id": r.element_id,
+        "electrolyzer": r.electrolyzer,
+        "position": r.position,
+        "anode_nr": r.anode_nr,
+        "cathode_nr": r.cathode_nr,
+        "membrane_nr": r.membrane_nr,
+        "membrane_type": r.membrane_type,
+        "anode_source": r.anode_source,
+        "cathode_source": r.cathode_source,
+        "assembly_date": _iso(r.assembly_date),
+        "reason": None,
+        "anode_count": 1 if r.anode_nr else 0,
+        "cathode_count": 1 if r.cathode_nr else 0,
+        "company_id": None,
+        "company_name": None,
+        "indent_no": None,
+        "dispatch_date": _iso(r.assembly_date),
+        "expected_date": None,
+        "actual_date": None,
+        "delay_days": None,
+        "created_by": r.created_by_name,
+        "created_at": _iso(r.created_at),
+        "updated_at": _iso(r.updated_at),
+        "last_note": r.last_note,
+        **_sla_fields(db, "assemble", r, conf),
+    }
+
+
+def _assemble_decisions(r: WfAssembleRequest) -> dict:
+    return r.decisions if isinstance(r.decisions, dict) else {}
+
+
+def _assemble_actions(db: Session, r: WfAssembleRequest, user: models.User) -> list[str]:
+    groups = _groups(db, user)
+    acts: list[str] = []
+    if r.status == "await_assembly" and "c90" in groups:
+        acts.append("assemble")
+    if r.status == "await_inspection" and "inspection" in groups:
+        acts.append("decide_inspection")
+    if r.status == "await_inspection" and "process" in groups:
+        acts.append("decide_process")
+    if r.status == "await_position" and "c90" in groups:
+        acts.append("position")
+    managed = _can_manage(db, user, "assemble", r.status)
+    if _can_cancel(user, r.status, r.created_by_id, "await_assembly", also=managed):
+        acts.append("cancel")
+    if managed:
+        acts.append("edit")
+    if r.status not in CLOSED and (groups or r.created_by_id == user.id):
+        acts += ["comment", "attach"]
+    return acts
+
+
+def _assemble_detail(db: Session, r: WfAssembleRequest, user: models.User) -> dict:
+    data = _assemble_summary(db, r)
+    el = db.get(models.Element, r.element_id) if r.element_id else None
+    data.update(
+        {
+            "completed_at": _iso(r.completed_at),
+            "decisions": _assemble_decisions(r),
+            "element": _element_brief(el) if el is not None else None,
+            "files": _files(db, "assemble", r.id),
+            "events": _events(db, "assemble", r.id),
+            "actions": _assemble_actions(db, r, user),
+        }
+    )
+    return data
+
+
+def _pool_row(db: Session, kind: str, serial: str) -> dict | None:
+    key = compact_nr(serial)
+    if not key:
+        return None
+    pool = assembly_pool(db)
+    for source in ("reusable", "purchased", "recoated"):
+        for row in pool.get(source) or []:
+            if row.get("kind") == kind and compact_nr(row.get("serial")) == key:
+                return row
+    return None
+
+
+def _open_assemble_for(db: Session, anode: str | None, cathode: str | None, exclude_id: int | None = None) -> WfAssembleRequest | None:
+    a, c = compact_nr(anode), compact_nr(cathode)
+    for r in db.query(WfAssembleRequest).filter(WfAssembleRequest.status.notin_(CLOSED)).all():
+        if exclude_id is not None and r.id == exclude_id:
+            continue
+        if a and compact_nr(r.anode_nr) == a:
+            return r
+        if c and compact_nr(r.cathode_nr) == c:
+            return r
+    return None
+
+
+def _element_nr_taken(db: Session, element_nr: str, exclude_assemble_id: int | None = None) -> bool:
+    key = compact_nr(element_nr)
+    if not key:
+        return False
+    for (value,) in db.query(models.Element.element_nr).all():
+        if compact_nr(value) == key:
+            return True
+    for r in db.query(WfAssembleRequest).filter(WfAssembleRequest.status.notin_(CLOSED)).all():
+        if exclude_assemble_id is not None and r.id == exclude_assemble_id:
+            continue
+        if compact_nr(r.element_nr) == key:
+            return True
+    return False
+
+
+def _try_shop(db: Session, element_nr: str | None, stage: str, user: models.User, note: str | None = None) -> None:
+    if not (element_nr or "").strip():
+        return
+    try:
+        svc.set_shop_stage(db, element_nr, stage, note, _display(user))
+    except ValueError:
+        return
+
+
+def _clear_shop(db: Session, element_nr: str | None, user: models.User, note: str | None = None) -> None:
+    if not (element_nr or "").strip():
+        return
+    try:
+        svc.set_shop_stage(db, element_nr, "clear", note, _display(user))
+    except ValueError:
+        return
+
+
+class AssembleCreateIn(BaseModel):
+    anode_nr: str
+    cathode_nr: str
+    membrane_nr: str | None = None
+    membrane_type: str | None = None
+    element_nr: str | None = None
+    note: str | None = None
+
+
+@router.get("/assemble")
+def list_assemble_requests(
+    status: str | None = None,
+    open_only: bool = False,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    _require_view(db, user, INSPECTION_VIEW_KEYS)
+    q = db.query(WfAssembleRequest).order_by(WfAssembleRequest.created_at.desc())
+    if status:
+        q = q.filter(WfAssembleRequest.status == status)
+    if open_only:
+        q = q.filter(WfAssembleRequest.status.notin_(CLOSED))
+    conf = sla_config(db)
+    return [_assemble_summary(db, r, conf) for r in q.limit(500).all()]
+
+
+@router.get("/assemble/{request_id}")
+def get_assemble_request(request_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    _require_view(db, user, INSPECTION_VIEW_KEYS)
+    return _assemble_detail(db, _load_assemble(db, request_id), user)
+
+
+@router.post("/assemble")
+def create_assemble_request(body: AssembleCreateIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """C-90 starts a new-element assemble from assembly-stock anode and cathode."""
+    if not _can_request_assemble(db, user):
+        raise HTTPException(403, "Only C-90 can start assembling a new element")
+    anode = (body.anode_nr or "").strip()
+    cathode = (body.cathode_nr or "").strip()
+    if not anode or not cathode:
+        raise HTTPException(400, "Choose the anode and the cathode from assembly stock")
+    a_row = _pool_row(db, "anode", anode)
+    c_row = _pool_row(db, "cathode", cathode)
+    if a_row is None:
+        raise HTTPException(400, f"Anode {anode} is not free in assembly stock")
+    if c_row is None:
+        raise HTTPException(400, f"Cathode {cathode} is not free in assembly stock")
+    clash = _open_assemble_for(db, a_row["serial"], c_row["serial"])
+    if clash:
+        raise HTTPException(409, f"Assemble request {clash.code} already holds these pieces")
+    from .elements import _next_element_nr
+
+    element_nr = (body.element_nr or "").strip() or _next_element_nr(db)
+    if _element_nr_taken(db, element_nr):
+        raise HTTPException(409, f"Element {element_nr} is already in Assembly Data")
+    seq = _next_seq(db, WfAssembleRequest.seq)
+    r = WfAssembleRequest(
+        code=_code("AS", date.today(), seq),
+        seq=seq,
+        status="await_assembly",
+        element_nr=element_nr,
+        anode_nr=a_row["serial"],
+        cathode_nr=c_row["serial"],
+        membrane_nr=(body.membrane_nr or "").strip()[:50] or None,
+        membrane_type=(body.membrane_type or "").strip()[:100] or None,
+        anode_source=a_row.get("source"),
+        cathode_source=c_row.get("source"),
+        created_by_id=user.id,
+        created_by_name=_display(user),
+        created_at=_now(),
+        updated_at=_now(),
+        last_note=(body.note or "").strip() or None,
+    )
+    db.add(r)
+    db.flush()
+    _event(db, "assemble", r, "created", user, None, body.note, {"anode": r.anode_nr, "cathode": r.cathode_nr, "element_nr": r.element_nr})
+    _notify(db, "assemble", r, user)
+    db.commit()
+    return _assemble_detail(db, r, user)
+
+
+class AssembleStampIn(NoteIn):
+    assembly_date: str | None = None
+
+
+@router.post("/assemble/{request_id}/assemble")
+def assemble_stamp(request_id: int, body: AssembleStampIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """C-90 writes the assembly date and the new Assembly Data row, then inspection and process must both confirm."""
+    r = _load_assemble(db, request_id)
+    _require_stage(db, user, "assemble", r.status, ("await_assembly",))
+    day = _edit_date(body.assembly_date) if (body.assembly_date or "").strip() else date.today()
+    from .elements import _next_element_nr, _sync_saved_element
+
+    element_nr = (r.element_nr or "").strip() or _next_element_nr(db)
+    if r.element_id is None and _element_nr_taken(db, element_nr, exclude_assemble_id=r.id):
+        raise HTTPException(409, f"Element {element_nr} is already in Assembly Data")
+    el = db.get(models.Element, r.element_id) if r.element_id else None
+    if el is None:
+        el = models.Element(
+            element_nr=element_nr,
+            anode_nr=r.anode_nr,
+            cathode_nr=r.cathode_nr,
+            membrane_nr=r.membrane_nr,
+            membrane_type=r.membrane_type,
+            assembly_date=day,
+            remarks=(body.note or "").strip() or f"Assembled by {r.code}",
+        )
+        db.add(el)
+        db.flush()
+    else:
+        el.anode_nr = r.anode_nr
+        el.cathode_nr = r.cathode_nr
+        el.membrane_nr = r.membrane_nr
+        el.membrane_type = r.membrane_type
+        el.assembly_date = day
+    _sync_saved_element(db, el)
+    r.element_id = el.id
+    r.element_nr = el.element_nr
+    r.anode_nr = el.anode_nr or r.anode_nr
+    r.cathode_nr = el.cathode_nr or r.cathode_nr
+    r.membrane_nr = el.membrane_nr
+    r.assembly_date = day
+    _try_shop(db, el.element_nr, "awaiting_qc", user, body.note)
+    _move(db, "assemble", r, "await_inspection", "assemble", user, body.note, {"element_id": el.id, "assembly_date": _iso(day)})
+    db.commit()
+    svc.clear_cache()
+    return _assemble_detail(db, r, user)
+
+
+class AssembleDecideIn(NoteIn):
+    side: str
+    ok: bool
+    result: str | None = None
+
+
+@router.post("/assemble/{request_id}/decide")
+def assemble_decide(request_id: int, body: AssembleDecideIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_assemble(db, request_id)
+    if r.status != "await_inspection":
+        raise HTTPException(409, "Inspection and process confirm only after the assembly date is written")
+    if body.side not in ("inspection", "process"):
+        raise HTTPException(400, "Choose inspection or process")
+    if body.side not in _groups(db, user):
+        raise HTTPException(403, "This confirmation belongs to the other group")
+    result = (body.result or body.note or "").strip()[:400]
+    if body.ok is False and not result:
+        raise HTTPException(400, "Write why the new element is not accepted")
+    if body.ok and not result:
+        result = "accepted"
+    dec = {**_assemble_decisions(r), body.side: {"ok": bool(body.ok), "result": result, "note": (body.note or "").strip()[:400] or None}}
+    r.decisions = dec
+    r.updated_at = _now()
+    _event(db, "assemble", r, "decide", user, r.status, body.note, {"side": body.side, "ok": body.ok, "result": result})
+    insp = dec.get("inspection") if isinstance(dec.get("inspection"), dict) else {}
+    proc = dec.get("process") if isinstance(dec.get("process"), dict) else {}
+    if insp.get("ok") is True and proc.get("ok") is True:
+        _try_shop(db, r.element_nr, "ready", user, body.note)
+        _move(db, "assemble", r, "await_position", "both_confirmed", user, body.note)
+    else:
+        _notify(db, "assemble", r, user)
+    db.commit()
+    return _assemble_detail(db, r, user)
+
+
+class AssemblePositionIn(NoteIn):
+    electrolyzer: str
+    position: str
+
+
+@router.post("/assemble/{request_id}/position")
+def assemble_position(request_id: int, body: AssemblePositionIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_assemble(db, request_id)
+    _require_stage(db, user, "assemble", r.status, ("await_position",))
+    from .elements import _normalize_position, _reject_same_installation, _sync_saved_element
+    from ..assembly_integrity import occupant_of_cell
+
+    electrolyzer = format_electrolyzer_name((body.electrolyzer or "").strip())
+    if not electrolyzer or electrolyzer not in {format_electrolyzer_name(n) for n in all_electrolyzers()}:
+        raise HTTPException(400, f"'{body.electrolyzer}' is not an electrolyzer of this plant")
+    position = _normalize_position(body.position)
+    el = db.get(models.Element, r.element_id) if r.element_id else None
+    if el is None:
+        raise HTTPException(409, "The Assembly Data row was not written yet")
+    busy = occupant_of_cell(db, electrolyzer, position, exclude_id=el.id)
+    if busy is not None:
+        raise HTTPException(409, f"Cell {electrolyzer}-{position} is occupied by element {busy.element_nr}")
+    el.electrolyzer = electrolyzer
+    el.position = position
+    if (body.note or "").strip():
+        extra = (body.note or "").strip()
+        el.remarks = f"{el.remarks}\n{extra}".strip() if el.remarks else extra
+    _reject_same_installation(db, el)
+    _sync_saved_element(db, el)
+    r.electrolyzer = electrolyzer
+    r.position = position
+    _clear_shop(db, el.element_nr, user, f"{electrolyzer}-{position}")
+    _move(db, "assemble", r, "completed", "position", user, body.note, {"electrolyzer": electrolyzer, "position": position})
+    db.commit()
+    svc.clear_cache()
+    return _assemble_detail(db, r, user)
+
+
+@router.post("/assemble/{request_id}/comment")
+def assemble_comment(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_assemble(db, request_id)
+    if "comment" not in _assemble_actions(db, r, user):
+        raise HTTPException(403, "Only the requester and the workflow groups can write on this request")
+    if not (body.note or "").strip():
+        raise HTTPException(400, "Write a note")
+    _event(db, "assemble", r, "comment", user, r.status, body.note)
+    extra = {r.created_by_id} if r.created_by_id else set()
+    _notify(db, "assemble", r, user, extra)
+    db.commit()
+    return _assemble_detail(db, r, user)
+
+
+@router.post("/assemble/{request_id}/cancel")
+def assemble_cancel(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_assemble(db, request_id)
+    if "cancel" not in _assemble_actions(db, r, user):
+        raise HTTPException(409, "Only C-90 or an admin can cancel this assemble request")
+    _admin_cancel_note(user, body.note, required=True)
+    _move(db, "assemble", r, "cancelled", "cancel", user, body.note, notify_creator=True)
+    db.commit()
+    return _assemble_detail(db, r, user)
+
+
 # ------------------------------------------------------------------ files (all flows)
 
 
@@ -3248,6 +3684,8 @@ def _record(db: Session, flow: str, record_id: int):
         return _load_cell(db, record_id)
     if flow == "inspection":
         return _load_insp(db, record_id)
+    if flow == "assemble":
+        return _load_assemble(db, record_id)
     raise HTTPException(404, "Unknown workflow")
 
 
@@ -3260,6 +3698,8 @@ def _detail_for(db: Session, flow: str, record: Any, user: models.User) -> dict:
         return _cell_detail(db, record, user)
     if flow == "inspection":
         return _insp_detail(db, record, user)
+    if flow == "assemble":
+        return _assemble_detail(db, record, user)
     raise HTTPException(404, "Unknown workflow")
 
 
@@ -3329,6 +3769,7 @@ def edit_request(
             reason = _clip(data["reason"], 200)
             if reason:
                 rec.reason = reason
+                _write_plant_reason(db, rec.element_nr, rec.element_id, reason)
                 changed["reason"] = rec.reason
         if "problem" in data:
             rec.problem = _clip(data["problem"], 4000)
@@ -3339,7 +3780,15 @@ def edit_request(
     elif flow == "inspection":
         if "reason" in data:
             rec.reason = _clip(data["reason"], 200)
+            _write_plant_reason(db, rec.element_nr, rec.element_id, rec.reason)
             changed["reason"] = rec.reason
+    elif flow == "assemble":
+        if "remarks" in data:
+            rec.last_note = _clip(data["remarks"], 4000)
+            changed["remarks"] = rec.last_note
+        if "reason" in data:
+            rec.last_note = _clip(data["reason"], 4000) or rec.last_note
+            changed["note"] = rec.last_note
     else:
         raise HTTPException(404, "Unknown workflow")
     if not changed:
@@ -3362,7 +3811,7 @@ def attach_files(
     rec = _record(db, flow, record_id)
     if rec.status in CLOSED:
         raise HTTPException(409, "The record is closed")
-    if not _groups(db, user) and not (flow in ("cell", "inspection") and rec.created_by_id == user.id):
+    if not _groups(db, user) and not (flow in ("cell", "inspection", "assemble") and rec.created_by_id == user.id):
         raise HTTPException(403, "Only workflow groups can attach files")
     names = []
     for up in files:
@@ -3485,6 +3934,34 @@ def history(
                     rows.append({**base, "element_kind": i.element_kind, "serial": i.serial})
             else:
                 rows.append({**base, "element_kind": None, "serial": f"{p.anode_count} A + {p.cathode_count} K"})
+    if flow in (None, "", "assemble"):
+        q3 = db.query(WfAssembleRequest)
+        if c_key:
+            q3 = q3.filter(or_(func.upper(WfAssembleRequest.code).like(f"%{c_key}%"), func.upper(func.coalesce(WfAssembleRequest.element_nr, "")).like(f"%{c_key}%")))
+        for r in q3.order_by(WfAssembleRequest.created_at.desc()).limit(2000).all():
+            if not in_period(r.assembly_date or r.created_at.date()):
+                continue
+            serials = [r.anode_nr, r.cathode_nr, r.element_nr]
+            if s_key and not any(s_key in compact_nr(s) for s in serials if s):
+                continue
+            base = {
+                "flow": "assemble",
+                "record_id": r.id,
+                "code": r.code,
+                "status": r.status,
+                "company_name": None,
+                "indent_no": None,
+                "requested_at": _iso(r.created_at.date()),
+                "sent_date": _iso(r.assembly_date),
+                "expected_date": None,
+                "actual_date": _iso(r.completed_at.date() if r.completed_at else None),
+                "delay_days": None,
+                "problem": None,
+                "final_report": None,
+                "remark": r.last_note,
+            }
+            rows.append({**base, "element_kind": "anode", "serial": r.anode_nr or ""})
+            rows.append({**base, "element_kind": "cathode", "serial": r.cathode_nr or ""})
     coating_rows = [r for r in rows if r["flow"] == "coating"]
     return {
         "rows": rows[:5000],
@@ -3612,6 +4089,11 @@ def assembly_pool(db: Session = Depends(get_db)):
                 busy.add((kind, key))
             if assembled:
                 history.setdefault((kind, key), []).append(assembled)
+    for r in db.query(WfAssembleRequest).filter(WfAssembleRequest.status.notin_(CLOSED)).all():
+        for kind, raw in (("anode", r.anode_nr), ("cathode", r.cathode_nr)):
+            key = compact_nr(raw)
+            if key:
+                busy.add((kind, key))
 
     def spelled(kind: str, raw: str) -> str:
         return indexes[kind].get(compact_nr(raw), raw)

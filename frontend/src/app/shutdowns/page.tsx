@@ -23,6 +23,8 @@ import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { appAlert, appConfirm } from "@/lib/dialog";
 import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 import { ShutdownAnalysis, type ShutdownGroupBy } from "@/components/domain/shutdown-analysis";
+import { FilterHeadCell } from "@/components/ui/data-table";
+import { useSheetFilters } from "@/components/ui/table-sheet";
 
 function pad2(n: number) {
   return String(n).padStart(2, "0");
@@ -235,7 +237,27 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         .includes(q)
     );
   }, [rows, query]);
-  const totalMins = shown.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
+  const sheetCols = useMemo(
+    () => [
+      { key: "nr", filterText: (r: Shutdown) => String(r.nr) },
+      { key: "plant_part", filterText: (r: Shutdown) => plantPartValue(r.plant_part) },
+      { key: "shutdown_time" },
+      { key: "startup_time" },
+      { key: "duration", filterText: (r: Shutdown) => durationHm(r) },
+      { key: "code", filterText: (r: Shutdown) => r.code || "" },
+      { key: "cause", filterText: (r: Shutdown) => r.cause || "" },
+      { key: "ka_before_trip", filterText: (r: Shutdown) => (r.ka_before_trip == null ? "" : String(r.ka_before_trip)) },
+      { key: "lost_load", filterText: (r: Shutdown) => (r.lost_load == null ? "" : String(r.lost_load)) },
+      { key: "lost_production", filterText: (r: Shutdown) => (r.lost_production == null ? "" : String(r.lost_production)) },
+      { key: "mtbf_days", filterText: (r: Shutdown) => (r.mtbf_days == null ? "" : String(r.mtbf_days)) },
+      { key: "category", filterText: (r: Shutdown) => r.category || "" },
+      { key: "remarks", filterText: (r: Shutdown) => r.remarks || "" },
+    ],
+    []
+  );
+  const sheet = useSheetFilters(sheetCols, shown);
+  const listed = sheet.shown;
+  const totalMins = listed.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
   const totalHm = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, "0")}`;
 
   function fieldVisible(field: string) {
@@ -355,7 +377,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
           </label>
         </div>
         <div className="shutdown-summary-chip font-bold">
-          {t("shutdowns.totalDuration")}: {totalHm} &nbsp;·&nbsp; {t("shutdowns.totalShutdowns")}: {shown.length}
+          {t("shutdowns.totalDuration")}: {totalHm} &nbsp;·&nbsp; {t("shutdowns.totalShutdowns")}: {listed.length}
         </div>
       </div>
       <div className="overflow-auto shutdown-list-scroll">
@@ -378,9 +400,74 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               {fieldVisible("remarks") ? <th>{t("fields.remarks")}</th> : null}
               {editable ? <th className="w-36" /> : null}
             </tr>
+            <tr>
+              <th />
+              <th>
+                <FilterHeadCell columnKey="nr" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+              </th>
+              {fieldVisible("plant_part") ? (
+                <th>
+                  <FilterHeadCell columnKey="plant_part" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("shutdown_time") ? (
+                <th>
+                  <FilterHeadCell columnKey="shutdown_time" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("startup_time") ? (
+                <th>
+                  <FilterHeadCell columnKey="startup_time" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              <th>
+                <FilterHeadCell columnKey="duration" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+              </th>
+              {fieldVisible("code") ? (
+                <th>
+                  <FilterHeadCell columnKey="code" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("cause") ? (
+                <th>
+                  <FilterHeadCell columnKey="cause" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("ka_before_trip") ? (
+                <th>
+                  <FilterHeadCell columnKey="ka_before_trip" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("lost_load") ? (
+                <th>
+                  <FilterHeadCell columnKey="lost_load" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("lost_production") ? (
+                <th>
+                  <FilterHeadCell columnKey="lost_production" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("mtbf_days") ? (
+                <th>
+                  <FilterHeadCell columnKey="mtbf_days" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("category") ? (
+                <th>
+                  <FilterHeadCell columnKey="category" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("remarks") ? (
+                <th>
+                  <FilterHeadCell columnKey="remarks" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {editable ? <th /> : null}
+            </tr>
           </thead>
           <tbody>
-            {shown.map((row) => {
+            {listed.map((row) => {
               const open = editing === row.nr;
               const src = (open ? { ...row, ...editDraft } : row) as Shutdown;
               return (

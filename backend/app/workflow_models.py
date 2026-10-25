@@ -180,6 +180,35 @@ class WfInspectionRequest(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime)
 
 
+class WfAssembleRequest(Base):
+    """C-90 builds a new element from assembly-stock anode/cathode, then inspection/process and a cell."""
+
+    __tablename__ = "wf_assemble_requests"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    code: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    seq: Mapped[int] = mapped_column(Integer, unique=True, index=True)
+    status: Mapped[str] = mapped_column(String(20), index=True)  # await_assembly | await_inspection | await_position | completed | cancelled
+    element_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    element_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    anode_nr: Mapped[str] = mapped_column(String(50), index=True)
+    cathode_nr: Mapped[str] = mapped_column(String(50), index=True)
+    membrane_nr: Mapped[str | None] = mapped_column(String(50))
+    membrane_type: Mapped[str | None] = mapped_column(String(100))
+    anode_source: Mapped[str | None] = mapped_column(String(20))  # reusable | purchased | recoated
+    cathode_source: Mapped[str | None] = mapped_column(String(20))
+    assembly_date: Mapped[date | None] = mapped_column(Date)
+    electrolyzer: Mapped[str | None] = mapped_column(String(50))
+    position: Mapped[str | None] = mapped_column(String(20))
+    # {inspection|process: {ok, result, note}}
+    decisions: Mapped[dict | None] = mapped_column(JSON)
+    last_note: Mapped[str | None] = mapped_column(Text)
+    created_by_id: Mapped[int | None] = mapped_column(Integer)
+    created_by_name: Mapped[str | None] = mapped_column(String(150))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime)
+
+
 class WfSettings(Base):
     """Single row: allowed time per workflow stage ({flow: {status: hours}}) and when a deadline turns yellow."""
 

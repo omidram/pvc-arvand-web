@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { AssembleRequestModal, AssembleStartForm } from "@/components/domain/assemble-request";
 import { ElementWorkflowChart, type PiecePick } from "@/components/domain/element-workflow-chart";
 import { elementDashboardApi } from "@/lib/endpoints";
 import { workflowApi } from "@/lib/workflow";
@@ -11,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
 import { useI18n } from "@/lib/i18n/context";
 import { todayIsoLocal } from "@/lib/date-range";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, formatDateTime } from "@/lib/utils";
 import { STAGE_TONE } from "./element-dashboard-ui";
 import { DecommissionActions, isHealthyKept, isShutdownDecision } from "./element-flow-actions";
 import { ElementCellRequest } from "./cell-request";
@@ -72,6 +73,7 @@ export function AssemblyLifecycleStrip({ picked, onPick }: { picked: LifePick | 
   const { t } = useI18n();
   const [piece, setPiece] = useState<PiecePick | null>(null);
   const [needle, setNeedle] = useState("");
+  const [assembleId, setAssembleId] = useState<number | null>(null);
   const counts = useCounts().data?.counts;
   const pool = useQuery({ queryKey: ["workflow", "assembly-pool"], queryFn: workflowApi.assemblyPool, staleTime: 30_000 });
   const flow = useQuery({ queryKey: ["element-dashboard", "flow"], queryFn: elementDashboardApi.flow, staleTime: 30_000 });
@@ -114,7 +116,11 @@ export function AssemblyLifecycleStrip({ picked, onPick }: { picked: LifePick | 
         t={t}
         picked={picked}
         onPick={(stage) => {
-          if (stage === "awaiting_assembly") return;
+          if (stage === "awaiting_assembly") {
+            setPiece(null);
+            onPick(null);
+            return;
+          }
           setPiece(null);
           onPick(stage);
         }}
@@ -127,7 +133,14 @@ export function AssemblyLifecycleStrip({ picked, onPick }: { picked: LifePick | 
           setPiece(next);
           if (next) onPick(null);
         }}
+        startAssemble={
+          <div className="ewc-start">
+            <strong>{t("wf.asm.chartTitle")}</strong>
+            <AssembleStartForm compact onCreated={(id) => setAssembleId(id)} />
+          </div>
+        }
       />
+      <AssembleRequestModal id={assembleId} onClose={() => setAssembleId(null)} />
       {piece ? (
         <section className="asm-card">
           <div className="asm-card-head">
@@ -256,6 +269,43 @@ function DismantledParts({ row }: { row: Element }) {
   );
 }
 
+function lifeTitle(t: (k: string) => string, title: string) {
+  for (const key of [`asmFlow.log.${title}`, `elDash.stage.${title}`, `wf.event.${title}`, `wf.status.${title}`]) {
+    const label = t(key);
+    if (label !== key) return label;
+  }
+  return title.replace(/_/g, " ");
+}
+
+function ElementLifeLog({ elementNr }: { elementNr: string }) {
+  const { t } = useI18n();
+  const log = useQuery({
+    queryKey: ["element-dashboard", "life-log", elementNr],
+    queryFn: () => elementDashboardApi.lifeLog(elementNr),
+    enabled: Boolean(elementNr),
+  });
+  const items = log.data?.items ?? [];
+  return (
+    <div className="asm-log">
+      <strong className="asm-parts-title">{t("asmFlow.logTitle")}</strong>
+      {log.isLoading ? <p className="asm-mute">…</p> : null}
+      {!log.isLoading && !items.length ? <p className="asm-mute">{t("asmFlow.logEmpty")}</p> : null}
+      {items.length ? (
+        <ol className="asm-log-list">
+          {items.map((row, i) => (
+            <li key={`${row.at}-${row.title}-${i}`}>
+              <time>{formatDateTime(row.at)}</time>
+              <span className="asm-log-title">{lifeTitle(t, row.title)}</span>
+              {row.detail ? <span className="asm-log-detail">{row.detail}</span> : null}
+              {row.actor ? <span className="asm-mute">{row.actor}</span> : null}
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+}
+
 /** The open Assembly Data record: where this element is in its life and the one next step. */
 export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; editable: boolean; onOpen: OpenRecord }) {
   const { t } = useI18n();
@@ -352,6 +402,8 @@ export function ElementLifecycleCard({ row, editable, onOpen }: { row: Element; 
             <span className="asm-next-title">{t("asmFlow.nextTitle")}</span>
             <span>{t(`asmFlow.next.${item.state}`)}</span>
           </div>
+
+          <ElementLifeLog elementNr={nr} />
 
           {!older ? <ElementCellRequest item={item} /> : null}
 

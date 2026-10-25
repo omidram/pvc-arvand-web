@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
+import { electrodeSegregationsApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import {
@@ -255,11 +256,32 @@ function PieceDecision({
   const saved = d.decisions?.[side];
   const [anode, setAnode] = useState<PieceDraft>(() => draftFrom(saved?.anode));
   const [cathode, setCathode] = useState<PieceDraft>(() => draftFrom(saved?.cathode));
-  const [xrfAnode, setXrfAnode] = useState(saved?.anode?.xrf || "");
-  const [xrfCathode, setXrfCathode] = useState(saved?.cathode?.xrf || "");
+  const [xrfAnode, setXrfAnode] = useState(saved?.anode?.xrf || d.anode_xrf || "");
+  const [xrfCathode, setXrfCathode] = useState(saved?.cathode?.xrf || d.cathode_xrf || "");
   const [noteAnode, setNoteAnode] = useState(saved?.anode?.problems || "");
   const [noteCathode, setNoteCathode] = useState(saved?.cathode?.problems || "");
+  const [opening, setOpening] = useState<"anode" | "cathode" | null>(null);
+  const [openError, setOpenError] = useState<string | null>(null);
   const inspectionPayload = (xrf: string, note: string) => ({ usable: null, xrf: xrf.trim(), problems: note.trim() });
+  const openTafkik = async (kind: "anode" | "cathode", serial: string) => {
+    setOpening(kind);
+    setOpenError(null);
+    try {
+      await electrodeSegregationsApi.ensure({
+        serial_nr: serial,
+        electrode_kind: kind,
+        element_nr: d.element_nr,
+        electrolyzer: d.electrolyzer,
+        position: d.position,
+        on: d.cell?.decommissioning_date || d.disassembly_date || d.cell?.disassembly_date || null,
+      });
+      window.open(`/segregation?serial_nr=${encodeURIComponent(serial)}`, "_blank", "noopener");
+    } catch (err) {
+      setOpenError((err as Error).message || "Error");
+    } finally {
+      setOpening(null);
+    }
+  };
   const run = useMutation({
     mutationFn: () =>
       workflowApi.inspectionStep(d.id, "decide", {
@@ -362,16 +384,17 @@ function PieceDecision({
           {d.cathode_nr ? field("cathode", d.cathode_nr, cathode, setCathode) : null}
           <div className="wh-form-inline wf-inline-plain">
             {d.anode_nr ? (
-              <Link className="wf-btn" href={`/segregation?new=1&serial_nr=${encodeURIComponent(d.anode_nr)}&kind=anode`} target="_blank">
+              <button type="button" className="wf-btn" disabled={opening !== null} onClick={() => openTafkik("anode", d.anode_nr!)}>
                 {t("wf.insp.openSegregation")} · {d.anode_nr}
-              </Link>
+              </button>
             ) : null}
             {d.cathode_nr ? (
-              <Link className="wf-btn" href={`/segregation?new=1&serial_nr=${encodeURIComponent(d.cathode_nr)}&kind=cathode`} target="_blank">
+              <button type="button" className="wf-btn" disabled={opening !== null} onClick={() => openTafkik("cathode", d.cathode_nr!)}>
                 {t("wf.insp.openSegregation")} · {d.cathode_nr}
-              </Link>
+              </button>
             ) : null}
           </div>
+          {openError ? <div className="wf-alert">{openError}</div> : null}
         </>
       )}
       <button type="button" className="wf-btn is-primary" disabled={run.isPending || !ready} onClick={() => run.mutate()}>
@@ -436,7 +459,7 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
         <Fact label={t("wf.kind.cathode")}>{d.cathode_nr || "—"}</Fact>
         {d.membrane_nr ? <Fact label={t("wf.insp.membrane")}>{d.membrane_nr}</Fact> : null}
         <Fact label={t("wf.insp.dismantled")}>{formatDate(d.disassembly_date)}</Fact>
-        {d.reason ? <Fact label={t("wf.insp.reason")}>{d.reason}</Fact> : null}
+        {d.reason ? <Fact label={t("fields.decommissionReason")}>{d.reason}</Fact> : null}
         <Fact label={t("wf.col.createdBy")}>
           {d.created_by || "—"} · {formatDateTime(d.created_at)}
         </Fact>
@@ -448,12 +471,14 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
           <div className="wh-facts wf-facts">
             <Fact label={t("wf.insp.assembly")}>{formatDate(d.cell.assembly_date)}</Fact>
             <Fact label={t("wf.insp.commission")}>{formatDate(d.cell.commissioning_date)}</Fact>
+            <Fact label={t("fields.decommissioningDate")}>{formatDate(d.cell.decommissioning_date)}</Fact>
+            <Fact label={t("wf.insp.dismantled")}>{formatDate(d.cell.disassembly_date)}</Fact>
             <Fact label={t("wf.insp.gap")}>{d.cell.gap_mm || "—"}</Fact>
             <Fact label={t("wf.insp.membrane")}>{d.cell.membrane_type || d.membrane_nr || "—"}</Fact>
             <Fact label={t("wf.insp.anodeCoat")}>{d.cell.anode_coating || "—"}</Fact>
             <Fact label={t("wf.insp.cathodeCoat")}>{d.cell.cathode_coating || "—"}</Fact>
             <Fact label={t("wf.insp.dol")}>{d.cell.dol_days ?? "—"}</Fact>
-            {d.cell.decommission_reason ? <Fact label={t("wf.insp.reason")}>{d.cell.decommission_reason}</Fact> : null}
+            {d.cell.decommission_reason ? <Fact label={t("fields.decommissionReason")}>{d.cell.decommission_reason}</Fact> : null}
           </div>
           <div className="wh-form-inline wf-inline-plain">
             {d.anode_nr ? (

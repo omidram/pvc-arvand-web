@@ -132,7 +132,7 @@ export function AssemblyDataForm() {
       type: "combo",
       options: (electrolyzers.data || []).map((value) => ({ label: value, value })),
     },
-    { name: "position", label: t("fields.position"), placeholder: t("elements.positionPlaceholder") },
+    { name: "position", label: t("fields.position"), type: "position", placeholder: t("elements.positionPlaceholder") },
     {
       name: "group_nr",
       label: t("fields.groupNr"),

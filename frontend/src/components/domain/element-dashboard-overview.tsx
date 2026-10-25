@@ -211,7 +211,7 @@ export function ElementOverviewTab({ onOpen }: { onOpen: (target: OpenTarget) =>
           <h3 className="mon-panel-title">{t("elDash.chart.flow")}</h3>
           <div className="ed-chart-tall">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.monthly_flow} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+              <LineChart data={data.monthly_flow.slice(-12)} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />

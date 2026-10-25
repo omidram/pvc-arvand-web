@@ -16,6 +16,7 @@ import { formatDate, formatDateTime } from "@/lib/utils";
 import { defaultDateRange } from "@/lib/date-range";
 import {
   CARTABLE_MS,
+  ASSEMBLE_STEPS,
   CELL_STEPS,
   COATING_STEPS,
   DELAY_PARTIES,
@@ -103,7 +104,15 @@ function StatusBadge({ row, t }: { row: Pick<WfSummary, "status" | "rejected">; 
 
 export function Stepper({ flow, status, t }: { flow: WfFlow; status: string; t: T }) {
   const steps: readonly string[] =
-    flow === "coating" ? COATING_STEPS : flow === "cell" ? CELL_STEPS : flow === "inspection" ? INSPECTION_STEPS : PURCHASE_STEPS;
+    flow === "coating"
+      ? COATING_STEPS
+      : flow === "cell"
+        ? CELL_STEPS
+        : flow === "inspection"
+          ? INSPECTION_STEPS
+          : flow === "assemble"
+            ? ASSEMBLE_STEPS
+            : PURCHASE_STEPS;
   const shown = status === "at_coater" || status === "await_report" ? "await_return" : status === "ordered" ? "await_order" : status;
   const at = steps.indexOf(shown);
   return (
@@ -142,7 +151,7 @@ export function summaryColumns(t: T, withFlow: boolean): Column<WfSummary>[] {
       render: (r) =>
         r.flow === "cell"
           ? r.reason || "—"
-          : r.flow === "inspection"
+          : r.flow === "inspection" || r.flow === "assemble"
             ? [r.element_nr && t("wf.insp.elementShort", { n: r.element_nr }), r.anode_nr, r.cathode_nr].filter(Boolean).join(" · ") || "—"
             : r.flow === "workorder"
               ? [r.element_nr, r.anode_nr, r.cathode_nr].filter(Boolean).join(" · ") || "—"
@@ -218,12 +227,12 @@ export function RequestEditForm({
   const save = useMutation({
     mutationFn: () => {
       const body: Record<string, unknown> = {};
-      if (d.flow === "coating" || d.flow === "purchase") body.remarks = remarks;
+      if (d.flow === "coating" || d.flow === "purchase" || d.flow === "assemble") body.remarks = remarks;
       if (d.flow === "cell" || d.flow === "inspection") body.reason = reason;
       if (d.flow === "cell") body.problem = problem;
       if (d.flow === "coating" || d.flow === "purchase") body.indent_no = indent;
       if (d.flow === "purchase") body.approval_ref = approval;
-      if (d.flow !== "inspection") body.expected_date = expected || null;
+      if (d.flow !== "inspection" && d.flow !== "assemble") body.expected_date = expected || null;
       return workflowApi.update(d.flow, d.id, body);
     },
     onSuccess: (next) => {
@@ -236,7 +245,7 @@ export function RequestEditForm({
       <h4>{t("wf.editTitle")}</h4>
       {d.flow === "cell" || d.flow === "inspection" ? (
         <label>
-          {t("wf.editReason")}
+          {d.flow === "cell" || d.flow === "inspection" ? t("fields.decommissionReason") : t("wf.editReason")}
           <input value={reason} onChange={(e) => setReason(e.target.value)} />
         </label>
       ) : (
@@ -263,7 +272,7 @@ export function RequestEditForm({
           <input value={approval} onChange={(e) => setApproval(e.target.value)} />
         </label>
       ) : null}
-      {d.flow !== "inspection" ? (
+      {d.flow !== "inspection" && d.flow !== "assemble" ? (
         <label>
           {t("wf.col.expected")}
           <DateInput type="date" value={expected} onChange={(e) => setExpected(e.target.value)} />
@@ -1352,6 +1361,7 @@ export function WorkflowHistoryPanel({ companies, onOpen }: { companies: WhCompa
             <option value="">{t("wf.history.both")}</option>
             <option value="coating">{t("wf.flow.coating")}</option>
             <option value="purchase">{t("wf.flow.purchase")}</option>
+            <option value="assemble">{t("wf.flow.assemble")}</option>
           </select>
         </label>
         <label>

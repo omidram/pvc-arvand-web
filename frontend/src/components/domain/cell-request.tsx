@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { DateInput } from "@/components/ui/date-input";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
+import { PositionCombo } from "@/components/ui/position-combo";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/context";
@@ -416,7 +417,7 @@ function CellDetailBody({ d, t }: { d: CellRequestDetail; t: T }) {
         <Fact label={t("cellReq.col.element")}>
           {d.element_nr} {d.electrolyzer ? `· ${d.electrolyzer}-${d.position ?? ""}` : ""}
         </Fact>
-        <Fact label={t("cellReq.col.reason")}>{d.request_kind === "numbering" ? t("cellReq.numberingReason") : d.reason}</Fact>
+        <Fact label={d.request_kind === "numbering" ? t("cellReq.col.reason") : t("fields.decommissionReason")}>{d.request_kind === "numbering" ? t("cellReq.numberingReason") : d.reason}</Fact>
         <Fact label={t("cellReq.facts.requested")}>
           {d.created_by || "—"} · {formatDateTime(d.created_at)}
         </Fact>
@@ -551,7 +552,7 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
                   </label>
                   <label>
                     {t("elDash.cartable.position")}
-                    <input value={position} onChange={(e) => setPosition(e.target.value)} placeholder="001–168" inputMode="numeric" />
+                    <PositionCombo electrolyzer={electrolyzer} value={position} onChange={setPosition} excludeId={d.element_id} required />
                   </label>
                   <label>
                     {t("elDash.cartable.date")}
@@ -595,7 +596,7 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
                 </label>
                 <label>
                   {t("elDash.cartable.position")}
-                  <input value={position} onChange={(e) => setPosition(e.target.value)} placeholder="001–168" inputMode="numeric" />
+                  <PositionCombo electrolyzer={electrolyzer} value={position} onChange={setPosition} excludeId={d.element_id} required />
                 </label>
                 <label>
                   {t("elDash.cartable.date")}

@@ -240,16 +240,24 @@ export function VoltageHistoryDialog({
             {hasRectifier ? ` · ${t("monitoring.rectifierSeries")}` : ""}
           </p>
           <div className="rounded bg-[#0c1848] px-1 py-2">
-            <div className="mb-1 px-2 text-[11px] font-semibold text-[#d6e35a]">{t("monitoring.voltageChart")}</div>
-            <ResponsiveContainer width="100%" height={showAmpChart ? 260 : 360}>
-              <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 0, bottom: 8 }}>
+            <div className="mb-1 flex flex-wrap gap-3 px-2 text-[11px] font-semibold">
+              <span className="text-[#d6e35a]">{t("monitoring.voltageChart")}</span>
+              {showAmpChart ? <span className="text-[#f59e0b]">{t("monitoring.ampChart")}</span> : null}
+              {hasRectifier ? <span className="text-[#67e8f9]">{t("monitoring.rectifierSeries")}</span> : null}
+            </div>
+            <ResponsiveContainer width="100%" height={showAmpChart ? 420 : 360}>
+              <LineChart data={chartRows} margin={{ top: 12, right: showAmpChart ? 8 : 12, left: 0, bottom: 8 }}>
                 <CartesianGrid stroke="#243056" />
                 <XAxis dataKey="label" stroke="#cbd5e1" tick={{ fontSize: 10 }} minTickGap={28} />
-                <YAxis stroke="#cbd5e1" tick={{ fontSize: 10 }} domain={["auto", "auto"]} width={48} />
+                <YAxis yAxisId="v" stroke="#d6e35a" tick={{ fontSize: 10 }} domain={["auto", "auto"]} width={48} />
+                {showAmpChart ? (
+                  <YAxis yAxisId="ka" orientation="right" stroke="#f59e0b" tick={{ fontSize: 10 }} domain={["auto", "auto"]} width={56} unit=" kA" />
+                ) : null}
                 <Tooltip content={<HistoryTooltip title={data.title} mode="voltage" t={t} />} />
-                <Line type="monotone" dataKey="voltage" stroke="#d6e35a" strokeWidth={2} dot={{ r: 2 }} connectNulls name={data.title} />
+                <Line yAxisId="v" type="monotone" dataKey="voltage" stroke="#d6e35a" strokeWidth={2} dot={{ r: 2 }} connectNulls name={data.title} />
                 {hasRectifier ? (
                   <Line
+                    yAxisId="v"
                     type="monotone"
                     dataKey="rectifier"
                     stroke="#67e8f9"
@@ -259,19 +267,9 @@ export function VoltageHistoryDialog({
                     name={t("monitoring.rectifierSeries")}
                   />
                 ) : null}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-          {showAmpChart ? (
-            <div className="mt-2 rounded bg-[#0c1848] px-1 py-2">
-              <div className="mb-1 px-2 text-[11px] font-semibold text-[#f59e0b]">{t("monitoring.ampChart")}</div>
-              <ResponsiveContainer width="100%" height={260}>
-                <LineChart data={chartRows} margin={{ top: 12, right: 12, left: 0, bottom: 8 }}>
-                  <CartesianGrid stroke="#243056" />
-                  <XAxis dataKey="label" stroke="#cbd5e1" tick={{ fontSize: 10 }} minTickGap={28} />
-                  <YAxis stroke="#f59e0b" tick={{ fontSize: 10 }} domain={["auto", "auto"]} width={48} unit=" kA" />
-                  <Tooltip content={<HistoryTooltip title={t("monitoring.loadKa")} mode="current" t={t} />} />
+                {showAmpChart ? (
                   <Line
+                    yAxisId="ka"
                     type="monotone"
                     dataKey="current_ka"
                     stroke="#f59e0b"
@@ -280,10 +278,10 @@ export function VoltageHistoryDialog({
                     connectNulls
                     name={t("monitoring.loadKa")}
                   />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          ) : null}
+                ) : null}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
           <div className="mt-3 max-h-40 overflow-auto border border-[var(--win-border-shadow)]">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-[#1e3a8a] text-white">

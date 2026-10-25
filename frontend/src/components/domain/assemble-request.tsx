@@ -1,0 +1,420 @@
+"use client";
+
+import Link from "next/link";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { Ban, Check, MessageSquare, Paperclip, Plus } from "lucide-react";
+import { DeadlineBadge, RequestEditForm, Stepper, useWorkflowMeta } from "@/components/domain/warehouse-workflow";
+import { Badge } from "@/components/ui/badge";
+import { DataTable, type Column } from "@/components/ui/data-table";
+import { DateInput } from "@/components/ui/date-input";
+import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
+import { PositionCombo } from "@/components/ui/position-combo";
+import { Modal } from "@/components/ui/modal";
+import { ErrorState, LoadingState } from "@/components/ui/spinner";
+import { elementsApi } from "@/lib/endpoints";
+import { useI18n } from "@/lib/i18n/context";
+import { formatDate, formatDateTime } from "@/lib/utils";
+import {
+  CARTABLE_MS,
+  refreshWarehouseData,
+  workflowApi,
+  type AssembleRequest,
+  type AssembleRequestDetail,
+  type AssemblyPoolRow,
+  type WfGroup,
+} from "@/lib/workflow";
+
+type T = (k: string, vars?: Record<string, string | number | null | undefined>) => string;
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function statusColor(status: string): "emerald" | "slate" | "violet" | "amber" {
+  if (status === "completed") return "emerald";
+  if (status === "cancelled") return "slate";
+  if (status === "await_inspection") return "violet";
+  return "amber";
+}
+
+function pieces(r: AssembleRequest, t: T) {
+  return [r.element_nr && t("wf.insp.elementShort", { n: r.element_nr }), r.anode_nr, r.cathode_nr].filter(Boolean).join(" · ") || "—";
+}
+
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <span>{label}</span>
+      <b>{children}</b>
+    </div>
+  );
+}
+
+function PoolSelect({
+  kind,
+  value,
+  rows,
+  t,
+  onChange,
+}: {
+  kind: "anode" | "cathode";
+  value: string;
+  rows: AssemblyPoolRow[];
+  t: T;
+  onChange: (v: string) => void;
+}) {
+  const groups = useMemo(() => {
+    const by: Record<string, AssemblyPoolRow[]> = { reusable: [], purchased: [], recoated: [] };
+    for (const row of rows.filter((r) => r.kind === kind)) by[row.source]?.push(row);
+    return by;
+  }, [rows, kind]);
+  return (
+    <label>
+      {t(`wf.kind.${kind}`)}
+      <select value={value} onChange={(e) => onChange(e.target.value)} required>
+        <option value="">—</option>
+        {(["reusable", "purchased", "recoated"] as const).map((source) =>
+          groups[source].length ? (
+            <optgroup key={source} label={t(`wf.asm.source.${source}`)}>
+              {groups[source].map((row) => (
+                <option key={`${row.source}-${row.serial}`} value={row.serial}>
+                  {row.serial}
+                  {row.company ? ` · ${row.company}` : ""}
+                  {row.quality ? ` · ${row.quality}` : ""}
+                </option>
+              ))}
+            </optgroup>
+          ) : null,
+        )}
+      </select>
+    </label>
+  );
+}
+
+export function AssembleStartForm({
+  compact,
+  onCreated,
+}: {
+  compact?: boolean;
+  onCreated?: (id: number) => void;
+}) {
+  const { t } = useI18n();
+  const qc = useQueryClient();
+  const meta = useWorkflowMeta();
+  const can = !!meta.data?.can_request_assemble;
+  const pool = useQuery({ queryKey: ["wf", "assembly-pool"], queryFn: workflowApi.assemblyPool, staleTime: 20_000 });
+  const nextNr = useQuery({
+    queryKey: ["elements", "next-nr"],
+    queryFn: elementsApi.nextNumber,
+    enabled: can,
+  });
+  const stock = [...(pool.data?.reusable ?? []), ...(pool.data?.purchased ?? []), ...(pool.data?.recoated ?? [])];
+  const [form, setForm] = useState({ anode_nr: "", cathode_nr: "", membrane_nr: "", element_nr: "", note: "" });
+  const create = useMutation({
+    mutationFn: () =>
+      workflowApi.assembleCreate({
+        anode_nr: form.anode_nr,
+        cathode_nr: form.cathode_nr,
+        membrane_nr: form.membrane_nr.trim() || undefined,
+        element_nr: form.element_nr.trim() || undefined,
+        note: form.note.trim() || undefined,
+      }),
+    onSuccess: (d) => {
+      setForm({ anode_nr: "", cathode_nr: "", membrane_nr: "", element_nr: "", note: "" });
+      refreshWarehouseData(qc);
+      onCreated?.(d.id);
+    },
+  });
+  if (!can) return compact ? null : <p className="wh-muted">{t("wf.asm.c90Only")}</p>;
+  return (
+    <form
+      className={compact ? "ewc-start-form" : "wh-form"}
+      onSubmit={(e) => {
+        e.preventDefault();
+        create.mutate();
+      }}
+    >
+      {!compact ? <h3>{t("wf.asm.newTitle")}</h3> : null}
+      <p className="wh-subdesc">{t("wf.asm.hint")}</p>
+      <div className={compact ? "ewc-start-grid" : "wh-form-inline"}>
+        <PoolSelect kind="anode" value={form.anode_nr} rows={stock} t={t} onChange={(v) => setForm({ ...form, anode_nr: v })} />
+        <PoolSelect kind="cathode" value={form.cathode_nr} rows={stock} t={t} onChange={(v) => setForm({ ...form, cathode_nr: v })} />
+        <label>
+          {t("wf.insp.membrane")}
+          <input value={form.membrane_nr} onChange={(e) => setForm({ ...form, membrane_nr: e.target.value })} />
+        </label>
+        <label>
+          {t("wf.insp.element")}
+          <input
+            value={form.element_nr}
+            onChange={(e) => setForm({ ...form, element_nr: e.target.value })}
+            placeholder={nextNr.data?.element_nr || t("wf.asm.nextNr")}
+          />
+        </label>
+        <label className="wh-grow">
+          {t("wf.note")}
+          <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
+        </label>
+      </div>
+      <button type="submit" className="wf-btn is-primary" disabled={create.isPending || !form.anode_nr || !form.cathode_nr}>
+        <Plus size={14} /> {t("wf.asm.create")}
+      </button>
+      {create.error ? <div className="wf-alert">{(create.error as Error).message}</div> : null}
+    </form>
+  );
+}
+
+export function AssembleRequestsPanel({ onOpen }: { onOpen: (id: number) => void }) {
+  const { t } = useI18n();
+  const [openOnly, setOpenOnly] = useState(true);
+  const list = useQuery({
+    queryKey: ["wf", "list", "assemble", openOnly],
+    queryFn: () => workflowApi.assembleList({ open_only: openOnly }),
+    refetchInterval: CARTABLE_MS,
+  });
+  const cols: Column<AssembleRequest>[] = [
+    { key: "code", header: t("wf.col.code"), render: (r) => <strong className="wf-code">{r.code}</strong> },
+    {
+      key: "status",
+      header: t("wf.col.status"),
+      render: (r) => <Badge color={statusColor(r.status)}>{t(`wf.status.${r.status}`)}</Badge>,
+      filterText: (r) => t(`wf.status.${r.status}`),
+    },
+    { key: "sla_state", header: t("wf.col.deadline"), render: (r) => <DeadlineBadge row={r} t={t} /> },
+    { key: "pieces", header: t("wf.insp.pieces"), render: (r) => pieces(r, t), filterText: (r) => pieces(r, t) },
+    { key: "assembly_date", header: t("wf.asm.assemblyDate"), render: (r) => formatDate(r.assembly_date) },
+    { key: "cell", header: t("wf.insp.position"), render: (r) => [r.electrolyzer, r.position].filter(Boolean).join(" / ") || "—" },
+    { key: "updated_at", header: t("wf.col.updated"), render: (r) => formatDateTime(r.updated_at) },
+  ];
+  return (
+    <div className="wh-panel-block">
+      <AssembleStartForm onCreated={onOpen} />
+      <div className="wh-toolbar">
+        <h3>{t("wf.asm.listTitle")}</h3>
+        <label className="wh-check">
+          <input type="checkbox" checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} />
+          {t("wf.openOnly")}
+        </label>
+      </div>
+      {list.isLoading ? <LoadingState /> : null}
+      {list.isError ? <ErrorState message={(list.error as Error).message} /> : null}
+      {list.data ? <DataTable data={list.data} columns={cols} keyField="id" onRowClick={(r) => onOpen(r.id)} /> : null}
+    </div>
+  );
+}
+
+function DecideBox({ d, side, t, onDone }: { d: AssembleRequestDetail; side: "inspection" | "process"; t: T; onDone: (next: AssembleRequestDetail) => void }) {
+  const [ok, setOk] = useState(true);
+  const [result, setResult] = useState("");
+  const run = useMutation({
+    mutationFn: () => workflowApi.assembleStep(d.id, "decide", { side, ok, result: result.trim() || undefined, note: result.trim() || undefined }),
+    onSuccess: onDone,
+  });
+  return (
+    <div className="wf-section">
+      <h4>{t(`wf.group.${side}`)}</h4>
+      <div className="wh-form-inline">
+        <label>
+          {t("wf.asm.decision")}
+          <select value={ok ? "ok" : "no"} onChange={(e) => setOk(e.target.value === "ok")}>
+            <option value="ok">{t("wf.asm.accept")}</option>
+            <option value="no">{t("wf.asm.reject")}</option>
+          </select>
+        </label>
+        <label className="wh-grow">
+          {t("wf.note")}
+          <input value={result} onChange={(e) => setResult(e.target.value)} />
+        </label>
+        <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => run.mutate()}>
+          <Check size={14} /> {t("wf.asm.confirmSide")}
+        </button>
+      </div>
+      {run.error ? <div className="wf-alert">{(run.error as Error).message}</div> : null}
+    </div>
+  );
+}
+
+function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
+  const qc = useQueryClient();
+  const [note, setNote] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [day, setDay] = useState(todayIso());
+  const [electrolyzer, setElectrolyzer] = useState(d.electrolyzer || "");
+  const [position, setPosition] = useState(d.position || "");
+  const acts = d.actions;
+  const done = (next: AssembleRequestDetail) => {
+    qc.setQueryData(["wf", "detail", "assemble", next.id], next);
+    refreshWarehouseData(qc);
+    setNote("");
+    setFiles([]);
+  };
+  const run = useMutation({
+    mutationFn: ({ action, body }: { action: string; body: Record<string, unknown> }) => workflowApi.assembleStep(d.id, action, body),
+    onSuccess: done,
+  });
+  const attach = useMutation({
+    mutationFn: () => workflowApi.attach("assemble", d.id, files, note || undefined),
+    onSuccess: () => {
+      setFiles([]);
+      setNote("");
+      void qc.invalidateQueries({ queryKey: ["wf", "detail", "assemble", d.id] });
+    },
+  });
+  const go = (action: string, body: Record<string, unknown> = {}) => run.mutate({ action, body: { note: note || undefined, ...body } });
+  const error = (run.error || attach.error) as Error | null;
+  const open = d.status !== "completed" && d.status !== "cancelled";
+  const insp = d.decisions?.inspection;
+  const proc = d.decisions?.process;
+
+  return (
+    <div className="wf-detail">
+      <Stepper flow="assemble" status={d.status} t={t} />
+      <div className="wh-facts wf-facts">
+        <Fact label={t("wf.col.status")}>
+          <Badge color={statusColor(d.status)}>{t(`wf.status.${d.status}`)}</Badge>
+        </Fact>
+        {d.sla_state ? (
+          <Fact label={t("wf.col.deadline")}>
+            <DeadlineBadge row={d} t={t} />
+          </Fact>
+        ) : null}
+        <Fact label={t("wf.insp.element")}>{d.element_nr || "—"}</Fact>
+        <Fact label={t("wf.kind.anode")}>
+          {d.anode_nr || "—"}
+          {d.anode_source ? ` · ${t(`wf.asm.source.${d.anode_source}`)}` : ""}
+        </Fact>
+        <Fact label={t("wf.kind.cathode")}>
+          {d.cathode_nr || "—"}
+          {d.cathode_source ? ` · ${t(`wf.asm.source.${d.cathode_source}`)}` : ""}
+        </Fact>
+        {d.membrane_nr ? <Fact label={t("wf.insp.membrane")}>{d.membrane_nr}</Fact> : null}
+        <Fact label={t("wf.asm.assemblyDate")}>{formatDate(d.assembly_date)}</Fact>
+        <Fact label={t("wf.insp.position")}>{[d.electrolyzer, d.position].filter(Boolean).join(" / ") || "—"}</Fact>
+        <Fact label={t("wf.col.createdBy")}>
+          {d.created_by || "—"} · {formatDateTime(d.created_at)}
+        </Fact>
+      </div>
+
+      {d.element_nr ? (
+        <Link className="wf-link" href={`/elements/assembly?element_nr=${encodeURIComponent(d.element_nr)}`} target="_blank">
+          {t("wf.asm.openAssembly")}
+        </Link>
+      ) : null}
+
+      {open && (insp || proc || acts.includes("decide_inspection") || acts.includes("decide_process")) ? (
+        <section className="wf-section">
+          <h4>{t("wf.asm.parallelTitle")}</h4>
+          <p className="wh-subdesc">{t("wf.asm.parallelHint")}</p>
+          <div className="wh-facts wf-facts">
+            <Fact label={t("wf.group.inspection")}>{insp ? (insp.ok ? t("wf.asm.accept") : t("wf.asm.reject")) : t("wf.asm.pending")}</Fact>
+            <Fact label={t("wf.group.process")}>{proc ? (proc.ok ? t("wf.asm.accept") : t("wf.asm.reject")) : t("wf.asm.pending")}</Fact>
+          </div>
+          {acts.includes("decide_inspection") ? <DecideBox d={d} side="inspection" t={t} onDone={done} /> : null}
+          {acts.includes("decide_process") ? <DecideBox d={d} side="process" t={t} onDone={done} /> : null}
+        </section>
+      ) : null}
+
+      {open ? (
+        <section className="wf-actions">
+          <h4>{t("wf.yourStep")}</h4>
+          {!acts.length ? <div className="wf-wait">{t("wf.waitingFor", { group: d.groups.map((g: WfGroup) => t(`wf.group.${g}`)).join(" / ") })}</div> : null}
+          {acts.includes("assemble") ? (
+            <div className="wh-form-inline">
+              <label>
+                {t("wf.asm.assemblyDate")}
+                <DateInput type="date" value={day} onChange={(e) => setDay(e.target.value)} required />
+              </label>
+              <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("assemble", { assembly_date: day })}>
+                <Check size={14} /> {t("wf.asm.stamp")}
+              </button>
+            </div>
+          ) : null}
+          {acts.includes("position") ? (
+            <div className="wh-form-inline">
+              <label>
+                {t("fields.electrolyzer")}
+                <ElectrolyzerCombo value={electrolyzer} onChange={setElectrolyzer} required />
+              </label>
+              <label>
+                {t("fields.position")}
+                <PositionCombo electrolyzer={electrolyzer} value={position} onChange={setPosition} excludeId={d.element_id} required />
+              </label>
+              <button
+                type="button"
+                className="wf-btn is-primary"
+                disabled={run.isPending || !electrolyzer || !position.trim()}
+                onClick={() => go("position", { electrolyzer, position })}
+              >
+                <Check size={14} /> {t("wf.asm.setCell")}
+              </button>
+            </div>
+          ) : null}
+          {acts.includes("edit") ? <RequestEditForm d={d as never} t={t} /> : null}
+          <div className="wh-form-inline wf-inline-plain">
+            <label className="wh-grow">
+              {t("wf.note")}
+              <input value={note} onChange={(e) => setNote(e.target.value)} />
+            </label>
+            {acts.includes("comment") ? (
+              <button type="button" className="wf-btn" disabled={run.isPending || !note.trim()} onClick={() => go("comment")}>
+                <MessageSquare size={14} /> {t("wf.action.comment")}
+              </button>
+            ) : null}
+            {acts.includes("cancel") ? (
+              <button
+                type="button"
+                className="wf-btn is-bad"
+                disabled={run.isPending || !note.trim()}
+                onClick={() => {
+                  if (window.confirm(t("wf.confirmDelete"))) go("cancel");
+                }}
+              >
+                <Ban size={14} /> {t("wf.action.cancel")}
+              </button>
+            ) : null}
+          </div>
+          {acts.includes("attach") ? (
+            <div className="wh-form-inline">
+              <input type="file" multiple onChange={(e) => setFiles(Array.from(e.target.files || []))} />
+              <button type="button" className="wf-btn" disabled={attach.isPending || !files.length} onClick={() => attach.mutate()}>
+                <Paperclip size={14} /> {t("wf.action.attach")}
+              </button>
+            </div>
+          ) : null}
+          {error ? <div className="wf-alert">{error.message}</div> : null}
+        </section>
+      ) : null}
+
+      {d.events?.length ? (
+        <section className="wf-section">
+          <h4>{t("wf.log")}</h4>
+          <ul className="wf-files">
+            {d.events.map((ev) => (
+              <li key={ev.id}>
+                {formatDateTime(ev.created_at)} · {ev.actor} · {t(`wf.event.${ev.action}`)}
+                {ev.note ? ` — ${ev.note}` : ""}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
+export function AssembleRequestModal({ id, onClose }: { id: number | null; onClose: () => void }) {
+  const { t } = useI18n();
+  const detail = useQuery({
+    queryKey: ["wf", "detail", "assemble", id],
+    queryFn: () => workflowApi.assembleGet(id!),
+    enabled: id != null,
+  });
+  return (
+    <Modal open={id != null} onClose={onClose} title={detail.data?.code || t("wf.asm.listTitle")}>
+      {detail.isLoading ? <LoadingState /> : null}
+      {detail.isError ? <ErrorState message={(detail.error as Error).message} /> : null}
+      {detail.data ? <AssembleBody d={detail.data} t={t} /> : null}
+    </Modal>
+  );
+}

@@ -9,6 +9,8 @@ import { AccessHub } from "@/components/layout/access-hub";
 import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
 import { DateInput } from "@/components/ui/date-input";
+import { FilterHeadCell } from "@/components/ui/data-table";
+import { useSheetFilters } from "@/components/ui/table-sheet";
 
 export default function RemarksPage() {
   const { canEdit } = useAuth();
@@ -20,6 +22,12 @@ export default function RemarksPage() {
   );
   const [active, setActive] = useState<number | "new" | null>(null);
   const rows = listQuery.data || [];
+  const sheetCols = [
+    { key: "id", header: t("menus.number"), filterText: (row: Remark) => String(row.id) },
+    { key: "date", header: t("menus.date") },
+    { key: "text", header: t("menus.remark"), filterText: (row: Remark) => row.text || "" },
+  ];
+  const sheet = useSheetFilters(sheetCols, rows);
 
   function saveRow(row: Remark, patch: Partial<Remark>) {
     if (!canEdit("remarks")) return;
@@ -40,9 +48,24 @@ export default function RemarksPage() {
             <th className="w-36">{t("menus.date")}</th>
             <th>{t("menus.remark")}</th>
           </tr>
+          <tr>
+            <th />
+            {sheetCols.map((col) => (
+              <th key={col.key}>
+                <FilterHeadCell
+                  columnKey={col.key}
+                  filters={sheet.filters}
+                  valueFilters={sheet.valueFilters}
+                  onFilter={sheet.onFilter}
+                  onValueFilter={sheet.onValueFilter}
+                  getFilterOptions={sheet.getFilterOptions}
+                />
+              </th>
+            ))}
+          </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {sheet.shown.map((row) => (
             <tr key={row.id} onClick={() => setActive(row.id)}>
               <td className="access-selector">{active === row.id ? "►" : ""}</td>
               <td>

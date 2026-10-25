@@ -1,28 +1,39 @@
 "use client";
 
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { elementDashboardApi } from "@/lib/endpoints";
-import type { CellCheck, ElementDashOverview, ElementStage, WorkshopSheet } from "@/lib/types";
-import { VoltageGauge } from "@/components/domain/voltage-gauge";
+import type { BoardList, BoardPallet, BoardPiece, ElementBoard, ElementDashOverview, ElementStage, WorkshopSheet } from "@/lib/types";
+import { workflowApi, type AssemblyPool, type AssemblyPoolRow } from "@/lib/workflow";
 import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
-import { formatDateTime, formatNumber } from "@/lib/utils";
+import { formatDateTime, formatDisplayedDate, formatNumber } from "@/lib/utils";
 import { ElementReportGuideButton } from "./element-report-guide";
 import { STAGE_FLOW, STAGE_TONE } from "./element-dashboard-ui";
 
-type Tone = "ok" | "warning" | "danger" | "info";
-
-function pctTone(pct: number | null, good: number, warn: number): Tone {
-  if (pct == null) return "info";
-  if (pct >= good) return "ok";
-  if (pct >= warn) return "warning";
-  return "danger";
-}
+const FLOW_SPANS = [3, 6, 12, 24, 36] as const;
 
 function href(tab: string, extra: Record<string, string> = {}): string {
   return `/element-dashboard?${new URLSearchParams({ tab, ...extra }).toString()}`;
+}
+
+function pieceHref(serial: string): string {
+  return `/segregation?serial_nr=${encodeURIComponent(serial)}`;
+}
+
+function elementHref(nr: string): string {
+  return `/elements/assembly?element_nr=${encodeURIComponent(nr)}`;
+}
+
+function membraneHref(nr: string): string {
+  return `/membranes?membrane_nr=${encodeURIComponent(nr)}`;
+}
+
+function palletHref(pallet: BoardPallet): string {
+  return pallet.batch_id ? `/cartable?wf=coating:${pallet.batch_id}` : "/cartable";
 }
 
 /** Element counterpart of the voltage report: where the elements are, how worn the parts are, what is at the coater. */
@@ -82,16 +93,137 @@ function vendorName(t: (path: string, vars?: Record<string, string | number | nu
   return label === key ? name : label;
 }
 
+function coatingGrade(quality: string | null): "good" | "medium" | "open" {
+  const text = (quality || "").trim().toLowerCase();
+  if (!text) return "open";
+  if (text.includes("medium") || text.includes("متوسط")) return "medium";
+  if (text.includes("good") || text.includes("خوب")) return "good";
+  return "open";
+}
+
+function countSide(rows: AssemblyPoolRow[], kind: "anode" | "cathode", grade?: "good" | "medium" | "open") {
+  return rows.filter((row) => row.kind === kind && (grade == null || coatingGrade(row.quality) === grade)).length;
+}
+
+/** Anode and cathode counts from the three assembly-stock tables, split by coating quality. */
+function AssemblyStockSummary() {
+  const { t } = useI18n();
+  const pool = useQuery({
+    queryKey: ["workflow", "assembly-pool"],
+    queryFn: () => workflowApi.assemblyPool(),
+    staleTime: 30_000,
+  });
+  if (!pool.data) return null;
+  const data: AssemblyPool = pool.data;
+  const rows: { key: string; label: string; anode: number; cathode: number }[] = [
+    { key: "good", label: t("elDash.report.stockGood"), anode: countSide(data.reusable, "anode", "good"), cathode: countSide(data.reusable, "cathode", "good") },
+    { key: "medium", label: t("elDash.report.stockMedium"), anode: countSide(data.reusable, "anode", "medium"), cathode: countSide(data.reusable, "cathode", "medium") },
+    { key: "open", label: t("elDash.report.stockOpen"), anode: countSide(data.reusable, "anode", "open"), cathode: countSide(data.reusable, "cathode", "open") },
+    { key: "purchased", label: t("assemblyStock.purchased"), anode: countSide(data.purchased, "anode"), cathode: countSide(data.purchased, "cathode") },
+    { key: "recoated", label: t("assemblyStock.recoated"), anode: countSide(data.recoated, "anode"), cathode: countSide(data.recoated, "cathode") },
+  ].filter((row) => row.key === "purchased" || row.key === "recoated" || row.anode + row.cathode > 0);
+  const anodeTotal = rows.reduce((sum, row) => sum + row.anode, 0);
+  const cathodeTotal = rows.reduce((sum, row) => sum + row.cathode, 0);
+  return (
+    <section className="er-panel">
+      <h3 className="er-shop-title">
+        <Link href="/elements/assembly-stock">{t("elDash.report.stockTitle")}</Link>
+      </h3>
+      <p className="dash-voltage-sub">{t("elDash.report.stockSub")}</p>
+      <table className="ed-table er-shop-table">
+        <thead>
+          <tr>
+            <th>{t("assemblyStock.quality")}</th>
+            <th className="ed-num">{t("elDash.report.anode")}</th>
+            <th className="ed-num">{t("elDash.report.cathode")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.key}>
+              <td>
+                <Link href="/elements/assembly-stock">{row.label}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href="/elements/assembly-stock">{formatNumber(row.anode, 0)}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href="/elements/assembly-stock">{formatNumber(row.cathode, 0)}</Link>
+              </td>
+            </tr>
+          ))}
+          <tr className="is-total">
+            <td>
+              <Link href="/elements/assembly-stock">
+                <strong>{t("elDash.report.stockTotal")}</strong>
+              </Link>
+            </td>
+            <td className="ed-num">
+              <Link href="/elements/assembly-stock">
+                <strong>{formatNumber(anodeTotal, 0)}</strong>
+              </Link>
+            </td>
+            <td className="ed-num">
+              <Link href="/elements/assembly-stock">
+                <strong>{formatNumber(cathodeTotal, 0)}</strong>
+              </Link>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <SerialStrip
+        title={t("elDash.report.assemblySerials")}
+        rows={[...data.reusable, ...data.purchased, ...data.recoated]}
+      />
+    </section>
+  );
+}
+
+function sourceLabel(t: (path: string, vars?: Record<string, string | number | null | undefined>) => string, row: AssemblyPoolRow) {
+  if (row.source === "purchased") return t("assemblyStock.purchased");
+  if (row.source === "recoated") return t("assemblyStock.recoated");
+  const grade = coatingGrade(row.quality);
+  if (grade === "good") return t("elDash.report.stockGood");
+  if (grade === "medium") return t("elDash.report.stockMedium");
+  return t("elDash.report.stockOpen");
+}
+
+function SerialStrip({ title, rows }: { title: string; rows: AssemblyPoolRow[] }) {
+  const { t } = useI18n();
+  const shown = rows.slice(0, 24);
+  if (!shown.length) return null;
+  return (
+    <div className="er-serial-strip">
+      <div className="er-board-kicker">{title}</div>
+      <ul className="er-board-list">
+        {shown.map((row) => (
+          <li key={`${row.source}-${row.kind}-${row.serial}`}>
+            <span className={`er-kind is-${row.kind}`}>{row.kind === "cathode" ? "C" : "A"}</span>
+            <Link href={pieceHref(row.serial)}>{row.serial}</Link>
+            <span className="er-board-meta">{sourceLabel(t, row)}</span>
+          </li>
+        ))}
+        {rows.length > shown.length ? (
+          <li className="er-board-more">
+            <Link href="/elements/assembly-stock">{t("elDash.report.more", { n: rows.length - shown.length })}</Link>
+          </li>
+        ) : null}
+      </ul>
+    </div>
+  );
+}
+
 /** Workshop inventory in the same groups as the cell-shop paper: assembled cells, spare electrodes, coating, membranes. */
 function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean }) {
   const { t } = useI18n();
   const pairLimit = compact ? 4 : sheet.assembled_pairs.length;
   const typeLimit = compact ? 4 : sheet.membrane_types.length;
-  const companyLimit = compact ? 4 : sheet.coating_companies.length;
   const coated = (kind: "anode" | "cathode") => (compact ? sheet[kind].coated.slice(0, 4) : sheet[kind].coated);
   return (
-    <section className="er-shop-sheet">
-      <h3 className="er-shop-title">{t("elDash.report.shopTitle")}</h3>
+    <section className="er-panel">
+      <h3 className="er-shop-title">
+        <Link href={href("shop")}>{t("elDash.report.shopTitle")}</Link>
+      </h3>
       <p className="dash-voltage-sub">{t("elDash.report.shopSub")}</p>
       <div className="er-shop-grid">
         <table className="ed-table er-shop-table">
@@ -104,23 +236,45 @@ function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean 
           <tbody>
             {sheet.assembled_pairs.slice(0, pairLimit).map((row) => (
               <tr key={`${row.anode}-${row.cathode}`}>
-                <td>{t("elDash.report.assembledPair", { anode: vendorName(t, row.anode), cathode: vendorName(t, row.cathode) })}</td>
-                <td className="ed-num">{formatNumber(row.count, 0)}</td>
+                <td>
+                  <Link href={href("shop", { stage: "ready" })}>
+                    {t("elDash.report.assembledPair", { anode: vendorName(t, row.anode), cathode: vendorName(t, row.cathode) })}
+                  </Link>
+                </td>
+                <td className="ed-num">
+                  <Link href={href("shop", { stage: "ready" })}>{formatNumber(row.count, 0)}</Link>
+                </td>
               </tr>
             ))}
             {sheet.assembled_membranes.slice(0, typeLimit).map((row) => (
               <tr key={row.type}>
-                <td>{t("elDash.report.assembledMem", { type: row.type })}</td>
-                <td className="ed-num">{formatNumber(row.count, 0)}</td>
+                <td>
+                  <Link href="/membranes">{t("elDash.report.assembledMem", { type: row.type })}</Link>
+                </td>
+                <td className="ed-num">
+                  <Link href="/membranes">{formatNumber(row.count, 0)}</Link>
+                </td>
               </tr>
             ))}
-            <tr>
-              <td><strong>{t("elDash.report.assembledTotal")}</strong></td>
-              <td className="ed-num"><strong>{formatNumber(sheet.assembled_total, 0)}</strong></td>
+            <tr className="is-total">
+              <td>
+                <Link href={href("shop", { stage: "ready" })}>
+                  <strong>{t("elDash.report.assembledTotal")}</strong>
+                </Link>
+              </td>
+              <td className="ed-num">
+                <Link href={href("shop", { stage: "ready" })}>
+                  <strong>{formatNumber(sheet.assembled_total, 0)}</strong>
+                </Link>
+              </td>
             </tr>
             <tr>
-              <td>{t("elDash.report.dismantleTitle")}</td>
-              <td className="ed-num">{formatNumber(sheet.awaiting_disassembly, 0)}</td>
+              <td>
+                <Link href={href("shop", { stage: "awaiting_disassembly" })}>{t("elDash.report.dismantleTitle")}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href={href("shop", { stage: "awaiting_disassembly" })}>{formatNumber(sheet.awaiting_disassembly, 0)}</Link>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -135,227 +289,331 @@ function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean 
           </thead>
           <tbody>
             <tr>
-              <td>{t("elDash.report.usable")}</td>
-              <td className="ed-num">{formatNumber(sheet.anode.usable, 0)}</td>
-              <td className="ed-num">{formatNumber(sheet.cathode.usable, 0)}</td>
+              <td>
+                <Link href="/elements/assembly-stock">{t("elDash.report.usable")}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href="/elements/assembly-stock">{formatNumber(sheet.anode.usable, 0)}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href="/elements/assembly-stock">{formatNumber(sheet.cathode.usable, 0)}</Link>
+              </td>
             </tr>
             {Array.from(new Set([...coated("anode").map((r) => r.vendor), ...coated("cathode").map((r) => r.vendor)])).map((vendor) => (
               <tr key={vendor}>
-                <td>{t("elDash.report.coatedBy", { vendor: vendorName(t, vendor) })}</td>
-                <td className="ed-num">{formatNumber(sheet.anode.coated.find((r) => r.vendor === vendor)?.count ?? 0, 0)}</td>
-                <td className="ed-num">{formatNumber(sheet.cathode.coated.find((r) => r.vendor === vendor)?.count ?? 0, 0)}</td>
+                <td>
+                  <Link href="/cartable">{t("elDash.report.coatedBy", { vendor: vendorName(t, vendor) })}</Link>
+                </td>
+                <td className="ed-num">
+                  <Link href="/cartable">{formatNumber(sheet.anode.coated.find((r) => r.vendor === vendor)?.count ?? 0, 0)}</Link>
+                </td>
+                <td className="ed-num">
+                  <Link href="/cartable">{formatNumber(sheet.cathode.coated.find((r) => r.vendor === vendor)?.count ?? 0, 0)}</Link>
+                </td>
               </tr>
             ))}
             <tr>
-              <td>{t("elDash.report.trainLm")}</td>
-              <td className="ed-num">{formatNumber(sheet.anode.train_lm, 0)}</td>
-              <td className="ed-num">{formatNumber(sheet.cathode.train_lm, 0)}</td>
+              <td>
+                <Link href={href("parts", { kind: "anode" })}>{t("elDash.report.trainLm")}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href={href("parts", { kind: "anode" })}>{formatNumber(sheet.anode.train_lm, 0)}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href={href("parts", { kind: "cathode" })}>{formatNumber(sheet.cathode.train_lm, 0)}</Link>
+              </td>
             </tr>
             <tr>
-              <td>{t("elDash.report.awaitingCheck")}</td>
-              <td className="ed-num">{formatNumber(sheet.anode.awaiting_check, 0)}</td>
-              <td className="ed-num">{formatNumber(sheet.cathode.awaiting_check, 0)}</td>
+              <td>
+                <Link href="/storage">{t("elDash.report.awaitingCheck")}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href="/storage">{formatNumber(sheet.anode.awaiting_check, 0)}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href="/storage">{formatNumber(sheet.cathode.awaiting_check, 0)}</Link>
+              </td>
             </tr>
             <tr>
-              <td>{t("elDash.report.readyDispatch")}</td>
-              <td className="ed-num">{formatNumber(sheet.anode.ready_dispatch, 0)}</td>
-              <td className="ed-num">{formatNumber(sheet.cathode.ready_dispatch, 0)}</td>
-            </tr>
-            <tr>
-              <td>{t("elDash.report.rateOff")}</td>
-              <td className="ed-num">{formatNumber(sheet.anode.rate_off, 0)}</td>
-              <td className="ed-num">{formatNumber(sheet.cathode.rate_off, 0)}</td>
+              <td>
+                <Link href="/segregation">{t("elDash.report.rateOff")}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href="/segregation">{formatNumber(sheet.anode.rate_off, 0)}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href="/segregation">{formatNumber(sheet.cathode.rate_off, 0)}</Link>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
-
-      {!compact ? (
-        <div className="er-shop-grid">
-          <table className="ed-table er-shop-table">
-            <thead>
-              <tr>
-                <th>{t("elDash.report.coatingTitle")}</th>
-                <th className="ed-num">{t("elDash.report.anode")}</th>
-                <th className="ed-num">{t("elDash.report.cathode")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sheet.coating_companies.slice(0, companyLimit).map((row) => (
-                <tr key={row.company}>
-                  <td>
-                    {row.company}
-                    <div className="er-shop-note">
-                      {t("elDash.report.coatingOpen")} {row.anode_open}/{row.cathode_open} · {t("elDash.report.coatingBack")} {row.anode_returned}/{row.cathode_returned}
-                    </div>
-                  </td>
-                  <td className="ed-num">{formatNumber(row.anode_returned, 0)}</td>
-                  <td className="ed-num">{formatNumber(row.cathode_returned, 0)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <table className="ed-table er-shop-table">
-            <thead>
-              <tr>
-                <th>{t("elDash.report.membraneTitle")}</th>
-                <th className="ed-num">{t("elDash.report.membraneTotal")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sheet.membrane_types.slice(0, typeLimit).map((row) => (
-                <tr key={row.type}>
-                  <td>{row.type}</td>
-                  <td className="ed-num">{formatNumber(row.count, 0)}</td>
-                </tr>
-              ))}
-              <tr>
-                <td><strong>{t("elDash.report.membraneTotal")}</strong></td>
-                <td className="ed-num"><strong>{formatNumber(sheet.membrane_stock, 0)}</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      ) : null}
     </section>
   );
 }
 
-/** Is any cell holding two elements, is any element in two cells, and how full is every electrolyzer of both trains. */
-function CellCheck({ check, compact }: { check: CellCheck; compact: boolean }) {
+function reasonText(t: (path: string) => string, reason: string | null | undefined) {
+  const key = `elDash.report.reason.${reason || "other"}`;
+  const label = t(key);
+  return label === key ? reason || "" : label;
+}
+
+function PieceList({ list, moreHref }: { list: BoardList; moreHref: string }) {
   const { t } = useI18n();
-  const s = check.summary;
-  const bad = s.problems;
-  const limit = compact ? 4 : 10;
+  const items = list.items || [];
+  if (!items.length) return <p className="er-board-empty">{t("elDash.report.none")}</p>;
+  const more = Math.max(0, (list.total || 0) - items.length);
   return (
-    <div className="er-cells">
-      <div className="er-cells-head">
-        <div className="er-cells-title">{t("elDash.cellCheck.title")}</div>
-        <div className="er-cells-pills">
-          <Link href={href("cells")} className={`mon-pill ${bad ? "is-danger" : "is-ok"}`}>
-            {bad ? t("elDash.cellCheck.problems", { count: bad }) : t("elDash.cellCheck.clear")}
-          </Link>
-          <Link href={href("cells")} className="mon-pill is-info">
-            {formatNumber(s.occupied_cells, 0)} / {formatNumber(s.capacity, 0)} {t("elDash.cellCheck.cellsFilled")}
-          </Link>
-          <Link href={href("cells")} className={`mon-pill ${s.conflict_cells ? "is-danger" : "is-ok"}`}>
-            {s.conflict_cells} {t("elDash.cellCheck.twoInCell")}
-          </Link>
-          {s.stale_cells ? (
-            <Link href={href("cells")} className="mon-pill is-warning">
-              {s.stale_cells} {t("elDash.cellCheck.stale")}
+    <ul className="er-board-list">
+      {items.map((item: BoardPiece, index) => (
+        <li key={`${item.kind}-${item.serial}-${index}`}>
+          <span className={`er-kind is-${item.kind === "cathode" ? "cathode" : "anode"}`}>{item.kind === "cathode" ? "C" : "A"}</span>
+          {item.serial ? <Link href={pieceHref(item.serial)}>{item.serial}</Link> : <span>—</span>}
+          {item.date ? <span className="er-board-meta">{formatDisplayedDate(item.date)}</span> : null}
+          {item.element_nr ? (
+            <Link className="er-board-meta" href={elementHref(item.element_nr)}>
+              {item.element_nr}
             </Link>
           ) : null}
-          <Link href={href("cells")} className={`mon-pill ${s.multi_cell_elements ? "is-danger" : "is-ok"}`}>
-            {s.multi_cell_elements} {t("elDash.cellCheck.inTwoCells")}
-          </Link>
+          {item.company ? <span className="er-board-meta">{item.company}</span> : null}
+          {item.days != null ? <span className="er-board-meta">{t("elDash.report.daysOut", { n: item.days })}</span> : null}
+          {item.reason ? <span className="er-board-meta">{reasonText(t, item.reason)}</span> : null}
+        </li>
+      ))}
+      {more > 0 ? (
+        <li className="er-board-more">
+          <Link href={moreHref}>{t("elDash.report.more", { n: more })}</Link>
+        </li>
+      ) : null}
+    </ul>
+  );
+}
+
+function CountPair({ anode, cathode, hrefTo }: { anode: number; cathode: number; hrefTo: string }) {
+  const { t } = useI18n();
+  return (
+    <Link href={hrefTo} className="er-board-nums">
+      <div>
+        <strong>{formatNumber(anode, 0)}</strong>
+        <span>{t("elDash.report.anode")}</span>
+      </div>
+      <div>
+        <strong>{formatNumber(cathode, 0)}</strong>
+        <span>{t("elDash.report.cathode")}</span>
+      </div>
+    </Link>
+  );
+}
+
+function BoardCard({ title, sub, hrefTo, tone, children }: { title: string; sub: string; hrefTo: string; tone: string; children: ReactNode }) {
+  return (
+    <article className={`er-board-card is-${tone}`}>
+      <h3 className="er-shop-title">
+        <Link href={hrefTo}>{title}</Link>
+      </h3>
+      <p className="er-board-sub">{sub}</p>
+      {children}
+    </article>
+  );
+}
+
+function ManagementBoard({ board }: { board: ElementBoard }) {
+  const { t } = useI18n();
+  const cards: { key: string; title: string; sub: string; hrefTo: string; tone: string; list: BoardList }[] = [
+    { key: "ready", title: t("elDash.report.readySendTitle"), sub: t("elDash.report.readySendSub"), hrefTo: "/cartable", tone: "send", list: board.ready_send },
+    { key: "apart", title: t("elDash.report.disassembledTitle"), sub: t("elDash.report.disassembledSub"), hrefTo: href("shop", { stage: "disassembled" }), tone: "apart", list: board.disassembled },
+    { key: "off", title: t("elDash.report.rateOffTitle"), sub: t("elDash.report.rateOffSub"), hrefTo: "/segregation", tone: "off", list: board.rate_off },
+    { key: "coat", title: t("elDash.report.atCoaterTitle"), sub: t("elDash.report.atCoaterSub"), hrefTo: "/cartable", tone: "coat", list: board.at_coater },
+    { key: "check", title: t("elDash.report.awaitingTitle"), sub: t("elDash.report.awaitingSub"), hrefTo: "/storage", tone: "check", list: board.awaiting_check },
+  ];
+  return (
+    <div className="er-board">
+      {cards.map((card) => (
+        <BoardCard key={card.key} title={card.title} sub={card.sub} hrefTo={card.hrefTo} tone={card.tone}>
+          <CountPair anode={card.list.anode} cathode={card.list.cathode} hrefTo={card.hrefTo} />
+          <PieceList list={card.list} moreHref={card.hrefTo} />
+        </BoardCard>
+      ))}
+      <BoardCard title={t("elDash.report.membraneCard")} sub={t("elDash.report.membraneCardSub")} hrefTo="/membranes" tone="mem">
+        <Link href="/membranes" className="er-board-nums">
+          <div>
+            <strong>{formatNumber(board.membranes.stock, 0)}</strong>
+            <span>{t("elDash.report.membraneTotal")}</span>
+          </div>
+          <div>
+            <strong>{formatNumber(board.membranes.installed, 0)}</strong>
+            <span>{t("elDash.report.membraneOnCells")}</span>
+          </div>
+        </Link>
+        {board.membranes.items.length === 0 ? (
+          <p className="er-board-empty">{t("elDash.report.none")}</p>
+        ) : (
+          <ul className="er-board-list">
+            {board.membranes.items.map((item, index) => (
+              <li key={`${item.serial}-${index}`}>
+                <span className="er-kind is-membrane">M</span>
+                {item.serial ? <Link href={membraneHref(item.serial)}>{item.serial}</Link> : <span>—</span>}
+                <span className="er-board-meta">{item.type}</span>
+              </li>
+            ))}
+            {board.membranes.stock > board.membranes.items.length ? (
+              <li className="er-board-more">
+                <Link href="/membranes">{t("elDash.report.more", { n: board.membranes.stock - board.membranes.items.length })}</Link>
+              </li>
+            ) : null}
+          </ul>
+        )}
+      </BoardCard>
+    </div>
+  );
+}
+
+function PalletBoard({ pallets }: { pallets: BoardPallet[] }) {
+  const { t } = useI18n();
+  return (
+    <section className="er-panel">
+      <h3 className="er-shop-title">
+        <Link href="/cartable">{t("elDash.report.palletTitle")}</Link>
+      </h3>
+      <p className="dash-voltage-sub">{t("elDash.report.palletSub")}</p>
+      {pallets.length === 0 ? (
+        <p className="er-board-empty">{t("elDash.report.palletEmpty")}</p>
+      ) : (
+        <div className="er-pallet-grid">
+          {pallets.map((pallet) => {
+            const statusKey = `wf.status.${pallet.status}`;
+            const status = t(statusKey);
+            return (
+              <article key={`${pallet.code}-${pallet.pallet_no}`} className="er-pallet">
+                <header>
+                  <Link href={palletHref(pallet)}>
+                    <strong>{pallet.code}</strong>
+                  </Link>
+                  <Link href={palletHref(pallet)}>{t("elDash.report.palletNo", { no: pallet.pallet_no })}</Link>
+                  <span className="er-board-meta">{status === statusKey ? pallet.status : status}</span>
+                  {pallet.company ? <span className="er-board-meta">{pallet.company}</span> : null}
+                </header>
+                <Link href={palletHref(pallet)} className="er-board-nums is-compact">
+                  <div>
+                    <strong>{formatNumber(pallet.anode_count, 0)}</strong>
+                    <span>{t("elDash.report.anode")}</span>
+                  </div>
+                  <div>
+                    <strong>{formatNumber(pallet.cathode_count, 0)}</strong>
+                    <span>{t("elDash.report.cathode")}</span>
+                  </div>
+                </Link>
+                <ul className="er-board-list">
+                  {pallet.anodes.map((serial) => (
+                    <li key={`a-${serial}`}>
+                      <span className="er-kind is-anode">A</span>
+                      <Link href={pieceHref(serial)}>{serial}</Link>
+                    </li>
+                  ))}
+                  {pallet.cathodes.map((serial) => (
+                    <li key={`c-${serial}`}>
+                      <span className="er-kind is-cathode">C</span>
+                      <Link href={pieceHref(serial)}>{serial}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function MonthFlow({ flow, compact }: { flow: ElementDashOverview["monthly_flow"]; compact: boolean }) {
+  const { t } = useI18n();
+  const [span, setSpan] = useState<number>(12);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const custom = Boolean(from || to);
+  const shown = useMemo(() => {
+    const rows = custom ? flow.filter((row) => (!from || row.month >= from) && (!to || row.month <= to)) : flow.slice(-span);
+    return rows.map((row) => ({ ...row, label: formatDisplayedDate(row.month) }));
+  }, [flow, span, from, to, custom]);
+  return (
+    <section className="er-panel er-flow">
+      <div className="er-flow-head">
+        <div>
+          <h3 className="er-shop-title">{t("elDash.report.flowTitle")}</h3>
+          <p className="dash-voltage-sub">{t("elDash.report.flowHint")}</p>
+        </div>
+        <div className="er-flow-filter">
+          {FLOW_SPANS.map((months) => (
+            <button
+              key={months}
+              type="button"
+              className={`er-flow-chip ${!custom && span === months ? "is-on" : ""}`}
+              onClick={() => {
+                setSpan(months);
+                setFrom("");
+                setTo("");
+              }}
+            >
+              {t("elDash.report.flowMonths", { n: months })}
+            </button>
+          ))}
+          <label>
+            {t("elDash.report.flowFrom")}
+            <select value={from} onChange={(e) => setFrom(e.target.value)}>
+              <option value="">—</option>
+              {flow.map((row) => (
+                <option key={row.month} value={row.month}>
+                  {formatDisplayedDate(row.month)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            {t("elDash.report.flowTo")}
+            <select value={to} onChange={(e) => setTo(e.target.value)}>
+              <option value="">—</option>
+              {flow.map((row) => (
+                <option key={`to-${row.month}`} value={row.month}>
+                  {formatDisplayedDate(row.month)}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </div>
-
-      {bad ? (
-        <ul className="er-cells-list">
-          {check.problems.slice(0, limit).map((p) => (
-            <li key={p.cell}>
-              <Link href={href("cells", { train: p.cell.split("-")[0].slice(-1) })} className="er-cells-cell">
-                {p.cell}
-              </Link>
-              <span className={`ed-badge ${p.status === "conflict" ? "ed-tone-red" : "ed-tone-amber"}`}>{t(`elDash.cells.status.${p.status}`)}</span>
-              <span>{p.elements.join(" · ")}</span>
-            </li>
-          ))}
-          {check.multi_cell.slice(0, Math.max(0, limit - check.problems.length)).map((m) => (
-            <li key={m.element_nr}>
-              <strong>{t("elDash.cells.elementIn", { nr: m.element_nr })}</strong>
-              <span>{m.cells.join(" · ")}</span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-
-      <div className="er-cells-trains">
-        {check.trains.map((tr) => (
-          <div key={tr.train} className="er-cells-train">
-            <Link href={href("cells", { train: tr.train })} className="er-cells-train-name">
-              {t("elDash.cells.train", { n: tr.train })}
-            </Link>
-            <div className="er-cells-chips">
-              {tr.electrolyzers.map((e) => (
-                <Link
-                  key={e.electrolyzer}
-                  href={href("cells", { train: tr.train })}
-                  className={`er-cells-chip ${e.conflict ? "is-danger" : e.stale ? "is-warning" : ""}`}
-                  title={t("elDash.cellCheck.chipTitle", { name: e.electrolyzer, occ: e.occupied, cap: e.capacity, conflict: e.conflict })}
-                >
-                  <span className="er-cells-chip-name">{e.electrolyzer}</span>
-                  <span className="er-cells-chip-n">{e.occupied}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        ))}
+      <div className="er-flow-chart" style={{ height: compact ? 220 : 280 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={shown} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
+            <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={36} />
+            <Tooltip />
+            <Legend wrapperStyle={{ fontSize: 12 }} />
+            <Line type="monotone" dataKey="assembled" name={t("elDash.flow.assembled")} stroke="#7c3aed" strokeWidth={2.4} dot={false} />
+            <Line type="monotone" dataKey="commissioned" name={t("elDash.flow.commissioned")} stroke="#16a34a" strokeWidth={2.4} dot={false} />
+            <Line type="monotone" dataKey="decommissioned" name={t("elDash.flow.decommissioned")} stroke="#dc2626" strokeWidth={2.4} dot={false} />
+            <Line type="monotone" dataKey="disassembled" name={t("elDash.flow.disassembled")} stroke="#64748b" strokeWidth={2.4} dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
-    </div>
+    </section>
   );
 }
 
 function Report({ data, compact, cls, head }: { data: ElementDashOverview; compact: boolean; cls: string; head: React.ReactNode }) {
   const { t } = useI18n();
-  const { counts, parts, coating } = data;
+  const { counts, parts } = data;
   const kinds = ["anode", "cathode", "membrane"] as const;
-
-  const shopTotal = counts.awaiting_disassembly + counts.awaiting_assembly + counts.assembling + counts.awaiting_qc + counts.ready;
-  const toShop = counts.decommissioned + counts.awaiting_disassembly;
-  const installed = kinds.reduce((n, k) => n + parts[k].summary.installed_known, 0);
-  const healthy = kinds.reduce((n, k) => n + parts[k].summary.installed_ok, 0);
-  const healthPct = installed ? (healthy * 100) / installed : null;
-  const readyPct = shopTotal ? (counts.ready * 100) / shopTotal : null;
-  const eol = kinds.reduce((n, k) => n + parts[k].summary.installed_warning + parts[k].summary.installed_expired, 0);
-  const expired = kinds.reduce((n, k) => n + parts[k].summary.installed_expired, 0);
-  const due90 = kinds.reduce((n, k) => n + parts[k].summary.due_90, 0);
-  const atCoater = coating.anode.at_coater + coating.cathode.at_coater;
-  const toCoat = coating.anode.candidates + coating.cathode.candidates;
-  const noLimits = installed === 0 && kinds.every((k) => parts[k].summary.installed > 0);
+  const stages = STAGE_FLOW.filter((stage) => stage !== "awaiting_assembly");
 
   return (
     <section className={cls}>
       {head}
-
-      <div className="dash-total-banner">
-        <div className="dash-total-metrics">
-          <div>
-            <div className="dash-total-label">{t("elDash.report.inService")}</div>
-            <div className="dash-total-value">
-              {formatNumber(counts.in_service, 0)}
-              <span className="dash-total-unit">/ {formatNumber(data.capacity, 0)}</span>
-            </div>
-          </div>
-          <div>
-            <div className="dash-total-label">{t("elDash.report.ready")}</div>
-            <div className="dash-total-value">{formatNumber(counts.ready, 0)}</div>
-          </div>
-          <div>
-            <div className="dash-total-label">{t("elDash.report.inShop")}</div>
-            <div className="dash-total-value">{formatNumber(shopTotal, 0)}</div>
-          </div>
-        </div>
-        <div>
-          <div className="dash-total-meta">{t("elDash.updatedAt", { time: formatDateTime(data.generated_at) })}</div>
-          <div className="dash-total-chips">
-            <Link href={href("shop", { stage: "decommissioned" })} className={`mon-pill ${toShop ? "is-warning" : "is-ok"}`}>
-              {toShop} {t("elDash.report.toShop")}
-            </Link>
-            <Link href={href("parts", { life: "alert", where: "installed" })} className={`mon-pill ${expired ? "is-danger" : eol ? "is-warning" : "is-ok"}`}>
-              {eol} {t("elDash.report.nearEol")}
-            </Link>
-            <Link href={href("coating")} className={`mon-pill ${toCoat ? "is-warning" : "is-ok"}`}>
-              {atCoater} {t("elDash.report.atCoater")} · {toCoat} {t("elDash.report.toCoat")}
-            </Link>
-          </div>
-        </div>
-      </div>
+      <p className="er-updated">{t("elDash.updatedAt", { time: formatDateTime(data.generated_at) })}</p>
 
       <div className="er-pipeline" role="list">
-        {STAGE_FLOW.map((stage: ElementStage) => (
+        {stages.map((stage: ElementStage) => (
           <Link
             key={stage}
             role="listitem"
@@ -368,16 +626,14 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
         ))}
       </div>
 
-      <div className="dash-gauge-row is-four">
-        <VoltageGauge value={data.occupancy_pct} max={100} label={t("elDash.report.occupancy")} unit="%" tone={pctTone(data.occupancy_pct, 95, 80)} digits={1} />
-        <VoltageGauge value={noLimits ? null : healthPct} max={100} label={t("elDash.report.partsHealth")} unit="%" tone={pctTone(healthPct, 90, 75)} digits={1} />
-        <VoltageGauge value={readyPct} max={100} label={t("elDash.report.shopReadiness")} unit="%" tone={readyPct == null ? "info" : readyPct >= 30 ? "ok" : "warning"} digits={0} />
-        <VoltageGauge value={due90} max={Math.max(due90, 20)} label={t("elDash.report.due90")} unit={t("elDash.report.parts")} tone={due90 ? "warning" : "ok"} digits={0} />
-      </div>
+      <MonthFlow flow={data.monthly_flow} compact={compact} />
+
+      {data.board ? <ManagementBoard board={data.board} /> : null}
+      {data.board ? <PalletBoard pallets={data.board.pallets} /> : null}
+
+      <AssemblyStockSummary />
 
       {data.workshop ? <ShopSheet sheet={data.workshop} compact={compact} /> : null}
-
-      {data.cell_check ? <CellCheck check={data.cell_check} compact={compact} /> : null}
 
       {!compact ? (
         <div className="er-parts">

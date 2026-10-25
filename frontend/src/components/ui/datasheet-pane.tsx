@@ -3,17 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { uniqueColumnValues } from "@/components/ui/column-value-filter";
+import { tableCellText } from "@/components/ui/table-sheet";
 import { useI18n } from "@/lib/i18n/context";
 import { sameNr } from "@/lib/utils";
 
 const PAGE_SIZE = 250;
 
 function cellText<T extends object>(column: Column<T>, row: T): string {
-  if (column.filterText) return column.filterText(row);
-  const raw = (row as Record<string, unknown>)[column.key];
-  if (raw == null || raw === "") return "";
-  if (typeof raw === "object") return "";
-  return String(raw);
+  return tableCellText(column, row);
 }
 
 /** A link such as ?serial_nr=UA30751 must match that column, not the row id and not the paired serial. */

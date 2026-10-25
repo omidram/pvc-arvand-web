@@ -6,6 +6,42 @@ import { ChevronDown } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
 
 const BLANK = "";
+const SIZE_KEY = "pvc-dt-value-filter-size";
+const MIN_W = 200;
+const MIN_H = 160;
+
+type Size = { w: number; h: number };
+
+function readSize(): Size {
+  try {
+    const raw = localStorage.getItem(SIZE_KEY);
+    if (!raw) return { w: 260, h: 320 };
+    const parsed = JSON.parse(raw) as Size;
+    return {
+      w: Math.max(MIN_W, Number(parsed.w) || 260),
+      h: Math.max(MIN_H, Number(parsed.h) || 320),
+    };
+  } catch {
+    return { w: 260, h: 320 };
+  }
+}
+
+function writeSize(size: Size) {
+  try {
+    localStorage.setItem(SIZE_KEY, JSON.stringify(size));
+  } catch {
+    /* ignore quota */
+  }
+}
+
+function clampSize(size: Size): Size {
+  const maxW = Math.max(MIN_W, window.innerWidth - 16);
+  const maxH = Math.max(MIN_H, window.innerHeight - 16);
+  return {
+    w: Math.min(maxW, Math.max(MIN_W, size.w)),
+    h: Math.min(maxH, Math.max(MIN_H, size.h)),
+  };
+}
 
 /** Excel-like unique-value checkbox filter for one datasheet column. */
 export function ColumnValueFilter({
@@ -23,28 +59,34 @@ export function ColumnValueFilter({
   active?: boolean;
   onChange: (next: string[] | null) => void;
 }) {
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [lazyOptions, setLazyOptions] = useState<string[] | null>(null);
-  const [pos, setPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [size, setSize] = useState<Size>({ w: 260, h: 320 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<{ x: number; y: number; w: number; h: number; rtl: boolean } | null>(null);
 
   const optionsList = options ?? lazyOptions ?? [];
+  const rtl = dir === "rtl";
 
   useLayoutEffect(() => {
     if (!open || !btnRef.current) return;
     if (getOptions && lazyOptions == null) {
       setLazyOptions(getOptions());
     }
+    const next = clampSize(readSize());
+    setSize(next);
     const rect = btnRef.current.getBoundingClientRect();
-    const width = Math.min(280, Math.max(220, window.innerWidth - 16));
-    let left = rect.left;
-    if (left + width > window.innerWidth - 8) left = Math.max(8, window.innerWidth - width - 8);
-    const top = Math.min(rect.bottom + 2, window.innerHeight - 120);
-    setPos({ top, left, width });
-  }, [open, getOptions, lazyOptions]);
+    let left = rtl ? rect.right - next.w : rect.left;
+    if (left + next.w > window.innerWidth - 8) left = Math.max(8, window.innerWidth - next.w - 8);
+    if (left < 8) left = 8;
+    let top = rect.bottom + 2;
+    if (top + next.h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - next.h - 8);
+    setPos({ top, left });
+  }, [open, getOptions, lazyOptions, rtl]);
 
   useEffect(() => {
     if (!open) {
@@ -61,25 +103,57 @@ export function ColumnValueFilter({
       if (e.key === "Escape") setOpen(false);
     }
     function onOutsideScroll(e: Event) {
-      // Capture-phase scroll fires for the filter list too — ignore those so the menu stays open.
       const target = e.target;
       if (target instanceof Node && menuRef.current?.contains(target)) return;
-      setOpen(false);
-    }
-    function onResize() {
       setOpen(false);
     }
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
     window.addEventListener("scroll", onOutsideScroll, true);
-    window.addEventListener("resize", onResize);
     return () => {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
       window.removeEventListener("scroll", onOutsideScroll, true);
-      window.removeEventListener("resize", onResize);
     };
   }, [open]);
+
+  useEffect(() => {
+    function onMove(e: PointerEvent) {
+      const drag = dragRef.current;
+      if (!drag) return;
+      const dx = e.clientX - drag.x;
+      const dy = e.clientY - drag.y;
+      const next = clampSize({
+        w: drag.w + (drag.rtl ? -dx : dx),
+        h: drag.h + dy,
+      });
+      setSize(next);
+      setPos((current) => {
+        if (!current) return current;
+        let left = current.left;
+        if (drag.rtl) left = current.left + (drag.w - next.w);
+        if (left < 8) left = 8;
+        if (left + next.w > window.innerWidth - 8) left = Math.max(8, window.innerWidth - next.w - 8);
+        let top = current.top;
+        if (top + next.h > window.innerHeight - 8) top = Math.max(8, window.innerHeight - next.h - 8);
+        return { top, left };
+      });
+    }
+    function onUp() {
+      if (!dragRef.current) return;
+      dragRef.current = null;
+      setSize((current) => {
+        writeSize(current);
+        return current;
+      });
+    }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+  }, []);
 
   const selectedSet = useMemo(() => (selected == null ? null : new Set(selected)), [selected]);
   const allSelected = selectedSet == null || (optionsList.length > 0 && optionsList.every((v) => selectedSet.has(v)));
@@ -112,7 +186,7 @@ export function ColumnValueFilter({
             ref={menuRef}
             className="dt-value-filter-menu"
             role="listbox"
-            style={{ top: pos.top, left: pos.left, width: pos.width }}
+            style={{ top: pos.top, left: pos.left, width: size.w, height: size.h }}
             onClick={(e) => e.stopPropagation()}
             onWheel={(e) => e.stopPropagation()}
           >
@@ -154,6 +228,18 @@ export function ColumnValueFilter({
                 {t("common.close")}
               </button>
             </div>
+            <button
+              type="button"
+              className={`dt-value-filter-grip ${rtl ? "is-rtl" : ""}`}
+              aria-label={t("access.resizeFilter")}
+              title={t("access.resizeFilter")}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                (e.currentTarget as HTMLButtonElement).setPointerCapture(e.pointerId);
+                dragRef.current = { x: e.clientX, y: e.clientY, w: size.w, h: size.h, rtl };
+              }}
+            />
           </div>,
           document.body
         )

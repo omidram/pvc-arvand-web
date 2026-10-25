@@ -1322,6 +1322,14 @@ export interface ShopEvent {
   at: string | null;
 }
 
+export interface LifeLogItem {
+  at: string;
+  kind: "life" | "shop" | "workflow" | string;
+  title: string;
+  detail: string | null;
+  actor: string | null;
+}
+
 export interface PartsLifeSummary {
   total: number;
   installed: number;
@@ -1458,6 +1466,46 @@ export interface CellsOverview {
   multi_cell: { element_nr: string; cells: string[] }[];
 }
 
+export interface BoardPiece {
+  kind?: string | null;
+  serial?: string | null;
+  date?: string | null;
+  element_nr?: string | null;
+  reason?: string | null;
+  company?: string | null;
+  days?: number | null;
+}
+
+export interface BoardList {
+  anode: number;
+  cathode: number;
+  total: number;
+  shown: number;
+  items: BoardPiece[];
+}
+
+export interface BoardPallet {
+  batch_id?: number;
+  code: string;
+  pallet_no: number;
+  status: string;
+  company?: string | null;
+  anodes: string[];
+  cathodes: string[];
+  anode_count: number;
+  cathode_count: number;
+}
+
+export interface ElementBoard {
+  ready_send: BoardList;
+  disassembled: BoardList;
+  rate_off: BoardList;
+  awaiting_check: BoardList;
+  at_coater: BoardList;
+  membranes: { stock: number; installed: number; shown: number; items: { serial?: string | null; type: string }[] };
+  pallets: BoardPallet[];
+}
+
 export interface ElementDashOverview {
   generated_at: string;
   cell_check?: CellCheck;
@@ -1473,6 +1521,7 @@ export interface ElementDashOverview {
   alerts: { danger: number; warning: number; info: number };
   by_electrolyzer: { electrolyzer: string; cells: number; capacity: number }[];
   monthly_flow: { month: string; assembled: number; commissioned: number; decommissioned: number; disassembled: number }[];
+  board?: ElementBoard;
   events: ShopEvent[];
   settings: ElementDashSettings;
 }

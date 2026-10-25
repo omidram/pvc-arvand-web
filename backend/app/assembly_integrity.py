@@ -68,6 +68,25 @@ def is_open(row: models.Element) -> bool:
     return _day(row.disassembly_date) is None and _day(row.decommissioning_date) is None
 
 
+def occupant_of_cell(
+    db: Session,
+    electrolyzer: str | None,
+    position: str | None,
+    exclude_id: int | None = None,
+) -> models.Element | None:
+    """The open installation sitting on this electrolyzer/position, if any."""
+    probe = models.Element(electrolyzer=electrolyzer, position=None if position is None else str(position).strip())
+    target = cell_key(probe)
+    if target is None:
+        return None
+    for row in db.query(models.Element).filter(models.Element.electrolyzer.isnot(None)).all():
+        if exclude_id is not None and row.id == exclude_id:
+            continue
+        if is_open(row) and cell_key(row) == target:
+            return row
+    return None
+
+
 def installation_signature(row: models.Element) -> tuple:
     return (
         _text(row.electrolyzer),

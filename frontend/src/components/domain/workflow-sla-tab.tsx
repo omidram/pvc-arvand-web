@@ -10,7 +10,7 @@ import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { SLA_STAGES, workflowApi, type WfFlow, type WfSlaConfig } from "@/lib/workflow";
 
-const FLOWS: WfFlow[] = ["inspection", "cell", "coating", "purchase"];
+const FLOWS: WfFlow[] = ["assemble", "inspection", "cell", "coating", "purchase"];
 
 function SlaForm({ initial }: { initial: WfSlaConfig }) {
   const { t } = useI18n();

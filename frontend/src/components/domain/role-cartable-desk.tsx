@@ -219,6 +219,8 @@ function GroupSnapshot({
           <StatCard label={t("wf.desk.awaitInspRequest")} value={num(snap, "await_inspection_request")} tone={num(snap, "await_inspection_request") ? "accent" : "neutral"} icon={ClipboardCheck} />
           <StatCard label={t("wf.desk.coatingApproval")} value={num(snap, "coating_approval")} icon={Sparkles} />
           <StatCard label={t("wf.desk.purchaseReg")} value={num(snap, "purchase_registration")} icon={ShoppingCart} />
+          <StatCard label={t("wf.desk.awaitAssembly")} value={num(snap, "await_assembly")} tone={num(snap, "await_assembly") ? "accent" : "neutral"} icon={ClipboardList} />
+          <StatCard label={t("wf.desk.awaitPosition")} value={num(snap, "await_position")} tone={num(snap, "await_position") ? "warn" : "neutral"} icon={LayoutDashboard} />
         </div>
         {pool ? <PoolStrip pool={pool} t={t} /> : null}
         <div className="rcd-two">
@@ -226,6 +228,9 @@ function GroupSnapshot({
           <RecentList title={t("wf.desk.recentDisassemblies")} rows={asElements(snap.recent_disassemblies)} dateKey="disassembly_date" accent="dismantle" t={t} />
         </div>
         <div className="rcd-links">
+          <QuickLink href="/elements/assembly" icon={ClipboardList}>
+            {t("wf.desk.startAssemble")}
+          </QuickLink>
           <QuickLink href="/element-dashboard" icon={LayoutDashboard}>
             {t("wf.desk.linkDashboard")}
           </QuickLink>

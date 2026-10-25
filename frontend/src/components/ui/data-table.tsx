@@ -4,8 +4,10 @@ import { cn, formatDisplayedDate } from "@/lib/utils";
 import { EmptyState } from "./empty-state";
 import { LoadingState } from "./spinner";
 import { ColumnValueFilter } from "./column-value-filter";
+import { applySheetFilters, sortSheetRows, tableCellText, useSheetFilters } from "./table-sheet";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
+import { useMemo } from "react";
 
 export interface Column<T> {
   key: string;
@@ -37,6 +39,7 @@ export function DataTable<T extends object>({
   onSort,
   onRowDoubleClick,
   maxHeight = "min(70vh, 760px)",
+  disableFilters = false,
 }: {
   columns: Column<T>[];
   data: T[] | undefined;
@@ -59,15 +62,30 @@ export function DataTable<T extends object>({
   onSort?: (key: string) => void;
   onRowDoubleClick?: (row: T) => void;
   maxHeight?: string;
+  disableFilters?: boolean;
 }) {
   const { t } = useI18n();
   useCalendar();
+  const source = data ?? [];
+  const sheet = useSheetFilters(columns, source);
+  const textFilters = filters ?? sheet.filters;
+  const pickFilters = valueFilters ?? sheet.valueFilters;
+  const handleFilter = onFilter ?? sheet.onFilter;
+  const handleValueFilter = onValueFilter ?? sheet.onValueFilter;
+  const handleSort = onSort ?? sheet.onSort;
+  const activeSortKey = sortKey ?? sheet.sortKey;
+  const activeSortDir = sortDir ?? sheet.sortDir;
+  const optionsFn = getFilterOptions ?? sheet.getFilterOptions;
+
+  const rows = useMemo(() => {
+    const filtered = applySheetFilters(source, columns, textFilters, pickFilters);
+    if (onSort) return filtered;
+    return sortSheetRows(filtered, columns, activeSortKey, activeSortDir);
+  }, [source, columns, textFilters, pickFilters, onSort, activeSortKey, activeSortDir]);
+
   if (isLoading) return <LoadingState />;
 
-  const showFilterRow = Boolean(onFilter || onValueFilter);
-  const rows = data ?? [];
-  // Keep header + filter row mounted when filters are active, even if zero rows match
-  // (Excel Deselect all must only uncheck values, not wipe the whole datasheet UI).
+  const showFilterRow = !disableFilters;
   if (!showFilterRow && rows.length === 0) {
     return <EmptyState title={emptyTitle ?? t("common.noRecordsFound")} description={emptyDescription} />;
   }
@@ -85,13 +103,13 @@ export function DataTable<T extends object>({
                 key={col.key}
                 className={cn(
                   "sticky top-0 z-[2] whitespace-nowrap border border-[var(--win-border-shadow)] bg-[var(--win-face)] px-2 py-1.5 text-center font-bold text-[var(--win-text)]",
-                  onSort && "cursor-pointer select-none",
+                  "cursor-pointer select-none",
                   col.className
                 )}
-                onClick={() => onSort?.(col.key)}
+                onClick={() => handleSort(col.key)}
               >
                 {col.header}
-                {sortKey === col.key ? (sortDir === "desc" ? " ↓" : " ↑") : ""}
+                {activeSortKey === col.key ? (activeSortDir === "desc" ? " ↓" : " ↑") : ""}
               </th>
             ))}
             {actions && (
@@ -104,29 +122,25 @@ export function DataTable<T extends object>({
             <tr className="bg-[var(--win-face)]">
               {columns.map((col) => {
                 const options = filterOptions?.[col.key];
-                const valueSel = valueFilters?.[col.key] ?? null;
+                const valueSel = pickFilters[col.key] ?? null;
                 const valueActive = valueSel != null;
                 return (
-                  <th key={col.key} className="sticky top-[28px] z-[3] border border-[var(--win-border-shadow)] bg-[var(--win-face)] px-1 py-1">
+                  <th key={col.key} className="dt-filter-th sticky top-[28px] z-[3] border border-[var(--win-border-shadow)] bg-[var(--win-face)] px-1 py-1">
                     <div className="dt-filter-cell">
-                      {onFilter ? (
-                        <input
-                          value={filters?.[col.key] ?? ""}
-                          placeholder={t("access.columnFilter")}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => onFilter(col.key, e.target.value)}
-                          className="dt-filter-input"
-                        />
-                      ) : null}
-                      {onValueFilter ? (
-                        <ColumnValueFilter
-                          options={options}
-                          getOptions={getFilterOptions ? () => getFilterOptions(col.key) : undefined}
-                          selected={valueSel}
-                          active={valueActive}
-                          onChange={(next) => onValueFilter(col.key, next)}
-                        />
-                      ) : null}
+                      <input
+                        value={textFilters[col.key] ?? ""}
+                        placeholder={t("access.columnFilter")}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => handleFilter(col.key, e.target.value)}
+                        className="dt-filter-input"
+                      />
+                      <ColumnValueFilter
+                        options={options}
+                        getOptions={() => optionsFn(col.key)}
+                        selected={valueSel}
+                        active={valueActive}
+                        onChange={(next) => handleValueFilter(col.key, next)}
+                      />
                     </div>
                   </th>
                 );
@@ -194,6 +208,45 @@ export function DataTable<T extends object>({
           )}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+export { tableCellText };
+
+/** One header cell for search + unique-value filter, for tables that are not DataTable. */
+export function FilterHeadCell({
+  columnKey,
+  filters,
+  valueFilters,
+  onFilter,
+  onValueFilter,
+  getFilterOptions,
+}: {
+  columnKey: string;
+  filters: Record<string, string>;
+  valueFilters: Record<string, string[] | null>;
+  onFilter: (key: string, value: string) => void;
+  onValueFilter: (key: string, values: string[] | null) => void;
+  getFilterOptions: (key: string) => string[];
+}) {
+  const { t } = useI18n();
+  const valueSel = valueFilters[columnKey] ?? null;
+  return (
+    <div className="dt-filter-cell">
+      <input
+        value={filters[columnKey] ?? ""}
+        placeholder={t("access.columnFilter")}
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => onFilter(columnKey, e.target.value)}
+        className="dt-filter-input"
+      />
+      <ColumnValueFilter
+        getOptions={() => getFilterOptions(columnKey)}
+        selected={valueSel}
+        active={valueSel != null}
+        onChange={(next) => onValueFilter(columnKey, next)}
+      />
     </div>
   );
 }

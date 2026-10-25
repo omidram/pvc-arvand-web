@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { ElementStage } from "@/lib/types";
 import type { LifePick } from "@/components/domain/assembly-lifecycle";
 import { cn, formatNumber } from "@/lib/utils";
@@ -51,6 +52,7 @@ export function ElementWorkflowChart({
   pieces,
   piece,
   onPiece,
+  startAssemble,
 }: {
   t: T;
   picked: LifePick | null;
@@ -60,6 +62,7 @@ export function ElementWorkflowChart({
   pieces?: { good: number; medium: number; rateOff: number; coating: number; mechanical: number } | null;
   piece?: PiecePick | null;
   onPiece?: (piece: PiecePick | null) => void;
+  startAssemble?: ReactNode;
 }) {
   const n = (key: ElementStage | "assembled") => {
     if (key === "awaiting_assembly" && waiting) return waiting.anode + waiting.cathode;
@@ -86,54 +89,60 @@ export function ElementWorkflowChart({
         <span>{t("ewChart.help")}</span>
       </div>
 
-      <div className="ewc-track">
-        <h4>{t("ewChart.laneRun")}</h4>
-        <div className="ewc-line">
-          {step("in_service", t("ewChart.service"), "green", t("ewChart.roleCell"))}
-          <Join />
-          {step("decommissioned", t("ewChart.decommission"), "red", t("ewChart.roleOperator"))}
-          <Join />
-          <div className="ewc-fork">
-            <div className="ewc-branch">
-              <span className="ewc-branch-name">{t("ewChart.healthy")}</span>
-              {step("installed", t("ewChart.assign"), "blue", t("ewChart.roleOperator"))}
-            </div>
-            <div className="ewc-branch">
-              <span className="ewc-branch-name">{t("ewChart.broken")}</span>
-              {step("awaiting_disassembly", t("ewChart.disassembly"), "amber", t("ewChart.roleC90"))}
+      <div className="ewc-board">
+        <div className="ewc-col">
+          <div className="ewc-track">
+            <h4>{t("ewChart.laneRun")}</h4>
+            <div className="ewc-line">
+              {step("in_service", t("ewChart.service"), "green", t("ewChart.roleCell"))}
               <Join />
-              {step("disassembled", t("ewChart.rateoff"), "slate", t("ewChart.roleC90"))}
+              {step("decommissioned", t("ewChart.decommission"), "red", t("ewChart.roleOperator"))}
+              <Join />
+              <div className="ewc-fork">
+                <div className="ewc-branch">
+                  <span className="ewc-branch-name">{t("ewChart.healthy")}</span>
+                  {step("installed", t("ewChart.assign"), "blue", t("ewChart.roleOperator"))}
+                </div>
+                <div className="ewc-branch">
+                  <span className="ewc-branch-name">{t("ewChart.broken")}</span>
+                  {step("awaiting_disassembly", t("ewChart.disassembly"), "amber", t("ewChart.roleC90"))}
+                  <Join />
+                  {step("disassembled", t("ewChart.rateoff"), "slate", t("ewChart.roleC90"))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div className="ewc-track">
-        <h4>{t("ewChart.laneBuild")}</h4>
-        <div className="ewc-line">
-          {step(
-            "awaiting_assembly",
-            t("ewChart.waitAsm"),
-            "violet",
-            waiting ? `${waiting.anode} A · ${waiting.cathode} K` : t("ewChart.roleShop"),
-          )}
-          <Join />
-          {step("assembling", t("ewChart.assembling"), "blue", t("ewChart.roleShop"))}
-          <Join />
-          {step("awaiting_qc", t("ewChart.qc"), "amber", t("ewChart.roleShop"))}
-          <Join />
-          {step("ready", t("ewChart.ready"), "teal", t("ewChart.roleShop"))}
-          <Join />
-          {step("assembled", t("ewChart.newCode"), "violet", t("ewChart.roleShop"))}
-          <Join />
-          <span className="ewc-back">{t("ewChart.backToService")}</span>
+        <div className="ewc-col ewc-col-build">
+          {startAssemble}
+          <div className="ewc-track">
+            <h4>{t("ewChart.laneBuild")}</h4>
+            <div className="ewc-line">
+              {step(
+                "awaiting_assembly",
+                t("ewChart.waitAsm"),
+                "violet",
+                waiting ? `${waiting.anode} A · ${waiting.cathode} K` : t("ewChart.roleShop"),
+              )}
+              <Join />
+              {step("assembling", t("ewChart.assembling"), "blue", t("ewChart.roleShop"))}
+              <Join />
+              {step("awaiting_qc", t("ewChart.qc"), "amber", t("ewChart.roleShop"))}
+              <Join />
+              {step("ready", t("ewChart.ready"), "teal", t("ewChart.roleShop"))}
+              <Join />
+              {step("assembled", t("ewChart.newCode"), "violet", t("ewChart.roleShop"))}
+              <Join />
+              <span className="ewc-back">{t("ewChart.backToService")}</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {pieces ? (
         <div className="ewc-track">
           <h4>{t("ewChart.lanePieces")}</h4>
-          <div className="ewc-line">
+          <div className="ewc-line ewc-line-fill">
             {pieceStep("good", t("ewChart.reusableGood"), "green", pieces.good)}
             {pieceStep("medium", t("ewChart.reusableMedium"), "teal", pieces.medium)}
             {pieceStep("rateOff", t("ewChart.pieceRateOff"), "slate", pieces.rateOff)}

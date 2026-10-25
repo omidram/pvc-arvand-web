@@ -2,7 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { apiClient } from "./api-client";
 import type { PipelineItem } from "./types";
 
-export type WfFlow = "coating" | "purchase" | "cell" | "inspection" | "workorder";
+export type WfFlow = "coating" | "purchase" | "cell" | "inspection" | "assemble" | "workorder";
 export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "operation" | "cellshop" | "process" | "planner";
 export type WfKind = "anode" | "cathode";
 
@@ -21,6 +21,7 @@ export function cellPath(status: string, decision?: string | null): readonly str
   return [...head, "completed"];
 }
 export const INSPECTION_STEPS = ["await_request", "await_inspection", "completed"] as const;
+export const ASSEMBLE_STEPS = ["await_assembly", "await_inspection", "await_position", "completed"] as const;
 /** Stages that carry a deadline, per flow (the order of the settings table). */
 const VIRTUAL_STEPS = new Set(["c90_select", "code_generate", "purchase_request"]);
 export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
@@ -28,6 +29,7 @@ export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
   purchase: PURCHASE_STEPS.filter((s) => s !== "completed" && !VIRTUAL_STEPS.has(s)),
   cell: [...CELL_STEPS.filter((s) => s !== "completed"), "await_disassembly", "await_reinstall", "await_numbering"],
   inspection: INSPECTION_STEPS.filter((s) => s !== "completed"),
+  assemble: ASSEMBLE_STEPS.filter((s) => s !== "completed"),
   workorder: ["open"],
 };
 
@@ -216,6 +218,7 @@ export interface WfMeta {
   can_request_cell: boolean;
   can_view_inspection?: boolean;
   can_request_inspection?: boolean;
+  can_request_assemble?: boolean;
   groups: WfGroup[];
   view_groups: WfGroup[];
   delay_parties: string[];
@@ -265,6 +268,7 @@ export interface PieceDecisions {
 export interface InspectionCellCard {
   assembly_date: string | null;
   commissioning_date: string | null;
+  decommissioning_date: string | null;
   disassembly_date: string | null;
   membrane_type: string | null;
   gap_mm: string | null;
@@ -276,9 +280,57 @@ export interface InspectionCellCard {
   dol_days: number | null;
 }
 
+export interface AssembleDecision {
+  ok?: boolean;
+  result?: string | null;
+  note?: string | null;
+}
+
+export interface AssembleRequest extends WfDeadline {
+  flow: "assemble";
+  id: number;
+  title: string;
+  code: string;
+  status: string;
+  groups: WfGroup[];
+  element_nr: string | null;
+  element_id: number | null;
+  electrolyzer: string | null;
+  position: string | null;
+  anode_nr: string | null;
+  cathode_nr: string | null;
+  membrane_nr: string | null;
+  membrane_type: string | null;
+  anode_source: string | null;
+  cathode_source: string | null;
+  assembly_date: string | null;
+  created_by: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  last_note: string | null;
+}
+
+export interface AssembleRequestDetail extends AssembleRequest {
+  completed_at: string | null;
+  remarks?: string | null;
+  reason?: string | null;
+  problem?: string | null;
+  indent_no?: string | null;
+  approval_ref?: string | null;
+  expected_date?: string | null;
+  planned_date?: string | null;
+  decisions?: { inspection?: AssembleDecision; process?: AssembleDecision };
+  element?: { id: number; element_nr: string | null; electrolyzer: string | null; position: string | null } | null;
+  files: WfFile[];
+  events: WfEvent[];
+  actions: string[];
+}
+
 export interface InspectionRequestDetail extends InspectionRequest {
   completed_at: string | null;
   report: InspectionBrief | null;
+  anode_xrf?: string | null;
+  cathode_xrf?: string | null;
   cell?: InspectionCellCard | null;
   candidates: InspectionBrief[];
   files: WfFile[];
@@ -476,6 +528,19 @@ export const workflowApi = {
     (await apiClient.post("/workflow/inspection", body)).data,
   inspectionStep: async (id: number, action: string, body: Record<string, unknown>): Promise<InspectionRequestDetail> =>
     (await apiClient.post(`/workflow/inspection/${id}/${action}`, body)).data,
+  assembleList: async (params: { open_only?: boolean; status?: string } = {}): Promise<AssembleRequest[]> =>
+    (await apiClient.get("/workflow/assemble", { params })).data,
+  assembleGet: async (id: number): Promise<AssembleRequestDetail> => (await apiClient.get(`/workflow/assemble/${id}`)).data,
+  assembleCreate: async (body: {
+    anode_nr: string;
+    cathode_nr: string;
+    membrane_nr?: string;
+    membrane_type?: string;
+    element_nr?: string;
+    note?: string;
+  }): Promise<AssembleRequestDetail> => (await apiClient.post("/workflow/assemble", body)).data,
+  assembleStep: async (id: number, action: string, body: Record<string, unknown>): Promise<AssembleRequestDetail> =>
+    (await apiClient.post(`/workflow/assemble/${id}/${action}`, body)).data,
   coatingRequestInspections: async (id: number, note?: string): Promise<{ created: number; detail: WfDetail }> =>
     (await apiClient.post(`/workflow/coating/${id}/request_inspections`, { note })).data,
   settings: async (): Promise<WfSlaConfig> => (await apiClient.get("/workflow/settings")).data,

@@ -180,9 +180,7 @@ class ShopRelocate(BaseModel):
 
 @router.post("/shop/relocate")
 def relocate_shop(body: ShopRelocate, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    """Healthy cell -> new position (flowchart: "assign new position"). Same element number and parts, a new installation row.
-
-    The row of the old installation is closed by the usual Assembly Data rule (a newer installation ends the earlier one).
+    """Healthy cell -> new position. Same assembly and parts; the old life is decommissioned and the new life is commissioned. The element is not disassembled.
     """
     from .workflow import close_cell_requests
 
@@ -197,7 +195,7 @@ def relocate_shop(body: ShopRelocate, db: Session = Depends(get_db), user: model
 def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict[str, Any]:
     """Write the new installation row and close the old one; the caller commits."""
     from .elements import _ensure_group, _normalize_position, _reject_same_installation, _sync_saved_element
-    from ..assembly_integrity import cell_key, is_open
+    from ..assembly_integrity import occupant_of_cell
     from ..plant_topology import all_electrolyzers, format_electrolyzer_name
 
     key = compact_nr(body.element_nr)
@@ -215,14 +213,17 @@ def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict
     if last and day < last:
         raise HTTPException(status_code=400, detail=f"The new position cannot start before the element was switched off ({last.isoformat()})")
 
-    probe = models.Element(electrolyzer=electrolyzer, position=position)
-    target = cell_key(probe)
-    busy = next((el for el in db.query(models.Element).filter(models.Element.electrolyzer.isnot(None)).all() if is_open(el) and cell_key(el) == target and el.id != old.id), None)
+    busy = occupant_of_cell(db, electrolyzer, position, exclude_id=old.id)
     if busy is not None:
         raise HTTPException(status_code=409, detail=f"Cell {electrolyzer}-{position} is occupied by element {busy.element_nr}")
 
     group_nr = (body.group_nr or old.group_nr or "").strip() or None
     _ensure_group(db, group_nr)
+    # Healthy means the element was not taken apart. The old life ends at decommission;
+    # the new position starts at commissioning. Assembly date stays the original build.
+    if old.decommissioning_date is None:
+        old.decommissioning_date = day
+    old.dol_days = svc.installation_dol(old.assembly_date, old.commissioning_date, old.disassembly_date, old.decommissioning_date)
     new = models.Element(
         element_nr=old.element_nr,
         electrolyzer=electrolyzer,
@@ -235,7 +236,8 @@ def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict
         membrane_type=old.membrane_type,
         gap_mm=old.gap_mm,
         ispb=old.ispb,
-        assembly_date=day,
+        assembly_date=old.assembly_date,
+        commissioning_date=day,
         anode_coating=old.anode_coating,
         anode_electrode=old.anode_electrode,
         anode_shell=old.anode_shell,
@@ -249,9 +251,6 @@ def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict
     db.add(new)
     _sync_saved_element(db, new)
     db.flush()
-    if old.disassembly_date is None:  # the old installation ends the day the cell is moved
-        old.disassembly_date = day
-        old.dol_days = svc.installation_dol(old.assembly_date, old.commissioning_date, old.disassembly_date, old.decommissioning_date)
     for state in db.query(models.ElementShopState).all():
         if compact_nr(state.element_nr) == key:
             db.delete(state)
@@ -281,6 +280,11 @@ def flow_list(node: str, q: str | None = None, limit: int = Query(500, ge=1, le=
     from .. import element_flow
 
     return element_flow.node_list(db, node, q, limit)
+
+
+@router.get("/life-log")
+def element_life_log(element_nr: str, db: Session = Depends(get_db)):
+    return {"element_nr": element_nr, "items": svc.life_log(db, element_nr)}
 
 
 @router.get("/shop/events")
