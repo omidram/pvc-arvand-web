@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import logging
+import re
+import sqlite3
 from datetime import date, datetime
+from pathlib import Path
 
 from sqlalchemy import String, TypeDecorator, create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from .config import settings
+
+_log = logging.getLogger("uvicorn.error")
 
 _sqlite = settings.DATABASE_URL.startswith("sqlite")
 # timeout is SQLite's busy wait, in seconds. Without it a short password update
@@ -32,6 +38,95 @@ def _sqlite_on_connect(dbapi_connection, connection_record) -> None:
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Plant tables. A broken entry with one of these names is reported, not deleted.
+_CORE_SCHEMA = {
+    "users",
+    "app_roles",
+    "role_permissions",
+    "form_permissions",
+    "elements",
+    "electrode_segregations",
+    "electrolyzer_normalizations",
+    "voltage_readings",
+    "inspection_reports",
+    "audit_logs",
+}
+
+_SCHEMA_ERROR = re.compile(r"malformed database schema \((.+)\)")
+
+
+def _sqlite_file() -> Path | None:
+    url = settings.DATABASE_URL
+    if not url.startswith("sqlite"):
+        return None
+    rest = url.split(":///", 1)[-1].split("?", 1)[0]
+    if not rest or rest == ":memory:":
+        return None
+    return Path(rest)
+
+
+def _schema_object_name(exc: BaseException) -> str | None:
+    match = _SCHEMA_ERROR.search(str(exc))
+    if not match:
+        return None
+    name = match.group(1).strip()
+    if not name or name == "sqlite_master" or name.startswith("sqlite_"):
+        return None
+    return name
+
+
+def _drop_schema_object(path: Path, name: str) -> bool:
+    """Remove one unreadable schema entry so the rest of the file can open."""
+    conn = sqlite3.connect(path, timeout=30)
+    try:
+        if hasattr(conn, "setconfig"):
+            conn.setconfig(sqlite3.SQLITE_DBCONFIG_WRITABLE_SCHEMA, True)
+        else:
+            conn.execute("PRAGMA writable_schema=ON")
+        rows = conn.execute(
+            "SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name=?",
+            (name,),
+        ).fetchall()
+        if not rows:
+            return False
+        removed = conn.execute("DELETE FROM sqlite_master WHERE name=?", (name,))
+        conn.commit()
+        note = path.with_name(path.name + ".schema-repair.log")
+        with note.open("a", encoding="utf-8") as handle:
+            for row in rows:
+                handle.write(repr(row) + "\n")
+        _log.warning("Removed unreadable schema object %s (%s rows) from %s", name, removed.rowcount, path)
+        return removed.rowcount > 0
+    finally:
+        conn.close()
+
+
+def repair_malformed_schema() -> None:
+    """Drop a schema entry SQLite cannot parse, such as the server object named K1.
+
+    Core plant tables are left untouched. A readable database is not modified.
+    """
+    path = _sqlite_file()
+    if path is None or not path.is_file():
+        return
+    for _ in range(8):
+        conn = sqlite3.connect(path, timeout=30)
+        try:
+            conn.execute("SELECT name FROM sqlite_master LIMIT 1").fetchone()
+            return
+        except sqlite3.DatabaseError as exc:
+            broken = _schema_object_name(exc)
+        finally:
+            conn.close()
+        if broken is None or broken in _CORE_SCHEMA:
+            _log.error("SQLite schema is unreadable and was not modified: %s", broken or "unknown")
+            return
+        if not _drop_schema_object(path, broken):
+            return
+
+
+repair_malformed_schema()
 
 
 class Base(DeclarativeBase):
