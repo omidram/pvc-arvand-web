@@ -55,7 +55,7 @@ function daysBetween(from: string | null | undefined, to: string | null | undefi
 function statusColor(status: string): "emerald" | "rose" | "amber" | "cyan" | "violet" | "slate" {
   if (status === "completed") return "emerald";
   if (status === "cancelled") return "slate";
-  if (status === "await_approval" || status === "await_inspection" || status === "await_registration") return "violet";
+  if (status === "await_approval" || status === "await_inspection" || status === "await_registration" || status === "await_insp_sign" || status === "await_proc_sign") return "violet";
   if (status === "await_return" || status === "at_coater" || status === "ordered") return "cyan";
   return "amber";
 }

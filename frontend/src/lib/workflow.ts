@@ -21,7 +21,7 @@ export function cellPath(status: string, decision?: string | null): readonly str
   return [...head, "completed"];
 }
 export const INSPECTION_STEPS = ["await_request", "await_inspection", "completed"] as const;
-export const ASSEMBLE_STEPS = ["await_assembly", "await_inspection", "await_position", "completed"] as const;
+export const ASSEMBLE_STEPS = ["await_assembly", "await_air", "await_insp_sign", "await_proc_sign", "await_position", "completed"] as const;
 /** Stages that carry a deadline, per flow (the order of the settings table). */
 const VIRTUAL_STEPS = new Set(["c90_select", "code_generate", "purchase_request"]);
 export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
@@ -310,6 +310,20 @@ export interface AssembleRequest extends WfDeadline {
   last_note: string | null;
 }
 
+export interface AssembleAirBrief {
+  id: number;
+  element_nr: string | null;
+  filled: boolean;
+  checks_done: number;
+  checks_total: number;
+  sign_maint: boolean;
+  sign_insp: boolean;
+  sign_proc: boolean;
+  sign_maint_name: string | null;
+  sign_insp_name: string | null;
+  sign_proc_name: string | null;
+}
+
 export interface AssembleRequestDetail extends AssembleRequest {
   completed_at: string | null;
   remarks?: string | null;
@@ -319,6 +333,7 @@ export interface AssembleRequestDetail extends AssembleRequest {
   approval_ref?: string | null;
   expected_date?: string | null;
   planned_date?: string | null;
+  air?: AssembleAirBrief | null;
   decisions?: { inspection?: AssembleDecision; process?: AssembleDecision };
   element?: { id: number; element_nr: string | null; electrolyzer: string | null; position: string | null } | null;
   files: WfFile[];

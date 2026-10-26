@@ -8,6 +8,7 @@ import { useCrudResource } from "@/lib/use-resource";
 import type { Membrane, MembraneMaintenance } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
 import { MembraneRelations } from "@/components/domain/access-relations";
+import { MembraneMaintenanceForm } from "@/components/domain/electrode-subforms";
 import type { FieldDef } from "@/components/ui/resource-form";
 import type { Column } from "@/components/ui/data-table";
 import { formatDate } from "@/lib/utils";
@@ -65,56 +66,25 @@ function MembranesDetails() {
       submitting={createMutation.isPending || updateMutation.isPending}
       exportPrefix="/membranes"
       filenameBase="membranes"
+      commands={
+        <>
+          <Link href="/membranes?tab=maintenance" className="access-menu-btn !w-auto px-3">
+            {t("menus.membraneMaintenance")}
+          </Link>
+          <Link href="/maintenance-reports?kind=membrane" className="access-menu-btn !w-auto px-3">
+            {t("menus.membraneMaintenanceReport")}
+          </Link>
+        </>
+      }
       related={(row) => <MembraneRelations membraneNr={row.membrane_nr} />}
     />
   );
 }
 
 function MembraneMaintenanceTab() {
-  const { t } = useI18n();
   const { canEdit } = useAuth();
-  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<MembraneMaintenance>(
-    "membrane-maintenance",
-    membraneMaintenanceApi,
-    { limit: 2000 }
-  );
-  const fields: FieldDef[] = [
-    { name: "membrane_nr", label: t("fields.membraneNr"), required: true },
-    { name: "date", label: t("fields.date"), type: "date" },
-    { name: "repair_work", label: t("fields.repairWork"), type: "textarea", span: 2 },
-  ];
-  const columns: Column<MembraneMaintenance>[] = [
-    { key: "membrane_nr", header: t("fields.membraneNr") },
-    { key: "date", header: t("fields.date"), render: (r) => formatDate(r.date) },
-    { key: "repair_work", header: t("fields.repairWork") },
-  ];
-  return (
-    <AccessWorkspace<MembraneMaintenance>
-      caption={t("menus.membraneMaintenance")}
-      helpKey="membranes"
-      backHref="/elements"
-      backLabel={t("elements.title")}
-      records={listQuery.data}
-      isLoading={listQuery.isLoading}
-      error={listQuery.error as Error | null}
-      fields={fields}
-      columns={columns}
-      idField="id"
-      canEdit={canEdit("membranes")}
-      onSave={(id, values) => updateMutation.mutateAsync({ id, payload: values })}
-      onCreate={(values) => createMutation.mutateAsync(values as never)}
-      onDelete={(id) => removeMutation.mutate(id)}
-      confirmDelete={() => t("common.confirmDeleteGeneric")}
-      submitting={createMutation.isPending || updateMutation.isPending}
-      exportPrefix="/membrane-maintenance"
-      filenameBase="membrane-maintenance"
-      commands={
-        <Link href="/maintenance-reports?kind=membrane" className="access-menu-btn">
-          {t("menus.maintenanceReport")}
-        </Link>
-      }
-    />
-  );
+  const crud = useCrudResource<MembraneMaintenance>("membrane-maintenance", membraneMaintenanceApi, { limit: 20000 });
+  return <MembraneMaintenanceForm crud={crud} canEdit={canEdit("membranes")} />;
 }
 
 function MembranesPageInner() {

@@ -109,6 +109,7 @@ export default function AssemblyInspectionPage() {
       fields={fields}
       columns={columns}
       idField="id"
+      recordParam="element_nr"
       canEdit={editable}
       submitting={saving || removeMutation.isPending}
       onSave={(id, values) => persist(id, values)}

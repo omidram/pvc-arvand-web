@@ -544,7 +544,10 @@ def apply_move(db: Session, kind: str, serial: str, action: str, when: date | No
             )
         label = "OK" if action == "ok" else "NOT OK"
         remarks = f"{label} — {note_text}" if note_text else label
-        payload = {field: stored, "check_date": _stamp(day), "remarks": remarks}
+        inspector = None
+        if user is not None:
+            inspector = ((getattr(user, "full_name", None) or getattr(user, "username", None) or "") or "").strip()[:100] or None
+        payload = {field: stored, "check_date": _stamp(day), "remarks": remarks, "inspector": inspector}
         if kind == "anode":
             payload["dol_days"] = dol
         db.add(spec["check"](**payload))

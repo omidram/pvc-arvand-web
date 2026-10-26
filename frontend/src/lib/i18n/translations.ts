@@ -2503,11 +2503,11 @@ const en = {
     },
     assemblyInspection: {
       title: "Assembly Inspection Report",
-      body: "Uhde workshop checklist for assembling a cell element (Anode / Membrane / Cathode / Assembly / Tests).\nTick each activity checkbox when done. Header fields use plant combos (electrolyzer, position, group, serials, membrane type).\nEach of Maintenance / Inspection / Process can sign with a drawn signature or an uploaded photo.\nExport PDF reprints the form layout for filing.",
+      body: "Uhde workshop checklist for assembling a cell element (Anode / Membrane / Cathode / Assembly / Tests).\nIn the assemble-new-element workflow, C-90 fills this form after the assembly date. Inspection then signs, then process; a rejection with a note sends the request one step back. After both signatures C-90 sets electrolyzer and position.\nTick each activity checkbox when done. Header fields use plant combos (electrolyzer, position, group, serials, membrane type).\nEach of Maintenance / Inspection / Process can sign with a drawn signature or an uploaded photo.\nExport PDF reprints the form layout for filing.",
     },
     anodes: {
       title: "Anodes",
-      body: "Anode Details is the component master: manufacturer, drawing numbers, coating, and dates received or decommissioned.\nMaintenance, Recoating, and Coating Inspection open as their own forms from Element Administration, the same way they do in Access.",
+      body: "Anode Details is the component master: manufacturer, drawing numbers, coating, and dates received or decommissioned.\nPurchase registration writes serial, manufacturer, coating, received date, and batch. Recoating dispatch / return / inspect / approve fill Recoating and Coating Check. Mechanical inspection writes Maintenance. Warehouse send/return/OK uses the same rows.\nMaintenance, Recoating, and Check of Anode Coating open as AccessWorkspace forms (serial combo, filters, related links).",
     },
     segregation: {
       title: "Electrode Segregation (TAFKIK)",
@@ -2515,11 +2515,11 @@ const en = {
     },
     cathodes: {
       title: "Cathodes",
-      body: "Cathode Details is the component master: manufacturer, drawing numbers, coating, and lifecycle dates.\nMaintenance, Recoating, and Coating Inspection open as their own forms from Element Administration.",
+      body: "Cathode Details is the component master: manufacturer, drawing numbers, coating, and lifecycle dates.\nPurchase, recoating workflow, mechanical inspection, and warehouse moves fill the child tables the same way as anodes.\nMaintenance, Recoating, and Check of Cathode Coating are AccessWorkspace forms with serial combo and related links.",
     },
     membranes: {
       title: "Membranes",
-      body: "Master list of membrane components: type, batch, received/decommissioned dates, and remarks.\nOpen a membrane to view or add Maintenance (repair) records.\nUse Export Excel/PDF to download the membrane list or maintenance history.",
+      body: "Master list of membrane components: type, batch, received/decommissioned dates, and remarks.\nMembrane Maintenance is an AccessWorkspace form linked by membrane number to the master, element lives, and maintenance reports.\nUse Export Excel/PDF to download the membrane list or maintenance history.",
     },
     storage: {
       title: "Warehouse",
@@ -5442,11 +5442,11 @@ const fa: DeepPartialStrings<typeof en> = {
     },
     assemblyInspection: {
       title: "گزارش بازرسی مونتاژ",
-      body: "چک‌لیست کارگاهی Uhde برای مونتاژ المان سلول (آند / غشا / کاتد / مونتاژ / آزمون).\nهر فعالیت را پس از انجام تیک بزنید. فیلدهای بالای فرم از کمبوهای واحد پر می‌شوند.\nبرای Maintenance / Inspection / Process می‌توانید امضای دستی بکشید یا عکس امضا آپلود کنید.\nخروجی PDF همان چیدمان فرم را برای بایگانی چاپ می‌کند.",
+      body: "چک‌لیست کارگاهی Uhde برای مونتاژ المان سلول (آند / غشا / کاتد / مونتاژ / آزمون).\nدر فرآیند مونتاژ المنت جدید، بعد از تاریخ مونتاژ C-90 این فرم را پر می‌کند. سپس بازرسی امضا می‌کند و بعد فرآیند؛ اگر تأیید نشود با نوت یک مرحله عقب می‌رود. بعد از هر دو امضا C-90 الکترولایزر و پوزیشن را تعیین می‌کند.\nهر فعالیت را پس از انجام تیک بزنید. فیلدهای بالای فرم از کمبوهای واحد پر می‌شوند.\nبرای Maintenance / Inspection / Process می‌توانید امضای دستی بکشید یا عکس امضا آپلود کنید.\nخروجی PDF همان چیدمان فرم را برای بایگانی چاپ می‌کند.",
     },
     anodes: {
       title: "آندها",
-      body: "جزئیات آند فهرست اصلی قطعه است: سازنده، No. نقشه‌ها، پوشش و تاریخ دریافت یا خروج از سرویس.\nنگهداری، بازپوشش و بازرسی پوشش مثل Access از منوی مدیریت المان، هر کدام در فرم جدا باز می‌شوند.",
+      body: "جزئیات آند فهرست اصلی قطعه است: سازنده، No. نقشه‌ها، پوشش و تاریخ دریافت یا خروج از سرویس.\nثبت خرید سریال، سازنده، پوشش، تاریخ دریافت و بچ را می‌نویسد. اعزام/بازگشت/بازرسی/تأیید بازپوشش جدول‌های بازپوشش و بررسی پوشش را پر می‌کند. ایراد مکانیکی بازرسی ردیف نگهداری می‌سازد. انبار همان ردیف‌ها را به‌روز می‌کند.\nنگهداری، بازپوشش و بررسی پوشش آند مثل بقیه جداول نرم‌افزار با نمای فرم/برگه، کمبوی سریال و روابط باز می‌شوند.",
     },
     segregation: {
       title: "تفکیک الکترود (TAFKIK)",
@@ -5454,11 +5454,11 @@ const fa: DeepPartialStrings<typeof en> = {
     },
     cathodes: {
       title: "کاتدها",
-      body: "جزئیات کاتد فهرست اصلی قطعه است: سازنده، No. نقشه‌ها، پوشش و تاریخ‌های چرخه عمر.\nنگهداری، بازپوشش و بازرسی پوشش از منوی مدیریت المان، هر کدام در فرم جدا باز می‌شوند.",
+      body: "جزئیات کاتد فهرست اصلی قطعه است: سازنده، No. نقشه‌ها، پوشش و تاریخ‌های چرخه عمر.\nخرید، گردش کار بازپوشش، بازرسی مکانیکی و حرکت‌های انبار همان جدول‌های فرزند را مثل آند پر می‌کنند.\nنگهداری، بازپوشش و بررسی پوشش کاتد با نمای فرم/برگه، کمبوی سریال و روابط باز می‌شوند.",
     },
     membranes: {
       title: "غشاها",
-      body: "فهرست اصلی قطعات غشا: نوع، بچ، تاریخ‌های دریافت/خروج از سرویس و ملاحظات.\nبرای مشاهده یا افزودن رکوردهای نگهداری (تعمیر)، یک غشا را باز کنید.\nبرای دانلود فهرست غشاها یا تاریخچه نگهداری از خروجی اکسل/PDF استفاده کنید.",
+      body: "فهرست اصلی قطعات غشا: نوع، بچ، تاریخ‌های دریافت/خروج از سرویس و ملاحظات.\nنگهداری غشا مثل بقیه جداول با کمبوی شماره غشا به فهرست اصلی، المان‌ها و گزارش تعمیر وصل است.\nبرای دانلود فهرست غشاها یا تاریخچه نگهداری از خروجی اکسل/PDF استفاده کنید.",
     },
     storage: {
       title: "انبار",

@@ -10,9 +10,14 @@ import {
 } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { Anode, AnodeCoatingCheck, AnodeMaintenance, AnodeRecoating } from "@/lib/types";
+import Link from "next/link";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
 import { AnodeRelations } from "@/components/domain/access-relations";
-import { ElectrodeSheet, type SheetColumn } from "@/components/domain/electrode-sheet";
+import {
+  AnodeCoatingCheckForm,
+  AnodeMaintenanceForm,
+  AnodeRecoatingForm,
+} from "@/components/domain/electrode-subforms";
 import type { FieldDef } from "@/components/ui/resource-form";
 import type { Column } from "@/components/ui/data-table";
 import { formatDate } from "@/lib/utils";
@@ -84,6 +89,7 @@ function AnodesDetails() {
     { key: "coating", header: t("fields.coating") },
     { key: "batch", header: t("fields.batch") },
     { key: "generation", header: t("fields.generation") },
+    { key: "assembly_group", header: t("fields.assemblyGroup") },
     { key: "received_date", header: t("fields.received"), render: (r) => formatDate(r.received_date) },
     { key: "decommission_date", header: t("fields.decommissioned"), render: (r) => formatDate(r.decommission_date) },
   ];
@@ -109,107 +115,43 @@ function AnodesDetails() {
       submitting={createMutation.isPending || updateMutation.isPending}
       exportPrefix="/anodes"
       filenameBase="anodes"
+      commands={
+        <>
+          <Link href="/anodes?tab=maintenance" className="access-menu-btn !w-auto px-3">
+            {t("menus.anodeMaintenance")}
+          </Link>
+          <Link href="/anodes?tab=recoating" className="access-menu-btn !w-auto px-3">
+            {t("menus.anodeRecoating")}
+          </Link>
+          <Link href="/anodes?tab=coating" className="access-menu-btn !w-auto px-3">
+            {t("menus.checkAnodeCoating")}
+          </Link>
+          <Link href="/maintenance-reports?kind=anode" className="access-menu-btn !w-auto px-3">
+            {t("menus.anodeMaintenanceReport")}
+          </Link>
+        </>
+      }
       related={(row) => <AnodeRelations anodeNr={row.anode_nr} />}
     />
   );
 }
 
 function AnodeMaintenanceTab() {
-  const { t } = useI18n();
   const { canEdit } = useAuth();
-  const { listQuery, createMutation, updateMutation } = useCrudResource<AnodeMaintenance>(
-    "anode-maintenance",
-    anodeMaintenanceApi,
-    { limit: 2000 }
-  );
-  const columns: SheetColumn<AnodeMaintenance>[] = [
-    { key: "anode_nr", header: t("fields.anodeNo"), lookup: "anode-numbers", width: "w-28" },
-    { key: "date", header: t("fields.date"), kind: "date" },
-    { key: "finding", header: t("fields.findings"), width: "min-w-[180px]" },
-    { key: "action", header: t("fields.action"), width: "min-w-[160px]" },
-    { key: "dispatch_date", header: t("fields.despatch"), kind: "date" },
-    { key: "return_date", header: t("fields.sheetReturn"), kind: "date" },
-  ];
-  return (
-    <ElectrodeSheet
-      title={t("menus.anodeMaintenance")}
-      rows={listQuery.data}
-      isLoading={listQuery.isLoading}
-      error={listQuery.error as Error | null}
-      columns={columns}
-      canEdit={canEdit("anodes")}
-      showDate
-      nrKey="anode_nr"
-      exportPrefix="/anode-maintenance"
-      reportHref="/maintenance-reports?kind=anode"
-      onCreate={(payload) => createMutation.mutateAsync(payload)}
-      onUpdate={(row, payload) => updateMutation.mutateAsync({ id: row.id, payload })}
-    />
-  );
+  const crud = useCrudResource<AnodeMaintenance>("anode-maintenance", anodeMaintenanceApi, { limit: 20000 });
+  return <AnodeMaintenanceForm crud={crud} canEdit={canEdit("anodes")} />;
 }
 
 function AnodeRecoatingTab() {
-  const { t } = useI18n();
   const { canEdit } = useAuth();
-  const { listQuery, createMutation, updateMutation } = useCrudResource<AnodeRecoating>(
-    "anode-recoating",
-    anodeRecoatingApi,
-    { limit: 2000 }
-  );
-  const columns: SheetColumn<AnodeRecoating>[] = [
-    { key: "anode_nr", header: t("fields.anodeNo"), lookup: "anode-numbers", width: "w-28" },
-    { key: "dispatch_date", header: t("fields.shippingDate"), kind: "date" },
-    { key: "return_date", header: t("fields.returnDate"), kind: "date" },
-    { key: "manufacturer", header: t("fields.manufacturer"), width: "min-w-[140px]" },
-    { key: "remarks", header: t("fields.remark"), width: "min-w-[180px]" },
-  ];
-  return (
-    <ElectrodeSheet
-      title={t("menus.anodeRecoating")}
-      rows={listQuery.data}
-      isLoading={listQuery.isLoading}
-      error={listQuery.error as Error | null}
-      columns={columns}
-      canEdit={canEdit("anodes")}
-      showDate
-      nrKey="anode_nr"
-      exportPrefix="/anode-recoating"
-      onCreate={(payload) => createMutation.mutateAsync(payload)}
-      onUpdate={(row, payload) => updateMutation.mutateAsync({ id: row.id, payload })}
-    />
-  );
+  const crud = useCrudResource<AnodeRecoating>("anode-recoating", anodeRecoatingApi, { limit: 20000 });
+  return <AnodeRecoatingForm crud={crud} canEdit={canEdit("anodes")} />;
 }
 
 function AnodeCoatingTab() {
-  const { t } = useI18n();
   const { canEdit } = useAuth();
-  const { listQuery, createMutation, updateMutation } = useCrudResource<AnodeCoatingCheck>(
-    "anode-coating-checks",
-    anodeCoatingChecksApi,
-    { limit: 2000 }
-  );
-  const columns: SheetColumn<AnodeCoatingCheck>[] = [
-    { key: "anode_nr", header: t("fields.anodeNumber"), lookup: "anode-numbers", width: "w-28" },
-    { key: "residual_thickness", header: t("fields.coatingThicknessPct"), kind: "number", width: "w-24" },
-    { key: "potential", header: t("fields.potentialV"), kind: "number", width: "w-24" },
-    { key: "inspector", header: t("fields.inspector"), width: "min-w-[120px]" },
-    { key: "check_date", header: t("fields.dateOfInspection"), kind: "date" },
-    { key: "remarks", header: t("fields.remark"), width: "min-w-[160px]" },
-  ];
-  return (
-    <ElectrodeSheet
-      title={t("menus.anodeCoatingInspection")}
-      rows={listQuery.data}
-      isLoading={listQuery.isLoading}
-      error={listQuery.error as Error | null}
-      columns={columns}
-      canEdit={canEdit("anodes")}
-      nrKey="anode_nr"
-      exportPrefix="/anode-coating-checks"
-      onCreate={(payload) => createMutation.mutateAsync(payload)}
-      onUpdate={(row, payload) => updateMutation.mutateAsync({ id: row.id, payload })}
-    />
-  );
+  const crud = useCrudResource<AnodeCoatingCheck>("anode-coating-checks", anodeCoatingChecksApi, { limit: 20000 });
+  return <AnodeCoatingCheckForm crud={crud} canEdit={canEdit("anodes")} />;
 }
 
 function AnodesPageInner() {

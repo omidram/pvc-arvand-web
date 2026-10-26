@@ -80,7 +80,7 @@ anode_maintenance_router = build_crud_router(
     write_schema=schemas.AnodeMaintenanceBase,
     prefix="/anode-maintenance",
     tags=["anodes"],
-    search_fields=["anode_nr"],
+    search_fields=["anode_nr", "finding", "action"],
     after_save=serial_hook("anode", "anode_nr"),
 )
 
@@ -90,7 +90,7 @@ anode_recoating_router = build_crud_router(
     write_schema=schemas.AnodeRecoatingBase,
     prefix="/anode-recoating",
     tags=["anodes"],
-    search_fields=["anode_nr"],
+    search_fields=["anode_nr", "coating_nr", "manufacturer", "remarks"],
     after_save=serial_hook("anode", "anode_nr"),
 )
 
@@ -100,7 +100,7 @@ anode_coating_checks_router = build_crud_router(
     write_schema=schemas.AnodeCoatingCheckBase,
     prefix="/anode-coating-checks",
     tags=["anodes"],
-    search_fields=["anode_nr"],
+    search_fields=["anode_nr", "coating_nr", "inspector", "remarks"],
     after_save=serial_hook("anode", "anode_nr"),
 )
 
@@ -123,7 +123,7 @@ cathode_maintenance_router = build_crud_router(
     write_schema=schemas.CathodeMaintenanceBase,
     prefix="/cathode-maintenance",
     tags=["cathodes"],
-    search_fields=["cathode_nr"],
+    search_fields=["cathode_nr", "finding", "action"],
     after_save=serial_hook("cathode", "cathode_nr"),
 )
 
@@ -133,7 +133,7 @@ cathode_recoating_router = build_crud_router(
     write_schema=schemas.CathodeRecoatingBase,
     prefix="/cathode-recoating",
     tags=["cathodes"],
-    search_fields=["cathode_nr"],
+    search_fields=["cathode_nr", "manufacturer", "remarks"],
     after_save=serial_hook("cathode", "cathode_nr"),
 )
 
@@ -143,7 +143,7 @@ cathode_coating_checks_router = build_crud_router(
     write_schema=schemas.CathodeCoatingCheckBase,
     prefix="/cathode-coating-checks",
     tags=["cathodes"],
-    search_fields=["cathode_nr"],
+    search_fields=["cathode_nr", "inspector", "remarks"],
     after_save=serial_hook("cathode", "cathode_nr"),
 )
 
@@ -165,6 +165,6 @@ membrane_maintenance_router = build_crud_router(
     write_schema=schemas.MembraneMaintenanceBase,
     prefix="/membrane-maintenance",
     tags=["membranes"],
-    search_fields=["membrane_nr"],
+    search_fields=["membrane_nr", "repair_work"],
     after_save=serial_hook("membrane", "membrane_nr"),
 )

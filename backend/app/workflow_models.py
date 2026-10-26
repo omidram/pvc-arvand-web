@@ -187,7 +187,7 @@ class WfAssembleRequest(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     code: Mapped[str] = mapped_column(String(40), unique=True, index=True)
     seq: Mapped[int] = mapped_column(Integer, unique=True, index=True)
-    status: Mapped[str] = mapped_column(String(20), index=True)  # await_assembly | await_inspection | await_position | completed | cancelled
+    status: Mapped[str] = mapped_column(String(20), index=True)  # await_assembly | await_air | await_insp_sign | await_proc_sign | await_position | completed | cancelled
     element_nr: Mapped[str | None] = mapped_column(String(50), index=True)
     element_id: Mapped[int | None] = mapped_column(Integer, index=True)
     anode_nr: Mapped[str] = mapped_column(String(50), index=True)

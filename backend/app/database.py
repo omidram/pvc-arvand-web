@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
+import shutil
 import sqlite3
+import subprocess
 from datetime import date, datetime
 from pathlib import Path
 
@@ -76,6 +79,25 @@ def _schema_object_name(exc: BaseException) -> str | None:
     return name
 
 
+def _sqlite_user_tables(path: Path) -> int | None:
+    try:
+        conn = sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True, timeout=8)
+        try:
+            row = conn.execute(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            ).fetchone()
+            return int(row[0]) if row else 0
+        finally:
+            conn.close()
+    except sqlite3.Error:
+        return None
+
+
+def _sqlite_readable(path: Path) -> bool:
+    n = _sqlite_user_tables(path)
+    return n is not None and n > 0
+
+
 def _drop_schema_object(path: Path, name: str) -> bool:
     """Remove one unreadable schema entry so the rest of the file can open."""
     conn = sqlite3.connect(path, timeout=30)
@@ -84,10 +106,14 @@ def _drop_schema_object(path: Path, name: str) -> bool:
             conn.setconfig(sqlite3.SQLITE_DBCONFIG_WRITABLE_SCHEMA, True)
         else:
             conn.execute("PRAGMA writable_schema=ON")
-        rows = conn.execute(
-            "SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name=?",
-            (name,),
-        ).fetchall()
+        try:
+            rows = conn.execute(
+                "SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name=?",
+                (name,),
+            ).fetchall()
+        except sqlite3.DatabaseError as exc:
+            _log.error("Cannot read sqlite_master to drop %s: %s", name, exc)
+            return False
         if not rows:
             return False
         removed = conn.execute("DELETE FROM sqlite_master WHERE name=?", (name,))
@@ -98,32 +124,128 @@ def _drop_schema_object(path: Path, name: str) -> bool:
                 handle.write(repr(row) + "\n")
         _log.warning("Removed unreadable schema object %s (%s rows) from %s", name, removed.rowcount, path)
         return removed.rowcount > 0
+    except sqlite3.DatabaseError as exc:
+        _log.error("Schema drop of %s failed: %s", name, exc)
+        return False
     finally:
         conn.close()
+
+
+def _recover_sqlite_file(path: Path) -> bool:
+    """Rebuild a corrupt SQLite file with the sqlite3 CLI `.recover` command.
+
+    The original file is copied beside the live DB first. The live file is
+    replaced only when the recovered copy opens and still has plant tables.
+    """
+    sqlite_bin = shutil.which("sqlite3")
+    if not sqlite_bin:
+        _log.error("sqlite3 CLI is not on PATH. Install it (apt install sqlite3) to recover %s", path)
+        return False
+    stamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    bak = path.with_name(f"{path.name}.malformed-{stamp}")
+    recovered = path.with_name(f"{path.name}.recovered-{stamp}")
+    sql_path = path.with_name(f"{path.name}.recover-{stamp}.sql")
+    try:
+        shutil.copy2(path, bak)
+    except OSError as exc:
+        _log.error("Could not copy corrupt database aside: %s", exc)
+        return False
+    _log.warning("SQLite file is malformed. Copy saved at %s — attempting .recover", bak)
+    recovered.unlink(missing_ok=True)
+    try:
+        with sql_path.open("w", encoding="utf-8", errors="replace") as out:
+            dump = subprocess.run(
+                [sqlite_bin, str(path), ".recover"],
+                stdout=out,
+                stderr=subprocess.PIPE,
+                timeout=900,
+                check=False,
+            )
+        if dump.returncode != 0:
+            err = (dump.stderr or b"").decode("utf-8", "replace")[-2000:]
+            _log.error("sqlite3 .recover exited %s: %s", dump.returncode, err)
+        if not sql_path.is_file() or sql_path.stat().st_size < 80:
+            _log.error("sqlite3 .recover produced no SQL for %s", path)
+            return False
+        with sql_path.open("r", encoding="utf-8", errors="replace") as stdin:
+            load = subprocess.run(
+                [sqlite_bin, str(recovered)],
+                stdin=stdin,
+                stderr=subprocess.PIPE,
+                timeout=900,
+                check=False,
+            )
+        if load.returncode != 0:
+            err = (load.stderr or b"").decode("utf-8", "replace")[-2000:]
+            _log.error("Loading recovered SQL failed: %s", err)
+            return False
+        tables = _sqlite_user_tables(recovered)
+        if not tables:
+            _log.error("Recovered file has no tables; leaving the original file in place. Backup: %s", bak)
+            return False
+        orig_size = path.stat().st_size
+        rec_size = recovered.stat().st_size
+        if orig_size > 1_000_000 and rec_size < orig_size * 0.02:
+            _log.error(
+                "Recovered file is far smaller than the original (%s vs %s bytes); not replacing. Backup: %s",
+                rec_size,
+                orig_size,
+                bak,
+            )
+            return False
+        os.replace(recovered, path)
+        _log.warning("Replaced malformed SQLite with recovered file (%s tables). Original copy: %s", tables, bak)
+        return True
+    except (OSError, subprocess.SubprocessError) as exc:
+        _log.error("SQLite recover failed: %s", exc)
+        return False
+    finally:
+        sql_path.unlink(missing_ok=True)
+        recovered.unlink(missing_ok=True)
 
 
 def repair_malformed_schema() -> None:
     """Drop a schema entry SQLite cannot parse, such as the server object named K1.
 
     Core plant tables are left untouched. A readable database is not modified.
+    A fully corrupt disk image is recovered with sqlite3 .recover when possible.
     """
     path = _sqlite_file()
     if path is None or not path.is_file():
         return
+    last_exc: sqlite3.DatabaseError | None = None
     for _ in range(8):
         conn = sqlite3.connect(path, timeout=30)
         try:
             conn.execute("SELECT name FROM sqlite_master LIMIT 1").fetchone()
             return
         except sqlite3.DatabaseError as exc:
+            last_exc = exc
             broken = _schema_object_name(exc)
+            disk_dead = "disk image is malformed" in str(exc).lower()
         finally:
             conn.close()
-        if broken is None or broken in _CORE_SCHEMA:
-            _log.error("SQLite schema is unreadable and was not modified: %s", broken or "unknown")
-            return
+        if disk_dead or broken is None:
+            break
+        if broken in _CORE_SCHEMA:
+            _log.error("SQLite schema is unreadable and was not modified: %s", broken)
+            break
         if not _drop_schema_object(path, broken):
-            return
+            break
+    else:
+        return
+    if _sqlite_readable(path):
+        return
+    if _recover_sqlite_file(path) and _sqlite_readable(path):
+        return
+    backups = path.parent / "backups"
+    detail = str(last_exc) if last_exc else "unreadable sqlite_master"
+    raise RuntimeError(
+        f"SQLite file is unreadable ({path}): {detail}. "
+        f"The live file was not replaced with an empty database. "
+        f"Copy the newest pvc_arvand_backup_*.db from {backups} over {path} and restart. "
+        f"If sqlite3 is missing, install it (apt install sqlite3) and restart so automatic .recover can run."
+    )
 
 
 repair_malformed_schema()

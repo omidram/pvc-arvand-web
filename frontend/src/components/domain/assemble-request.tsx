@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Ban, Check, MessageSquare, Paperclip, Plus } from "lucide-react";
+import { Ban, Check, ClipboardCheck, FileText, MessageSquare, Paperclip, Plus } from "lucide-react";
 import { DeadlineBadge, RequestEditForm, Stepper, useWorkflowMeta } from "@/components/domain/warehouse-workflow";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/data-table";
@@ -34,7 +34,7 @@ function todayIso() {
 function statusColor(status: string): "emerald" | "slate" | "violet" | "amber" {
   if (status === "completed") return "emerald";
   if (status === "cancelled") return "slate";
-  if (status === "await_inspection") return "violet";
+  if (status === "await_insp_sign" || status === "await_proc_sign") return "violet";
   return "amber";
 }
 
@@ -204,30 +204,54 @@ export function AssembleRequestsPanel({ onOpen }: { onOpen: (id: number) => void
   );
 }
 
-function DecideBox({ d, side, t, onDone }: { d: AssembleRequestDetail; side: "inspection" | "process"; t: T; onDone: (next: AssembleRequestDetail) => void }) {
-  const [ok, setOk] = useState(true);
-  const [result, setResult] = useState("");
+function airHref(d: AssembleRequestDetail) {
+  const nr = d.air?.element_nr || d.element_nr;
+  return nr ? `/assembly-inspection?element_nr=${encodeURIComponent(nr)}` : "/assembly-inspection";
+}
+
+function SignRejectBox({
+  d,
+  t,
+  signAction,
+  rejectAction,
+  signLabel,
+  onDone,
+}: {
+  d: AssembleRequestDetail;
+  t: T;
+  signAction: string;
+  rejectAction: string;
+  signLabel: string;
+  onDone: (next: AssembleRequestDetail) => void;
+}) {
+  const [rejectNote, setRejectNote] = useState("");
   const run = useMutation({
-    mutationFn: () => workflowApi.assembleStep(d.id, "decide", { side, ok, result: result.trim() || undefined, note: result.trim() || undefined }),
+    mutationFn: ({ action, note }: { action: string; note?: string }) => workflowApi.assembleStep(d.id, action, { note }),
     onSuccess: onDone,
   });
   return (
     <div className="wf-section">
-      <h4>{t(`wf.group.${side}`)}</h4>
+      <p className="wh-subdesc">{t("wf.asm.signHint")}</p>
       <div className="wh-form-inline">
-        <label>
-          {t("wf.asm.decision")}
-          <select value={ok ? "ok" : "no"} onChange={(e) => setOk(e.target.value === "ok")}>
-            <option value="ok">{t("wf.asm.accept")}</option>
-            <option value="no">{t("wf.asm.reject")}</option>
-          </select>
-        </label>
+        <Link className="wf-btn" href={airHref(d)} target="_blank">
+          <FileText size={14} /> {t("wf.asm.openAir")}
+        </Link>
+        <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => run.mutate({ action: signAction })}>
+          <Check size={14} /> {signLabel}
+        </button>
+      </div>
+      <div className="wh-form-inline">
         <label className="wh-grow">
-          {t("wf.note")}
-          <input value={result} onChange={(e) => setResult(e.target.value)} />
+          {t("wf.asm.rejectHint")}
+          <input value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} />
         </label>
-        <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => run.mutate()}>
-          <Check size={14} /> {t("wf.asm.confirmSide")}
+        <button
+          type="button"
+          className="wf-btn is-bad"
+          disabled={run.isPending || !rejectNote.trim()}
+          onClick={() => run.mutate({ action: rejectAction, note: rejectNote.trim() })}
+        >
+          <Ban size={14} /> {t("wf.asm.rejectBack")}
         </button>
       </div>
       {run.error ? <div className="wf-alert">{(run.error as Error).message}</div> : null}
@@ -264,8 +288,7 @@ function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
   const go = (action: string, body: Record<string, unknown> = {}) => run.mutate({ action, body: { note: note || undefined, ...body } });
   const error = (run.error || attach.error) as Error | null;
   const open = d.status !== "completed" && d.status !== "cancelled";
-  const insp = d.decisions?.inspection;
-  const proc = d.decisions?.process;
+  const air = d.air;
 
   return (
     <div className="wf-detail">
@@ -302,17 +325,29 @@ function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
         </Link>
       ) : null}
 
-      {open && (insp || proc || acts.includes("decide_inspection") || acts.includes("decide_process")) ? (
+      {d.status !== "await_assembly" ? (
         <section className="wf-section">
-          <h4>{t("wf.asm.parallelTitle")}</h4>
-          <p className="wh-subdesc">{t("wf.asm.parallelHint")}</p>
+          <h4>{t("wf.asm.airTitle")}</h4>
+          <p className="wh-subdesc">{t("wf.asm.airHint")}</p>
           <div className="wh-facts wf-facts">
-            <Fact label={t("wf.group.inspection")}>{insp ? (insp.ok ? t("wf.asm.accept") : t("wf.asm.reject")) : t("wf.asm.pending")}</Fact>
-            <Fact label={t("wf.group.process")}>{proc ? (proc.ok ? t("wf.asm.accept") : t("wf.asm.reject")) : t("wf.asm.pending")}</Fact>
+            <Fact label={t("assemblyInspection.activities")}>
+              {air ? `${air.checks_done}/${air.checks_total}` : "—"}
+            </Fact>
+            <Fact label={t("wf.group.c90")}>{air?.sign_maint ? air.sign_maint_name || t("wf.asm.signed") : t("wf.asm.pending")}</Fact>
+            <Fact label={t("wf.group.inspection")}>{air?.sign_insp ? air.sign_insp_name || t("wf.asm.signed") : t("wf.asm.pending")}</Fact>
+            <Fact label={t("wf.group.process")}>{air?.sign_proc ? air.sign_proc_name || t("wf.asm.signed") : t("wf.asm.pending")}</Fact>
           </div>
-          {acts.includes("decide_inspection") ? <DecideBox d={d} side="inspection" t={t} onDone={done} /> : null}
-          {acts.includes("decide_process") ? <DecideBox d={d} side="process" t={t} onDone={done} /> : null}
+          <Link className="wf-link" href={airHref(d)} target="_blank">
+            {t("wf.asm.openAir")}
+          </Link>
         </section>
+      ) : null}
+
+      {open && acts.includes("sign_insp") ? (
+        <SignRejectBox d={d} t={t} signAction="sign_insp" rejectAction="reject_insp" signLabel={t("wf.asm.confirmInspSign")} onDone={done} />
+      ) : null}
+      {open && acts.includes("sign_proc") ? (
+        <SignRejectBox d={d} t={t} signAction="sign_proc" rejectAction="reject_proc" signLabel={t("wf.asm.confirmProcSign")} onDone={done} />
       ) : null}
 
       {open ? (
@@ -327,6 +362,16 @@ function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
               </label>
               <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("assemble", { assembly_date: day })}>
                 <Check size={14} /> {t("wf.asm.stamp")}
+              </button>
+            </div>
+          ) : null}
+          {acts.includes("submit_air") ? (
+            <div className="wh-form-inline">
+              <Link className="wf-btn" href={airHref(d)} target="_blank">
+                <ClipboardCheck size={14} /> {t("wf.asm.openAir")}
+              </Link>
+              <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("submit_air")}>
+                <Check size={14} /> {t("wf.asm.submitAir")}
               </button>
             </div>
           ) : null}

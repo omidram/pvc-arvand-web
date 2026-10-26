@@ -87,6 +87,11 @@ export function RelatedLinks({
           {t("access.openTafkik")} {serialNr}
         </Link>
       ) : null}
+      {serialNr ? (
+        <Link href="/storage" className="access-menu-btn !w-auto px-3">
+          {t("nav.storage")}
+        </Link>
+      ) : null}
     </div>
   );
 }
@@ -253,6 +258,7 @@ export function AnodeRelations({ anodeNr }: { anodeNr: string }) {
   });
   return (
     <>
+      <RelatedLinks anodeNr={anodeNr} serialNr={anodeNr} />
       <AccessSubform caption={t("access.relatedMaintenance")}>
         <SubResourcePanel<AnodeMaintenance>
           queryKey="anode-maintenance"
@@ -307,16 +313,22 @@ export function AnodeRelations({ anodeNr }: { anodeNr: string }) {
           keyField="id"
           title={t("access.relatedCoatingChecks")}
           fields={[
+            { name: "coating_nr", label: t("fields.coatingNr") },
             { name: "check_date", label: t("fields.checkDate"), type: "date" },
             { name: "inspector", label: t("fields.inspector") },
             { name: "residual_thickness", label: t("fields.residualThickness"), type: "number", step: "0.01" },
             { name: "potential", label: t("fields.potential"), type: "number", step: "0.01" },
+            { name: "dol_days", label: t("fields.dolDays"), type: "number", fieldReadOnly: true },
+            { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
           ]}
           formKey="anodes"
           columns={[
+            { key: "coating_nr", header: t("fields.coatingNr") },
             { key: "check_date", header: t("fields.date"), render: (r) => formatDate(r.check_date) },
             { key: "inspector", header: t("fields.inspector") },
             { key: "residual_thickness", header: t("fields.residualThickness") },
+            { key: "potential", header: t("fields.potential") },
+            { key: "dol_days", header: t("fields.dolDays") },
           ]}
         />
       </AccessSubform>
@@ -352,6 +364,7 @@ export function CathodeRelations({ cathodeNr }: { cathodeNr: string }) {
   });
   return (
     <>
+      <RelatedLinks cathodeNr={cathodeNr} serialNr={cathodeNr} />
       <AccessSubform caption={t("access.relatedMaintenance")}>
         <SubResourcePanel<CathodeMaintenance>
           queryKey="cathode-maintenance"
@@ -406,11 +419,15 @@ export function CathodeRelations({ cathodeNr }: { cathodeNr: string }) {
             { name: "check_date", label: t("fields.checkDate"), type: "date" },
             { name: "inspector", label: t("fields.inspector") },
             { name: "residual_thickness", label: t("fields.residualThickness"), type: "number", step: "0.01" },
+            { name: "potential", label: t("fields.potential"), type: "number", step: "0.01" },
+            { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
           ]}
           formKey="cathodes"
           columns={[
             { key: "check_date", header: t("fields.date"), render: (r) => formatDate(r.check_date) },
             { key: "inspector", header: t("fields.inspector") },
+            { key: "residual_thickness", header: t("fields.residualThickness") },
+            { key: "potential", header: t("fields.potential") },
           ]}
         />
       </AccessSubform>
@@ -446,6 +463,7 @@ export function MembraneRelations({ membraneNr }: { membraneNr: string }) {
   });
   return (
     <>
+      <RelatedLinks membraneNr={membraneNr} />
       <AccessSubform caption={t("access.relatedMaintenance")}>
         <SubResourcePanel<MembraneMaintenance>
           queryKey="membrane-maintenance"

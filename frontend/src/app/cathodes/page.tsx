@@ -10,9 +10,14 @@ import {
 } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
 import type { Cathode, CathodeCoatingCheck, CathodeMaintenance, CathodeRecoating } from "@/lib/types";
+import Link from "next/link";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
 import { CathodeRelations } from "@/components/domain/access-relations";
-import { ElectrodeSheet, type SheetColumn } from "@/components/domain/electrode-sheet";
+import {
+  CathodeCoatingCheckForm,
+  CathodeMaintenanceForm,
+  CathodeRecoatingForm,
+} from "@/components/domain/electrode-subforms";
 import type { FieldDef } from "@/components/ui/resource-form";
 import type { Column } from "@/components/ui/data-table";
 import { formatDate } from "@/lib/utils";
@@ -78,7 +83,10 @@ function CathodesDetails() {
     { key: "manufacturer", header: t("fields.manufacturer") },
     { key: "coating", header: t("fields.coating") },
     { key: "batch", header: t("fields.batch") },
+    { key: "generation", header: t("fields.generation") },
+    { key: "assembly_group", header: t("fields.assemblyGroup") },
     { key: "received_date", header: t("fields.received"), render: (r) => formatDate(r.received_date) },
+    { key: "decommission_date", header: t("fields.decommissioned"), render: (r) => formatDate(r.decommission_date) },
   ];
 
   return (
@@ -102,106 +110,43 @@ function CathodesDetails() {
       submitting={createMutation.isPending || updateMutation.isPending}
       exportPrefix="/cathodes"
       filenameBase="cathodes"
+      commands={
+        <>
+          <Link href="/cathodes?tab=maintenance" className="access-menu-btn !w-auto px-3">
+            {t("menus.cathodeMaintenance")}
+          </Link>
+          <Link href="/cathodes?tab=recoating" className="access-menu-btn !w-auto px-3">
+            {t("menus.cathodeRecoating")}
+          </Link>
+          <Link href="/cathodes?tab=coating" className="access-menu-btn !w-auto px-3">
+            {t("menus.checkCathodeCoating")}
+          </Link>
+          <Link href="/maintenance-reports?kind=cathode" className="access-menu-btn !w-auto px-3">
+            {t("menus.cathodeMaintenanceReport")}
+          </Link>
+        </>
+      }
       related={(row) => <CathodeRelations cathodeNr={row.cathode_nr} />}
     />
   );
 }
 
 function CathodeMaintenanceTab() {
-  const { t } = useI18n();
   const { canEdit } = useAuth();
-  const { listQuery, createMutation, updateMutation } = useCrudResource<CathodeMaintenance>(
-    "cathode-maintenance",
-    cathodeMaintenanceApi,
-    { limit: 2000 }
-  );
-  const columns: SheetColumn<CathodeMaintenance>[] = [
-    { key: "cathode_nr", header: t("fields.cathodeNo"), lookup: "cathode-numbers", width: "w-28" },
-    { key: "date", header: t("fields.date"), kind: "date" },
-    { key: "finding", header: t("fields.findings"), width: "min-w-[180px]" },
-    { key: "action", header: t("fields.action"), width: "min-w-[160px]" },
-    { key: "dispatch_date", header: t("fields.despatch"), kind: "date" },
-    { key: "return_date", header: t("fields.sheetReturn"), kind: "date" },
-  ];
-  return (
-    <ElectrodeSheet
-      title={t("menus.cathodeMaintenance")}
-      rows={listQuery.data}
-      isLoading={listQuery.isLoading}
-      error={listQuery.error as Error | null}
-      columns={columns}
-      canEdit={canEdit("cathodes")}
-      showDate
-      nrKey="cathode_nr"
-      exportPrefix="/cathode-maintenance"
-      reportHref="/maintenance-reports?kind=cathode"
-      onCreate={(payload) => createMutation.mutateAsync(payload)}
-      onUpdate={(row, payload) => updateMutation.mutateAsync({ id: row.id, payload })}
-    />
-  );
+  const crud = useCrudResource<CathodeMaintenance>("cathode-maintenance", cathodeMaintenanceApi, { limit: 20000 });
+  return <CathodeMaintenanceForm crud={crud} canEdit={canEdit("cathodes")} />;
 }
 
 function CathodeRecoatingTab() {
-  const { t } = useI18n();
   const { canEdit } = useAuth();
-  const { listQuery, createMutation, updateMutation } = useCrudResource<CathodeRecoating>(
-    "cathode-recoating",
-    cathodeRecoatingApi,
-    { limit: 2000 }
-  );
-  const columns: SheetColumn<CathodeRecoating>[] = [
-    { key: "cathode_nr", header: t("fields.cathodeNumber"), lookup: "cathode-numbers", width: "w-28" },
-    { key: "dispatch_date", header: t("fields.shippingDate"), kind: "date" },
-    { key: "return_date", header: t("fields.returnDate"), kind: "date" },
-    { key: "manufacturer", header: t("fields.manufacturer"), width: "min-w-[140px]" },
-    { key: "remarks", header: t("fields.remark"), width: "min-w-[180px]" },
-  ];
-  return (
-    <ElectrodeSheet
-      title={t("menus.cathodeRecoating")}
-      rows={listQuery.data}
-      isLoading={listQuery.isLoading}
-      error={listQuery.error as Error | null}
-      columns={columns}
-      canEdit={canEdit("cathodes")}
-      nrKey="cathode_nr"
-      exportPrefix="/cathode-recoating"
-      onCreate={(payload) => createMutation.mutateAsync(payload)}
-      onUpdate={(row, payload) => updateMutation.mutateAsync({ id: row.id, payload })}
-    />
-  );
+  const crud = useCrudResource<CathodeRecoating>("cathode-recoating", cathodeRecoatingApi, { limit: 20000 });
+  return <CathodeRecoatingForm crud={crud} canEdit={canEdit("cathodes")} />;
 }
 
 function CathodeCoatingTab() {
-  const { t } = useI18n();
   const { canEdit } = useAuth();
-  const { listQuery, createMutation, updateMutation } = useCrudResource<CathodeCoatingCheck>(
-    "cathode-coating-checks",
-    cathodeCoatingChecksApi,
-    { limit: 2000 }
-  );
-  const columns: SheetColumn<CathodeCoatingCheck>[] = [
-    { key: "cathode_nr", header: t("fields.cathodeNumber"), lookup: "cathode-numbers", width: "w-28" },
-    { key: "residual_thickness", header: t("fields.coatingThicknessPct"), kind: "number", width: "w-24" },
-    { key: "potential", header: t("fields.potentialV"), kind: "number", width: "w-24" },
-    { key: "inspector", header: t("fields.inspector"), width: "min-w-[120px]" },
-    { key: "check_date", header: t("fields.dateOfInspection"), kind: "date" },
-    { key: "remarks", header: t("fields.remark"), width: "min-w-[160px]" },
-  ];
-  return (
-    <ElectrodeSheet
-      title={t("menus.cathodeCoatingInspection")}
-      rows={listQuery.data}
-      isLoading={listQuery.isLoading}
-      error={listQuery.error as Error | null}
-      columns={columns}
-      canEdit={canEdit("cathodes")}
-      nrKey="cathode_nr"
-      exportPrefix="/cathode-coating-checks"
-      onCreate={(payload) => createMutation.mutateAsync(payload)}
-      onUpdate={(row, payload) => updateMutation.mutateAsync({ id: row.id, payload })}
-    />
-  );
+  const crud = useCrudResource<CathodeCoatingCheck>("cathode-coating-checks", cathodeCoatingChecksApi, { limit: 20000 });
+  return <CathodeCoatingCheckForm crud={crud} canEdit={canEdit("cathodes")} />;
 }
 
 function CathodesPageInner() {

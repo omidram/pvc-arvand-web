@@ -220,6 +220,7 @@ function GroupSnapshot({
           <StatCard label={t("wf.desk.coatingApproval")} value={num(snap, "coating_approval")} icon={Sparkles} />
           <StatCard label={t("wf.desk.purchaseReg")} value={num(snap, "purchase_registration")} icon={ShoppingCart} />
           <StatCard label={t("wf.desk.awaitAssembly")} value={num(snap, "await_assembly")} tone={num(snap, "await_assembly") ? "accent" : "neutral"} icon={ClipboardList} />
+          <StatCard label={t("wf.desk.awaitAir")} value={num(snap, "await_air")} tone={num(snap, "await_air") ? "warn" : "neutral"} icon={ClipboardCheck} />
           <StatCard label={t("wf.desk.awaitPosition")} value={num(snap, "await_position")} tone={num(snap, "await_position") ? "warn" : "neutral"} icon={LayoutDashboard} />
         </div>
         {pool ? <PoolStrip pool={pool} t={t} /> : null}
@@ -281,6 +282,9 @@ function GroupSnapshot({
         <div className="rcd-links">
           <QuickLink href="/inspections" icon={ClipboardCheck}>
             {t("wf.desk.linkInspections")}
+          </QuickLink>
+          <QuickLink href="/assembly-inspection" icon={ClipboardCheck}>
+            {t("wf.asm.openAir")}
           </QuickLink>
           <QuickLink href="/segregation" icon={SplitSquareVertical}>
             {t("wf.desk.linkSegregation")}

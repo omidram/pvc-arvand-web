@@ -30,6 +30,13 @@ from ..relations_sync import link_serial
 from ..segregation_enrich import disassembly_monitoring, enrich_segregation_fields, format_service_life
 from ..segregation_flow import classify_row
 from ..warehouse import compact_eq, compact_nr, ensure_indexed, load_compact_index
+from ..electrode_lifecycle import (
+    coating_check_on_inspect,
+    maintenance_from_inspection,
+    recoating_on_approve,
+    recoating_on_dispatch,
+    recoating_on_return,
+)
 from ..warehouse_lifecycle import _stamp, log_event, upsert_state
 from ..workflow_excel import build_workbook, parse_report
 from ..workflow_models import (
@@ -96,7 +103,9 @@ INSPECTION_STAGES: dict[str, list[str]] = {
 }
 ASSEMBLE_STAGES: dict[str, list[str]] = {
     "await_assembly": ["c90"],
-    "await_inspection": ["inspection", "process"],
+    "await_air": ["c90"],
+    "await_insp_sign": ["inspection"],
+    "await_proc_sign": ["process"],
     "await_position": ["c90"],
 }
 WORKORDER_STAGES: dict[str, list[str]] = {
@@ -118,7 +127,7 @@ DEFAULT_SLA: dict[str, dict[str, int]] = {
     "purchase": {"await_indent": 72, "await_order": 720, "await_registration": 72},
     "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120, "await_disassembly": 72, "await_reinstall": 120, "await_numbering": 72},
     "inspection": {"await_request": 24, "await_inspection": 72},
-    "assemble": {"await_assembly": 72, "await_inspection": 72, "await_position": 120},
+    "assemble": {"await_assembly": 72, "await_air": 72, "await_insp_sign": 72, "await_proc_sign": 72, "await_position": 120},
     "workorder": {"open": 120},
 }
 DEFAULT_WARN_PERCENT = 25
@@ -671,6 +680,7 @@ def cartable_desk(db: Session = Depends(get_db), user: models.User = Depends(get
             "coating_approval": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_approval"),
             "purchase_registration": sum(1 for r in waiting if r.get("flow") == "purchase" and r.get("status") == "await_registration"),
             "await_assembly": sum(1 for r in waiting if r.get("flow") == "assemble" and r.get("status") == "await_assembly"),
+            "await_air": sum(1 for r in waiting if r.get("flow") == "assemble" and r.get("status") == "await_air"),
             "await_position": sum(1 for r in waiting if r.get("flow") == "assemble" and r.get("status") == "await_position"),
         }
     if "cellshop" in desk_groups:
@@ -683,7 +693,12 @@ def cartable_desk(db: Session = Depends(get_db), user: models.User = Depends(get
     if "inspection" in desk_groups:
         snapshots["inspection"] = {
             "await_inspection": sum(
-                1 for r in waiting if r.get("status") == "await_inspection" and "inspection" in (r.get("groups") or [])
+                1
+                for r in waiting
+                if (
+                    (r.get("status") == "await_inspection" and "inspection" in (r.get("groups") or []))
+                    or (r.get("flow") == "assemble" and r.get("status") == "await_insp_sign")
+                )
             ),
             "coating_inspection": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_inspection"),
             "element_inspection": sum(1 for r in waiting if r.get("flow") == "inspection" and r.get("status") == "await_inspection"),
@@ -691,7 +706,12 @@ def cartable_desk(db: Session = Depends(get_db), user: models.User = Depends(get
     if "process" in desk_groups:
         snapshots["process"] = {
             "await_inspection": sum(
-                1 for r in waiting if r.get("status") == "await_inspection" and "process" in (r.get("groups") or [])
+                1
+                for r in waiting
+                if (
+                    (r.get("status") == "await_inspection" and "process" in (r.get("groups") or []))
+                    or (r.get("flow") == "assemble" and r.get("status") == "await_proc_sign")
+                )
             ),
             "element_inspection": sum(1 for r in waiting if r.get("flow") == "inspection" and r.get("status") == "await_inspection"),
             "coating_inspection": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_inspection"),
@@ -1326,10 +1346,20 @@ def _do_dispatch(db: Session, b: WfCoatingBatch, body: DispatchIn, user: models.
     for it in _batch_items(db, b):
         upsert_state(db, it.element_kind, it.serial, lifecycle_status="at_coater", company_id=b.company_id)
         label = "Rework sent" if action == "rework" else "Sent for recoating"
+        code = codes.get(it.package_id)
         log_event(
             db, it.element_kind, it.serial, "dispatch", dispatch_date,
-            f"{label} {codes.get(it.package_id, '')} → {co.name if co else ''}",
-            ref_kind="wf_coating", ref_id=b.id, details={"code": codes.get(it.package_id), "indent_no": b.indent_no},
+            f"{label} {code or ''} → {co.name if co else ''}",
+            ref_kind="wf_coating", ref_id=b.id, details={"code": code, "indent_no": b.indent_no},
+        )
+        recoating_on_dispatch(
+            db,
+            kind=it.element_kind,
+            serial=it.serial,
+            code=code,
+            dispatch_date=dispatch_date,
+            manufacturer=co.name[:100] if co else None,
+            prior_days=_prior_coating_service_days(db, it.element_kind, it.serial, dispatch_date),
         )
     _move(
         db, "coating", b, "await_return", action, user, body.note,
@@ -1382,10 +1412,20 @@ def coating_receive(batch_id: int, body: ReceiveIn, db: Session = Depends(get_db
     codes = {p.id: p.code for p in db.query(WfCoatingPackage).filter_by(batch_id=b.id)}
     for it in _batch_items(db, b):
         upsert_state(db, it.element_kind, it.serial, lifecycle_status="pending_receive", company_id=b.company_id)
+        code = codes.get(it.package_id)
         log_event(
             db, it.element_kind, it.serial, "receive", body.actual_date,
-            f"Returned from coating {codes.get(it.package_id, '')}",
-            ref_kind="wf_coating", ref_id=b.id, details={"code": codes.get(it.package_id), "delay_days": days},
+            f"Returned from coating {code or ''}",
+            ref_kind="wf_coating", ref_id=b.id, details={"code": code, "delay_days": days},
+        )
+        recoating_on_return(
+            db,
+            kind=it.element_kind,
+            serial=it.serial,
+            code=code,
+            return_date=body.actual_date,
+            warranty_months=b.warranty_months,
+            warranty_start=b.warranty_start,
         )
     _event(
         db, "coating", b, "receive", user, b.status, body.note,
@@ -1473,6 +1513,18 @@ def coating_inspect_ok(batch_id: int, body: NoteIn, db: Session = Depends(get_db
     """Inspection checked the returned pieces and the company report; C-90 gives the final approval next."""
     b = _load_batch(db, batch_id)
     _require_stage(db, user, "coating", b.status, ("await_inspection",))
+    codes = {p.id: p.code for p in db.query(WfCoatingPackage).filter_by(batch_id=b.id)}
+    inspector = (user.full_name or user.username or "").strip()[:100] or None
+    for it in _batch_items(db, b):
+        coating_check_on_inspect(
+            db,
+            kind=it.element_kind,
+            serial=it.serial,
+            code=codes.get(it.package_id),
+            inspector=inspector,
+            note=body.note,
+            day=date.today(),
+        )
     _move(db, "coating", b, "await_approval", "inspect_ok", user, body.note)
     db.commit()
     return _coating_detail(db, b, user)
@@ -1541,35 +1593,19 @@ def coating_approve(batch_id: int, body: NoteIn, db: Session = Depends(get_db), 
         log_event(db, it.element_kind, it.serial, "coating_approved", day, f"Recoating approved {code}", ref_kind="wf_coating", ref_id=b.id, details={"code": code})
         remark = f"Workflow {code}" + (f" — {it.final_report}" if it.final_report else "")
         prior = _prior_coating_service_days(db, it.element_kind, it.serial, b.dispatch_date)
-        if it.element_kind == "anode":
-            n = db.query(func.count(models.AnodeRecoating.id)).filter(models.AnodeRecoating.anode_nr == it.serial).scalar() or 0
-            db.add(
-                models.AnodeRecoating(
-                    anode_nr=it.serial,
-                    coating_nr=code,
-                    dispatch_date=_stamp(b.dispatch_date) if b.dispatch_date else None,
-                    return_date=_stamp(b.return_date) if b.return_date else None,
-                    manufacturer=co.name[:100] if co else None,
-                    recoating_number=str(n + 1),
-                    remarks=remark,
-                    warranty_months=b.warranty_months,
-                    warranty_start=b.warranty_start,
-                    prior_service_days=prior,
-                )
-            )
-        else:
-            db.add(
-                models.CathodeRecoating(
-                    cathode_nr=it.serial,
-                    dispatch_date=_stamp(b.dispatch_date) if b.dispatch_date else None,
-                    return_date=_stamp(b.return_date) if b.return_date else None,
-                    manufacturer=co.name[:100] if co else None,
-                    remarks=remark,
-                    warranty_months=b.warranty_months,
-                    warranty_start=b.warranty_start,
-                    prior_service_days=prior,
-                )
-            )
+        recoating_on_approve(
+            db,
+            kind=it.element_kind,
+            serial=it.serial,
+            code=code,
+            dispatch_date=b.dispatch_date,
+            return_date=b.return_date,
+            manufacturer=co.name[:100] if co else None,
+            remark=remark,
+            warranty_months=b.warranty_months,
+            warranty_start=b.warranty_start,
+            prior_days=prior,
+        )
     _move(db, "coating", b, "completed", "approve", user, body.note, notify_creator=True)
     db.commit()
     return _coating_detail(db, b, user)
@@ -3156,6 +3192,15 @@ def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
         if existing is None:
             db.add(row)
         db.flush()
+        if chosen and chosen.get("problem") == "mechanical":
+            maintenance_from_inspection(
+                db,
+                kind=kind,
+                serial=spelled or serial,
+                finding=str(chosen.get("result") or "mechanical problem"),
+                action="\n".join(notes) or None,
+                day=date_type.today(),
+            )
 
 
 @router.post("/inspection/{request_id}/decide")
@@ -3351,19 +3396,132 @@ def _assemble_decisions(r: WfAssembleRequest) -> dict:
     return r.decisions if isinstance(r.decisions, dict) else {}
 
 
+def _air_signed(report: models.AssemblyInspectionReport | None, side: str) -> bool:
+    if report is None:
+        return False
+    name = (getattr(report, f"sign_{side}_name", None) or "").strip()
+    image = (getattr(report, f"sign_{side}_image", None) or "").strip()
+    return bool(name or image)
+
+
+def _air_filled(report: models.AssemblyInspectionReport | None) -> bool:
+    if report is None:
+        return False
+    checks = report.checks if isinstance(report.checks, dict) else {}
+    if any(bool(v) for v in checks.values()):
+        return True
+    return _air_signed(report, "maint")
+
+
+def _clear_air_sign(report: models.AssemblyInspectionReport | None, *sides: str) -> None:
+    if report is None:
+        return
+    for side in sides:
+        setattr(report, f"sign_{side}_name", None)
+        setattr(report, f"sign_{side}_image", None)
+        setattr(report, f"sign_{side}_at", None)
+
+
+def _air_for(db: Session, r: WfAssembleRequest) -> models.AssemblyInspectionReport | None:
+    key = compact_nr(r.element_nr)
+    if not key:
+        return None
+    best = None
+    for row in db.query(models.AssemblyInspectionReport).order_by(models.AssemblyInspectionReport.id.desc()).all():
+        if compact_nr(row.element_nr) == key:
+            return row
+        if best is None and compact_nr(row.anode_nr) == compact_nr(r.anode_nr) and compact_nr(row.cathode_nr) == compact_nr(r.cathode_nr):
+            best = row
+    return best
+
+
+def _air_brief(report: models.AssemblyInspectionReport | None) -> dict | None:
+    if report is None:
+        return None
+    checks = report.checks if isinstance(report.checks, dict) else {}
+    done = sum(1 for v in checks.values() if v)
+    return {
+        "id": report.id,
+        "element_nr": report.element_nr,
+        "filled": _air_filled(report),
+        "checks_done": done,
+        "checks_total": len(checks),
+        "sign_maint": _air_signed(report, "maint"),
+        "sign_insp": _air_signed(report, "insp"),
+        "sign_proc": _air_signed(report, "proc"),
+        "sign_maint_name": report.sign_maint_name,
+        "sign_insp_name": report.sign_insp_name,
+        "sign_proc_name": report.sign_proc_name,
+    }
+
+
+def _ensure_air(db: Session, r: WfAssembleRequest) -> models.AssemblyInspectionReport:
+    row = _air_for(db, r)
+    if row is not None:
+        if not (row.element_nr or "").strip() and r.element_nr:
+            row.element_nr = r.element_nr
+        if not (row.anode_nr or "").strip():
+            row.anode_nr = r.anode_nr
+        if not (row.cathode_nr or "").strip():
+            row.cathode_nr = r.cathode_nr
+        if not (row.membrane_nr or "").strip():
+            row.membrane_nr = r.membrane_nr
+        if not (row.membrane_type or "").strip():
+            row.membrane_type = r.membrane_type
+        if row.assembly_date is None and r.assembly_date:
+            row.assembly_date = r.assembly_date
+        return row
+    from ..assembly_inspection_def import empty_check_remarks, empty_checks
+
+    row = models.AssemblyInspectionReport(
+        assembly_date=r.assembly_date or date.today(),
+        element_nr=r.element_nr,
+        anode_nr=r.anode_nr,
+        cathode_nr=r.cathode_nr,
+        membrane_nr=r.membrane_nr,
+        membrane_type=r.membrane_type,
+        checks=empty_checks(),
+        check_remarks=empty_check_remarks(),
+        remarks=f"Workflow {r.code}",
+    )
+    db.add(row)
+    db.flush()
+    return row
+
+
+def _migrate_assemble_status(db: Session, r: WfAssembleRequest) -> bool:
+    """Old dual-accept step becomes: C-90 fills AIR, then inspection sign, then process sign."""
+    if r.status != "await_inspection":
+        return False
+    report = _air_for(db, r)
+    if not _air_filled(report):
+        r.status = "await_air"
+    elif not _air_signed(report, "insp"):
+        r.status = "await_insp_sign"
+    elif not _air_signed(report, "proc"):
+        r.status = "await_proc_sign"
+    else:
+        r.status = "await_position"
+    r.updated_at = _now()
+    return True
+
+
 def _assemble_actions(db: Session, r: WfAssembleRequest, user: models.User) -> list[str]:
     groups = _groups(db, user)
     acts: list[str] = []
     if r.status == "await_assembly" and "c90" in groups:
         acts.append("assemble")
-    if r.status == "await_inspection" and "inspection" in groups:
-        acts.append("decide_inspection")
-    if r.status == "await_inspection" and "process" in groups:
-        acts.append("decide_process")
+    if r.status == "await_air" and "c90" in groups:
+        acts.append("submit_air")
+    if r.status == "await_insp_sign" and "inspection" in groups:
+        acts += ["sign_insp", "reject_insp"]
+    if r.status == "await_proc_sign" and "process" in groups:
+        acts += ["sign_proc", "reject_proc"]
     if r.status == "await_position" and "c90" in groups:
         acts.append("position")
     managed = _can_manage(db, user, "assemble", r.status)
-    if _can_cancel(user, r.status, r.created_by_id, "await_assembly", also=managed):
+    early = r.status == "await_air" and r.created_by_id == user.id
+    if _can_cancel(user, r.status, r.created_by_id, "await_assembly", also=managed or early):
         acts.append("cancel")
     if managed:
         acts.append("edit")
@@ -3373,12 +3531,16 @@ def _assemble_actions(db: Session, r: WfAssembleRequest, user: models.User) -> l
 
 
 def _assemble_detail(db: Session, r: WfAssembleRequest, user: models.User) -> dict:
+    if _migrate_assemble_status(db, r):
+        db.commit()
+        db.refresh(r)
     data = _assemble_summary(db, r)
     el = db.get(models.Element, r.element_id) if r.element_id else None
     data.update(
         {
             "completed_at": _iso(r.completed_at),
             "decisions": _assemble_decisions(r),
+            "air": _air_brief(_air_for(db, r)),
             "element": _element_brief(el) if el is not None else None,
             "files": _files(db, "assemble", r.id),
             "events": _events(db, "assemble", r.id),
@@ -3468,7 +3630,13 @@ def list_assemble_requests(
     if open_only:
         q = q.filter(WfAssembleRequest.status.notin_(CLOSED))
     conf = sla_config(db)
-    return [_assemble_summary(db, r, conf) for r in q.limit(500).all()]
+    rows = q.limit(500).all()
+    dirty = False
+    for r in rows:
+        dirty = _migrate_assemble_status(db, r) or dirty
+    if dirty:
+        db.commit()
+    return [_assemble_summary(db, r, conf) for r in rows]
 
 
 @router.get("/assemble/{request_id}")
@@ -3532,7 +3700,7 @@ class AssembleStampIn(NoteIn):
 
 @router.post("/assemble/{request_id}/assemble")
 def assemble_stamp(request_id: int, body: AssembleStampIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    """C-90 writes the assembly date and the new Assembly Data row, then inspection and process must both confirm."""
+    """C-90 writes the assembly date and the new Assembly Data row, then fills the Assembly Inspection Report."""
     r = _load_assemble(db, request_id)
     _require_stage(db, user, "assemble", r.status, ("await_assembly",))
     day = _edit_date(body.assembly_date) if (body.assembly_date or "").strip() else date.today()
@@ -3568,45 +3736,83 @@ def assemble_stamp(request_id: int, body: AssembleStampIn, db: Session = Depends
     r.membrane_nr = el.membrane_nr
     r.assembly_date = day
     _try_shop(db, el.element_nr, "awaiting_qc", user, body.note)
-    _move(db, "assemble", r, "await_inspection", "assemble", user, body.note, {"element_id": el.id, "assembly_date": _iso(day)})
+    air = _ensure_air(db, r)
+    _move(db, "assemble", r, "await_air", "assemble", user, body.note, {"element_id": el.id, "assembly_date": _iso(day), "air_id": air.id})
     db.commit()
     svc.clear_cache()
     return _assemble_detail(db, r, user)
 
 
-class AssembleDecideIn(NoteIn):
-    side: str
-    ok: bool
-    result: str | None = None
+@router.post("/assemble/{request_id}/submit_air")
+def assemble_submit_air(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """C-90 finished the Assembly Inspection Report; inspection must sign it next."""
+    r = _load_assemble(db, request_id)
+    _require_stage(db, user, "assemble", r.status, ("await_air",))
+    report = _ensure_air(db, r)
+    if not _air_filled(report):
+        raise HTTPException(400, "Fill and save the Assembly Inspection Report first")
+    _move(db, "assemble", r, "await_insp_sign", "submit_air", user, body.note, {"air_id": report.id})
+    db.commit()
+    return _assemble_detail(db, r, user)
+
+
+@router.post("/assemble/{request_id}/sign_insp")
+def assemble_sign_insp(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_assemble(db, request_id)
+    _require_stage(db, user, "assemble", r.status, ("await_insp_sign",))
+    report = _air_for(db, r)
+    if not _air_signed(report, "insp"):
+        raise HTTPException(400, "Inspection must sign the Assembly Inspection Report first")
+    _move(db, "assemble", r, "await_proc_sign", "sign_insp", user, body.note, {"air_id": report.id if report else None})
+    db.commit()
+    return _assemble_detail(db, r, user)
+
+
+@router.post("/assemble/{request_id}/reject_insp")
+def assemble_reject_insp(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_assemble(db, request_id)
+    _require_stage(db, user, "assemble", r.status, ("await_insp_sign",))
+    if not (body.note or "").strip():
+        raise HTTPException(400, "Write why the Assembly Inspection Report is not accepted")
+    _clear_air_sign(_air_for(db, r), "insp", "proc")
+    _move(db, "assemble", r, "await_air", "reject_insp", user, body.note, notify_creator=True)
+    db.commit()
+    return _assemble_detail(db, r, user)
+
+
+@router.post("/assemble/{request_id}/sign_proc")
+def assemble_sign_proc(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_assemble(db, request_id)
+    _require_stage(db, user, "assemble", r.status, ("await_proc_sign",))
+    report = _air_for(db, r)
+    if not _air_signed(report, "proc"):
+        raise HTTPException(400, "Process must sign the Assembly Inspection Report first")
+    _try_shop(db, r.element_nr, "ready", user, body.note)
+    _move(db, "assemble", r, "await_position", "sign_proc", user, body.note, {"air_id": report.id if report else None})
+    db.commit()
+    return _assemble_detail(db, r, user)
+
+
+@router.post("/assemble/{request_id}/reject_proc")
+def assemble_reject_proc(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    r = _load_assemble(db, request_id)
+    _require_stage(db, user, "assemble", r.status, ("await_proc_sign",))
+    if not (body.note or "").strip():
+        raise HTTPException(400, "Write why the Assembly Inspection Report is not accepted")
+    _clear_air_sign(_air_for(db, r), "insp", "proc")
+    _move(db, "assemble", r, "await_insp_sign", "reject_proc", user, body.note, notify_creator=True)
+    db.commit()
+    return _assemble_detail(db, r, user)
 
 
 @router.post("/assemble/{request_id}/decide")
-def assemble_decide(request_id: int, body: AssembleDecideIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    r = _load_assemble(db, request_id)
-    if r.status != "await_inspection":
-        raise HTTPException(409, "Inspection and process confirm only after the assembly date is written")
-    if body.side not in ("inspection", "process"):
-        raise HTTPException(400, "Choose inspection or process")
-    if body.side not in _groups(db, user):
-        raise HTTPException(403, "This confirmation belongs to the other group")
-    result = (body.result or body.note or "").strip()[:400]
-    if body.ok is False and not result:
-        raise HTTPException(400, "Write why the new element is not accepted")
-    if body.ok and not result:
-        result = "accepted"
-    dec = {**_assemble_decisions(r), body.side: {"ok": bool(body.ok), "result": result, "note": (body.note or "").strip()[:400] or None}}
-    r.decisions = dec
-    r.updated_at = _now()
-    _event(db, "assemble", r, "decide", user, r.status, body.note, {"side": body.side, "ok": body.ok, "result": result})
-    insp = dec.get("inspection") if isinstance(dec.get("inspection"), dict) else {}
-    proc = dec.get("process") if isinstance(dec.get("process"), dict) else {}
-    if insp.get("ok") is True and proc.get("ok") is True:
-        _try_shop(db, r.element_nr, "ready", user, body.note)
-        _move(db, "assemble", r, "await_position", "both_confirmed", user, body.note)
-    else:
-        _notify(db, "assemble", r, user)
-    db.commit()
-    return _assemble_detail(db, r, user)
+def assemble_decide_removed(request_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    _load_assemble(db, request_id)
+    _require_view(db, user, INSPECTION_VIEW_KEYS)
+    raise HTTPException(
+        409,
+        "Inspection and process no longer accept this request. Sign or reject the Assembly Inspection Report instead.",
+    )
 
 
 class AssemblePositionIn(NoteIn):
@@ -3640,6 +3846,10 @@ def assemble_position(request_id: int, body: AssemblePositionIn, db: Session = D
     _sync_saved_element(db, el)
     r.electrolyzer = electrolyzer
     r.position = position
+    air = _air_for(db, r)
+    if air is not None:
+        air.electrolyzer = electrolyzer
+        air.position = position
     _clear_shop(db, el.element_nr, user, f"{electrolyzer}-{position}")
     _move(db, "assemble", r, "completed", "position", user, body.note, {"electrolyzer": electrolyzer, "position": position})
     db.commit()
