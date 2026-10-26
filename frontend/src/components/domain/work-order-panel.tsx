@@ -10,10 +10,12 @@ import { DateInput } from "@/components/ui/date-input";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
+import { Tabs } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth/context";
 import {
   workOrdersApi,
   type WoLaborLine,
+  type WoPerson,
   type WoStage,
   type WorkOrderDetail,
   type WorkOrderSummary,
@@ -130,10 +132,15 @@ function toWrite(form: FormState): WorkOrderWrite {
   };
 }
 
+function peopleForSkill(people: WoPerson[], skill: string) {
+  return people.filter((p) => p.skill === skill);
+}
+
 function LaborRows({
   stage,
   rows,
   skills,
+  people,
   editable,
   onChange,
   t,
@@ -141,6 +148,7 @@ function LaborRows({
   stage: WoStage;
   rows: WoLaborLine[];
   skills: string[];
+  people: WoPerson[];
   editable: boolean;
   onChange: (rows: WoLaborLine[]) => void;
   t: (k: string, vars?: Record<string, string | number>) => string;
@@ -150,79 +158,136 @@ function LaborRows({
   };
   return (
     <div className="wo-labors">
-      {rows.map((row, idx) => (
-        <div key={`${stage}-${idx}`} className="wo-labor-row">
-          <label>
-            <span>{t("wo.personCode")}</span>
-            <Input
-              value={row.person_code || ""}
-              disabled={!editable}
-              onChange={(e) => setRow(idx, { person_code: e.target.value })}
-            />
-          </label>
-          <label>
-            <span>{t("wo.personName")}</span>
-            <Input
-              value={row.person_name || ""}
-              disabled={!editable}
-              onChange={(e) => setRow(idx, { person_name: e.target.value })}
-            />
-          </label>
-          <label>
-            <span>{t("wo.skill")}</span>
-            <select
-              className="ui-input"
-              value={row.skill || ""}
-              disabled={!editable}
-              onChange={(e) => setRow(idx, { skill: e.target.value })}
-            >
-              <option value="">—</option>
-              {skills.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>{t("wo.workHours")}</span>
-            <Input
-              type="number"
-              step="0.25"
-              min="0"
-              value={row.work_hours ?? ""}
-              disabled={!editable}
-              onChange={(e) => setRow(idx, { work_hours: e.target.value === "" ? null : Number(e.target.value) })}
-            />
-          </label>
-          <label>
-            <span>{t("wo.workQty")}</span>
-            <Input
-              value={row.work_qty || ""}
-              disabled={!editable}
-              onChange={(e) => setRow(idx, { work_qty: e.target.value })}
-            />
-          </label>
-          <label className="wo-span-2">
-            <span>{t("wo.description")}</span>
-            <Input
-              value={row.description || ""}
-              disabled={!editable}
-              onChange={(e) => setRow(idx, { description: e.target.value })}
-            />
-          </label>
-          {editable ? (
-            <button
-              type="button"
-              className="wo-icon-btn"
-              title={t("common.delete")}
-              onClick={() => onChange(rows.length <= 1 ? [emptyLabor(stage)] : rows.filter((_, i) => i !== idx))}
-            >
-              <Trash2 size={14} />
-            </button>
-          ) : null}
-        </div>
-      ))}
+      <p className="wo-skill-hint">{t("wo.skillFirst")}</p>
+      {rows.map((row, idx) => {
+        const jobPicked = Boolean(row.skill);
+        const roster = peopleForSkill(people, row.skill || "");
+        const known = roster.some((p) => p.person_code === (row.person_code || ""));
+        const pickValue = !row.person_code ? "" : known ? row.person_code : "__new__";
+        const restLocked = !editable || !jobPicked;
+        return (
+          <div key={`${stage}-${idx}`} className={`wo-labor-row${jobPicked ? "" : " is-waiting-job"}`}>
+            <label>
+              <span>{t("wo.skill")}</span>
+              <select
+                className="ui-input"
+                value={row.skill || ""}
+                disabled={!editable}
+                onChange={(e) => {
+                  const skill = e.target.value;
+                  const match = people.find((p) => p.skill === skill && p.person_code === (row.person_code || ""));
+                  setRow(idx, {
+                    skill,
+                    person_name: match?.person_name || row.person_name,
+                  });
+                }}
+              >
+                <option value="">—</option>
+                {skills.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>{t("wo.pickPerson")}</span>
+              <select
+                className="ui-input"
+                value={pickValue}
+                disabled={restLocked}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (!value) {
+                    setRow(idx, { person_code: "", person_name: "" });
+                    return;
+                  }
+                  if (value === "__new__") {
+                    setRow(idx, { person_code: "", person_name: "" });
+                    return;
+                  }
+                  const match = roster.find((p) => p.person_code === value);
+                  setRow(idx, { person_code: value, person_name: match?.person_name || "" });
+                }}
+              >
+                <option value="">—</option>
+                {roster.map((p) => (
+                  <option key={`${p.skill}-${p.person_code}`} value={p.person_code}>
+                    {p.person_code}
+                    {p.person_name ? ` — ${p.person_name}` : ""}
+                  </option>
+                ))}
+                <option value="__new__">{t("wo.newPerson")}</option>
+              </select>
+            </label>
+            <label>
+              <span>{t("wo.personCode")}</span>
+              <Input
+                value={row.person_code || ""}
+                disabled={restLocked}
+                list={`wo-people-${stage}-${idx}`}
+                onChange={(e) => {
+                  const code = e.target.value;
+                  const match = roster.find((p) => p.person_code === code);
+                  setRow(idx, { person_code: code, person_name: match?.person_name || row.person_name });
+                }}
+              />
+              <datalist id={`wo-people-${stage}-${idx}`}>
+                {roster.map((p) => (
+                  <option key={`${p.skill}-${p.person_code}`} value={p.person_code}>
+                    {p.person_name || p.person_code}
+                  </option>
+                ))}
+              </datalist>
+            </label>
+            <label>
+              <span>{t("wo.personName")}</span>
+              <Input
+                value={row.person_name || ""}
+                disabled={restLocked}
+                onChange={(e) => setRow(idx, { person_name: e.target.value })}
+              />
+            </label>
+            <label>
+              <span>{t("wo.workHours")}</span>
+              <Input
+                type="number"
+                step="0.25"
+                min="0"
+                value={row.work_hours ?? ""}
+                disabled={restLocked}
+                onChange={(e) => setRow(idx, { work_hours: e.target.value === "" ? null : Number(e.target.value) })}
+              />
+            </label>
+            <label>
+              <span>{t("wo.workQty")}</span>
+              <Input
+                value={row.work_qty || ""}
+                disabled={restLocked}
+                onChange={(e) => setRow(idx, { work_qty: e.target.value })}
+              />
+            </label>
+            <label className="wo-span-2">
+              <span>{t("wo.description")}</span>
+              <Input
+                value={row.description || ""}
+                disabled={restLocked}
+                onChange={(e) => setRow(idx, { description: e.target.value })}
+              />
+            </label>
+            {editable ? (
+              <button
+                type="button"
+                className="wo-icon-btn"
+                title={t("common.delete")}
+                onClick={() => onChange(rows.length <= 1 ? [emptyLabor(stage)] : rows.filter((_, i) => i !== idx))}
+              >
+                <Trash2 size={14} />
+              </button>
+            ) : null}
+          </div>
+        );
+      })}
       {editable ? (
         <Button type="button" variant="ghost" size="sm" onClick={() => onChange([...rows, emptyLabor(stage)])}>
           <Plus size={14} /> {t("wo.addLabor")}
@@ -232,10 +297,88 @@ function LaborRows({
   );
 }
 
+function stageDate(form: FormState, stage: WoStage) {
+  if (stage === "generation") return form.generation_date;
+  if (stage === "install") return form.install_date;
+  if (stage === "pickup") return form.pickup_date;
+  if (stage === "store") return form.store_date;
+  return form.disassemble_date;
+}
+
+function latestStarted(form: FormState): WoStage {
+  const started = STAGES.filter((stage) => Boolean(stageDate(form, stage)));
+  return started[started.length - 1] || "generation";
+}
+
+function StageFields({
+  stage,
+  form,
+  setForm,
+  skills,
+  people,
+  editable,
+  t,
+}: {
+  stage: WoStage;
+  form: FormState;
+  setForm: (f: FormState) => void;
+  skills: string[];
+  people: WoPerson[];
+  editable: boolean;
+  t: (k: string, vars?: Record<string, string | number>) => string;
+}) {
+  const patch = (p: Partial<FormState>) => setForm({ ...form, ...p });
+  const started = Boolean(stageDate(form, stage));
+  return (
+    <section className={`wo-stage${started ? " is-done" : " is-pending"}`}>
+      <h3>{t(`wo.stage.${stage}`)}</h3>
+      <p className="wo-stage-hint">{started ? t("wo.processOpen") : t("wo.processWait")}</p>
+      {stage === "install" ? (
+        <div className="wo-grid-2">
+          <label>
+            <span>{t("wo.installCell")}</span>
+            <Input value={form.install_cell} disabled={!editable} onChange={(e) => patch({ install_cell: e.target.value })} />
+          </label>
+          <label>
+            <span>{t("wo.date")}</span>
+            <DateInput type="date" value={form.install_date} disabled={!editable} onChange={(e) => patch({ install_date: e.target.value })} />
+          </label>
+        </div>
+      ) : (
+        <label className="wo-date">
+          <span>{t("wo.date")}</span>
+          <DateInput
+            type="date"
+            value={stageDate(form, stage)}
+            disabled={!editable}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (stage === "generation") patch({ generation_date: value });
+              else if (stage === "pickup") patch({ pickup_date: value });
+              else if (stage === "store") patch({ store_date: value });
+              else patch({ disassemble_date: value });
+            }}
+          />
+        </label>
+      )}
+      <LaborRows
+        stage={stage}
+        rows={form.labors[stage]}
+        skills={skills}
+        people={people}
+        editable={editable}
+        onChange={(rows) => patch({ labors: { ...form.labors, [stage]: rows } })}
+        t={t}
+      />
+    </section>
+  );
+}
+
 function WorkOrderForm({
   form,
   setForm,
   skills,
+  people,
   editable,
   code,
   status,
@@ -246,6 +389,7 @@ function WorkOrderForm({
   form: FormState;
   setForm: (f: FormState) => void;
   skills: string[];
+  people: WoPerson[];
   editable: boolean;
   code?: string | null;
   status?: string | null;
@@ -254,13 +398,12 @@ function WorkOrderForm({
   onOpenHistory?: (id: number) => void;
 }) {
   const patch = (p: Partial<FormState>) => setForm({ ...form, ...p });
-  const stageDone = (stage: WoStage) => {
-    if (stage === "generation") return Boolean(form.generation_date);
-    if (stage === "install") return Boolean(form.install_date);
-    if (stage === "pickup") return Boolean(form.pickup_date);
-    if (stage === "store") return Boolean(form.store_date);
-    return Boolean(form.disassemble_date);
-  };
+  const [tab, setTab] = useState<WoStage>(() => latestStarted(form));
+  useEffect(() => {
+    setTab(latestStarted(form));
+    // Only when switching work orders — typing the element number must not change tab.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code]);
   return (
     <div className="wo-form">
       <div className="wo-head">
@@ -318,91 +461,25 @@ function WorkOrderForm({
         </div>
       </div>
 
-      <section className={`wo-stage${stageDone("generation") ? " is-done" : " is-pending"}`}>
-        <h3>{t("wo.stage.generation")}</h3>
-        <label className="wo-date">
-          <span>{t("wo.date")}</span>
-          <DateInput type="date" value={form.generation_date} disabled={!editable} onChange={(e) => patch({ generation_date: e.target.value })} />
-        </label>
-        <LaborRows
-          stage="generation"
-          rows={form.labors.generation}
-          skills={skills}
-          editable={editable}
-          onChange={(rows) => patch({ labors: { ...form.labors, generation: rows } })}
-          t={t}
-        />
-      </section>
-
-      <section className={`wo-stage${stageDone("install") ? " is-done" : " is-pending"}`}>
-        <h3>{t("wo.stage.install")}</h3>
-        <div className="wo-grid-2">
-          <label>
-            <span>{t("wo.installCell")}</span>
-            <Input value={form.install_cell} disabled={!editable} onChange={(e) => patch({ install_cell: e.target.value })} />
-          </label>
-          <label>
-            <span>{t("wo.date")}</span>
-            <DateInput type="date" value={form.install_date} disabled={!editable} onChange={(e) => patch({ install_date: e.target.value })} />
-          </label>
-        </div>
-        <LaborRows
-          stage="install"
-          rows={form.labors.install}
-          skills={skills}
-          editable={editable}
-          onChange={(rows) => patch({ labors: { ...form.labors, install: rows } })}
-          t={t}
-        />
-      </section>
-
-      <section className={`wo-stage${stageDone("pickup") ? " is-done" : " is-pending"}`}>
-        <h3>{t("wo.stage.pickup")}</h3>
-        <label className="wo-date">
-          <span>{t("wo.date")}</span>
-          <DateInput type="date" value={form.pickup_date} disabled={!editable} onChange={(e) => patch({ pickup_date: e.target.value })} />
-        </label>
-        <LaborRows
-          stage="pickup"
-          rows={form.labors.pickup}
-          skills={skills}
-          editable={editable}
-          onChange={(rows) => patch({ labors: { ...form.labors, pickup: rows } })}
-          t={t}
-        />
-      </section>
-
-      <section className={`wo-stage${stageDone("store") ? " is-done" : " is-pending"}`}>
-        <h3>{t("wo.stage.store")}</h3>
-        <label className="wo-date">
-          <span>{t("wo.date")}</span>
-          <DateInput type="date" value={form.store_date} disabled={!editable} onChange={(e) => patch({ store_date: e.target.value })} />
-        </label>
-        <LaborRows
-          stage="store"
-          rows={form.labors.store}
-          skills={skills}
-          editable={editable}
-          onChange={(rows) => patch({ labors: { ...form.labors, store: rows } })}
-          t={t}
-        />
-      </section>
-
-      <section className={`wo-stage${stageDone("disassemble") ? " is-done" : " is-pending"}`}>
-        <h3>{t("wo.stage.disassemble")}</h3>
-        <label className="wo-date">
-          <span>{t("wo.date")}</span>
-          <DateInput type="date" value={form.disassemble_date} disabled={!editable} onChange={(e) => patch({ disassemble_date: e.target.value })} />
-        </label>
-        <LaborRows
-          stage="disassemble"
-          rows={form.labors.disassemble}
-          skills={skills}
-          editable={editable}
-          onChange={(rows) => patch({ labors: { ...form.labors, disassemble: rows } })}
-          t={t}
-        />
-      </section>
+      <Tabs
+        activeKey={tab}
+        onChange={(key) => setTab(key as WoStage)}
+        tabs={STAGES.map((stage) => ({
+          key: stage,
+          label: `${t(`wo.tab.${stage}`)}${stageDate(form, stage) ? " ✓" : ""}`,
+          content: (
+            <StageFields
+              stage={stage}
+              form={form}
+              setForm={setForm}
+              skills={skills}
+              people={people}
+              editable={editable}
+              t={t}
+            />
+          ),
+        }))}
+      />
 
       <label className="wo-remarks">
         <span>{t("fields.remarks")}</span>
@@ -454,6 +531,7 @@ export function WorkOrderPanel() {
   }, [detail.data]);
 
   const skills = meta.data?.skills || [];
+  const people = meta.data?.people || [];
   const canWrite = editable && (meta.data?.can_edit ?? editable);
 
   const saveMut = useMutation({
@@ -593,6 +671,7 @@ export function WorkOrderPanel() {
               form={form}
               setForm={setForm}
               skills={skills}
+              people={people}
               editable={!!formEditable}
               code={creating ? null : detail.data?.code}
               status={creating ? "open" : detail.data?.status}

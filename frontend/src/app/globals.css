@@ -7049,10 +7049,13 @@ html[data-theme="dark"] .ewc-start { background: #1e1b4b; border-color: #6d28d9;
 .wo-pill { font-size: 10px; padding: 1px 6px; border-radius: 999px; background: #e2e8f0; color: #64748b; }
 .wo-pill.is-on { background: #dbeafe; color: #1e40af; }
 .wo-date { display: block; max-width: 14rem; margin-bottom: 0.55rem; }
+.wo-stage-hint, .wo-skill-hint { margin: 0 0 0.65rem; font-size: 12px; line-height: 1.45; color: #64748b; }
 .wo-labors { display: flex; flex-direction: column; gap: 0.55rem; }
-.wo-labor-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) auto; gap: 0.45rem; align-items: end; padding: 0.55rem; border-radius: 10px; background: #fff; border: 1px solid #e2e8f0; }
+.wo-labor-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) auto; gap: 0.45rem; align-items: end; padding: 0.55rem; border-radius: 10px; background: #fff; border: 1px solid #e2e8f0; }
+.wo-labor-row.is-waiting-job { background: #f8fafc; }
 .wo-labor-row label, .wo-form label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 11px; color: #475569; }
 .wo-span-2 { grid-column: 1 / -2; }
+.wo-form .ui-tabs { margin-top: 0.15rem; }
 .wo-icon-btn { border: 0; background: transparent; color: #94a3b8; cursor: pointer; padding: 0.35rem; }
 .wo-icon-btn:hover { color: #b91c1c; }
 .wo-remarks { display: flex; flex-direction: column; gap: 0.25rem; }

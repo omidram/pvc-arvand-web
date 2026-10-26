@@ -1916,6 +1916,12 @@ export interface WoLaborLine {
   line_no?: number;
 }
 
+export interface WoPerson {
+  person_code: string;
+  person_name?: string | null;
+  skill: string;
+}
+
 export interface WorkOrderDetail {
   id: number;
   code: string;
@@ -1981,7 +1987,7 @@ export type WorkOrderWrite = {
 };
 
 export const workOrdersApi = {
-  meta: async (): Promise<{ stages: string[]; skills: string[]; can_edit: boolean }> =>
+  meta: async (): Promise<{ stages: string[]; skills: string[]; people: WoPerson[]; can_edit: boolean }> =>
     (await apiClient.get("/work-orders/meta")).data,
   list: async (params?: { q?: string; status?: string; element_nr?: string; limit?: number }): Promise<WorkOrderSummary[]> =>
     (await apiClient.get("/work-orders", { params })).data,

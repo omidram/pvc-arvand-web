@@ -316,3 +316,16 @@ class WfWorkOrderLabor(Base):
     work_hours: Mapped[float | None] = mapped_column(Float)
     work_qty: Mapped[str | None] = mapped_column(String(40))
     description: Mapped[str | None] = mapped_column(Text)
+
+
+class WfPlannerPerson(Base):
+    """Cell-shop roster: person code under a job/skill, used to complete planner labor rows."""
+
+    __tablename__ = "wf_planner_people"
+    __table_args__ = (UniqueConstraint("person_code", "skill", name="uq_planner_person_skill"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    person_code: Mapped[str] = mapped_column(String(60), index=True)
+    person_name: Mapped[str | None] = mapped_column(String(150))
+    skill: Mapped[str] = mapped_column(String(80), index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)

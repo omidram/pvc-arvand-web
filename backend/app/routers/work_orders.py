@@ -13,7 +13,15 @@ from .. import models
 from ..auth import LEVEL_RANK, get_current_user, user_permission_map
 from ..database import get_db
 from ..warehouse import compact_nr
-from ..workflow_models import WO_SKILLS, WO_STAGES, WfEvent, WfNotification, WfWorkOrder, WfWorkOrderLabor
+from ..workflow_models import (
+    WO_SKILLS,
+    WO_STAGES,
+    WfEvent,
+    WfNotification,
+    WfPlannerPerson,
+    WfWorkOrder,
+    WfWorkOrderLabor,
+)
 
 router = APIRouter(prefix="/work-orders", tags=["work-orders"], dependencies=[Depends(get_current_user)])
 
@@ -447,6 +455,49 @@ def _apply_header(wo: WfWorkOrder, body: WorkOrderIn, el: models.Element | None)
         wo.element_id = el.id
 
 
+def _people_catalog(db: Session) -> list[dict[str, str | None]]:
+    seen: dict[tuple[str, str], dict[str, str | None]] = {}
+    for row in db.query(WfPlannerPerson).order_by(WfPlannerPerson.skill, WfPlannerPerson.person_code).all():
+        code = (row.person_code or "").strip()
+        skill = (row.skill or "").strip()
+        if not code or not skill:
+            continue
+        seen[(code, skill)] = {"person_code": code, "person_name": row.person_name, "skill": skill}
+    for row in (
+        db.query(WfWorkOrderLabor)
+        .filter(WfWorkOrderLabor.person_code.isnot(None), WfWorkOrderLabor.skill.isnot(None))
+        .all()
+    ):
+        code = (row.person_code or "").strip()
+        skill = (row.skill or "").strip()
+        if not code or not skill:
+            continue
+        key = (code, skill)
+        if key not in seen:
+            seen[key] = {"person_code": code, "person_name": row.person_name, "skill": skill}
+    return sorted(seen.values(), key=lambda r: (r["skill"] or "", r["person_code"] or ""))
+
+
+def _upsert_people(db: Session, labors: list[LaborIn]) -> None:
+    for item in labors:
+        code = (item.person_code or "").strip()
+        skill = (item.skill or "").strip()
+        name = (item.person_name or "").strip() or None
+        if not code or not skill:
+            continue
+        row = (
+            db.query(WfPlannerPerson)
+            .filter(WfPlannerPerson.person_code == code, WfPlannerPerson.skill == skill)
+            .one_or_none()
+        )
+        if row is None:
+            db.add(WfPlannerPerson(person_code=code, person_name=name, skill=skill, updated_at=_now()))
+        else:
+            if name:
+                row.person_name = name
+            row.updated_at = _now()
+
+
 def _replace_labors(db: Session, wo: WfWorkOrder, labors: list[LaborIn]) -> None:
     db.query(WfWorkOrderLabor).filter(WfWorkOrderLabor.work_order_id == wo.id).delete()
     counters: dict[str, int] = {}
@@ -480,6 +531,7 @@ def _replace_labors(db: Session, wo: WfWorkOrder, labors: list[LaborIn]) -> None
                 description=(item.description or "").strip() or None,
             )
         )
+    _upsert_people(db, labors)
 
 
 @router.get("/meta")
@@ -488,6 +540,7 @@ def meta(db: Session = Depends(get_db), user: models.User = Depends(get_current_
     return {
         "stages": list(WO_STAGES),
         "skills": list(WO_SKILLS),
+        "people": _people_catalog(db),
         "can_edit": _level(db, user) == "edit" or user.role == "admin",
     }
 
