@@ -8,6 +8,9 @@ exactly. Standardized voltage follows Access ``UnBer``.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date as date_cls
+from datetime import datetime as datetime_cls
+from datetime import time as time_cls
 
 
 @dataclass
@@ -220,9 +223,6 @@ def current_efficiency(
 
 
 def _as_date(value):
-    from datetime import date as date_cls
-    from datetime import datetime as datetime_cls
-
     if value is None:
         return None
     if isinstance(value, datetime_cls):
@@ -235,8 +235,6 @@ def _as_date(value):
 
 
 def days_on_line(commissioning_date, decommissioning_date, reference_today=None) -> int | None:
-    from datetime import date as date_cls
-
     start = _as_date(commissioning_date)
     if not start:
         return None
@@ -244,19 +242,210 @@ def days_on_line(commissioning_date, decommissioning_date, reference_today=None)
     return (end - start).days
 
 
-def installation_dol(
-    assembly_date, commissioning_date, disassembly_date, decommissioning_date=None, reference_today=None
-) -> int | None:
-    """Days on line from installation (or assembly, if it was never dated separately) until dismantle.
+# Lives assembled/commissioned on or after this day use commission + shutdown/startup times.
+# Earlier Excel/imported lives use the last assembly date of that serial.
+DOL_OPERATOR_ERA = date_cls(2026, 10, 26)
+_PLANT_WIDE_SHUTDOWN = frozenset({"ca total plant", "total plant", "plant"})
 
-    End is the dismantle date, otherwise the shutdown date, otherwise today while the cell is still in.
+
+def _as_datetime(value):
+    if value is None:
+        return None
+    if isinstance(value, datetime_cls):
+        return value.replace(tzinfo=None) if value.tzinfo else value
+    if isinstance(value, date_cls):
+        return datetime_cls.combine(value, time_cls.min)
+    if isinstance(value, str):
+        text = value.strip().replace("Z", "")
+        if not text:
+            return None
+        try:
+            return datetime_cls.fromisoformat(text)
+        except ValueError:
+            try:
+                return datetime_cls.fromisoformat(text[:19])
+            except ValueError:
+                return None
+    return None
+
+
+def is_operator_era(assembly_date, commissioning_date, cutoff=None) -> bool:
+    edge = cutoff or DOL_OPERATOR_ERA
+    if not isinstance(edge, date_cls):
+        edge = DOL_OPERATOR_ERA
+    asm = _as_date(assembly_date)
+    com = _as_date(commissioning_date)
+    return bool((com and com >= edge) or (asm and asm >= edge))
+
+
+def last_assembly_date(lives) -> object:
+    dates = [_as_date(getattr(el, "assembly_date", None)) for el in lives or []]
+    dates = [d for d in dates if d]
+    return max(dates) if dates else None
+
+
+def shutdowns_affecting(windows, electrolyzer: str | None) -> list[tuple]:
+    """Shutdown (down, up) pairs that apply to this electrolyzer.
+
+    Matches the cell name (A1), its train (Train1), and plant-wide rows.
     """
-    from datetime import date as date_cls
+    from .plant_topology import format_electrolyzer_name, train_of
 
-    start = _as_date(commissioning_date) or _as_date(assembly_date)
+    if not windows:
+        return []
+    elo = format_electrolyzer_name(electrolyzer) if electrolyzer else ""
+    train = train_of(elo) if elo else None
+    matched: list[tuple] = []
+    for item in windows:
+        if isinstance(item, (tuple, list)):
+            part = item[0] if len(item) > 0 else None
+            down = item[1] if len(item) > 1 else None
+            up = item[2] if len(item) > 2 else None
+        else:
+            part = getattr(item, "plant_part", None)
+            down = getattr(item, "shutdown_time", None)
+            up = getattr(item, "startup_time", None)
+        if not down:
+            continue
+        raw = (part or "").strip()
+        key = raw.lower().replace(" ", "")
+        if raw.lower() in _PLANT_WIDE_SHUTDOWN or key in {"catotalplant", "totalplant"}:
+            matched.append((down, up))
+            continue
+        if elo and format_electrolyzer_name(raw) == elo:
+            matched.append((down, up))
+            continue
+        if train and key in {f"train{train}", train}:
+            matched.append((down, up))
+    return matched
+
+
+def operating_dol_days(start, end, shutdowns=None) -> int | None:
+    """Uptime days from start to end, subtracting shutdown_time→startup_time windows."""
+    start_dt = _as_datetime(start)
+    if not start_dt:
+        return None
+    end_dt = _as_datetime(end) or datetime_cls.now()
+    if end_dt < start_dt:
+        return 0
+    events: list[tuple] = []
+    for item in shutdowns or []:
+        if isinstance(item, (tuple, list)):
+            down, up = (list(item) + [None])[:2]
+        else:
+            down = getattr(item, "shutdown_time", None) or (item or {}).get("shutdown")
+            up = getattr(item, "startup_time", None) or (item or {}).get("startup")
+        down_dt = _as_datetime(down)
+        if not down_dt:
+            continue
+        events.append((down_dt, _as_datetime(up)))
+    events.sort(key=lambda pair: pair[0])
+    uptime = 0.0
+    cursor = start_dt
+    running = True
+    for down, up in events:
+        if down >= end_dt:
+            break
+        if up and up <= start_dt:
+            continue
+        if down < start_dt:
+            if up and up > start_dt:
+                cursor = max(cursor, up)
+                running = True
+            else:
+                running = False
+            continue
+        if running and down > cursor:
+            uptime += (down - cursor).total_seconds()
+        running = False
+        if up is None or up >= end_dt:
+            break
+        if up > cursor:
+            cursor = up
+            running = True
+    if running and end_dt > cursor:
+        uptime += (end_dt - cursor).total_seconds()
+    return int(uptime // 86400)
+
+
+def installation_dol(
+    assembly_date,
+    commissioning_date,
+    disassembly_date,
+    decommissioning_date=None,
+    reference_today=None,
+    last_assembly=None,
+    shutdowns=None,
+    start_not_before=None,
+) -> int | None:
+    """Days on line for one installation.
+
+    Excel / pre-cutoff lives: last assembly date → dismantle (or today).
+    From the operator era onward: commission date minus shutdown/startup outages.
+    """
+    today = reference_today or date_cls.today()
+    asm = _as_date(last_assembly) or _as_date(assembly_date)
+    com = _as_date(commissioning_date)
+    closed = _as_date(disassembly_date) or _as_date(decommissioning_date)
+    clip = _as_date(start_not_before)
+
+    if is_operator_era(asm, com):
+        start = com or asm
+        if not start:
+            return None
+        if clip and start < clip:
+            start = clip
+        if closed:
+            end_dt = datetime_cls.combine(closed, time_cls(23, 59, 59))
+        else:
+            end_dt = datetime_cls.now() if reference_today is None else datetime_cls.combine(today, time_cls(23, 59, 59))
+        return operating_dol_days(start, end_dt, shutdowns)
+
+    start = asm
     if not start:
         return None
-    end = _as_date(disassembly_date) or _as_date(decommissioning_date) or reference_today or date_cls.today()
+    if clip and start < clip:
+        start = clip
+    end = closed or today
     if end < start:
         return 0
     return (end - start).days
+
+
+def serial_dol(lives, shutdowns=None, reference_today=None, start_not_before=None) -> int | None:
+    """DOL for an anode/cathode/membrane: last assembly of all lives, or operator-era rules on the latest life."""
+    rows = [el for el in (lives or []) if el is not None]
+    if not rows:
+        return None
+
+    def _key(el):
+        return (
+            _as_date(el.assembly_date) or _as_date(el.commissioning_date) or date_cls.min,
+            _as_date(el.commissioning_date) or date_cls.min,
+            getattr(el, "id", 0) or 0,
+        )
+
+    latest = max(rows, key=_key)
+    return installation_dol(
+        latest.assembly_date,
+        latest.commissioning_date,
+        latest.disassembly_date,
+        latest.decommissioning_date,
+        reference_today,
+        last_assembly=last_assembly_date(rows),
+        shutdowns=shutdowns,
+        start_not_before=start_not_before,
+    )
+
+
+def element_dol(el, shutdowns=None, last_assembly=None, reference_today=None, start_not_before=None) -> int | None:
+    return installation_dol(
+        getattr(el, "assembly_date", None),
+        getattr(el, "commissioning_date", None),
+        getattr(el, "disassembly_date", None),
+        getattr(el, "decommissioning_date", None),
+        reference_today,
+        last_assembly=last_assembly,
+        shutdowns=shutdowns,
+        start_not_before=start_not_before,
+    )

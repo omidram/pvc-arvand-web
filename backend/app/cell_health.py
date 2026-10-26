@@ -14,7 +14,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from . import alerts_engine, models
-from .calculations import installation_dol
+from .warehouse import dol_for_element, load_shutdown_windows
 from .plant_topology import arrangement_name, train_of
 
 # Soft operating envelopes (engineering guidance — not OEM trip limits).
@@ -626,18 +626,14 @@ def build_cell_health_board(db: Session, electrolyzer: str) -> dict[str, Any]:
     median_v = median(voltages) if voltages else None
 
     positions = set(readings) | set(elements)
+    windows = load_shutdown_windows(db)
     cells: list[dict[str, Any]] = []
     for pos in sorted(positions, key=lambda item: int(item) if str(item).isdigit() else str(item)):
         row = readings.get(pos)
         asm = elements.get(pos)
         dol = None
         if asm:
-            dol = installation_dol(
-                asm.assembly_date,
-                asm.commissioning_date,
-                asm.disassembly_date,
-                asm.decommissioning_date,
-            )
+            dol = dol_for_element(asm, windows)
         cell_ce = ce_by_pos.get(pos)
         ce = cell_ce if cell_ce is not None else el_ce
         un_avg = avg_un.get(pos)

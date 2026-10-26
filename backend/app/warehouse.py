@@ -16,7 +16,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from . import models
-from .calculations import installation_dol
+from .calculations import element_dol, serial_dol, shutdowns_affecting
 
 BUCKETS = ("on_rack", "out_repair", "pending", "ok", "not_ok")
 
@@ -47,6 +47,15 @@ def _as_date(value):
 def _iso(value) -> str | None:
     day = _as_date(value)
     return day.isoformat() if day else None
+
+
+def load_shutdown_windows(db: Session) -> list[tuple]:
+    rows = db.query(models.Shutdown).all()
+    return [(row.plant_part, row.shutdown_time, row.startup_time) for row in rows if row.shutdown_time]
+
+
+def dol_for_element(el, windows=None) -> int | None:
+    return element_dol(el, shutdowns=shutdowns_affecting(windows or [], getattr(el, "electrolyzer", None)))
 
 
 def _stamp(day: date) -> datetime:
@@ -338,6 +347,7 @@ def build_board(db: Session, kind: str, bucket: str | None = None, q: str | None
 
     keys = set(elements) | set(catalogs) | set(maintenance) | set(recoating) | set(checks)
     counts = {name: 0 for name in BUCKETS}
+    windows = load_shutdown_windows(db)
     items = []
     for key in keys:
         lives = elements.get(key) or []
@@ -363,16 +373,9 @@ def build_board(db: Session, kind: str, bucket: str | None = None, q: str | None
         if not display and catalog is not None:
             display = getattr(catalog, field)
         display = (display or key).strip()
-        dols = [
-            installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date)
-            for el in lives
-        ]
-        dols = [value for value in dols if value is not None]
-        last_dol = None
-        if latest is not None:
-            last_dol = installation_dol(
-                latest.assembly_date, latest.commissioning_date, latest.disassembly_date, latest.decommissioning_date
-            )
+        part_shutdowns = shutdowns_affecting(windows, latest.electrolyzer if latest else None)
+        last_dol = serial_dol(lives, shutdowns=part_shutdowns)
+        dols = [last_dol] if last_dol is not None else []
         coating_text = None
         if coating is not None:
             coating_text = coating.remarks
@@ -539,9 +542,7 @@ def apply_move(db: Session, kind: str, serial: str, action: str, when: date | No
         latest = max(lives, key=_life_key) if lives else None
         dol = None
         if latest is not None:
-            dol = installation_dol(
-                latest.assembly_date, latest.commissioning_date, latest.disassembly_date, latest.decommissioning_date
-            )
+            dol = serial_dol(lives, shutdowns=shutdowns_affecting(load_shutdown_windows(db), latest.electrolyzer))
         label = "OK" if action == "ok" else "NOT OK"
         remarks = f"{label} — {note_text}" if note_text else label
         inspector = None

@@ -15,10 +15,10 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from . import models
-from .calculations import installation_dol
+from .calculations import element_dol, serial_dol, shutdowns_affecting
 from .plant_topology import all_electrolyzers, format_electrolyzer_name, is_valid_electrolyzer_name, norm_pos
 from .relations_sync import is_junk_serial
-from .warehouse import BUCKETS, _as_date, _grouped, _iso, _life_key, build_board, compact_eq, compact_nr
+from .warehouse import BUCKETS, _as_date, _grouped, _iso, _life_key, build_board, compact_eq, compact_nr, load_shutdown_windows
 
 CACHE_SECONDS = 30  # the heavy per-part computations are reused for a short time; "Refresh" clears them
 _CACHE: dict[Any, tuple[float, Any]] = {}
@@ -141,34 +141,14 @@ def life_status(days: int | None, limit: int | None, warn_percent: int) -> tuple
     return pct, "ok", limit - days
 
 
-def merged_dol(elements, since: date | None = None) -> int | None:
-    """Days on line of one part over all the installations it has been in.
+def merged_dol(elements, since: date | None = None, shutdowns=None) -> int | None:
+    """Days on line of one part.
 
-    A part that appears twice for the same period (duplicate rows) is counted once: overlapping
-    installations are merged before the days are added. ``since`` ignores installations that started earlier.
+    Legacy Excel lives use the last assembly date of that serial (not the sum of
+    every install). Operator-era lives use commission minus shutdown/startup.
+    ``since`` clips the start (coating DOL after a return).
     """
-    today = date.today()
-    spans: list[tuple[date, date]] = []
-    for el in elements:
-        start = _as_date(el.commissioning_date) or _as_date(el.assembly_date)
-        if not start:
-            continue
-        end = _as_date(el.disassembly_date) or _as_date(el.decommissioning_date) or today
-        if end < start or (since is not None and start < since):
-            continue
-        spans.append((start, end))
-    if not spans:
-        return None
-    spans.sort()
-    total = 0
-    cur_start, cur_end = spans[0]
-    for start, end in spans[1:]:
-        if start <= cur_end:
-            cur_end = max(cur_end, end)
-        else:
-            total += (cur_end - cur_start).days
-            cur_start, cur_end = start, end
-    return total + (cur_end - cur_start).days
+    return serial_dol(elements, shutdowns=shutdowns, start_not_before=since)
 
 
 # ---------------------------------------------------------------- element pipeline
@@ -216,13 +196,16 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
     """One row per element number with its current stage."""
     rows = db.query(models.Element).all()
     latest: dict[str, models.Element] = {}
+    lives_by_nr: dict[str, list] = defaultdict(list)
     for el in rows:
         key = compact_nr(el.element_nr)
         if not key:
             continue
+        lives_by_nr[key].append(el)
         if key not in latest or _life_key(el) >= _life_key(latest[key]):
             latest[key] = el
 
+    windows = load_shutdown_windows(db)
     manual = {compact_nr(s.element_nr): s for s in db.query(models.ElementShopState).all()}
     reports: dict[str, list[models.AssemblyInspectionReport]] = defaultdict(list)
     for rep in db.query(models.AssemblyInspectionReport).all():
@@ -271,7 +254,10 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
 
         dol = None
         if el is not None and base in ("in_service", "installed", "decommissioned"):
-            dol = installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date)
+            dol = serial_dol(
+                lives_by_nr.get(key, [el]),
+                shutdowns=shutdowns_affecting(windows, el.electrolyzer),
+            )
         display = (el.element_nr if el is not None else (st.element_nr if st else key)) or key
         stage_dates: dict[str, str] = {}
         if el is not None:
@@ -534,6 +520,7 @@ def electrode_rows(db: Session, kind: str, settings: dict[str, Any] | None = Non
         jobs_by_key[job["key"]].append(job)
     wh = _wh_states(db, kind)
     today = date.today()
+    windows = load_shutdown_windows(db)
 
     rows: list[dict[str, Any]] = []
     for item in board["items"]:
@@ -545,8 +532,10 @@ def electrode_rows(db: Session, kind: str, settings: dict[str, Any] | None = Non
         last_return = max(returns) if returns else None
 
         lives = elements.get(key, [])
-        total_dol = merged_dol(lives)
-        coating_dol = merged_dol(lives, since=last_return) if total_dol is not None else None
+        latest_el = max(lives, key=_life_key) if lives else None
+        part_sd = shutdowns_affecting(windows, latest_el.electrolyzer if latest_el else None)
+        total_dol = merged_dol(lives, shutdowns=part_sd)
+        coating_dol = merged_dol(lives, since=last_return, shutdowns=part_sd) if total_dol is not None else None
         if coating_dol is None and total_dol is not None:
             coating_dol = 0
         runs = item["runs"]
@@ -630,6 +619,7 @@ def membrane_rows(db: Session, settings: dict[str, Any] | None = None) -> list[d
     elements = _grouped(db.query(models.Element).all(), "membrane_nr")
     masters = {compact_nr(m.membrane_nr): m for m in db.query(models.Membrane).all() if compact_nr(m.membrane_nr)}
     maintenance = _grouped(db.query(models.MembraneMaintenance).all(), "membrane_nr")
+    windows = load_shutdown_windows(db)
     rows: list[dict[str, Any]] = []
     for key in set(elements) | set(masters):
         if is_junk_serial(key) and key not in masters:
@@ -644,7 +634,10 @@ def membrane_rows(db: Session, settings: dict[str, Any] | None = None) -> list[d
             bucket = "not_ok"
         else:
             bucket = "ok"
-        total = merged_dol(lives)
+        total = merged_dol(
+            lives,
+            shutdowns=shutdowns_affecting(windows, latest.electrolyzer if latest else None),
+        )
         pct, status, left = life_status(total, limit, warn)
         display = (latest.membrane_nr if latest is not None else None) or (master.membrane_nr if master else key)
         rows.append(
@@ -1061,6 +1054,7 @@ def cells_overview(db: Session) -> dict[str, Any]:
             return None
         return name, int(text)
 
+    windows = load_shutdown_windows(db)
     known = set(all_electrolyzers())
     occupants: dict[tuple[str, int], list[dict[str, Any]]] = defaultdict(list)
     unplaced = 0  # in the plant but no usable electrolyzer / position
@@ -1088,7 +1082,7 @@ def cells_overview(db: Session) -> dict[str, Any]:
                 "cathode_nr": el.cathode_nr,
                 "membrane_nr": el.membrane_nr,
                 "commissioning_date": _iso(el.commissioning_date),
-                "dol": installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date),
+                "dol": element_dol(el, shutdowns=shutdowns_affecting(windows, el.electrolyzer)),
             }
         )
 
@@ -1236,27 +1230,122 @@ def _packing_pallets(db: Session) -> list[dict[str, Any]]:
     return out[:20]
 
 
+def _tafkik_kind(row, anode_keys: set[str], cathode_keys: set[str]) -> str | None:
+    kind = (getattr(row, "electrode_kind", None) or "").strip().lower()
+    if kind in {"anode", "cathode"}:
+        return kind
+    key = compact_nr(getattr(row, "serial_nr", None))
+    if key and key in anode_keys and key not in cathode_keys:
+        return "anode"
+    if key and key in cathode_keys and key not in anode_keys:
+        return "cathode"
+    return None
+
+
+def tafkik_spare_lists(
+    db: Session,
+    anode_rows: list[dict[str, Any]],
+    cathode_rows: list[dict[str, Any]],
+) -> dict[str, list[dict[str, Any]]]:
+    """Rate off / ready-to-send / reusable stock from the latest TAFKIK row of each serial."""
+    from .segregation_flow import classify
+
+    anode_keys = {compact_nr(r.get("serial")) for r in anode_rows if compact_nr(r.get("serial"))}
+    cathode_keys = {compact_nr(r.get("serial")) for r in cathode_rows if compact_nr(r.get("serial"))}
+    occupied: set[tuple[str, str]] = set()
+    at_coater: set[tuple[str, str]] = set()
+    for row in anode_rows + cathode_rows:
+        key = compact_nr(row.get("serial"))
+        kind = row.get("kind")
+        if not key or kind not in {"anode", "cathode"}:
+            continue
+        if row.get("installed"):
+            occupied.add((kind, key))
+        if row.get("at_coater"):
+            at_coater.add((kind, key))
+
+    latest: dict[tuple[str, str], models.ElectrodeSegregation] = {}
+    for row in db.query(models.ElectrodeSegregation).all():
+        kind = _tafkik_kind(row, anode_keys, cathode_keys)
+        key = compact_nr(row.serial_nr)
+        if not kind or not key:
+            continue
+        stamp = (_as_date(row.inspection_date) or _as_date(row.disassemble_date) or date.min, row.id or 0)
+        prev = latest.get((kind, key))
+        if prev is None:
+            latest[(kind, key)] = row
+            continue
+        prev_stamp = (_as_date(prev.inspection_date) or _as_date(prev.disassemble_date) or date.min, prev.id or 0)
+        if stamp >= prev_stamp:
+            latest[(kind, key)] = row
+
+    groups: dict[str, list[dict[str, Any]]] = {
+        "rate_off": [],
+        "ready_coating": [],
+        "ready_mechanical": [],
+        "stock_good": [],
+        "stock_medium": [],
+        "stock_open": [],
+    }
+    for (kind, key), row in latest.items():
+        if (kind, key) in occupied:
+            continue
+        info = classify(
+            row.decision,
+            row.warranty,
+            row.coating_quality,
+            " ".join(part for part in (row.segregation, row.problems) if part),
+            row.company,
+        )
+        outcome = info.get("outcome")
+        piece = {
+            "kind": kind,
+            "serial": (row.serial_nr or "").strip() or key,
+            "date": _iso(row.inspection_date or row.disassemble_date),
+            "company": (row.company or "").strip() or None,
+        }
+        if outcome == "rate_off":
+            piece["reason"] = "rate_off"
+            groups["rate_off"].append(piece)
+            continue
+        if (kind, key) in at_coater:
+            continue
+        if outcome == "coating_problem":
+            piece["reason"] = "coating"
+            groups["ready_coating"].append(piece)
+        elif outcome == "mechanical_problem":
+            piece["reason"] = "mechanical"
+            groups["ready_mechanical"].append(piece)
+        elif outcome == "reusable":
+            quality = info.get("quality") or "open"
+            piece["reason"] = quality
+            groups[{"good": "stock_good", "medium": "stock_medium"}.get(quality, "stock_open")].append(piece)
+    for name, rows in groups.items():
+        rows.sort(key=lambda item: (item.get("kind") or "", item.get("serial") or ""))
+    return groups
+
+
 def management_board(
     anode_rows: list[dict[str, Any]],
     cathode_rows: list[dict[str, Any]],
     membranes: list[dict[str, Any]],
     db: Session,
+    tafkik: dict[str, list[dict[str, Any]]] | None = None,
 ) -> dict[str, Any]:
     """Short lists a manager can read without opening each register."""
     pieces = anode_rows + cathode_rows
     spare = [r for r in pieces if not r["installed"] and not r["at_coater"]]
-    ready = [r for r in pieces if r.get("wh_status") == "ready_dispatch"]
-    ready.sort(key=lambda r: (r.get("kind") or "", r.get("serial") or ""))
+    groups = tafkik if tafkik is not None else tafkik_spare_lists(db, anode_rows, cathode_rows)
     taken_apart = [r for r in spare if r.get("disassembly_date") and r.get("bucket") != "not_ok"]
     taken_apart.sort(key=lambda r: (r.get("disassembly_date") or "", r.get("serial") or ""), reverse=True)
-    rate_off = [r for r in spare if r.get("bucket") == "not_ok"]
-    rate_off.sort(key=lambda r: (r.get("kind") or "", r.get("serial") or ""))
     waiting = [r for r in spare if r.get("bucket") == "pending"]
     waiting.sort(key=lambda r: (r.get("kind") or "", r.get("serial") or ""))
     away = [r for r in pieces if r.get("at_coater")]
     away.sort(key=lambda r: (r.get("days_away") or 0), reverse=True)
     stock = [r for r in membranes if not r["installed"] and r.get("bucket") == "ok"]
     stock.sort(key=lambda r: ((r.get("membrane_type") or ""), r.get("serial") or ""))
+    ready = groups["ready_coating"] + groups["ready_mechanical"]
+    reusable = groups["stock_good"] + groups["stock_medium"] + groups["stock_open"]
 
     def pack(rows: list[dict[str, Any]], **fields: str) -> dict[str, Any]:
         items = []
@@ -1266,9 +1355,15 @@ def management_board(
         return {**_board_counts(rows), "shown": len(items), "items": items}
 
     return {
-        "ready_send": pack(ready),
+        "ready_send": pack(ready, date="date", reason="reason"),
+        "ready_send_coating": pack(groups["ready_coating"], date="date", reason="reason"),
+        "ready_send_mechanical": pack(groups["ready_mechanical"], date="date", reason="reason"),
+        "stock": pack(reusable, date="date", reason="reason"),
+        "stock_good": pack(groups["stock_good"], date="date", reason="reason"),
+        "stock_medium": pack(groups["stock_medium"], date="date", reason="reason"),
+        "stock_open": pack(groups["stock_open"], date="date", reason="reason"),
         "disassembled": pack(taken_apart, date="disassembly_date", element_nr="last_element_nr"),
-        "rate_off": pack(rate_off, reason="reason"),
+        "rate_off": pack(groups["rate_off"], date="date", reason="reason"),
         "awaiting_check": pack(waiting),
         "at_coater": pack(away, company="coater", days="days_away"),
         "membranes": {
@@ -1314,16 +1409,34 @@ def _piece_vendor(row: dict[str, Any]) -> str:
     return vendor_of(row.get("coating"), row.get("manufacturer")) or "Other"
 
 
-def _stock_block(rows: list[dict[str, Any]]) -> dict[str, Any]:
+def _stock_block(rows: list[dict[str, Any]], tafkik: dict[str, list[dict[str, Any]]] | None = None, kind: str | None = None) -> dict[str, Any]:
     spare = [r for r in rows if not r["installed"] and not r["at_coater"]]
+    if tafkik is not None and kind:
+        usable_n = sum(
+            1
+            for name in ("stock_good", "stock_medium", "stock_open")
+            for item in tafkik.get(name, [])
+            if item.get("kind") == kind
+        )
+        rate_off_n = sum(1 for item in tafkik.get("rate_off", []) if item.get("kind") == kind)
+        ready_n = sum(
+            1
+            for name in ("ready_coating", "ready_mechanical")
+            for item in tafkik.get(name, [])
+            if item.get("kind") == kind
+        )
+    else:
+        usable_n = sum(1 for r in spare if r["bucket"] == "ok")
+        rate_off_n = sum(1 for r in spare if r["bucket"] == "not_ok")
+        ready_n = sum(1 for r in rows if r.get("wh_status") == "ready_dispatch")
     usable = [r for r in spare if r["bucket"] == "ok"]
     coated: Counter = Counter(_piece_vendor(r) for r in usable)
     lm = sum(1 for r in usable if str(r.get("last_electrolyzer") or "").strip().upper()[:1] in {"L", "M"})
     return {
-        "usable": len(usable),
-        "rate_off": sum(1 for r in spare if r["bucket"] == "not_ok"),
+        "usable": usable_n,
+        "rate_off": rate_off_n,
         "awaiting_check": sum(1 for r in spare if r["bucket"] == "pending"),
-        "ready_dispatch": sum(1 for r in rows if r.get("wh_status") == "ready_dispatch"),
+        "ready_dispatch": ready_n,
         "train_lm": lm,
         "coated": [{"vendor": name, "count": count} for name, count in coated.most_common() if name != "Other" or count],
     }
@@ -1350,6 +1463,7 @@ def workshop_inventory(
     anode_rows: list[dict[str, Any]],
     cathode_rows: list[dict[str, Any]],
     membranes: list[dict[str, Any]],
+    tafkik: dict[str, list[dict[str, Any]]] | None = None,
 ) -> dict[str, Any]:
     """The workshop sheet: assembled cells waiting to go on site, spare electrodes, coating, membranes."""
     from .segregation_flow import vendor_of
@@ -1376,8 +1490,8 @@ def workshop_inventory(
         "assembled_pairs": [{"anode": a, "cathode": c, "count": n} for (a, c), n in pairs.most_common()],
         "assembled_membranes": [{"type": name, "count": n} for name, n in membrane_on_cell.most_common()],
         "awaiting_disassembly": sum(1 for p in pipeline if p.get("base_state") == "decommissioned" or p.get("state") == "awaiting_disassembly"),
-        "anode": _stock_block(anode_rows),
-        "cathode": _stock_block(cathode_rows),
+        "anode": _stock_block(anode_rows, tafkik, "anode"),
+        "cathode": _stock_block(cathode_rows, tafkik, "cathode"),
         "coating_companies": _coating_by_company(db),
         "membrane_stock": len(stock_mem),
         "membrane_types": [{"type": name, "count": n} for name, n in by_type.most_common(12)],
@@ -1410,6 +1524,7 @@ def overview(db: Session) -> dict[str, Any]:
         coating[kind] = coating_overview(db, kind, cfg, prepared=prepared)["summary"]
     mem = membrane_rows(db, cfg)
     parts["membrane"] = {"summary": life_summary(mem), "histogram": life_histogram(mem)}
+    tafkik = tafkik_spare_lists(db, prepared_rows["anode"], prepared_rows["cathode"])
 
     # cells with an open voltage alert (worst severity per cell), not the number of raw events
     worst: dict[tuple[str, str], str] = {}
@@ -1452,11 +1567,11 @@ def overview(db: Session) -> dict[str, Any]:
         ],
         "parts": parts,
         "coating": coating,
-        "workshop": workshop_inventory(db, pipeline, prepared_rows["anode"], prepared_rows["cathode"], mem),
+        "workshop": workshop_inventory(db, pipeline, prepared_rows["anode"], prepared_rows["cathode"], mem, tafkik),
         "alerts": {"danger": alerts.get("danger", 0), "warning": alerts.get("warning", 0), "info": alerts.get("info", 0)},
         "by_electrolyzer": [{"electrolyzer": name, "cells": by_electrolyzer.get(name, 0), "capacity": CELLS_PER_ELECTROLYZER} for name in all_electrolyzers()],
         "monthly_flow": _monthly_flow(db, 36),
-        "board": management_board(prepared_rows["anode"], prepared_rows["cathode"], mem, db),
+        "board": management_board(prepared_rows["anode"], prepared_rows["cathode"], mem, db, tafkik),
         "events": [
             {"id": e.id, "element_nr": e.element_nr, "from_stage": e.from_stage, "to_stage": e.to_stage, "note": e.note, "user": e.user, "at": e.created_at.isoformat(timespec="seconds") if e.created_at else None}
             for e in events

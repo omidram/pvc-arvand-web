@@ -1498,6 +1498,12 @@ export interface BoardPallet {
 
 export interface ElementBoard {
   ready_send: BoardList;
+  ready_send_coating?: BoardList;
+  ready_send_mechanical?: BoardList;
+  stock?: BoardList;
+  stock_good?: BoardList;
+  stock_medium?: BoardList;
+  stock_open?: BoardList;
   disassembled: BoardList;
   rate_off: BoardList;
   awaiting_check: BoardList;

@@ -8,7 +8,7 @@ from sqlalchemy import func, or_, text
 from sqlalchemy.orm import Session
 
 from .. import alerts_engine, models, schemas
-from ..calculations import installation_dol
+from ..warehouse import dol_for_element, load_shutdown_windows
 from ..database import get_db
 from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx
 from ..plant_topology import arrangement_name, rack_of, train_of
@@ -707,7 +707,7 @@ def _iso(value):
     return None
 
 
-def _element_brief(row: models.Element) -> dict:
+def _element_brief(row: models.Element, windows=None) -> dict:
     pos = alerts_engine._norm_pos(row.position)
     rack = rack_of(pos)
     return {
@@ -724,12 +724,7 @@ def _element_brief(row: models.Element) -> dict:
         "assembly_date": _iso(row.assembly_date),
         "commissioning_date": _iso(row.commissioning_date),
         "disassembly_date": _iso(row.disassembly_date),
-        "dol_days": installation_dol(
-            row.assembly_date,
-            row.commissioning_date,
-            row.disassembly_date,
-            row.decommissioning_date,
-        ),
+        "dol_days": dol_for_element(row, windows),
         "active": row.disassembly_date is None,
         "anode_coating": row.anode_coating,
         "cathode_coating": row.cathode_coating,
@@ -749,6 +744,7 @@ def cell_properties(
     pos = alerts_engine._norm_pos(position)
     if not el or not pos:
         raise HTTPException(status_code=400, detail="electrolyzer and position are required")
+    windows = load_shutdown_windows(db)
     rows = (
         db.query(models.Element)
         .filter(func.upper(models.Element.electrolyzer) == el)
@@ -773,8 +769,8 @@ def cell_properties(
         "rack": rack["id"] if rack else None,
         "rack_start": rack["start"] if rack else None,
         "rack_end": rack["end"] if rack else None,
-        "current": _element_brief(current) if current else None,
-        "history": [_element_brief(row) for row in matched],
+        "current": _element_brief(current, windows) if current else None,
+        "history": [_element_brief(row, windows) for row in matched],
     }
 
 
@@ -837,6 +833,7 @@ def electrolyzer_properties(electrolyzer: str, db: Session = Depends(get_db)):
     el = (electrolyzer or "").strip().upper()
     if not el:
         raise HTTPException(status_code=400, detail="electrolyzer is required")
+    windows = load_shutdown_windows(db)
     aliases = _electrolyzer_aliases(el)
     arranged = arrangement_name(el)
     train = train_of(el)
@@ -871,10 +868,7 @@ def electrolyzer_properties(electrolyzer: str, db: Session = Depends(get_db)):
         for row in active
         if alerts_engine._norm_pos(row.position)
     }
-    dol_values = [
-        installation_dol(row.assembly_date, row.commissioning_date, row.disassembly_date, row.decommissioning_date)
-        for row in active
-    ]
+    dol_values = [dol_for_element(row, windows) for row in active]
     dol_values = [value for value in dol_values if value is not None]
     membrane_types = (
         db.query(models.Element.membrane_type, func.count())
@@ -1029,8 +1023,8 @@ def electrolyzer_properties(electrolyzer: str, db: Session = Depends(get_db)):
             }
             for row in inspections
         ],
-        "recent_installs": [_element_brief(row) for row in recent_installs],
-        "recent_dismantles": [_element_brief(row) for row in recent_dismantles],
+        "recent_installs": [_element_brief(row, windows) for row in recent_installs],
+        "recent_dismantles": [_element_brief(row, windows) for row in recent_dismantles],
     }
 
 
@@ -1106,6 +1100,7 @@ def component_dossier(
     key = compact_nr(nr)
     if not key:
         raise HTTPException(status_code=400, detail="nr is required")
+    windows = load_shutdown_windows(db)
     model, pk, maint_model, maint_field, element_field = _PARTS[kind]
     catalog = db.query(model).filter(_same_serial(getattr(model, pk), key)).first()
     installations = (
@@ -1197,7 +1192,7 @@ def component_dossier(
     place_row = active or (latest if status == "dismantled" else None)
     place = None
     if place_row is not None:
-        brief = _element_brief(place_row)
+        brief = _element_brief(place_row, windows)
         place = {
             "electrolyzer": brief["electrolyzer"],
             "position": brief["position"],
@@ -1235,7 +1230,7 @@ def component_dossier(
         "status": status,
         "place": place,
         "catalog": catalog_out,
-        "installations": [_element_brief(row) for row in installations[:40]],
+        "installations": [_element_brief(row, windows) for row in installations[:40]],
         "maintenance": [_maintenance_brief(kind, row) for row in maintenance[:40]],
         "reports": [
             {

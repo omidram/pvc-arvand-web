@@ -2179,7 +2179,9 @@ def _write_decommission(db: Session, r: WfCellRequest, day: date, reason: str | 
         if started and day < started:
             raise HTTPException(400, f"The switch-off date is before the element was started ({started.isoformat()})")
         el.decommissioning_date = day
-        el.dol_days = svc.installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date)
+        from ..warehouse import dol_for_element, load_shutdown_windows
+
+        el.dol_days = dol_for_element(el, load_shutdown_windows(db))
         db.add(
             models.ElementShopEvent(
                 element_nr=str(el.element_nr)[:50], from_stage="in_service" if el.commissioning_date else "installed",

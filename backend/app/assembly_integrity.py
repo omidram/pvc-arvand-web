@@ -23,7 +23,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from . import models
-from .calculations import installation_dol
+from .warehouse import dol_for_element, load_shutdown_windows
 
 _NOT_A_PART = re.compile(r"\d")
 
@@ -183,7 +183,7 @@ def close_superseded_by(db: Session, saved: models.Element) -> int:
         if other_start is None or not other_start < start:
             continue
         row.disassembly_date = start
-        row.dol_days = installation_dol(row.assembly_date, row.commissioning_date, row.disassembly_date, row.decommissioning_date)
+        row.dol_days = dol_for_element(row, load_shutdown_windows(db))
         closed += 1
     return closed
 
@@ -196,7 +196,7 @@ def close_all_superseded(db: Session) -> int:
     for element_id, end in superseded_map(rows).items():
         row = by_id[element_id]
         row.disassembly_date = end
-        row.dol_days = installation_dol(row.assembly_date, row.commissioning_date, row.disassembly_date, row.decommissioning_date)
+        row.dol_days = dol_for_element(row, load_shutdown_windows(db))
         closed += 1
     return closed
 
@@ -287,7 +287,7 @@ def _apply_once(db: Session, plan: dict) -> dict:
         if row is None or not is_open(row):
             continue
         row.disassembly_date = end
-        row.dol_days = installation_dol(row.assembly_date, row.commissioning_date, row.disassembly_date, row.decommissioning_date)
+        row.dol_days = dol_for_element(row, load_shutdown_windows(db))
         closed += 1
 
     padded = 0

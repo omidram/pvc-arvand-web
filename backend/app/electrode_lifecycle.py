@@ -11,8 +11,8 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from . import models
-from .calculations import installation_dol
-from .warehouse import compact_eq, compact_nr
+from .calculations import serial_dol, shutdowns_affecting
+from .warehouse import compact_eq, compact_nr, load_shutdown_windows
 
 
 def _stamp(day: date | datetime | None) -> datetime | None:
@@ -37,17 +37,14 @@ def last_dol(db: Session, kind: str, serial: str) -> int | None:
     key = compact_nr(serial)
     if not key:
         return None
-    best = None
-    for el in db.query(models.Element).all():
-        if compact_nr(getattr(el, field)) != key:
-            continue
-        days = installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date)
-        if days is None:
-            continue
+    lives = [el for el in db.query(models.Element).all() if compact_nr(getattr(el, field)) == key]
+    latest = None
+    for el in lives:
         mark = el.disassembly_date or el.decommissioning_date or el.assembly_date
-        if best is None or (mark and best[0] and mark > best[0]) or best[1] is None:
-            best = (mark, days)
-    return best[1] if best else None
+        if latest is None or (mark and latest[0] and mark > latest[0]):
+            latest = (mark, el)
+    elo = latest[1].electrolyzer if latest else None
+    return serial_dol(lives, shutdowns=shutdowns_affecting(load_shutdown_windows(db), elo))
 
 
 def _count_recoats(db: Session, kind: str, serial: str) -> int:

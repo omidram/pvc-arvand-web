@@ -24,7 +24,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
 from .. import models
-from ..calculations import installation_dol
+from ..warehouse import dol_for_element, load_shutdown_windows
 from ..database import get_db
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -98,9 +98,10 @@ def _build_summary(db: Session, electrolyzer: str | None) -> dict:
         }
 
     active_elements = elements_q.filter(models.Element.disassembly_date.is_(None)).count()
+    windows = load_shutdown_windows(db)
     dol_values = [
         d for e in elements_q.all()
-        if (d := installation_dol(e.assembly_date, e.commissioning_date, e.disassembly_date, e.decommissioning_date)) is not None
+        if (d := dol_for_element(e, windows)) is not None
     ]
 
     recent_shutdowns = sorted(

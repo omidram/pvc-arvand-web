@@ -493,9 +493,9 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("shutdown_time") ? (
                   <td onClick={(e) => e.stopPropagation()}>
-                    <input
+                    <DateInput
                       type="datetime-local"
-                      className="w-full tabular-nums"
+                      className="w-full min-w-[108px] tabular-nums"
                       value={toLocalInput(src.shutdown_time)}
                       disabled={!open}
                       onChange={(e) => setEditDraft((d) => ({ ...d, shutdown_time: toApiDateTime(e.target.value) }))}
@@ -504,9 +504,9 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("startup_time") ? (
                   <td onClick={(e) => e.stopPropagation()}>
-                    <input
+                    <DateInput
                       type="datetime-local"
-                      className="w-full tabular-nums"
+                      className="w-full min-w-[108px] tabular-nums"
                       value={toLocalInput(src.startup_time)}
                       disabled={!open}
                       onChange={(e) => setEditDraft((d) => ({ ...d, startup_time: toApiDateTime(e.target.value) }))}
@@ -662,9 +662,9 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("shutdown_time") ? (
                   <td>
-                    <input
+                    <DateInput
                       type="datetime-local"
-                      className="w-full tabular-nums"
+                      className="w-full min-w-[108px] tabular-nums"
                       value={toLocalInput(draft.shutdown_time)}
                       onChange={(e) => setDraft((d) => ({ ...d, shutdown_time: toApiDateTime(e.target.value) }))}
                     />
@@ -672,9 +672,9 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("startup_time") ? (
                   <td>
-                    <input
+                    <DateInput
                       type="datetime-local"
-                      className="w-full tabular-nums"
+                      className="w-full min-w-[108px] tabular-nums"
                       value={toLocalInput(draft.startup_time)}
                       onChange={(e) => setDraft((d) => ({ ...d, startup_time: toApiDateTime(e.target.value) }))}
                     />

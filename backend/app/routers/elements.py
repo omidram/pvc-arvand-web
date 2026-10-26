@@ -19,9 +19,9 @@ from ..assembly_integrity import (
     plan_repairs,
     summarize,
 )
-from ..calculations import installation_dol
+from ..calculations import element_dol, last_assembly_date, shutdowns_affecting
 from ..relations_sync import find_master, link_group, link_serial
-from ..warehouse import compact_eq, compact_nr, ensure_indexed, import_contractor_repairs, load_compact_index
+from ..warehouse import compact_eq, compact_nr, ensure_indexed, import_contractor_repairs, load_compact_index, load_shutdown_windows
 from ..crud import build_crud_router
 from ..database import get_db
 from ..excel_import import import_excel_bytes, read_xlsx
@@ -47,11 +47,13 @@ def _parse_iso_date(value: str | None) -> date | None:
 ELEMENT_EXPORT_FIELDS = list(schemas.ElementRead.model_fields.keys())
 
 
-def _enrich(obj: models.Element) -> schemas.ElementRead:
+def _dol_shutdowns(db: Session, obj: models.Element, windows=None):
+    return shutdowns_affecting(windows if windows is not None else load_shutdown_windows(db), obj.electrolyzer)
+
+
+def _enrich(obj: models.Element, shutdowns=None, last_assembly=None) -> schemas.ElementRead:
     read = schemas.ElementRead.model_validate(obj)
-    read.computed_dol_days = installation_dol(
-        obj.assembly_date, obj.commissioning_date, obj.disassembly_date, obj.decommissioning_date
-    )
+    read.computed_dol_days = element_dol(obj, shutdowns=shutdowns, last_assembly=last_assembly)
     if obj.disassembly_date:
         read.status = "disassembled"
     elif obj.decommissioning_date:
@@ -61,6 +63,10 @@ def _enrich(obj: models.Element) -> schemas.ElementRead:
     else:
         read.status = "planned"
     return read
+
+
+def _enrich_db(db: Session, obj: models.Element, windows=None) -> schemas.ElementRead:
+    return _enrich(obj, shutdowns=_dol_shutdowns(db, obj, windows))
 
 
 CELL_POSITION_MIN = 1
@@ -132,9 +138,7 @@ def _share_with_masters(db: Session, obj: models.Element) -> None:
 def _sync_saved_element(db: Session, obj: models.Element) -> None:
     """Keep DOL and the anode/cathode/membrane masters in step with this installation."""
     if obj.dol_days is None:
-        computed = installation_dol(
-            obj.assembly_date, obj.commissioning_date, obj.disassembly_date, obj.decommissioning_date
-        )
+        computed = element_dol(obj, shutdowns=_dol_shutdowns(db, obj))
         if computed is not None:
             obj.dol_days = computed
     # Same part, same spelling everywhere: match the masters (ignoring case/spaces), add new ones.
@@ -210,7 +214,8 @@ def list_elements(
     if active_only:
         query = query.filter(models.Element.disassembly_date.is_(None))
     items = query.order_by(models.Element.id.desc()).offset(skip).limit(limit).all()
-    return [_enrich(i) for i in items]
+    windows = load_shutdown_windows(db)
+    return [_enrich(i, shutdowns=_dol_shutdowns(db, i, windows)) for i in items]
 
 
 @router.get("/export.meta", include_in_schema=False)
@@ -381,8 +386,9 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
     closed_replaced = close_all_superseded(db) if mode != "disassembly" else 0
 
     dol_updated = 0
+    windows = load_shutdown_windows(db)
     for el in db.query(models.Element).all():
-        computed = installation_dol(el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date)
+        computed = element_dol(el, shutdowns=_dol_shutdowns(db, el, windows))
         if computed is not None and el.dol_days != computed:
             el.dol_days = computed
             dol_updated += 1
@@ -597,7 +603,7 @@ def match_element(
         filled = sum(1 for name in _MATCH_FIELDS if _part_key(getattr(row, name)))
         return (score, filled, row.assembly_date or date.min, row.id or 0)
 
-    return _enrich(max(matched, key=rank))
+    return _enrich_db(db, max(matched, key=rank))
 
 
 @router.get("/{item_id}", response_model=schemas.ElementRead)
@@ -605,7 +611,7 @@ def get_element(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(models.Element).filter(models.Element.id == item_id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
-    return _enrich(obj)
+    return _enrich_db(db, obj)
 
 
 def _ensure_group(db: Session, group_nr: str | None) -> None:
@@ -681,7 +687,7 @@ def create_element(payload: schemas.ElementBase, db: Session = Depends(get_db), 
     cell_on_element_saved(db, obj, user, had_decommission=False, had_disassembly=False)
     db.commit()
     db.refresh(obj)
-    return _enrich(obj)
+    return _enrich_db(db, obj)
 
 
 @router.put("/{item_id}", response_model=schemas.ElementRead)
@@ -707,7 +713,7 @@ def update_element(item_id: int, payload: schemas.ElementBase, db: Session = Dep
     cell_on_element_saved(db, obj, user, had_decommission, had_disassembly)
     db.commit()
     db.refresh(obj)
-    return _enrich(obj)
+    return _enrich_db(db, obj)
 
 
 @router.delete("/{item_id}", status_code=204)
@@ -732,7 +738,17 @@ def element_history(element_nr: str, db: Session = Depends(get_db)):
         .all()
     )
     items.sort(key=lambda row: (row.assembly_date or row.commissioning_date or date.min, row.id or 0))
-    return [_enrich(i) for i in items]
+    windows = load_shutdown_windows(db)
+    last_asm = last_assembly_date(items)
+    latest = max(items, key=lambda row: (row.assembly_date or row.commissioning_date or date.min, row.id or 0)) if items else None
+    return [
+        _enrich(
+            i,
+            shutdowns=_dol_shutdowns(db, i, windows),
+            last_assembly=last_asm if i is latest else None,
+        )
+        for i in items
+    ]
 
 
 @router.get("/integrity/report")
@@ -764,7 +780,8 @@ def find_duplicates(component_type: str, db: Session = Depends(get_db)):
     for el in active:
         value = getattr(el, col.key)
         seen.setdefault(value, []).append(el)
-    duplicates = {k: [_enrich(e) for e in v] for k, v in seen.items() if len(v) > 1}
+    windows = load_shutdown_windows(db)
+    duplicates = {k: [_enrich_db(db, e, windows) for e in v] for k, v in seen.items() if len(v) > 1}
     return duplicates
 
 

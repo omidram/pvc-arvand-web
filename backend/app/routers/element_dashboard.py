@@ -223,7 +223,9 @@ def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict
     # the new position starts at commissioning. Assembly date stays the original build.
     if old.decommissioning_date is None:
         old.decommissioning_date = day
-    old.dol_days = svc.installation_dol(old.assembly_date, old.commissioning_date, old.disassembly_date, old.decommissioning_date)
+    from ..warehouse import dol_for_element, load_shutdown_windows
+
+    old.dol_days = dol_for_element(old, load_shutdown_windows(db))
     new = models.Element(
         element_nr=old.element_nr,
         electrolyzer=electrolyzer,

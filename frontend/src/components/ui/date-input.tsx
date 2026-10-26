@@ -93,7 +93,7 @@ export function DateInput({
   id,
   autoComplete = "off",
 }: DateInputProps) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const { isShamsi } = useCalendar();
   const iso = typeof value === "string" ? value : "";
   const time = type === "datetime-local" && iso ? parseIsoTime(iso) || "00:00" : "";
@@ -132,8 +132,8 @@ export function DateInput({
     setCursor({ year: view.year, month: view.month, day: 1 });
     const rect = rootRef.current?.getBoundingClientRect();
     if (rect) {
-      const top = rect.bottom + 4 + 280 > window.innerHeight ? Math.max(8, rect.top - 284) : rect.bottom + 4;
-      const left = Math.min(rect.left, window.innerWidth - 260);
+      const top = rect.bottom + 4 + 320 > window.innerHeight ? Math.max(8, rect.top - 324) : rect.bottom + 4;
+      const left = Math.min(rect.left, window.innerWidth - 280);
       setPos({ top, left });
     }
     setOpen(true);
@@ -155,6 +155,20 @@ export function DateInput({
   function pick(day: number) {
     const isoDate = isShamsi ? toIsoDate(jalaliToGregorian(cursor.year, cursor.month, day)) : toIsoDate({ year: cursor.year, month: cursor.month, day });
     commit(isoDate);
+    setOpen(false);
+  }
+
+  function pickToday() {
+    const now = new Date();
+    const isoDate = toIsoDate({ year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() });
+    const hm = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    commit(isoDate, type === "datetime-local" ? hm : time);
+    setOpen(false);
+  }
+
+  function pickClear() {
+    emitChange(onChange, name, "");
+    setText("");
     setOpen(false);
   }
 
@@ -215,7 +229,7 @@ export function DateInput({
       ) : null}
       {open ? (
         <div
-          className="fixed z-[80] w-[248px] border-2 border-[var(--win-border-shadow)] bg-[var(--win-face)] p-2 text-[12px] text-[var(--win-text)] shadow-md"
+          className="fixed z-[80] w-[260px] border-2 border-[var(--win-border-shadow)] bg-[var(--win-face)] p-2 text-[12px] text-[var(--win-text)] shadow-md"
           style={{ top: pos.top, left: pos.left }}
         >
           <div className="mb-2 flex items-center justify-between gap-1">
@@ -225,9 +239,17 @@ export function DateInput({
             <div className="font-bold">
               {monthLabel} {cursor.year}
             </div>
-            <button type="button" className="access-toolbar-btn h-[22px] px-2" onClick={() => setCursor((c) => shiftMonth(c, isShamsi, 1))}>
-              ›
-            </button>
+            <div className="flex items-center gap-0.5">
+              <button type="button" className="access-toolbar-btn h-[22px] px-1.5" onClick={() => setCursor((c) => ({ ...c, year: c.year + 1 }))} aria-label="Next year">
+                ↑
+              </button>
+              <button type="button" className="access-toolbar-btn h-[22px] px-1.5" onClick={() => setCursor((c) => ({ ...c, year: c.year - 1 }))} aria-label="Previous year">
+                ↓
+              </button>
+              <button type="button" className="access-toolbar-btn h-[22px] px-2" onClick={() => setCursor((c) => shiftMonth(c, isShamsi, 1))}>
+                ›
+              </button>
+            </div>
           </div>
           <div className="grid grid-cols-7 gap-0.5 text-center">
             {(isShamsi ? (locale === "fa" ? ["ش", "ی", "د", "س", "چ", "پ", "ج"] : ["Sa", "Su", "Mo", "Tu", "We", "Th", "Fr"]) : week).map((d) => (
@@ -255,6 +277,14 @@ export function DateInput({
                 </button>
               )
             )}
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-[var(--win-border-shadow)] pt-2">
+            <button type="button" className="text-[12px] text-[var(--win-navy)] hover:underline" onMouseDown={(e) => e.preventDefault()} onClick={pickClear}>
+              {t("common.clear")}
+            </button>
+            <button type="button" className="text-[12px] font-bold text-[var(--win-navy)] hover:underline" onMouseDown={(e) => e.preventDefault()} onClick={pickToday}>
+              {t("common.today")}
+            </button>
           </div>
         </div>
       ) : null}

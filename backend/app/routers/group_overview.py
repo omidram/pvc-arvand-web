@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from .. import models
-from ..calculations import installation_dol
+from ..warehouse import dol_for_element, load_shutdown_windows
 from ..database import get_db
 from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx
 from .elements import natural_key
@@ -228,6 +228,7 @@ def _rows(
     wanted = {"anode_coating": anode_coating, "cathode_coating": cathode_coating, "membrane_type": membrane_type, "gap_mm": gap_mm}
     spec_filter = any(_text(v) for v in wanted.values())
     needle = _text(q).casefold()
+    windows = load_shutdown_windows(db)
 
     rows: list[dict[str, Any]] = []
     for el in db.query(models.Element).all():
@@ -270,9 +271,7 @@ def _rows(
             "assembly_date": el.assembly_date.isoformat() if el.assembly_date else None,
             "commissioning_date": el.commissioning_date.isoformat() if el.commissioning_date else None,
             "disassembly_date": el.disassembly_date.isoformat() if el.disassembly_date else None,
-            "dol_days": installation_dol(
-                el.assembly_date, el.commissioning_date, el.disassembly_date, el.decommissioning_date
-            ),
+            "dol_days": dol_for_element(el, windows),
             "mismatch": bad,
             "remarks": el.remarks,
             "defined": definition is not None,

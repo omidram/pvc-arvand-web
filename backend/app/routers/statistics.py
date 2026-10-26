@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from .. import models
 from ..auth import require_any_form_access, require_form_access
-from ..calculations import installation_dol
+from ..warehouse import dol_for_element, load_shutdown_windows
 from ..database import get_db
 
 router = APIRouter(prefix="/statistics", tags=["statistics"])
@@ -78,6 +78,7 @@ def dashboard(db: Session = Depends(get_db)):
 def dol_by_membrane_type(db: Session = Depends(get_db)):
     """Access Membrane Statistics (frmStatistikMembran / DOL) layout."""
     elements = db.query(models.Element).filter(models.Element.membrane_type.isnot(None)).all()
+    windows = load_shutdown_windows(db)
     grouped: dict[str, dict] = {}
     for e in elements:
         key = e.membrane_type or "?"
@@ -98,7 +99,7 @@ def dol_by_membrane_type(db: Session = Depends(get_db)):
         active = e.disassembly_date is None
         entry["total"] += 1
         entry["active" if active else "passive"] += 1
-        dol = installation_dol(e.assembly_date, e.commissioning_date, e.disassembly_date, e.decommissioning_date)
+        dol = dol_for_element(e, windows)
         if dol is None:
             entry["without_dol"] += 1
             continue
