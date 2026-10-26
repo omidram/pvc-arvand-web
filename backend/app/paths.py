@@ -65,9 +65,10 @@ def static_dir() -> Path:
 
 
 def seed_db_path() -> Path | None:
+    """Bundled empty/plant seed only — never the live instance database."""
     for candidate in (
         resource_root() / "seed" / "pvc_arvand.db",
-        backend_dir() / "instance" / "pvc_arvand.db",
+        backend_dir().parent / "docs" / "plant-data" / "pvc_arvand_plant_seed.db",
     ):
         if candidate.is_file():
             return candidate

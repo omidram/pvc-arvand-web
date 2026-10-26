@@ -35,9 +35,27 @@ def create_backup(retention_count: int | None = None) -> dict:
     dest_conn = sqlite3.connect(str(dest_path))
     try:
         src_conn.backup(dest_conn)
+    except sqlite3.Error:
+        dest_path.unlink(missing_ok=True)
+        raise
     finally:
         dest_conn.close()
         src_conn.close()
+
+    try:
+        check = sqlite3.connect(f"file:{dest_path.as_posix()}?mode=ro", uri=True, timeout=8)
+        try:
+            tables = check.execute(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            ).fetchone()
+        finally:
+            check.close()
+        if not tables or int(tables[0]) < 1:
+            dest_path.unlink(missing_ok=True)
+            raise RuntimeError("Backup file has no tables; live database was not replaced.")
+    except sqlite3.Error as exc:
+        dest_path.unlink(missing_ok=True)
+        raise RuntimeError(f"Backup file is unreadable: {exc}") from exc
 
     if retention_count:
         _apply_retention(retention_count)

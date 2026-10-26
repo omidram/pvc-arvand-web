@@ -98,6 +98,74 @@ def _sqlite_readable(path: Path) -> bool:
     return n is not None and n > 0
 
 
+def _clear_wal(path: Path) -> None:
+    for suffix in ("-wal", "-shm"):
+        Path(str(path) + suffix).unlink(missing_ok=True)
+
+
+def _install_sqlite_file(src: Path, dest: Path) -> None:
+    """Replace the live DB atomically and drop leftover WAL so SQLite cannot mix files."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_name(dest.name + ".incoming")
+    shutil.copy2(src, tmp)
+    _clear_wal(dest)
+    os.replace(tmp, dest)
+    _clear_wal(dest)
+
+
+def _backup_candidates(live: Path) -> list[Path]:
+    dirs = [
+        live.parent / "backups",
+        live.parent,
+        live.parent.parent.parent / "deploy" / "backups",
+    ]
+    seen: set[Path] = set()
+    found: list[Path] = []
+    patterns = (
+        "pvc_arvand_backup_*.db",
+        "pre_update_*.db",
+        "pre_plant_seed_*.db",
+        "*.before-repair-*",
+        "pvc_arvand.db.malformed-*",
+        "pvc_arvand.db.broken-*",
+        "pvc_arvand.db.before-k1*",
+        "pvc_arvand.db.before-repair-*",
+    )
+    for folder in dirs:
+        if not folder.is_dir():
+            continue
+        for pattern in patterns:
+            for item in folder.glob(pattern):
+                key = item.resolve() if item.exists() else item
+                if key in seen or not item.is_file() or item.stat().st_size < 10_000:
+                    continue
+                seen.add(key)
+                found.append(item)
+    found.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    return found
+
+
+def _restore_usable_backup(live: Path) -> Path | None:
+    for cand in _backup_candidates(live):
+        if cand.resolve() == live.resolve():
+            continue
+        if not _sqlite_readable(cand):
+            _log.warning("Skipping unreadable backup %s", cand)
+            continue
+        aside = live.with_name(f"{live.name}.broken-{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}")
+        try:
+            if live.is_file():
+                shutil.copy2(live, aside)
+        except OSError:
+            aside = None
+        _install_sqlite_file(cand, live)
+        if _sqlite_readable(live):
+            _log.warning("Restored readable SQLite from %s (broken copy: %s)", cand, aside)
+            return cand
+        _log.error("Backup %s copied but live file is still unreadable", cand)
+    return None
+
+
 def _drop_schema_object(path: Path, name: str) -> bool:
     """Remove one unreadable schema entry so the rest of the file can open.
 
@@ -241,47 +309,62 @@ def _recover_sqlite_file(path: Path) -> bool:
         recovered.unlink(missing_ok=True)
 
 
-def repair_malformed_schema() -> None:
-    """Drop a schema entry SQLite cannot parse, such as the server object named K1.
+def _probe_schema_error(path: Path) -> sqlite3.DatabaseError | None:
+    conn = sqlite3.connect(path, timeout=30)
+    try:
+        conn.execute("SELECT name FROM sqlite_master LIMIT 1").fetchone()
+        return None
+    except sqlite3.DatabaseError as exc:
+        return exc
+    finally:
+        conn.close()
 
-    Core plant tables are left untouched. A readable database is not modified.
-    A fully corrupt disk image is recovered with sqlite3 .recover when possible.
+
+def _try_drop_on_copy(path: Path, name: str) -> bool:
+    """Never edit the live file in place. Fix a copy, then swap if it opens."""
+    tmp = path.with_name(f"{path.name}.k1fix")
+    try:
+        shutil.copy2(path, tmp)
+    except OSError as exc:
+        _log.error("Could not copy database for schema drop: %s", exc)
+        return False
+    try:
+        if _drop_schema_object(tmp, name) and _sqlite_readable(tmp):
+            _install_sqlite_file(tmp, path)
+            return _sqlite_readable(path)
+        return False
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
+def repair_malformed_schema() -> None:
+    """Make the live SQLite file open, without emptying plant data.
+
+    A readable file is left untouched. Schema junk such as Access object K1 is
+    dropped only on a copy. If the disk image is corrupt, the newest readable
+    automatic backup is restored. The live file is never replaced with an empty DB.
     """
     path = _sqlite_file()
     if path is None or not path.is_file():
         return
-    last_exc: sqlite3.DatabaseError | None = None
-    for _ in range(8):
-        conn = sqlite3.connect(path, timeout=30)
-        try:
-            conn.execute("SELECT name FROM sqlite_master LIMIT 1").fetchone()
-            return
-        except sqlite3.DatabaseError as exc:
-            last_exc = exc
-            broken = _schema_object_name(exc)
-            disk_dead = "disk image is malformed" in str(exc).lower()
-        finally:
-            conn.close()
-        if disk_dead or broken is None:
-            break
-        if broken in _CORE_SCHEMA:
-            _log.error("SQLite schema is unreadable and was not modified: %s", broken)
-            break
-        if not _drop_schema_object(path, broken):
-            break
-    else:
-        return
     if _sqlite_readable(path):
         return
+    last_exc = _probe_schema_error(path)
+    broken = _schema_object_name(last_exc) if last_exc else None
+    if broken and broken not in _CORE_SCHEMA:
+        if _try_drop_on_copy(path, broken) and _sqlite_readable(path):
+            return
     if _recover_sqlite_file(path) and _sqlite_readable(path):
+        return
+    restored = _restore_usable_backup(path)
+    if restored is not None and _sqlite_readable(path):
         return
     backups = path.parent / "backups"
     detail = str(last_exc) if last_exc else "unreadable sqlite_master"
     raise RuntimeError(
         f"SQLite file is unreadable ({path}): {detail}. "
-        f"The live file was not replaced with an empty database. "
-        f"Copy the newest pvc_arvand_backup_*.db from {backups} over {path} and restart. "
-        f"If sqlite3 is missing, install it (apt install sqlite3) and restart so automatic .recover can run."
+        f"No readable pvc_arvand_backup_*.db was found in {backups}. "
+        f"Put a known-good copy at {path} and restart."
     )
 
 
