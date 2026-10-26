@@ -99,36 +99,73 @@ def _sqlite_readable(path: Path) -> bool:
 
 
 def _drop_schema_object(path: Path, name: str) -> bool:
-    """Remove one unreadable schema entry so the rest of the file can open."""
+    """Remove one unreadable schema entry so the rest of the file can open.
+
+    Do not SELECT sqlite_master first: that parse is what raises
+    ``malformed database schema (K1)``. DELETE with writable_schema is enough.
+    """
+    if not re.fullmatch(r"[A-Za-z0-9_]+", name or ""):
+        return False
+    if _drop_schema_via_python(path, name):
+        return True
+    return _drop_schema_via_cli(path, name)
+
+
+def _drop_schema_via_python(path: Path, name: str) -> bool:
     conn = sqlite3.connect(path, timeout=30)
     try:
-        if hasattr(conn, "setconfig"):
-            conn.setconfig(sqlite3.SQLITE_DBCONFIG_WRITABLE_SCHEMA, True)
-        else:
-            conn.execute("PRAGMA writable_schema=ON")
         try:
-            rows = conn.execute(
-                "SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name=?",
-                (name,),
-            ).fetchall()
-        except sqlite3.DatabaseError as exc:
-            _log.error("Cannot read sqlite_master to drop %s: %s", name, exc)
-            return False
-        if not rows:
-            return False
+            if hasattr(conn, "setconfig"):
+                conn.setconfig(sqlite3.SQLITE_DBCONFIG_WRITABLE_SCHEMA, True)
+        except Exception:
+            pass
+        conn.execute("PRAGMA writable_schema=ON")
         removed = conn.execute("DELETE FROM sqlite_master WHERE name=?", (name,))
+        conn.execute("PRAGMA writable_schema=OFF")
         conn.commit()
+        if removed.rowcount <= 0:
+            return False
         note = path.with_name(path.name + ".schema-repair.log")
         with note.open("a", encoding="utf-8") as handle:
-            for row in rows:
-                handle.write(repr(row) + "\n")
+            handle.write(f"deleted {name} via python rowcount={removed.rowcount}\n")
         _log.warning("Removed unreadable schema object %s (%s rows) from %s", name, removed.rowcount, path)
-        return removed.rowcount > 0
+        return True
     except sqlite3.DatabaseError as exc:
         _log.error("Schema drop of %s failed: %s", name, exc)
         return False
     finally:
         conn.close()
+
+
+def _drop_schema_via_cli(path: Path, name: str) -> bool:
+    sqlite_bin = shutil.which("sqlite3")
+    if not sqlite_bin:
+        _log.error("sqlite3 CLI is not on PATH. Install it (apt install sqlite3) to drop schema object %s", name)
+        return False
+    script = (
+        "PRAGMA writable_schema=ON;\n"
+        f"DELETE FROM sqlite_master WHERE name='{name}';\n"
+        "PRAGMA writable_schema=OFF;\n"
+    )
+    try:
+        result = subprocess.run(
+            [sqlite_bin, str(path)],
+            input=script,
+            text=True,
+            capture_output=True,
+            timeout=60,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        _log.error("sqlite3 CLI drop of %s failed: %s", name, exc)
+        return False
+    if result.returncode != 0:
+        _log.error("sqlite3 CLI drop of %s failed: %s", name, (result.stderr or result.stdout).strip())
+        return False
+    note = path.with_name(path.name + ".schema-repair.log")
+    with note.open("a", encoding="utf-8") as handle:
+        handle.write(f"deleted {name} via sqlite3 CLI\n")
+    _log.warning("Removed unreadable schema object %s via sqlite3 CLI from %s", name, path)
+    return True
 
 
 def _recover_sqlite_file(path: Path) -> bool:
