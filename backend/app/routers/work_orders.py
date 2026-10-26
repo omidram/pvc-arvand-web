@@ -164,10 +164,42 @@ def _wo_out(db: Session, wo: WfWorkOrder) -> dict:
         "labors": by_stage,
         "skills": list(WO_SKILLS),
         "stages": list(WO_STAGES),
+        "processes": _process_dates(wo),
+        "element_history": [
+            {
+                "id": row.id,
+                "code": row.code,
+                "status": row.status,
+                "seq": row.seq,
+                "processes": _process_dates(row),
+            }
+            for row in db.query(WfWorkOrder)
+            .filter(WfWorkOrder.element_nr == wo.element_nr)
+            .order_by(WfWorkOrder.seq.desc(), WfWorkOrder.id.desc())
+            .limit(40)
+            .all()
+        ],
     }
 
 
+def _process_dates(wo: WfWorkOrder) -> dict[str, str | None]:
+    return {
+        "generation": _iso(wo.generation_date),
+        "install": _iso(wo.install_date),
+        "pickup": _iso(wo.pickup_date),
+        "store": _iso(wo.store_date),
+        "disassemble": _iso(wo.disassemble_date),
+    }
+
+
+def _latest_process_day(wo: WfWorkOrder) -> date | None:
+    days = [wo.disassemble_date, wo.store_date, wo.pickup_date, wo.install_date, wo.generation_date, wo.report_date]
+    return next((d for d in days if d is not None), None)
+
+
 def _summary(wo: WfWorkOrder) -> dict:
+    processes = _process_dates(wo)
+    done = [key for key, value in processes.items() if value]
     return {
         "flow": "workorder",
         "id": wo.id,
@@ -183,11 +215,14 @@ def _summary(wo: WfWorkOrder) -> dict:
         "indent_no": None,
         "dispatch_date": None,
         "expected_date": None,
-        "actual_date": _iso(wo.disassemble_date or wo.report_date),
+        "actual_date": _iso(_latest_process_day(wo)),
         "delay_days": None,
         "element_nr": wo.element_nr,
         "anode_nr": wo.anode_nr,
         "cathode_nr": wo.cathode_nr,
+        "install_cell": wo.install_cell,
+        "processes": processes,
+        "process_keys": done,
         "created_by": wo.created_by_name,
         "created_at": _iso(wo.created_at),
         "updated_at": _iso(wo.updated_at),
@@ -231,6 +266,121 @@ def _event(db: Session, wo: WfWorkOrder, action: str, actor: models.User, from_s
     )
 
 
+_STAGE_DATE = {
+    "generation": "generation_date",
+    "install": "install_date",
+    "pickup": "pickup_date",
+    "store": "store_date",
+    "disassemble": "disassemble_date",
+}
+
+
+def _fill_header_from_element(wo: WfWorkOrder, el: models.Element | None) -> None:
+    if el is None:
+        return
+    wo.element_id = el.id
+    wo.anode_nr = wo.anode_nr or el.anode_nr
+    wo.cathode_nr = wo.cathode_nr or el.cathode_nr
+    wo.membrane_nr = wo.membrane_nr or el.membrane_nr
+
+
+def _open_work_order(db: Session, nr: str, *, new_life: bool = False) -> WfWorkOrder | None:
+    rows = (
+        db.query(WfWorkOrder)
+        .filter(WfWorkOrder.element_nr == nr, WfWorkOrder.status == "open")
+        .order_by(WfWorkOrder.id.desc())
+        .all()
+    )
+    if not rows:
+        return None
+    if new_life:
+        for row in rows:
+            if row.disassemble_date is None:
+                return row
+        return None
+    return rows[0]
+
+
+def ensure_work_order_process(
+    db: Session,
+    element_nr: str,
+    stage: str,
+    actor: Any,
+    *,
+    day: date | None = None,
+    cell: str | None = None,
+    cell_request_id: int | None = None,
+    note: str | None = None,
+) -> WfWorkOrder | None:
+    """One open planner form per element; each plant process fills that stage on the same history."""
+    nr = (element_nr or "").strip()
+    if not nr or stage not in _STAGE_DATE:
+        return None
+    when = day or date.today()
+    new_life = stage in ("generation", "install")
+    wo = _open_work_order(db, nr, new_life=new_life)
+    el = _life(db, nr)
+    user = actor if isinstance(actor, models.User) else None
+    actor_name = _display(user) if user else (getattr(actor, "full_name", None) or getattr(actor, "username", None) or "system")
+    created = False
+    if wo is None:
+        seq = _next_seq(db, nr)
+        wo = WfWorkOrder(
+            code=_wo_code(nr, seq),
+            seq=seq,
+            status="open",
+            report_date=when,
+            element_nr=nr,
+            created_by_id=user.id if user else None,
+            created_by_name=actor_name,
+            created_at=_now(),
+            updated_at=_now(),
+        )
+        db.add(wo)
+        db.flush()
+        created = True
+    _fill_header_from_element(wo, el)
+    field = _STAGE_DATE[stage]
+    if getattr(wo, field) is None:
+        setattr(wo, field, when)
+    if stage == "install" and cell:
+        wo.install_cell = cell[:40]
+    if cell_request_id and not wo.cell_request_id:
+        wo.cell_request_id = cell_request_id
+    wo.updated_at = _now()
+    db.add(
+        WfEvent(
+            flow="workorder",
+            record_id=wo.id,
+            action="auto_created" if created else "process",
+            from_status=None if created else wo.status,
+            to_status=wo.status,
+            actor_id=user.id if user else None,
+            actor_name=actor_name,
+            note=(note or "").strip() or f"{stage} registered",
+            data={"stage": stage, "date": when.isoformat(), "cell": cell},
+            created_at=_now(),
+        )
+    )
+    if created:
+        targets = _planner_ids(db)
+        if user is not None:
+            targets.discard(user.id)
+        for uid in targets:
+            db.add(
+                WfNotification(
+                    user_id=uid,
+                    flow="workorder",
+                    record_id=wo.id,
+                    status=wo.status,
+                    title=wo.code,
+                    from_name=actor_name,
+                    created_at=_now(),
+                )
+            )
+    return wo
+
+
 def ensure_work_order_for_disassembly(
     db: Session,
     element_nr: str,
@@ -239,82 +389,15 @@ def ensure_work_order_for_disassembly(
     disassemble_date: date | None = None,
     cell_request_id: int | None = None,
 ) -> WfWorkOrder | None:
-    """Open a work order when dismantling is confirmed, so the planner can log cell-shop labor."""
-    nr = (element_nr or "").strip()
-    if not nr:
-        return None
-    day = disassemble_date or date.today()
-    existing = (
-        db.query(WfWorkOrder)
-        .filter(
-            WfWorkOrder.element_nr == nr,
-            WfWorkOrder.status == "open",
-            WfWorkOrder.disassemble_date.isnot(None),
-        )
-        .order_by(WfWorkOrder.id.desc())
-        .first()
-    )
-    if existing is not None:
-        if cell_request_id and not existing.cell_request_id:
-            existing.cell_request_id = cell_request_id
-        if existing.disassemble_date is None:
-            existing.disassemble_date = day
-        existing.updated_at = _now()
-        return existing
-
-    el = _life(db, nr)
-    seq = _next_seq(db, nr)
-    user = actor if isinstance(actor, models.User) else None
-    actor_name = _display(user) if user else (getattr(actor, "full_name", None) or getattr(actor, "username", None) or "system")
-    wo = WfWorkOrder(
-        code=_wo_code(nr, seq),
-        seq=seq,
-        status="open",
-        report_date=day,
-        element_nr=nr,
-        element_id=el.id if el else None,
-        anode_nr=(el.anode_nr if el else None),
-        cathode_nr=(el.cathode_nr if el else None),
-        membrane_nr=(el.membrane_nr if el else None),
+    return ensure_work_order_process(
+        db,
+        element_nr,
+        "disassemble",
+        actor,
+        day=disassemble_date,
         cell_request_id=cell_request_id,
-        disassemble_date=day,
-        created_by_id=user.id if user else None,
-        created_by_name=actor_name,
-        created_at=_now(),
-        updated_at=_now(),
+        note="Disassembly registered",
     )
-    db.add(wo)
-    db.flush()
-    db.add(
-        WfEvent(
-            flow="workorder",
-            record_id=wo.id,
-            action="auto_created",
-            from_status=None,
-            to_status=wo.status,
-            actor_id=user.id if user else None,
-            actor_name=actor_name,
-            note="Disassembly registered",
-            data={"date": day.isoformat()},
-            created_at=_now(),
-        )
-    )
-    targets = _planner_ids(db)
-    if user is not None:
-        targets.discard(user.id)
-    for uid in targets:
-        db.add(
-            WfNotification(
-                user_id=uid,
-                flow="workorder",
-                record_id=wo.id,
-                status=wo.status,
-                title=wo.code,
-                from_name=actor_name,
-                created_at=_now(),
-            )
-        )
-    return wo
 
 
 class LaborIn(BaseModel):

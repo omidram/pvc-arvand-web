@@ -231,9 +231,13 @@ def draw_report(c: canvas.Canvas, row: models.AssemblyInspectionReport, page_w: 
         c.showPage()
         y = page_h - margin
     sign_w = usable / 3
+    insp_name = _txt(row.sign_insp_name)
+    shift = (_txt(getattr(row, "sign_insp_shift", None))).strip().upper()
+    if shift in {"A", "B", "C", "D"}:
+        insp_name = f"{insp_name}  Shift {shift}".strip() if insp_name else f"Shift {shift}"
     roles = [
         ("Maintenance cell work shop", row.sign_maint_name, row.sign_maint_image, row.sign_maint_at),
-        ("Inspection", row.sign_insp_name, row.sign_insp_image, row.sign_insp_at),
+        ("Inspection", insp_name, row.sign_insp_image, row.sign_insp_at),
         ("Process", row.sign_proc_name, row.sign_proc_image, row.sign_proc_at),
     ]
     x = margin

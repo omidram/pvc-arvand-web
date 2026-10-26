@@ -728,16 +728,109 @@ ASSEMBLY_FROM_YEAR = None  # keep every C90 year in the workbook
 DENORA_SHELL = "دنوار(ایتالیا)"
 BLUESTAR_SHELL = "بلو استار (چین)"
 BLUESTAR_ELECTROLYZERS = {"M2", "L2"}
+C90_FINAL_EXCEL = "final-excel.xlsx"
+C90_ORIGINAL_REMARK = "اوریجینال-پوشش دهی نشده است"
+C90_ORIGINAL_SHELL = "دنورا"
 _COATING_SHARED_RE = re.compile(r"^آند\s*و\s*کاتد\s*(.*)$")
 _COATING_SPLIT_RE = re.compile(
     r"^(آند|کاتد)\s+(.+?)\s*(?:-|–|ـ|و)\s*(آند|کاتد)\s*(.+)$"
 )
+_C90_SPLIT_RE = re.compile(
+    r"(آند)\s*(.+?)\s*[-–ـ/]\s*(کاتد)\s*(.+)$"
+)
+_C90_SPLIT_REV_RE = re.compile(
+    r"(کاتد)\s*(.+?)\s*[-–ـ/]\s*(آند)\s*(.+)$"
+)
+_C90_SPLIT_SPACE_RE = re.compile(
+    r"^(آند)\s+(.+?)\s+(کاتد)\s+(.+)$"
+)
+_C90_PAREN_DENORA_RE = re.compile(r"[\(（]\s*دنو[راو]*\s*[\)）]")
+_C90_ORIGINAL_DENORA_RE = re.compile(r"original\s*[\(（]\s*دنو[راو]*\s*[\)）]", re.I)
 
 
 def _fold_coating(text: str) -> str:
     text = text.replace("ي", "ی").replace("ك", "ک").replace("کاند", "کاتد")
     text = text.replace("وکاتد", "و کاتد").replace("وآند", "و آند")
     return re.sub(r"\s+", " ", text).strip()
+
+
+def is_c90_final_excel(filename: str | None) -> bool:
+    """These coating / membrane-use rules apply only to final-excel.xlsx uploads."""
+    name = Path(str(filename or "")).name.strip().lower().replace(" ", "")
+    return name == C90_FINAL_EXCEL
+
+
+def _c90_is_original_denora(part: str) -> bool:
+    text = _fold_coating(part)
+    if not text:
+        return False
+    if _C90_ORIGINAL_DENORA_RE.search(text):
+        leftover = _C90_ORIGINAL_DENORA_RE.sub("", text)
+        leftover = re.sub(r"[\s\-_/]+", "", leftover)
+        return leftover in {"", "آند", "کاتد"}
+    if _C90_PAREN_DENORA_RE.search(text):
+        leftover = _C90_PAREN_DENORA_RE.sub("", text)
+        leftover = re.sub(r"original", "", leftover, flags=re.I)
+        leftover = re.sub(r"[\s\-_/]+", "", leftover)
+        return leftover in {"", "آند", "کاتد"}
+    return False
+
+
+def _c90_company(part: str | None) -> str | None:
+    text = _fold_coating(part or "")
+    if not text or _c90_is_original_denora(text):
+        return None
+    text = re.sub(r"^شرکت\s+", "", text).strip(" -/")
+    return text[:100] or None
+
+
+def parse_c90_coating_company(value: Any) -> dict[str, Any]:
+    """Map «شرکت پوشش دهنده» for final-excel.xlsx.
+
+    Company-only → both anode/cathode coating.
+    «آند X - کاتد Y» → each side.
+    دنورا in parentheses / original(دنورا) → original shell + remark, no recoating company.
+    """
+    empty = {
+        "anode_coating": None,
+        "cathode_coating": None,
+        "anode_original": False,
+        "cathode_original": False,
+    }
+    raw = _clean_code(value)
+    if not raw:
+        return empty
+    text = _fold_coating(raw)
+    shared = _COATING_SHARED_RE.match(text)
+    if shared:
+        rest = shared.group(1).strip()
+        if _c90_is_original_denora(rest):
+            return {**empty, "anode_original": True, "cathode_original": True}
+        company = _c90_company(rest)
+        return {**empty, "anode_coating": company, "cathode_coating": company}
+
+    def sides(anode_part: str, cathode_part: str) -> dict[str, Any]:
+        return {
+            "anode_coating": _c90_company(anode_part),
+            "cathode_coating": _c90_company(cathode_part),
+            "anode_original": _c90_is_original_denora(anode_part),
+            "cathode_original": _c90_is_original_denora(cathode_part),
+        }
+
+    matched = _C90_SPLIT_RE.search(text)
+    if not matched:
+        spaced = _C90_SPLIT_SPACE_RE.match(text)
+        if spaced and spaced.group(2).strip() not in {"و"}:
+            matched = spaced
+    if matched:
+        return sides(matched.group(2), matched.group(4))
+    matched = _C90_SPLIT_REV_RE.search(text)
+    if matched:
+        return sides(matched.group(4), matched.group(2))
+    if _c90_is_original_denora(text):
+        return {**empty, "anode_original": True, "cathode_original": True}
+    company = _c90_company(text)
+    return {**empty, "anode_coating": company, "cathode_coating": company}
 
 
 def split_coating_company(value: Any) -> tuple[str | None, str | None]:
@@ -894,7 +987,11 @@ def _assembly_columns(header: list[Any], sub: list[Any] | None) -> dict[str, Any
         "coating": find(lambda key: "پوشش" in key),
         "status": find(lambda key: "وضعیتفعلی" in key or key in {"وضعیتفعلیالمان", "status"}),
         # Exact «توضیحات» / reason — not «توضیحات آند|کاتد».
-        "notes": find(lambda key: key in {"توضیحات", "ملاحظات"} or "دلیل" in key),
+        "notes": find(
+            lambda key: key in {"توضیحات", "ملاحظات"}
+            or "دلیل" in key
+            or "decommissionreason" in key
+        ),
         "anode_remark": find(
             lambda key: "anoderemark" in key
             or "توضیحاتاند" in key
@@ -916,12 +1013,18 @@ def _assembly_columns(header: list[Any], sub: list[Any] | None) -> dict[str, Any
     return columns
 
 
-def normalize_membrane_use(value: Any) -> str | None:
+def normalize_membrane_use(value: Any, *, profile: str = "default") -> str | None:
     """Assembly sheet codes: N = new membrane, N2 = reused / repaired."""
     text = _clean_code(value)
     if not text:
         return None
     key = text.upper().replace(" ", "")
+    if profile == "c90_final":
+        if key == "N":
+            return "نو"
+        if key == "N2":
+            return "reused"
+        return text
     if key == "N":
         return "New"
     if key == "N2":
@@ -935,7 +1038,18 @@ def _cell(row: list[Any], index: int | None) -> Any:
     return row[index]
 
 
-def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSEMBLY_FROM_YEAR) -> list[dict[str, Any]] | None:
+def _join_remark(*parts: str | None) -> str | None:
+    seen: list[str] = []
+    for part in parts:
+        text = (part or "").strip()
+        if text and text not in seen:
+            seen.append(text)
+    return "\n".join(seen) if seen else None
+
+
+def _parse_assembly_sheet(
+    rows: list[list[Any]], *, from_year: int | None = ASSEMBLY_FROM_YEAR, profile: str = "default"
+) -> list[dict[str, Any]] | None:
     header_at = None
     columns = None
     for index, row in enumerate(rows[:12]):
@@ -963,14 +1077,26 @@ def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSE
             if c90_year is None or c90_year < from_year:
                 continue
         membrane_type = _clean_code(_cell(row, columns["membrane_type"]))
-        membrane_use = normalize_membrane_use(_clean_code(_cell(row, columns["membrane_use"])))
+        membrane_use = normalize_membrane_use(_clean_code(_cell(row, columns["membrane_use"])), profile=profile)
         membrane_nr = _clean_code(_cell(row, columns["membrane_nr"]))
         electrolyzer = _clean_code(_cell(row, columns["electrolyzer"]))
         if electrolyzer:
             electrolyzer = electrolyzer.upper()
         position = _pad_cell_position(_cell(row, columns["position"]))
-        anode_coating, cathode_coating = split_coating_company(_cell(row, columns.get("coating")))
-        shell = shell_for_electrolyzer(electrolyzer)
+        coating_raw = _cell(row, columns.get("coating"))
+        if profile == "c90_final":
+            coating = parse_c90_coating_company(coating_raw)
+            anode_coating = coating["anode_coating"]
+            cathode_coating = coating["cathode_coating"]
+            plant_shell = shell_for_electrolyzer(electrolyzer)
+            anode_shell = C90_ORIGINAL_SHELL if coating["anode_original"] else plant_shell
+            cathode_shell = C90_ORIGINAL_SHELL if coating["cathode_original"] else plant_shell
+        else:
+            anode_coating, cathode_coating = split_coating_company(coating_raw)
+            plant_shell = shell_for_electrolyzer(electrolyzer)
+            anode_shell = plant_shell
+            cathode_shell = plant_shell
+            coating = {"anode_original": False, "cathode_original": False}
         assembly = _ymd_from_row(row, *columns["assembly_ymd"]) if columns["assembly_ymd"] else None
         installed = _ymd_from_row(row, *columns["install_ymd"]) if columns["install_ymd"] else None
         dismantle = parse_plant_date(_cell(row, columns["dismantle"]))
@@ -980,6 +1106,10 @@ def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSE
             notes = notes[:200]
         anode_remark = _clean_code(_cell(row, columns.get("anode_remark")))
         cathode_remark = _clean_code(_cell(row, columns.get("cathode_remark")))
+        if coating["anode_original"]:
+            anode_remark = _join_remark(anode_remark, C90_ORIGINAL_REMARK)
+        if coating["cathode_original"]:
+            cathode_remark = _join_remark(cathode_remark, C90_ORIGINAL_REMARK)
 
         elements.append(
             {
@@ -1002,17 +1132,20 @@ def _parse_assembly_sheet(rows: list[list[Any]], *, from_year: int | None = ASSE
                 "cathode_remark": cathode_remark,
                 "anode_coating": anode_coating,
                 "cathode_coating": cathode_coating,
-                "anode_shell": shell,
-                "cathode_shell": shell,
+                "anode_shell": anode_shell,
+                "cathode_shell": cathode_shell,
                 "coating_split": bool(
                     anode_coating and cathode_coating and anode_coating != cathode_coating
                 ),
+                "write_coatings": bool(anode_coating or cathode_coating),
             }
         )
     return elements
 
 
-def parse_assembly_excel(content: bytes, *, from_year: int | None = ASSEMBLY_FROM_YEAR) -> dict[str, Any]:
+def parse_assembly_excel(
+    content: bytes, *, from_year: int | None = ASSEMBLY_FROM_YEAR, filename: str | None = None
+) -> dict[str, Any]:
     """Read the plant montage / demontage workbook into assembly-form fields.
 
     C90 day/month/year (تاریخ مونتاژ در C90) is Assembly Date. Every year in
@@ -1020,13 +1153,14 @@ def parse_assembly_excel(content: bytes, *, from_year: int | None = ASSEMBLY_FRO
     Site install is commissioning. Dismantle date fills both decommissioning
     and disassembly.
     """
+    profile = "c90_final" if is_c90_final_excel(filename) else "default"
     wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
     elements: list[dict[str, Any]] = []
     recognized = False
     try:
         for name in wb.sheetnames:
             rows = [list(r) for r in wb[name].iter_rows(values_only=True)]
-            parsed = _parse_assembly_sheet(rows, from_year=from_year)
+            parsed = _parse_assembly_sheet(rows, from_year=from_year, profile=profile)
             if parsed is None:
                 continue
             recognized = True
@@ -1042,7 +1176,13 @@ def parse_assembly_excel(content: bytes, *, from_year: int | None = ASSEMBLY_FRO
             "imported": 0,
             "error": "No assembly rows found. هیچ ردیف مونتاژ یا دمونتاژ در فایل پیدا نشد.",
         }
-    return {"elements": elements, "recognized": True, "imported": len(elements), "sheet": "assembly"}
+    return {
+        "elements": elements,
+        "recognized": True,
+        "imported": len(elements),
+        "sheet": "assembly",
+        "profile": profile,
+    }
 
 
 BUNDLED_ASSEMBLY_XLSX = Path(__file__).resolve().parent / "data" / "assembly_membrane_use.xlsx"
@@ -1096,8 +1236,11 @@ def apply_bundled_membrane_use(db) -> dict[str, int]:
             use = by_parts.get((key[0], key[1], key[3], key[4]))
         if use is None:
             # Rows already stored as the raw sheet codes.
+            stored = (el.membrane_remark or "").strip()
+            if stored in {"نو", "reused"}:
+                continue
             current = normalize_membrane_use(el.membrane_remark)
-            if current and current != (el.membrane_remark or "").strip():
+            if current and current != stored:
                 el.membrane_remark = current
                 updated += 1
             continue

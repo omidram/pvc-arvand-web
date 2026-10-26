@@ -261,6 +261,9 @@ def _draw_report(c: canvas.Canvas, row: models.InspectionReport, grids: dict[str
     sw = mid / 3
     sx = m + 2 * mid
     insp_name = _g(row, "sign_insp_name") or _g(row, "signature")
+    shift = (_g(row, "sign_insp_shift") or "").strip().upper()
+    if shift in {"A", "B", "C", "D"}:
+        insp_name = f"{insp_name}  Shift {shift}".strip() if insp_name else f"Shift {shift}"
     _sign(c, sx, y, sw, sign_h, "Insp.", insp_name, getattr(row, "sign_insp_image", None))
     _sign(c, sx + sw, y, sw, sign_h, "Maint.", _g(row, "sign_maint_name"), getattr(row, "sign_maint_image", None))
     _sign(c, sx + 2 * sw, y, sw, sign_h, "Proc.", _g(row, "sign_proc_name"), getattr(row, "sign_proc_image", None))

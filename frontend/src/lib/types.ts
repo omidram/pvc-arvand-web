@@ -268,6 +268,7 @@ export interface InspectionReport {
   sign_insp_name: string | null;
   sign_insp_image: string | null;
   sign_insp_at: string | null;
+  sign_insp_shift: string | null;
   sign_maint_name: string | null;
   sign_maint_image: string | null;
   sign_maint_at: string | null;
@@ -306,6 +307,7 @@ export interface AssemblyInspectionReport {
   sign_insp_name: string | null;
   sign_insp_image: string | null;
   sign_insp_at: string | null;
+  sign_insp_shift: string | null;
   sign_proc_name: string | null;
   sign_proc_image: string | null;
   sign_proc_at: string | null;

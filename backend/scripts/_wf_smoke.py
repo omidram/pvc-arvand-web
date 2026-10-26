@@ -110,9 +110,9 @@ d = ok(as_("wh").post(f"/workflow/coating/{bid}/indent", json={"indent_no": "IND
 assert d["status"] == "await_dispatch"
 d = ok(as_("proc").post(f"/workflow/coating/{bid}/dispatch", json={"dispatch_date": "2026-01-01", "expected_return_date": "2026-01-21"}))
 assert d["status"] == "at_coater"
-r = as_("wh").post(f"/workflow/coating/{bid}/receive", json={"actual_date": "2026-02-10"})
+r = as_("wh").post(f"/workflow/coating/{bid}/receive", json={"actual_date": "2026-02-10", "warranty_start": "2026-02-10"})
 assert r.status_code == 400, r.text  # late without a reason
-d = ok(as_("wh").post(f"/workflow/coating/{bid}/receive", json={"actual_date": "2026-02-10", "delay_party": "company", "delay_reason": "Late furnace"}))
+d = ok(as_("wh").post(f"/workflow/coating/{bid}/receive", json={"actual_date": "2026-02-10", "delay_party": "company", "delay_reason": "Late furnace", "warranty_start": "2026-02-10"}))
 assert d["status"] == "await_report" and d["delay_days"] == 20
 
 # Excel template -> fill -> upload
@@ -147,7 +147,7 @@ d = ok(as_("c90").post(f"/workflow/coating/{bid}/reject", json={"note": "K-002 n
 assert d["status"] == "await_report" and d["rejected"]
 d = ok(as_("proc").post(f"/workflow/coating/{bid}/rework", json={"dispatch_date": "2026-02-12", "expected_return_date": "2026-02-20"}))
 assert d["status"] == "at_coater" and d["rework_count"] == 1
-d = ok(as_("wh").post(f"/workflow/coating/{bid}/receive", json={"actual_date": "2026-02-18"}))
+d = ok(as_("wh").post(f"/workflow/coating/{bid}/receive", json={"actual_date": "2026-02-18", "warranty_start": "2026-02-18"}))
 assert d["delay_days"] == -2
 d = ok(as_("proc").post(f"/workflow/coating/{bid}/submit", json={}))
 d = ok(as_("insp").post(f"/workflow/coating/{bid}/inspect_ok", json={}))
@@ -169,13 +169,13 @@ p = ok(as_("wh").post(f"/workflow/purchase/{pid}/indent", json={"indent_no": "IN
 p = ok(as_("proc").post(f"/workflow/purchase/{pid}/order", json={"request_date": "2026-03-01", "expected_delivery_date": "2026-03-10"}))
 p = ok(as_("wh").post(f"/workflow/purchase/{pid}/deliver", json={"actual_date": "2026-03-09"}))
 assert p["status"] == "await_registration" and p["delay_days"] == -1
-r = as_("c90").post(f"/workflow/purchase/{pid}/register", json={"items": [{"element_kind": "anode", "serial": "A-001"}]})
+r = as_("c90").post(f"/workflow/purchase/{pid}/register", json={"items": [{"element_kind": "anode", "serial": "A-001"}], "warranty_start": "2026-03-09"})
 assert r.status_code == 409, r.text
-p = ok(as_("c90").post(f"/workflow/purchase/{pid}/register", json={"items": [{"element_kind": "anode", "serial": "NA-1", "coating": "RuO2"}]}))
+p = ok(as_("c90").post(f"/workflow/purchase/{pid}/register", json={"items": [{"element_kind": "anode", "serial": "NA-1", "coating": "RuO2"}], "warranty_start": "2026-03-09"}))
 assert p["status"] == "await_registration" and p["registered"] == 1
-r = as_("c90").post(f"/workflow/purchase/{pid}/register", json={"items": [{"element_kind": "anode", "serial": "NA-2"}, {"element_kind": "anode", "serial": "NA-3"}]})
+r = as_("c90").post(f"/workflow/purchase/{pid}/register", json={"items": [{"element_kind": "anode", "serial": "NA-2"}, {"element_kind": "anode", "serial": "NA-3"}], "warranty_start": "2026-03-09"})
 assert r.status_code == 400, r.text
-p = ok(as_("c90").post(f"/workflow/purchase/{pid}/register", json={"items": [{"element_kind": "anode", "serial": "NA-2"}, {"element_kind": "cathode", "serial": "NK-1"}]}))
+p = ok(as_("c90").post(f"/workflow/purchase/{pid}/register", json={"items": [{"element_kind": "anode", "serial": "NA-2"}, {"element_kind": "cathode", "serial": "NK-1"}], "warranty_start": "2026-03-09"}))
 assert p["status"] == "completed"
 with Session() as db:
     a = db.get(models.Anode, "NA-1")

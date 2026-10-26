@@ -129,6 +129,7 @@ function InspectionsWorkspace() {
         />
       )}
       related={(row) => <InspectionRelations row={row} />}
+      preferView="form"
       startNew={startNew}
       newDefaults={startNew ? () => prefill : undefined}
       newDefaultsKey={startNew ? JSON.stringify(prefill) : undefined}

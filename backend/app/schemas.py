@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 
 class ORMModel(BaseModel):
@@ -658,12 +658,19 @@ class InspectionReportBase(ORMModel):
     sign_insp_name: str | None = None
     sign_insp_image: str | None = Field(default=None, max_length=1_200_000)
     sign_insp_at: str | None = None
+    sign_insp_shift: str | None = None
     sign_maint_name: str | None = None
     sign_maint_image: str | None = Field(default=None, max_length=1_200_000)
     sign_maint_at: str | None = None
     sign_proc_name: str | None = None
     sign_proc_image: str | None = Field(default=None, max_length=1_200_000)
     sign_proc_at: str | None = None
+
+    @field_validator("sign_insp_shift", mode="before")
+    @classmethod
+    def _insp_shift(cls, value: object) -> str | None:
+        letter = str(value or "").strip().upper()
+        return letter if letter in {"A", "B", "C", "D"} else None
 
 
 class InspectionReportRead(InspectionReportBase):
@@ -692,9 +699,16 @@ class AssemblyInspectionReportBase(ORMModel):
     sign_insp_name: str | None = None
     sign_insp_image: str | None = Field(default=None, max_length=1_200_000)
     sign_insp_at: str | None = None
+    sign_insp_shift: str | None = None
     sign_proc_name: str | None = None
     sign_proc_image: str | None = Field(default=None, max_length=1_200_000)
     sign_proc_at: str | None = None
+
+    @field_validator("sign_insp_shift", mode="before")
+    @classmethod
+    def _insp_shift(cls, value: object) -> str | None:
+        letter = str(value or "").strip().upper()
+        return letter if letter in {"A", "B", "C", "D"} else None
 
 
 class AssemblyInspectionReportRead(AssemblyInspectionReportBase):

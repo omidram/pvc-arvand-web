@@ -510,6 +510,7 @@ class InspectionReport(Base):
     sign_insp_name: Mapped[str | None] = mapped_column(String(150))
     sign_insp_image: Mapped[str | None] = mapped_column(Text)
     sign_insp_at: Mapped[str | None] = mapped_column(String(40))
+    sign_insp_shift: Mapped[str | None] = mapped_column(String(1))  # A | B | C | D
     sign_maint_name: Mapped[str | None] = mapped_column(String(150))
     sign_maint_image: Mapped[str | None] = mapped_column(Text)
     sign_maint_at: Mapped[str | None] = mapped_column(String(40))
@@ -543,6 +544,7 @@ class AssemblyInspectionReport(Base):
     sign_insp_name: Mapped[str | None] = mapped_column(String(150))
     sign_insp_image: Mapped[str | None] = mapped_column(Text)
     sign_insp_at: Mapped[str | None] = mapped_column(String(40))
+    sign_insp_shift: Mapped[str | None] = mapped_column(String(1))  # A | B | C | D
     sign_proc_name: Mapped[str | None] = mapped_column(String(150))
     sign_proc_image: Mapped[str | None] = mapped_column(Text)
     sign_proc_at: Mapped[str | None] = mapped_column(String(40))

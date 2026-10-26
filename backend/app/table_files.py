@@ -281,8 +281,11 @@ def replace_table_file(
 ) -> dict[str, Any]:
     spec = _resolve(key)
     if spec.get("model") is not None:
-        replace = spec["replace"] or (lambda db, content, progress: _default_replace(spec, db, content, progress))
-        result = replace(db, content, progress)
+        replace = spec["replace"] or (lambda db, content, progress, filename=None: _default_replace(spec, db, content, progress))
+        try:
+            result = replace(db, content, progress, filename)
+        except TypeError:
+            result = replace(db, content, progress)
         records = _count_model(db, spec["model"])
     else:
         result = _replace_archive(spec["slug"], spec["meta"], content, progress)

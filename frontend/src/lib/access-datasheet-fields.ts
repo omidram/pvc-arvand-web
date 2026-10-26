@@ -38,6 +38,7 @@ export const ASSEMBLY_INSPECTION_DATASHEET_SCALAR = [
   "sign_maint_at",
   "sign_insp_name",
   "sign_insp_at",
+  "sign_insp_shift",
   "sign_proc_name",
   "sign_proc_at",
 ] as const;

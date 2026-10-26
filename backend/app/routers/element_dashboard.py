@@ -264,6 +264,11 @@ def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict
             user=user.full_name or user.username, created_at=datetime.now(),
         )
     )
+    from .work_orders import ensure_work_order_process
+
+    ensure_work_order_process(
+        db, old.element_nr, "install", user, day=day, cell=f"{electrolyzer}-{position}", note=body.note
+    )
     return {"element_nr": old.element_nr, "electrolyzer": electrolyzer, "position": position, "id": new.id}
 
 

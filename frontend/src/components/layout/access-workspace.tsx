@@ -135,6 +135,7 @@ export function AccessWorkspace<T extends object>({
   validate,
   /** Default: datasheet shows every form field. Use "summary" only for a short column list. */
   sheetMode = "fields",
+  preferView,
 }: {
   caption: string;
   helpKey?: string;
@@ -190,6 +191,8 @@ export function AccessWorkspace<T extends object>({
   startNew?: boolean;
   validate?: (values: Record<string, unknown>, ctx: { isNew: boolean }) => string | null;
   sheetMode?: "fields" | "summary";
+  /** Open in this view unless the URL has ?view=. Inspection / QC forms use form. */
+  preferView?: RecordView;
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -209,17 +212,22 @@ export function AccessWorkspace<T extends object>({
   const paramName = recordParam ?? String(idField);
   const defaultView = useDefaultView();
   // A link that points at one record (…?nr=12) opens that record's form.
-  const [viewChoice, setView] = useState<RecordView | null>(startNew ? "form" : null);
-  const view = viewChoice ?? defaultView;
+  const [viewChoice, setView] = useState<RecordView | null>(startNew || preferView === "form" ? "form" : preferView ?? null);
+  const view = viewChoice ?? preferView ?? defaultView;
   // A link such as /anodes?anode_nr=UA29686 must show that record. The choice is
   // applied after mount because the server render has no query string.
   const [linkSerial, setLinkSerial] = useState("");
   useEffect(() => {
-    const serial = new URLSearchParams(window.location.search).get(paramName) ?? "";
-    if (!serial) return;
-    setLinkSerial(serial);
-    setView("datasheet");
-  }, [paramName]);
+    const query = new URLSearchParams(window.location.search);
+    const serial = query.get(paramName) ?? "";
+    const viewParam = query.get("view");
+    if (serial) setLinkSerial(serial);
+    if (viewParam === "form" || viewParam === "datasheet") {
+      setView(viewParam);
+      return;
+    }
+    if (serial) setView(preferView ?? "datasheet");
+  }, [paramName, preferView]);
   const [index, setIndex] = useState(0);
   const [isNew, setIsNew] = useState(startNew);
   const [findValue, setFindValue] = useState("");
@@ -301,7 +309,15 @@ export function AccessWorkspace<T extends object>({
       }
       const copy: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(current as Record<string, unknown>)) {
-        if (value !== null && typeof value === "object") continue;
+        if (Array.isArray(value)) {
+          copy[key] = value;
+          continue;
+        }
+        if (value !== null && typeof value === "object") {
+          const proto = Object.getPrototypeOf(value);
+          if (proto === Object.prototype || proto === null) copy[key] = value;
+          continue;
+        }
         copy[key] = value;
       }
       setValues(copy);

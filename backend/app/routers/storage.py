@@ -315,7 +315,7 @@ def warehouse_export_pdf(
 async def warehouse_import(_admin=Depends(require_admin), file: UploadFile = File(...)):
     """Montage / demontage workbook. Assembly rows, DOL and catalog stubs update together."""
     content = await read_xlsx(file)
-    parsed = parse_assembly_excel(content)
+    parsed = parse_assembly_excel(content, filename=file.filename)
     if not parsed.get("recognized"):
         raise HTTPException(
             status_code=400,

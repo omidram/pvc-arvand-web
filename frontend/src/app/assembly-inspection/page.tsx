@@ -83,15 +83,16 @@ export default function AssemblyInspectionPage() {
     setSaving(true);
     try {
       const payload = assemblyInspectionPayload(values);
-      if (id == null) {
-        await assemblyInspectionsApi.create(payload as Partial<AssemblyInspectionReport>);
-      } else {
-        await assemblyInspectionsApi.update(id, payload as Partial<AssemblyInspectionReport>);
-      }
+      const saved =
+        id == null
+          ? await assemblyInspectionsApi.create(payload as Partial<AssemblyInspectionReport>)
+          : await assemblyInspectionsApi.update(id, payload as Partial<AssemblyInspectionReport>);
       await queryClient.invalidateQueries({ queryKey: ["assembly-inspections"] });
+      return saved;
     } catch (err) {
       const detail = saveError(err);
       await appAlert(detail ? `${t("assemblyInspection.saveFailed")} ${detail}` : t("assemblyInspection.saveFailed"));
+      throw err instanceof Error ? err : new Error(detail || t("assemblyInspection.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -116,13 +117,18 @@ export default function AssemblyInspectionPage() {
       onCreate={(values) => persist(null, values)}
       onDelete={(id) => removeMutation.mutate(id)}
       confirmDelete={(row) => t("assemblyInspection.confirmDelete", { nr: row.element_nr || row.id })}
+      preferView="form"
       exportPrefix="/assembly-inspections"
       filenameBase="assembly-inspections"
-      newDefaults={() => ({
-        checks: emptyAssemblyChecks(),
-        check_remarks: emptyAssemblyCheckRemarks(),
-        assembly_date: new Date().toISOString().slice(0, 10),
-      })}
+      newDefaults={() => {
+        const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
+        return {
+          checks: emptyAssemblyChecks(),
+          check_remarks: emptyAssemblyCheckRemarks(),
+          assembly_date: new Date().toISOString().slice(0, 10),
+          element_nr: params?.get("element_nr") || "",
+        };
+      }}
       formBody={(ctx) => (
         <AssemblyInspectionSheet
           values={ctx.values}

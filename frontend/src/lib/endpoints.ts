@@ -1943,6 +1943,8 @@ export interface WorkOrderDetail {
   labors: Record<string, WoLaborLine[]>;
   skills: string[];
   stages: string[];
+  processes?: Record<string, string | null>;
+  element_history?: { id: number; code: string; status: string; seq: number; processes: Record<string, string | null> }[];
 }
 
 export interface WorkOrderSummary {
@@ -1952,6 +1954,9 @@ export interface WorkOrderSummary {
   element_nr?: string | null;
   anode_nr?: string | null;
   cathode_nr?: string | null;
+  install_cell?: string | null;
+  processes?: Record<string, string | null>;
+  process_keys?: string[];
   created_by?: string | null;
   created_at?: string | null;
   updated_at?: string | null;

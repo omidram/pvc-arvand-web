@@ -3,7 +3,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { InspectionDefectGrid } from "@/components/domain/inspection-defect-grid";
-import { InspectionSignaturePad } from "@/components/domain/inspection-signature";
+import { InspectionSignaturePad, InspectorShiftSelect } from "@/components/domain/inspection-signature";
 import { DateInput } from "@/components/ui/date-input";
 import { elementsApi, inspectionGridsApi, relationsApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
@@ -71,6 +71,7 @@ export const INSPECTION_SHEET_FIELDS = [
   "sign_insp_name",
   "sign_insp_image",
   "sign_insp_at",
+  "sign_insp_shift",
   "sign_maint_name",
   "sign_maint_image",
   "sign_maint_at",
@@ -537,7 +538,19 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
             <tr>
               <td>{labeled("sample taken:", <span className="insp-in" />)}</td>
               <td>{labeled("insert pipe(Anode):", note("anode_tube_remark", "anode_tube_ok"))}</td>
-              <td>{labeled("Name:", line("inspector_name"))}</td>
+              <td>
+                {labeled(
+                  "Name:",
+                  <>
+                    {line("inspector_name")}
+                    <InspectorShiftSelect
+                      value={text(values.sign_insp_shift)}
+                      disabled={readOnly}
+                      onChange={(letter) => onChange("sign_insp_shift", letter)}
+                    />
+                  </>
+                )}
+              </td>
             </tr>
             <tr>
               <td>{labeled("cathode:", note("sample_cathode_note", "sample_cathode"))}</td>
@@ -558,12 +571,14 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
                     label="Insp."
                     name={text(values.sign_insp_name) || text(values.signature)}
                     image={text(values.sign_insp_image)}
+                    shift={text(values.sign_insp_shift)}
                     readOnly={readOnly}
                     onChange={(patch) =>
                       onPatch({
                         sign_insp_name: patch.name ?? values.sign_insp_name,
                         sign_insp_image: patch.image ?? values.sign_insp_image,
                         sign_insp_at: patch.at ?? values.sign_insp_at,
+                        sign_insp_shift: patch.shift ?? values.sign_insp_shift,
                         signature: patch.name ?? values.signature,
                       })
                     }

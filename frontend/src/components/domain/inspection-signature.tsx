@@ -2,19 +2,46 @@
 
 import { useEffect, useRef } from "react";
 
+export const INSPECTION_SHIFTS = ["A", "B", "C", "D"] as const;
+
 type Props = {
   label: string;
   name: string;
   image: string;
   readOnly: boolean;
-  onChange: (patch: { name?: string; image?: string; at?: string }) => void;
+  shift?: string;
+  onChange: (patch: { name?: string; image?: string; at?: string; shift?: string }) => void;
 };
+
+export function InspectorShiftSelect({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: string;
+  disabled?: boolean;
+  onChange: (shift: string) => void;
+}) {
+  return (
+    <label className="insp-shift">
+      <span>Shift</span>
+      <select value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)}>
+        <option value="">—</option>
+        {INSPECTION_SHIFTS.map((letter) => (
+          <option key={letter} value={letter}>
+            {letter}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
 
 function stamp(): string {
   return new Date().toISOString().slice(0, 19);
 }
 
-export function InspectionSignaturePad({ label, name, image, readOnly, onChange }: Props) {
+export function InspectionSignaturePad({ label, name, image, readOnly, shift, onChange }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const imageRef = useRef(image);
@@ -111,13 +138,22 @@ export function InspectionSignaturePad({ label, name, image, readOnly, onChange 
           </span>
         )}
       </div>
-      <input
-        className="insp-in insp-sign-name"
-        placeholder="Name"
-        value={name}
-        disabled={readOnly}
-        onChange={(e) => onChange({ name: e.target.value, at: stamp() })}
-      />
+      <div className="insp-sign-name-row">
+        <input
+          className="insp-in insp-sign-name"
+          placeholder="Name"
+          value={name}
+          disabled={readOnly}
+          onChange={(e) => onChange({ name: e.target.value, at: stamp() })}
+        />
+        {shift !== undefined ? (
+          <InspectorShiftSelect
+            value={shift}
+            disabled={readOnly}
+            onChange={(letter) => onChange({ shift: letter, at: stamp() })}
+          />
+        ) : null}
+      </div>
       <canvas
         ref={canvasRef}
         className="insp-sign-canvas"

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRightLeft, Ban, ClipboardList, Hammer, Inbox, MessageSquare, Paperclip, Power, Send, Truck, Warehouse } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, Ban, ClipboardList, Hammer, Hash, Inbox, MessageSquare, Paperclip, Power, Send, Truck, Warehouse } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { DateInput } from "@/components/ui/date-input";
@@ -208,6 +208,7 @@ export function ArrangementOperatorPanel({
   const { t } = useI18n();
   const qc = useQueryClient();
   const meta = useMeta();
+  const [seenNr, setSeenNr] = useState("");
   const [note, setNote] = useState("");
   const [sent, setSent] = useState<string | null>(null);
   const [removalSent, setRemovalSent] = useState<string | null>(null);
@@ -227,9 +228,24 @@ export function ArrangementOperatorPanel({
     select: (rows) => rows.find((row) => row.request_kind === "numbering" && row.electrolyzer === electrolyzer && String(row.position ?? "") === pos),
   });
   const send = useMutation({
-    mutationFn: () => workflowApi.cellNumbering({ electrolyzer, position: pos, element_nr: elementNr, note: note.trim() || null }),
+    mutationFn: () => {
+      const seen = seenNr.trim();
+      const extra = note.trim();
+      const parts = [
+        seen ? `${t("arrangement.numberingSeen")}: ${seen}` : "",
+        elementNr ? `${t("arrangement.numberingRecorded")}: ${elementNr}` : "",
+        extra,
+      ].filter(Boolean);
+      return workflowApi.cellNumbering({
+        electrolyzer,
+        position: pos,
+        element_nr: elementNr,
+        note: parts.join(" · ") || null,
+      });
+    },
     onSuccess: (res) => {
       setSent(t("arrangement.numberingSent", { code: res.code }));
+      setSeenNr("");
       setNote("");
       invalidateAll(qc);
     },
@@ -270,9 +286,22 @@ export function ArrangementOperatorPanel({
           ) : null}
         </div>
 
-        <div>
-          <strong>{t("arrangement.numberingTitle")}</strong>
-          <p className="mon-sub">{t("arrangement.numberingHint")}</p>
+        <div className="arr-numbering">
+          <div className="arr-numbering-head">
+            <AlertTriangle size={16} strokeWidth={2.2} />
+            <strong>{t("arrangement.numberingTitle")}</strong>
+          </div>
+          <p className="arr-numbering-hint">{t("arrangement.numberingHint")}</p>
+          <div className="arr-numbering-facts">
+            <span>
+              <em>{t("arrangement.numberingCell")}</em>
+              <b className="en">{electrolyzer}-{pos}</b>
+            </span>
+            <span>
+              <em>{t("arrangement.numberingRecorded")}</em>
+              <b className="en">{elementNr || "—"}</b>
+            </span>
+          </div>
           {openNumbering ? (
             <div className="cr-box">
               <ClipboardList className="h-4 w-4 shrink-0" />
@@ -283,15 +312,33 @@ export function ArrangementOperatorPanel({
             </div>
           ) : canAsk ? (
             <>
-              <label className="ed-filters cr-wide">
-                <span className="text-xs font-bold">{t("arrangement.numberingNote")}</span>
-                <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("arrangement.numberingNoteHint")} />
+              <label className="arr-numbering-field">
+                <span>{t("arrangement.numberingSeen")}</span>
+                <input
+                  className="en"
+                  value={seenNr}
+                  onChange={(e) => setSeenNr(e.target.value)}
+                  placeholder={t("arrangement.numberingSeenHint")}
+                  maxLength={40}
+                />
               </label>
-              <div className="ew-action-btns">
-                <button type="button" className="wf-btn is-primary" disabled={send.isPending} onClick={() => send.mutate()}>
-                  <ClipboardList size={14} /> {t("arrangement.numberingSend")}
-                </button>
-              </div>
+              <label className="arr-numbering-field">
+                <span>{t("arrangement.numberingNote")}</span>
+                <textarea
+                  rows={3}
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder={t("arrangement.numberingNoteHint")}
+                />
+              </label>
+              <button
+                type="button"
+                className="wf-btn is-primary arr-numbering-send"
+                disabled={send.isPending || (!seenNr.trim() && !note.trim())}
+                onClick={() => send.mutate()}
+              >
+                <Hash size={14} /> {t("arrangement.numberingSend")}
+              </button>
               {sent ? <p className="asm-note is-ok">{sent}</p> : null}
               {send.isError ? <p className="asm-note is-danger">{errText(send.error)}</p> : null}
             </>

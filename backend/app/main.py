@@ -118,6 +118,7 @@ _INSPECTION_SHEET_COLUMNS = {
     "sign_insp_name": "TEXT",
     "sign_insp_image": "TEXT",
     "sign_insp_at": "TEXT",
+    "sign_insp_shift": "VARCHAR(1)",
     "sign_maint_name": "TEXT",
     "sign_maint_image": "TEXT",
     "sign_maint_at": "TEXT",
@@ -370,6 +371,13 @@ def _ensure_coating_warranty_columns() -> None:
                 "prior_service_days": "INTEGER",
             },
         ),
+        (
+            "wf_purchases",
+            {
+                "warranty_months": "INTEGER",
+                "warranty_start": "DATE",
+            },
+        ),
     ):
         try:
             present = {col["name"] for col in inspect(engine).get_columns(table)}
@@ -458,10 +466,16 @@ def _ensure_assembly_inspection_columns() -> None:
     if "assembly_inspection_reports" not in insp.get_table_names():
         return
     present = {col["name"] for col in insp.get_columns("assembly_inspection_reports")}
-    if "check_remarks" in present:
+    columns = {
+        "check_remarks": "JSON",
+        "sign_insp_shift": "VARCHAR(1)",
+    }
+    missing = [name for name in columns if name not in present]
+    if not missing:
         return
     with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE assembly_inspection_reports ADD COLUMN check_remarks JSON"))
+        for name in missing:
+            conn.execute(text(f"ALTER TABLE assembly_inspection_reports ADD COLUMN {name} {columns[name]}"))
 
 
 _ensure_assembly_inspection_columns()

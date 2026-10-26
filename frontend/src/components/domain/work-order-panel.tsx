@@ -239,7 +239,9 @@ function WorkOrderForm({
   editable,
   code,
   status,
+  history,
   t,
+  onOpenHistory,
 }: {
   form: FormState;
   setForm: (f: FormState) => void;
@@ -247,9 +249,18 @@ function WorkOrderForm({
   editable: boolean;
   code?: string | null;
   status?: string | null;
+  history?: { id: number; code: string; status: string; seq: number; processes: Record<string, string | null> }[];
   t: (k: string, vars?: Record<string, string | number>) => string;
+  onOpenHistory?: (id: number) => void;
 }) {
   const patch = (p: Partial<FormState>) => setForm({ ...form, ...p });
+  const stageDone = (stage: WoStage) => {
+    if (stage === "generation") return Boolean(form.generation_date);
+    if (stage === "install") return Boolean(form.install_date);
+    if (stage === "pickup") return Boolean(form.pickup_date);
+    if (stage === "store") return Boolean(form.store_date);
+    return Boolean(form.disassemble_date);
+  };
   return (
     <div className="wo-form">
       <div className="wo-head">
@@ -258,6 +269,24 @@ function WorkOrderForm({
             <span className="wo-kicker">{t("wo.code")}</span>
             <strong className="en">{code}</strong>
             {status ? <span className="wo-status">{t(`wo.status.${status}`)}</span> : null}
+          </div>
+        ) : null}
+        {history && history.length > 1 ? (
+          <div className="wo-history">
+            <span className="wo-kicker">{t("wo.history")}</span>
+            <div className="wo-history-list">
+              {history.map((row) => (
+                <button
+                  key={row.id}
+                  type="button"
+                  className={`wo-history-item${code === row.code ? " is-current" : ""}`}
+                  onClick={() => onOpenHistory?.(row.id)}
+                >
+                  <strong className="en">{row.code}</strong>
+                  <span>{t(`wo.status.${row.status}`)}</span>
+                </button>
+              ))}
+            </div>
           </div>
         ) : null}
         <div className="wo-grid-4">
@@ -289,7 +318,7 @@ function WorkOrderForm({
         </div>
       </div>
 
-      <section className="wo-stage">
+      <section className={`wo-stage${stageDone("generation") ? " is-done" : " is-pending"}`}>
         <h3>{t("wo.stage.generation")}</h3>
         <label className="wo-date">
           <span>{t("wo.date")}</span>
@@ -305,7 +334,7 @@ function WorkOrderForm({
         />
       </section>
 
-      <section className="wo-stage">
+      <section className={`wo-stage${stageDone("install") ? " is-done" : " is-pending"}`}>
         <h3>{t("wo.stage.install")}</h3>
         <div className="wo-grid-2">
           <label>
@@ -327,7 +356,7 @@ function WorkOrderForm({
         />
       </section>
 
-      <section className="wo-stage">
+      <section className={`wo-stage${stageDone("pickup") ? " is-done" : " is-pending"}`}>
         <h3>{t("wo.stage.pickup")}</h3>
         <label className="wo-date">
           <span>{t("wo.date")}</span>
@@ -343,7 +372,7 @@ function WorkOrderForm({
         />
       </section>
 
-      <section className="wo-stage">
+      <section className={`wo-stage${stageDone("store") ? " is-done" : " is-pending"}`}>
         <h3>{t("wo.stage.store")}</h3>
         <label className="wo-date">
           <span>{t("wo.date")}</span>
@@ -359,7 +388,7 @@ function WorkOrderForm({
         />
       </section>
 
-      <section className="wo-stage">
+      <section className={`wo-stage${stageDone("disassemble") ? " is-done" : " is-pending"}`}>
         <h3>{t("wo.stage.disassemble")}</h3>
         <label className="wo-date">
           <span>{t("wo.date")}</span>
@@ -471,8 +500,22 @@ export function WorkOrderPanel() {
         render: (r) => t(`wo.status.${r.status}`),
       },
       {
+        key: "processes",
+        header: t("wo.processes"),
+        render: (r) => (
+          <span className="wo-pills">
+            {STAGES.map((stage) => (
+              <span key={stage} className={`wo-pill${r.processes?.[stage] ? " is-on" : ""}`} title={t(`wo.stage.${stage}`)}>
+                {t(`wo.stage.${stage}`)}
+              </span>
+            ))}
+          </span>
+        ),
+        filterText: (r) => (r.process_keys || []).join(" "),
+      },
+      {
         key: "actual_date",
-        header: t("wo.disassembleDate"),
+        header: t("wo.date"),
         render: (r) => formatDate(r.actual_date),
       },
       { key: "updated_at", header: t("wo.updated"), render: (r) => formatDate(r.updated_at) },
@@ -553,7 +596,13 @@ export function WorkOrderPanel() {
               editable={!!formEditable}
               code={creating ? null : detail.data?.code}
               status={creating ? "open" : detail.data?.status}
+              history={creating ? [] : detail.data?.element_history}
               t={t}
+              onOpenHistory={(id) => {
+                setCreating(false);
+                setActiveId(id);
+                router.replace(`/work-orders?id=${id}`);
+              }}
             />
             {formEditable ? (
               <div className="wo-actions">

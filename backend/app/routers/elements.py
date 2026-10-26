@@ -20,7 +20,7 @@ from ..assembly_integrity import (
     summarize,
 )
 from ..calculations import element_dol, last_assembly_date, shutdowns_affecting
-from ..relations_sync import find_master, link_group, link_serial
+from ..relations_sync import apply_defined_groups, find_master, link_group, link_serial
 from ..warehouse import compact_eq, compact_nr, ensure_indexed, import_contractor_repairs, load_compact_index, load_shutdown_windows
 from ..crud import build_crud_router
 from ..database import get_db
@@ -272,9 +272,9 @@ def _installation_key(electrolyzer, position, assembly_date, anode_nr, cathode_n
     return (_part_key(electrolyzer), _position_key(position), day, _part_key(anode_nr), _part_key(cathode_nr))
 
 
-def _write_electrode_coating(db: Session, model, field: str, nr, coating, index: dict[str, str]) -> None:
-    """When anode/cathode coating reasons differ, store each on that serial."""
-    if not nr or not coating:
+def _write_electrode_coating(db: Session, model, field: str, nr, coating, index: dict[str, str] | None = None) -> None:
+    """Store the coating company on the anode/cathode master row for this serial."""
+    if not nr:
         return
     key = compact_nr(nr)
     if not key:
@@ -285,7 +285,29 @@ def _write_electrode_coating(db: Session, model, field: str, nr, coating, index:
     if obj is None:
         obj = db.query(model).filter(func.replace(func.upper(column), " ", "") == key).first()
     if obj is not None:
-        obj.coating = str(coating)[:50]
+        obj.coating = str(coating)[:50] if coating else None
+
+
+def _sync_latest_electrode_coatings(db: Session) -> None:
+    """Each serial keeps the coating from its latest Assembly Data row."""
+    latest_a: dict[str, tuple] = {}
+    latest_c: dict[str, tuple] = {}
+    for el in db.query(models.Element).all():
+        day = el.assembly_date or date.min
+        if el.anode_nr:
+            key = compact_nr(el.anode_nr)
+            prev = latest_a.get(key)
+            if prev is None or day >= prev[0]:
+                latest_a[key] = (day, el.anode_coating, el.anode_nr)
+        if el.cathode_nr:
+            key = compact_nr(el.cathode_nr)
+            prev = latest_c.get(key)
+            if prev is None or day >= prev[0]:
+                latest_c[key] = (day, el.cathode_coating, el.cathode_nr)
+    for _day, coating, nr in latest_a.values():
+        _write_electrode_coating(db, models.Anode, "anode_nr", nr, coating)
+    for _day, coating, nr in latest_c.values():
+        _write_electrode_coating(db, models.Cathode, "cathode_nr", nr, coating)
 
 
 def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) -> dict:
@@ -374,7 +396,7 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
             membrane_index,
             extra={"membrane_type": payload.get("membrane_type")},
         )
-        if item.get("coating_split"):
+        if item.get("write_coatings") or item.get("coating_split"):
             _write_electrode_coating(db, models.Anode, "anode_nr", payload.get("anode_nr"), payload.get("anode_coating"), anode_index)
             _write_electrode_coating(db, models.Cathode, "cathode_nr", payload.get("cathode_nr"), payload.get("cathode_coating"), cathode_index)
         if (created + updated) % 500 == 0:
@@ -383,6 +405,8 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
             progress(done, total)
 
     db.flush()
+    if mode != "disassembly":
+        _sync_latest_electrode_coatings(db)
     closed_replaced = close_all_superseded(db) if mode != "disassembly" else 0
 
     dol_updated = 0
@@ -392,6 +416,10 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
         if computed is not None and el.dol_days != computed:
             el.dol_days = computed
             dol_updated += 1
+
+    grouped = 0
+    if mode != "disassembly":
+        grouped = apply_defined_groups(db)
 
     if created + updated == 0:
         db.rollback()
@@ -403,6 +431,7 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
         "created": created,
         "updated": updated,
         "skipped": skipped,
+        "groups_filled": grouped,
         "dol_updated": dol_updated,
         "closed_replaced": closed_replaced,
         "catalogs_created": catalogs,
@@ -433,11 +462,11 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
     }
 
 
-def replace_elements_workbook(db: Session, content: bytes, progress) -> dict:
+def replace_elements_workbook(db: Session, content: bytes, progress, filename: str | None = None) -> dict:
     """Drop every assembly row, then load the new workbook."""
     db.query(models.Element).delete(synchronize_session=False)
     db.commit()
-    parsed = parse_assembly_excel(content, from_year=None)
+    parsed = parse_assembly_excel(content, from_year=None, filename=filename)
     if parsed.get("recognized"):
         result = _apply_assembly_import(db, parsed, "upsert", progress)
         result["contractor_repairs"] = import_contractor_repairs(db, content)
@@ -454,8 +483,8 @@ def _remember_elements(db: Session, filename: str | None, content: bytes, upload
 @router.post("/import.xlsx", include_in_schema=False)
 async def import_elements(_admin=Depends(require_admin), file: UploadFile = File(...)):
     content = await read_xlsx(file)
-    parsed = parse_assembly_excel(content, from_year=None)
     filename = file.filename
+    parsed = parse_assembly_excel(content, from_year=None, filename=filename)
     who = _admin.username
 
     def work(db: Session, progress):
@@ -482,7 +511,7 @@ async def import_assembly_excel(
     Disassembly updates the matching installation's dismantle date.
     """
     content = await file.read()
-    parsed = parse_assembly_excel(content, from_year=None)
+    parsed = parse_assembly_excel(content, from_year=None, filename=file.filename)
     if not parsed.get("recognized"):
         raise HTTPException(
             status_code=400,
@@ -800,6 +829,10 @@ def _rename_group(db: Session, old: str, new: str) -> None:
     )
 
 
+def _fill_groups_after_definition(db: Session, _obj: models.GroupDefinition) -> None:
+    apply_defined_groups(db)
+
+
 group_definitions_router = build_crud_router(
     model=models.GroupDefinition,
     read_schema=schemas.GroupDefinitionBase,
@@ -810,6 +843,7 @@ group_definitions_router = build_crud_router(
     required_fields=["group_nr"],
     unique_compact=True,
     sort_key=lambda row: natural_key(row.group_nr),
+    after_save=_fill_groups_after_definition,
     on_rename=_rename_group,
 )
 
@@ -818,6 +852,9 @@ group_definitions_router = build_crud_router(
 def group_overview(db: Session = Depends(get_db)):
     """Amount of elements per group, as described in the manual ('Group overview')."""
     from sqlalchemy import func
+
+    if apply_defined_groups(db):
+        db.commit()
 
     rows = (
         db.query(models.Element.group_nr, func.count(models.Element.id))

@@ -205,8 +205,12 @@ export function AssembleRequestsPanel({ onOpen }: { onOpen: (id: number) => void
 }
 
 function airHref(d: AssembleRequestDetail) {
+  const params = new URLSearchParams();
+  params.set("view", "form");
+  if (d.air?.id) params.set("id", String(d.air.id));
   const nr = d.air?.element_nr || d.element_nr;
-  return nr ? `/assembly-inspection?element_nr=${encodeURIComponent(nr)}` : "/assembly-inspection";
+  if (nr) params.set("element_nr", nr);
+  return `/assembly-inspection?${params.toString()}`;
 }
 
 function SignRejectBox({
@@ -286,7 +290,10 @@ function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
     },
   });
   const go = (action: string, body: Record<string, unknown> = {}) => run.mutate({ action, body: { note: note || undefined, ...body } });
-  const error = (run.error || attach.error) as Error | null;
+  const rawError = (run.error || attach.error) as Error | null;
+  const errorMessage = rawError?.message?.includes("Fill and save the Assembly Inspection Report")
+    ? t("wf.asm.fillAirFirst")
+    : rawError?.message;
   const open = d.status !== "completed" && d.status !== "cancelled";
   const air = d.air;
 
@@ -427,7 +434,7 @@ function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
               </button>
             </div>
           ) : null}
-          {error ? <div className="wf-alert">{error.message}</div> : null}
+          {errorMessage ? <div className="wf-alert">{errorMessage}</div> : null}
         </section>
       ) : null}
 

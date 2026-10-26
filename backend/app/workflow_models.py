@@ -100,6 +100,8 @@ class WfPurchase(Base):
     delay_days: Mapped[int | None] = mapped_column(Integer)
     delay_party: Mapped[str | None] = mapped_column(String(20))
     delay_reason: Mapped[str | None] = mapped_column(Text)
+    warranty_months: Mapped[int | None] = mapped_column(Integer)
+    warranty_start: Mapped[date | None] = mapped_column(Date)
     remarks: Mapped[str | None] = mapped_column(Text)
     last_note: Mapped[str | None] = mapped_column(Text)
     created_by_id: Mapped[int | None] = mapped_column(Integer)

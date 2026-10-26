@@ -112,15 +112,19 @@ export function AssemblyInspectionSheet({ values, onChange, onPatch, readOnly }:
         group_nr: String(values.group_nr ?? (focus === "group_nr" ? typed : "")),
       });
       if (!match) return;
+      const keep = (name: string) => {
+        const current = text(values[name]).trim();
+        return current || match[name as keyof typeof match] || values[name];
+      };
       onPatch({
-        element_nr: match.element_nr ?? values.element_nr,
-        anode_nr: match.anode_nr ?? values.anode_nr,
-        cathode_nr: match.cathode_nr ?? values.cathode_nr,
-        membrane_nr: match.membrane_nr ?? values.membrane_nr,
-        membrane_type: match.membrane_type ?? values.membrane_type,
-        electrolyzer: match.electrolyzer ?? values.electrolyzer,
-        position: match.position ?? values.position,
-        group_nr: match.group_nr ?? values.group_nr,
+        element_nr: keep("element_nr"),
+        anode_nr: keep("anode_nr"),
+        cathode_nr: keep("cathode_nr"),
+        membrane_nr: keep("membrane_nr"),
+        membrane_type: keep("membrane_type"),
+        electrolyzer: keep("electrolyzer"),
+        position: keep("position"),
+        group_nr: keep("group_nr"),
         assembly_date: values.assembly_date || match.assembly_date || null,
       });
     } catch {
@@ -356,12 +360,14 @@ export function AssemblyInspectionSheet({ values, onChange, onPatch, readOnly }:
                   label="Inspection"
                   name={text(values.sign_insp_name)}
                   image={text(values.sign_insp_image)}
+                  shift={text(values.sign_insp_shift)}
                   readOnly={readOnly}
                   onChange={(patch) =>
                     onPatch({
                       sign_insp_name: patch.name ?? values.sign_insp_name,
                       sign_insp_image: patch.image ?? values.sign_insp_image,
                       sign_insp_at: patch.at ?? values.sign_insp_at,
+                      sign_insp_shift: patch.shift ?? values.sign_insp_shift,
                     })
                   }
                 />
@@ -412,6 +418,7 @@ export function assemblyInspectionPayload(values: Record<string, unknown>): Reco
     sign_insp_name: values.sign_insp_name || null,
     sign_insp_image: values.sign_insp_image || null,
     sign_insp_at: values.sign_insp_at || null,
+    sign_insp_shift: values.sign_insp_shift || null,
     sign_proc_name: values.sign_proc_name || null,
     sign_proc_image: values.sign_proc_image || null,
     sign_proc_at: values.sign_proc_at || null,

@@ -371,6 +371,7 @@ export function AnodeCoatingCheckForm({
       onDelete={(id) => crud.removeMutation.mutate(id)}
       confirmDelete={() => t("common.confirmDeleteGeneric")}
       submitting={crud.createMutation.isPending || crud.updateMutation.isPending}
+      preferView="form"
       exportPrefix="/anode-coating-checks"
       filenameBase="anode-coating-checks"
       commands={<Commands masterHref="/anodes" masterLabel={t("menus.anodeDetails")} cartable />}
@@ -430,6 +431,7 @@ export function CathodeCoatingCheckForm({
       onDelete={(id) => crud.removeMutation.mutate(id)}
       confirmDelete={() => t("common.confirmDeleteGeneric")}
       submitting={crud.createMutation.isPending || crud.updateMutation.isPending}
+      preferView="form"
       exportPrefix="/cathode-coating-checks"
       filenameBase="cathode-coating-checks"
       commands={<Commands masterHref="/cathodes" masterLabel={t("menus.cathodeDetails")} cartable />}

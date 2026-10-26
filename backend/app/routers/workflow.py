@@ -7,6 +7,7 @@ that group and may act on its stages; admins may act everywhere.
 from __future__ import annotations
 
 import io
+import json
 import uuid
 import zipfile
 from datetime import date, datetime, timedelta
@@ -36,8 +37,20 @@ from ..electrode_lifecycle import (
     recoating_on_approve,
     recoating_on_dispatch,
     recoating_on_return,
+    write_tafkik_warranty,
 )
 from ..warehouse_lifecycle import _stamp, log_event, upsert_state
+from ..workflow_rollback import (
+    remember,
+    rollback_assemble,
+    rollback_cell,
+    rollback_coating,
+    rollback_inspection,
+    rollback_purchase,
+    snapshot_element,
+    snapshot_shop,
+    snapshot_wh,
+)
 from ..workflow_excel import build_workbook, parse_report
 from ..workflow_models import (
     WfAssembleRequest,
@@ -135,7 +148,7 @@ CELL_DECISIONS = ("keep", "disassemble", "relocated")
 AUTO_REQUEST_DAYS = 30  # a decommission typed into Assembly Data opens a request only when it is this recent
 CLOSED = ("completed", "cancelled")
 DELAY_PARTIES = ("employer", "company", "transport", "other")
-MAX_PALLET = 200
+MAX_PALLET = 20
 
 
 # ------------------------------------------------------------------ helpers
@@ -471,6 +484,8 @@ def _purchase_summary(db: Session, p: WfPurchase, conf: dict | None = None) -> d
         "actual_date": _iso(p.delivery_date),
         "delay_days": p.delay_days,
         "registered": registered,
+        "warranty_months": p.warranty_months,
+        "warranty_start": _iso(p.warranty_start),
         "created_by": p.created_by_name,
         "created_at": _iso(p.created_at),
         "updated_at": _iso(p.updated_at),
@@ -990,6 +1005,7 @@ def create_coating(body: CoatingCreateIn, db: Session = Depends(get_db), user: m
     for ln in lines:
         ln["problem"] = found.get((ln["kind"], ln["key"])) or ln["problem"]
 
+    origin_states = [snapshot_wh(db, ln["kind"], ln["serial"]) for ln in lines]
     today = date.today()
     batch = WfCoatingBatch(
         status="await_company",
@@ -1031,6 +1047,7 @@ def create_coating(body: CoatingCreateIn, db: Session = Depends(get_db), user: m
             )
             upsert_state(db, ln["kind"], ln["serial"], lifecycle_status="ready_dispatch")
             log_event(db, ln["kind"], ln["serial"], "coating_request", today, f"Recoating request {code}", ref_kind="wf_coating", ref_id=batch.id, details={"code": code})
+    remember(db, "coating", batch.id, {"wh_states": origin_states})
     _event(db, "coating", batch, "created", user, None, body.remarks, {"codes": codes})
     _notify(db, "coating", batch, user)
     db.commit()
@@ -1087,6 +1104,7 @@ def coating_from_board(db: Session, kind: str, serial: str, user: models.User, n
         b.anode_count = (b.anode_count or 0) + 1
     else:
         b.cathode_count = (b.cathode_count or 0) + 1
+    remember(db, "coating", b.id, {"wh_states": [snapshot_wh(db, kind, stored)]})
     upsert_state(db, kind, stored, lifecycle_status="ready_dispatch")
     log_event(db, kind, stored, "coating_request", today, f"Recoating request {pkg.code} (Live board)", ref_kind="wf_coating", ref_id=b.id, details={"code": pkg.code})
     _event(db, "coating", b, "created" if created else "board_add", user, None if created else b.status, note, {"codes": [pkg.code], "serial": stored, "kind": kind})
@@ -1390,7 +1408,7 @@ class ReceiveIn(NoteIn):
     delay_party: str | None = None
     delay_reason: str | None = None
     warranty_months: int | None = Field(None, ge=0, le=240)
-    warranty_start: date | None = None
+    warranty_start: date
 
 
 @router.post("/coating/{batch_id}/receive")
@@ -1406,9 +1424,10 @@ def coating_receive(batch_id: int, body: ReceiveIn, db: Session = Depends(get_db
     late = days is not None and days > 0
     b.delay_party = body.delay_party if late else None
     b.delay_reason = ((body.delay_reason or "").strip() or None) if late else None
+    b.warranty_start = body.warranty_start
     if body.warranty_months is not None:
         b.warranty_months = body.warranty_months
-        b.warranty_start = body.warranty_start or body.actual_date
+    co = _company(db, b.company_id)
     codes = {p.id: p.code for p in db.query(WfCoatingPackage).filter_by(batch_id=b.id)}
     for it in _batch_items(db, b):
         upsert_state(db, it.element_kind, it.serial, lifecycle_status="pending_receive", company_id=b.company_id)
@@ -1426,6 +1445,14 @@ def coating_receive(batch_id: int, body: ReceiveIn, db: Session = Depends(get_db
             return_date=body.actual_date,
             warranty_months=b.warranty_months,
             warranty_start=b.warranty_start,
+        )
+        write_tafkik_warranty(
+            db,
+            serial=it.serial,
+            kind=it.element_kind,
+            company=co.name if co else None,
+            warranty_start=b.warranty_start,
+            warranty_months=b.warranty_months,
         )
     _event(
         db, "coating", b, "receive", user, b.status, body.note,
@@ -1631,10 +1658,7 @@ def coating_cancel(batch_id: int, body: NoteIn, db: Session = Depends(get_db), u
     if not _can_cancel(user, b.status, b.created_by_id, "await_company", also=early or managed):
         raise HTTPException(409, "Only the requester, the section supervisor, or an admin can cancel this request")
     _admin_cancel_note(user, body.note, required=managed)
-    day = date.today()
-    for it in _batch_items(db, b):
-        upsert_state(db, it.element_kind, it.serial, lifecycle_status="in_plant", company_id=None)
-        log_event(db, it.element_kind, it.serial, "coating_cancelled", day, "Recoating request cancelled", ref_kind="wf_coating", ref_id=b.id)
+    rollback_coating(db, b)
     _move(db, "coating", b, "cancelled", "cancel", user, body.note, notify_creator=True)
     db.commit()
     return _coating_detail(db, b, user)
@@ -1911,15 +1935,95 @@ def purchase_deliver(purchase_id: int, body: ReceiveIn, db: Session = Depends(ge
     return _purchase_detail(db, p, user)
 
 
-class RegisterItemIn(BaseModel):
+class ElectrodeSpecIn(BaseModel):
+    assembly_group: str | None = None
+    component_nr: str | None = None
+    customer_drawing_nr: str | None = None
+    manufacturer: str | None = None
+    manufacturer_order_nr: str | None = None
+    manufacturer_drawing_nr: str | None = None
+    manufacturer_date: date | None = None
+    tank: str | None = None
+    contact_strip: str | None = None
+    electrode_support: str | None = None
+    electrode_shape: str | None = None
+    coating: str | None = None
+    baffle_plate: str | None = None
+    downcomer: str | None = None
+    inlet_system: str | None = None
+    standpipe_diameter: str | None = None
+    flange_width: str | None = None
+    received_date: date | None = None
+    remarks: str | None = None
+    batch: str | None = None
+    generation: str | None = None
+
+
+class RegisterItemIn(ElectrodeSpecIn):
     element_kind: str = Field(pattern="^(anode|cathode)$")
     serial: str
-    coating: str | None = None
-    manufacturer: str | None = None
 
 
 class RegisterIn(NoteIn):
     items: list[RegisterItemIn]
+    warranty_start: date
+    warranty_months: int | None = Field(None, ge=0, le=240)
+
+
+_SPEC_STR = {
+    "assembly_group": 50,
+    "component_nr": 50,
+    "customer_drawing_nr": 50,
+    "manufacturer": 100,
+    "manufacturer_order_nr": 50,
+    "manufacturer_drawing_nr": 50,
+    "tank": 50,
+    "contact_strip": 50,
+    "electrode_support": 50,
+    "electrode_shape": 50,
+    "coating": 50,
+    "baffle_plate": 50,
+    "downcomer": 50,
+    "inlet_system": 50,
+    "standpipe_diameter": 50,
+    "flange_width": 50,
+    "batch": 50,
+    "generation": 50,
+}
+
+
+def _spec_kwargs(
+    it: ElectrodeSpecIn,
+    kind: str,
+    *,
+    manufacturer: str | None,
+    coating: str | None,
+    received: date,
+    batch: str,
+) -> dict:
+    raw = it.model_dump(exclude={"element_kind", "serial"}, exclude_none=True)
+    if kind == "cathode":
+        raw.pop("baffle_plate", None)
+        raw.pop("downcomer", None)
+    out: dict = {}
+    for key, width in _SPEC_STR.items():
+        if key not in raw:
+            continue
+        text = str(raw[key]).strip()[:width]
+        if text:
+            out[key] = text
+    remarks = str(raw.get("remarks") or "").strip()
+    if remarks:
+        out["remarks"] = remarks
+    out["manufacturer"] = out.get("manufacturer") or manufacturer
+    out["coating"] = out.get("coating") or coating
+    rec = raw.get("received_date") or received
+    out["received_date"] = _stamp(rec) if rec else None
+    made = raw.get("manufacturer_date")
+    if made:
+        out["manufacturer_date"] = _stamp(made)
+    out["batch"] = out.get("batch") or batch
+    return {k: v for k, v in out.items() if v is not None}
 
 
 @router.post("/purchase/{purchase_id}/register")
@@ -1954,25 +2058,45 @@ def purchase_register(purchase_id: int, body: RegisterIn, db: Session = Depends(
         if have[kind] > limit[kind]:
             raise HTTPException(400, f"More {kind}s than purchased ({limit[kind]})")
     delivered = p.delivery_date or date.today()
+    p.warranty_start = body.warranty_start
+    if body.warranty_months is not None:
+        p.warranty_months = body.warranty_months
     for it, serial in clean:
         manufacturer = (it.manufacturer or "").strip()[:100] or (sup.name[:100] if sup else None)
         coating = (it.coating or "").strip()[:50] or None
         master_cls = models.Anode if it.element_kind == "anode" else models.Cathode
         key_field = "anode_nr" if it.element_kind == "anode" else "cathode_nr"
+        spec = _spec_kwargs(
+            it,
+            it.element_kind,
+            manufacturer=manufacturer,
+            coating=coating,
+            received=delivered,
+            batch=p.code,
+        )
+        db.add(master_cls(**{key_field: serial}, **spec))
+        db.flush()
         db.add(
-            master_cls(
-                **{key_field: serial},
-                manufacturer=manufacturer,
-                coating=coating,
-                received_date=_stamp(delivered),
-                batch=p.code,
+            WfPurchaseItem(
+                purchase_id=p.id,
+                element_kind=it.element_kind,
+                serial=serial,
+                coating=spec.get("coating"),
+                manufacturer=spec.get("manufacturer"),
+                registered_at=_now(),
             )
         )
-        db.flush()
-        db.add(WfPurchaseItem(purchase_id=p.id, element_kind=it.element_kind, serial=serial, coating=coating, manufacturer=manufacturer, registered_at=_now()))
         upsert_state(db, it.element_kind, serial, lifecycle_status="in_plant", company_id=None)
-        log_event(db, it.element_kind, serial, "purchase", delivered, f"Purchase {p.code} from {sup.name if sup else ''}", ref_kind="wf_purchase", ref_id=p.id, details={"code": p.code, "indent_no": p.indent_no})
+        log_event(db, it.element_kind, serial, "purchase", delivered, f"Purchase {p.code} from {sup.name if sup else ''}", ref_kind="wf_purchase", ref_id=p.id, details={"code": p.code, "indent_no": p.indent_no, "warranty_start": body.warranty_start.isoformat()})
         log_event(db, it.element_kind, serial, "plant_entry", delivered, "Entered plant inventory", ref_kind="wf_purchase", ref_id=p.id)
+        write_tafkik_warranty(
+            db,
+            serial=serial,
+            kind=it.element_kind,
+            company=sup.name if sup else spec.get("manufacturer"),
+            warranty_start=body.warranty_start,
+            warranty_months=p.warranty_months,
+        )
     finished = have["anode"] >= limit["anode"] and have["cathode"] >= limit["cathode"]
     data = {"registered": [s for _, s in clean]}
     if finished:
@@ -1991,6 +2115,7 @@ def purchase_cancel(purchase_id: int, body: NoteIn, db: Session = Depends(get_db
     if not _can_cancel(user, p.status, p.created_by_id, "await_indent", also=early or managed):
         raise HTTPException(409, "Only the requester, the section supervisor, or an admin can cancel this request")
     _admin_cancel_note(user, body.note, required=managed)
+    rollback_purchase(db, p)
     _move(db, "purchase", p, "cancelled", "cancel", user, body.note, notify_creator=True)
     db.commit()
     return _purchase_detail(db, p, user)
@@ -2269,6 +2394,8 @@ def create_cell_request(body: CellCreateIn, db: Session = Depends(get_db), user:
     )
     db.add(r)
     db.flush()
+    el_row = db.get(models.Element, item["row_id"])
+    remember(db, "cell", r.id, {"element": snapshot_element(el_row), "shop": snapshot_shop(db, item["element_nr"])})
     _event(db, "cell", r, "created", user, None, body.problem, {"reason": r.reason, "urgent": r.urgent})
     off = svc._as_date(item["decommissioning_date"]) if base == "decommissioned" else body.decommission_date
     if off is not None:
@@ -2327,6 +2454,15 @@ def create_numbering_review(body: NumberingCreateIn, db: Session = Depends(get_d
     )
     db.add(r)
     db.flush()
+    remember(
+        db,
+        "cell",
+        r.id,
+        {
+            "element": snapshot_element(db.get(models.Element, item["row_id"]) if item else None),
+            "shop": snapshot_shop(db, shown or None),
+        },
+    )
     _event(db, "cell", r, "created", user, None, note, {"kind": "numbering", "cell": f"{ez}-{pos}"})
     _notify(db, "cell", r, user)
     db.commit()
@@ -2346,6 +2482,9 @@ def cell_shutdown(request_id: int, body: CellShutdownIn, db: Session = Depends(g
     if reason:
         r.reason = reason[:200]
     day = _write_decommission(db, r, body.date, reason, user)
+    from .work_orders import ensure_work_order_process
+
+    ensure_work_order_process(db, r.element_nr, "pickup", user, day=day, note=body.note)
     _cell_move(db, r, "await_shop", "shutdown", user, body.note, {"date": day.isoformat()})
     db.commit()
     svc.clear_cache()
@@ -2365,6 +2504,9 @@ def cell_receive(request_id: int, body: CellReceiveIn, db: Session = Depends(get
     if body.date > date.today():
         raise HTTPException(400, "The arrival date cannot be in the future")
     r.received_date = body.date
+    from .work_orders import ensure_work_order_process
+
+    ensure_work_order_process(db, r.element_nr, "store", user, day=body.date, note=body.note)
     _cell_move(db, r, "in_shop", "receive", user, body.note, {"date": body.date.isoformat()}, also=("operation",))
     db.commit()
     return _cell_detail(db, r, user)
@@ -2465,6 +2607,9 @@ def cell_install(request_id: int, body: CellInstallIn, db: Session = Depends(get
     )
     cell = f"{moved['electrolyzer']}-{moved['position']}"
     r.decision = "relocated"
+    from .work_orders import ensure_work_order_process
+
+    ensure_work_order_process(db, r.element_nr, "install", user, day=body.date or date.today(), cell=cell, note=note)
     _cell_move(db, r, "completed", "install", user, note, {"cell": cell}, also=("operation", "cellshop"))
     db.commit()
     svc.clear_cache()
@@ -2515,6 +2660,7 @@ def cell_cancel(request_id: int, body: NoteIn, db: Session = Depends(get_db), us
     if "cancel" not in _cell_actions(db, r, user):
         raise HTTPException(409, "Only the requester, the section supervisor, or an admin can cancel this request")
     _admin_cancel_note(user, body.note, required=_can_manage(db, user, "cell", r.status))
+    rollback_cell(db, r)
     _cell_move(db, r, "cancelled", "cancel", user, body.note, also=("cellshop",))
     db.commit()
     return _cell_detail(db, r, user)
@@ -2881,6 +3027,7 @@ def _new_insp(
     )
     db.add(r)
     db.flush()
+    remember(db, "inspection", r.id, {"report_id": None})
     return r
 
 
@@ -3150,6 +3297,13 @@ def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
         )
         if flow:
             fields.update(flow)
+        prev_w = ((existing.warranty if existing is not None else None) or "").strip()
+        if len(prev_w) >= 10 and prev_w[4:5] == "-" and prev_w[7:8] == "-":
+            incoming = (fields.get("warranty") or "").strip()
+            if not incoming or incoming in prev_w:
+                fields["warranty"] = prev_w[:100]
+            else:
+                fields["warranty"] = f"{prev_w} / {incoming}"[:100]
         if inspection and inspection.get("xrf"):
             fields["xrf"] = inspection["xrf"]
             if report is not None:
@@ -3256,6 +3410,7 @@ def inspection_cancel(request_id: int, body: NoteIn, db: Session = Depends(get_d
         raise HTTPException(400, "Write why this request is cancelled")
     if user.role != "admin" and not (body.note or "").strip():
         raise HTTPException(400, "Write why the inspection is not needed")
+    rollback_inspection(db, r)
     _insp_move(db, r, "cancelled", "cancel", user, body.note)
     db.commit()
     return _insp_detail(db, r, user)
@@ -3406,13 +3561,44 @@ def _air_signed(report: models.AssemblyInspectionReport | None, side: str) -> bo
     return bool(name or image)
 
 
+def _json_map(value: object) -> dict:
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str) and value.strip():
+        try:
+            parsed = json.loads(value)
+        except json.JSONDecodeError:
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+    return {}
+
+
 def _air_filled(report: models.AssemblyInspectionReport | None) -> bool:
+    """True once C-90 has saved real content on the paper form (not the empty skeleton)."""
     if report is None:
         return False
-    checks = report.checks if isinstance(report.checks, dict) else {}
+    if any(_air_signed(report, side) for side in ("maint", "insp", "proc")):
+        return True
+    checks = _json_map(report.checks)
     if any(bool(v) for v in checks.values()):
         return True
-    return _air_signed(report, "maint")
+    remarks = _json_map(report.check_remarks)
+    if any(str(v or "").strip() for v in remarks.values()):
+        return True
+    for field in (
+        "group_nr",
+        "electrolyzer",
+        "position",
+        "spacer_thickness_anode",
+        "spacer_thickness_cathode",
+        "electrode_distance",
+    ):
+        if str(getattr(report, field, None) or "").strip():
+            return True
+    note = (report.remarks or "").strip()
+    if note and not note.lower().startswith("workflow "):
+        return True
+    return False
 
 
 def _clear_air_sign(report: models.AssemblyInspectionReport | None, *sides: str) -> None:
@@ -3424,23 +3610,80 @@ def _clear_air_sign(report: models.AssemblyInspectionReport | None, *sides: str)
         setattr(report, f"sign_{side}_at", None)
 
 
+def _pin_air(r: WfAssembleRequest, report: models.AssemblyInspectionReport | None) -> None:
+    if report is None:
+        return
+    dec = _assemble_decisions(r)
+    if dec.get("air_id") == report.id:
+        return
+    r.decisions = {**dec, "air_id": report.id}
+
+
+def _pinned_air_id(db: Session, r: WfAssembleRequest) -> int | None:
+    raw = _assemble_decisions(r).get("air_id")
+    try:
+        if raw is not None and str(raw).strip() != "":
+            return int(raw)
+    except (TypeError, ValueError):
+        pass
+    for ev in reversed(_events(db, "assemble", r.id)):
+        data = ev.get("data") if isinstance(ev.get("data"), dict) else {}
+        aid = data.get("air_id")
+        if aid is None:
+            continue
+        try:
+            return int(aid)
+        except (TypeError, ValueError):
+            continue
+    code = (r.code or "").strip()
+    if code:
+        tagged = (
+            db.query(models.AssemblyInspectionReport)
+            .filter(models.AssemblyInspectionReport.remarks == f"Workflow {code}")
+            .order_by(models.AssemblyInspectionReport.id.desc())
+            .first()
+        )
+        if tagged is not None:
+            return tagged.id
+    return None
+
+
 def _air_for(db: Session, r: WfAssembleRequest) -> models.AssemblyInspectionReport | None:
+    """Prefer a filled report for this element; fall back to the pinned skeleton."""
     key = compact_nr(r.element_nr)
-    if not key:
-        return None
-    best = None
+    anode_key = compact_nr(r.anode_nr)
+    cathode_key = compact_nr(r.cathode_nr)
+    pinned_id = _pinned_air_id(db, r)
+    pinned = db.get(models.AssemblyInspectionReport, pinned_id) if pinned_id else None
+    matches: list[models.AssemblyInspectionReport] = []
     for row in db.query(models.AssemblyInspectionReport).order_by(models.AssemblyInspectionReport.id.desc()).all():
-        if compact_nr(row.element_nr) == key:
-            return row
-        if best is None and compact_nr(row.anode_nr) == compact_nr(r.anode_nr) and compact_nr(row.cathode_nr) == compact_nr(r.cathode_nr):
-            best = row
-    return best
+        if key and compact_nr(row.element_nr) == key:
+            matches.append(row)
+        elif anode_key and cathode_key and compact_nr(row.anode_nr) == anode_key and compact_nr(row.cathode_nr) == cathode_key:
+            matches.append(row)
+    filled = [row for row in matches if _air_filled(row)]
+    cutoff = r.created_at
+    recent = []
+    if cutoff:
+        for row in filled:
+            stamp = row.updated_at or row.created_at
+            if stamp and stamp >= cutoff:
+                recent.append(row)
+    if pinned is not None and _air_filled(pinned):
+        return pinned
+    if recent:
+        return recent[0]
+    if pinned is not None:
+        return pinned
+    if filled:
+        return filled[0]
+    return matches[0] if matches else None
 
 
 def _air_brief(report: models.AssemblyInspectionReport | None) -> dict | None:
     if report is None:
         return None
-    checks = report.checks if isinstance(report.checks, dict) else {}
+    checks = _json_map(report.checks)
     done = sum(1 for v in checks.values() if v)
     return {
         "id": report.id,
@@ -3457,21 +3700,27 @@ def _air_brief(report: models.AssemblyInspectionReport | None) -> dict | None:
     }
 
 
+def _align_air(r: WfAssembleRequest, row: models.AssemblyInspectionReport) -> None:
+    """Keep the checklist tied to the element this assemble request is building."""
+    if r.element_nr:
+        row.element_nr = r.element_nr
+    if r.anode_nr:
+        row.anode_nr = r.anode_nr
+    if r.cathode_nr:
+        row.cathode_nr = r.cathode_nr
+    if r.membrane_nr:
+        row.membrane_nr = r.membrane_nr
+    if r.membrane_type and not (row.membrane_type or "").strip():
+        row.membrane_type = r.membrane_type
+    if row.assembly_date is None and r.assembly_date:
+        row.assembly_date = r.assembly_date
+    _pin_air(r, row)
+
+
 def _ensure_air(db: Session, r: WfAssembleRequest) -> models.AssemblyInspectionReport:
     row = _air_for(db, r)
     if row is not None:
-        if not (row.element_nr or "").strip() and r.element_nr:
-            row.element_nr = r.element_nr
-        if not (row.anode_nr or "").strip():
-            row.anode_nr = r.anode_nr
-        if not (row.cathode_nr or "").strip():
-            row.cathode_nr = r.cathode_nr
-        if not (row.membrane_nr or "").strip():
-            row.membrane_nr = r.membrane_nr
-        if not (row.membrane_type or "").strip():
-            row.membrane_type = r.membrane_type
-        if row.assembly_date is None and r.assembly_date:
-            row.assembly_date = r.assembly_date
+        _align_air(r, row)
         return row
     from ..assembly_inspection_def import empty_check_remarks, empty_checks
 
@@ -3488,6 +3737,7 @@ def _ensure_air(db: Session, r: WfAssembleRequest) -> models.AssemblyInspectionR
     )
     db.add(row)
     db.flush()
+    _pin_air(r, row)
     return row
 
 
@@ -3536,13 +3786,18 @@ def _assemble_detail(db: Session, r: WfAssembleRequest, user: models.User) -> di
     if _migrate_assemble_status(db, r):
         db.commit()
         db.refresh(r)
+    report = _air_for(db, r)
+    if report is not None:
+        _align_air(r, report)
+        db.commit()
+        db.refresh(r)
     data = _assemble_summary(db, r)
     el = db.get(models.Element, r.element_id) if r.element_id else None
     data.update(
         {
             "completed_at": _iso(r.completed_at),
             "decisions": _assemble_decisions(r),
-            "air": _air_brief(_air_for(db, r)),
+            "air": _air_brief(report),
             "element": _element_brief(el) if el is not None else None,
             "files": _files(db, "assemble", r.id),
             "events": _events(db, "assemble", r.id),
@@ -3690,6 +3945,7 @@ def create_assemble_request(body: AssembleCreateIn, db: Session = Depends(get_db
     )
     db.add(r)
     db.flush()
+    remember(db, "assemble", r.id, {"element": None, "shop": None})
     _event(db, "assemble", r, "created", user, None, body.note, {"anode": r.anode_nr, "cathode": r.cathode_nr, "element_nr": r.element_nr})
     _notify(db, "assemble", r, user)
     db.commit()
@@ -3738,7 +3994,11 @@ def assemble_stamp(request_id: int, body: AssembleStampIn, db: Session = Depends
     r.membrane_nr = el.membrane_nr
     r.assembly_date = day
     _try_shop(db, el.element_nr, "awaiting_qc", user, body.note)
+    from .work_orders import ensure_work_order_process
+
+    ensure_work_order_process(db, el.element_nr, "generation", user, day=day, note=body.note)
     air = _ensure_air(db, r)
+    _pin_air(r, air)
     _move(db, "assemble", r, "await_air", "assemble", user, body.note, {"element_id": el.id, "assembly_date": _iso(day), "air_id": air.id})
     db.commit()
     svc.clear_cache()
@@ -3753,6 +4013,7 @@ def assemble_submit_air(request_id: int, body: NoteIn, db: Session = Depends(get
     report = _ensure_air(db, r)
     if not _air_filled(report):
         raise HTTPException(400, "Fill and save the Assembly Inspection Report first")
+    _pin_air(r, report)
     _move(db, "assemble", r, "await_insp_sign", "submit_air", user, body.note, {"air_id": report.id})
     db.commit()
     return _assemble_detail(db, r, user)
@@ -3841,6 +4102,8 @@ def assemble_position(request_id: int, body: AssemblePositionIn, db: Session = D
         raise HTTPException(409, f"Cell {electrolyzer}-{position} is occupied by element {busy.element_nr}")
     el.electrolyzer = electrolyzer
     el.position = position
+    if el.commissioning_date is None:
+        el.commissioning_date = date.today()
     if (body.note or "").strip():
         extra = (body.note or "").strip()
         el.remarks = f"{el.remarks}\n{extra}".strip() if el.remarks else extra
@@ -3853,6 +4116,11 @@ def assemble_position(request_id: int, body: AssemblePositionIn, db: Session = D
         air.electrolyzer = electrolyzer
         air.position = position
     _clear_shop(db, el.element_nr, user, f"{electrolyzer}-{position}")
+    from .work_orders import ensure_work_order_process
+
+    ensure_work_order_process(
+        db, el.element_nr, "install", user, day=date.today(), cell=f"{electrolyzer}-{position}", note=body.note
+    )
     _move(db, "assemble", r, "completed", "position", user, body.note, {"electrolyzer": electrolyzer, "position": position})
     db.commit()
     svc.clear_cache()
@@ -3879,6 +4147,7 @@ def assemble_cancel(request_id: int, body: NoteIn, db: Session = Depends(get_db)
     if "cancel" not in _assemble_actions(db, r, user):
         raise HTTPException(409, "Only C-90 or an admin can cancel this assemble request")
     _admin_cancel_note(user, body.note, required=True)
+    rollback_assemble(db, r)
     _move(db, "assemble", r, "cancelled", "cancel", user, body.note, notify_creator=True)
     db.commit()
     return _assemble_detail(db, r, user)

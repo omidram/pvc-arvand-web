@@ -125,7 +125,7 @@ ok(client.post(f"/workflow/coating/{wid}/dispatch", json={"dispatch_date": today
 item = board_item("anode", "A-5")
 assert item["bucket"] == "out_repair" and item["repair"] == "recoating", item
 assert "cartable" in move("A-5", "return", code=400)["detail"].lower()
-ok(client.post(f"/workflow/coating/{wid}/receive", json={"actual_date": today.isoformat()}))
+ok(client.post(f"/workflow/coating/{wid}/receive", json={"actual_date": today.isoformat(), "warranty_start": today.isoformat()}))
 assert board_item("anode", "A-5")["bucket"] == "pending"
 print("board follows the workflow: at coater -> out_repair, received -> pending")
 

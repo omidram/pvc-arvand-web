@@ -101,6 +101,36 @@ def _group_token(value: Any) -> str:
     return _COATING_ALIAS.get(text, text)
 
 
+def _group_wildcard(value: Any) -> bool:
+    """Empty or 'All' on Group Definition means that characteristic is not a filter."""
+    text = str(value or "").strip().lower().replace(" ", "").replace("\u200c", "")
+    return text in ("", "all", "همه")
+
+
+def _group_values_match(defined: Any, actual: Any) -> bool:
+    """True when the assembly value is the defined coating/membrane/gap (aliases and shorter names included)."""
+    d = _group_token(defined)
+    a = _group_token(actual)
+    if not d:
+        return True
+    if d == a:
+        return True
+    extras = [_group_token(part) for part in re.findall(r"\(([^)]+)\)", str(defined or ""))]
+    candidates = [d, *extras]
+    if d.startswith("original"):
+        candidates.append(d.removeprefix("original"))
+    for cand in candidates:
+        if not cand:
+            continue
+        if cand == a:
+            return True
+        if a and cand in a:
+            return True
+        if a and a in cand and len(a) >= 4:
+            return True
+    return False
+
+
 def match_defined_group(
     db: Session,
     *,
@@ -124,15 +154,39 @@ def match_defined_group(
         score = 0
         ok = True
         for defined, actual in pairs:
-            if not str(defined or "").strip():
+            if _group_wildcard(defined):
                 continue
             score += 1
-            if _group_token(defined) != _group_token(actual):
+            if not _group_values_match(defined, actual):
                 ok = False
                 break
         if ok and score and (best is None or score > best[0]):
             best = (score, group.group_nr)
     return best[1] if best else None
+
+
+def apply_defined_groups(db: Session) -> int:
+    """Write group_nr on every Assembly Data row that still has none and matches a Group Definition."""
+    from sqlalchemy import or_
+
+    filled = 0
+    rows = (
+        db.query(models.Element)
+        .filter(or_(models.Element.group_nr.is_(None), models.Element.group_nr == ""))
+        .all()
+    )
+    for el in rows:
+        found = match_defined_group(
+            db,
+            anode_coating=el.anode_coating,
+            cathode_coating=el.cathode_coating,
+            membrane_type=el.membrane_type,
+            gap_mm=el.gap_mm,
+        )
+        if found:
+            el.group_nr = found
+            filled += 1
+    return filled
 
 
 def link_group(db: Session, raw: Any) -> Any:

@@ -40,6 +40,67 @@ import { CoatingSerialPicker } from "@/components/domain/coating-serial-picker";
 
 type T = (k: string, vars?: Record<string, string | number | null | undefined>) => string;
 
+type SpecField = { name: string; label: string; type?: "date" | "textarea" };
+
+const ANODE_SPEC_FIELDS: SpecField[] = [
+  { name: "assembly_group", label: "fields.assemblyGroup" },
+  { name: "component_nr", label: "fields.componentNr" },
+  { name: "customer_drawing_nr", label: "fields.customerDrawingNr" },
+  { name: "manufacturer", label: "fields.manufacturer" },
+  { name: "manufacturer_order_nr", label: "fields.manufacturerOrderNr" },
+  { name: "manufacturer_drawing_nr", label: "fields.manufacturerDrawingNr" },
+  { name: "manufacturer_date", label: "fields.manufacturerDate", type: "date" },
+  { name: "tank", label: "fields.tank" },
+  { name: "contact_strip", label: "fields.contactStrip" },
+  { name: "electrode_support", label: "fields.electrodeSupport" },
+  { name: "electrode_shape", label: "fields.electrodeShape" },
+  { name: "coating", label: "fields.coating" },
+  { name: "baffle_plate", label: "fields.bafflePlate" },
+  { name: "downcomer", label: "fields.downcomer" },
+  { name: "inlet_system", label: "fields.inletSystem" },
+  { name: "standpipe_diameter", label: "fields.standpipeDiameter" },
+  { name: "flange_width", label: "fields.flangeWidth" },
+  { name: "received_date", label: "fields.receivedDate", type: "date" },
+  { name: "batch", label: "fields.batch" },
+  { name: "generation", label: "fields.generation" },
+  { name: "remarks", label: "fields.remarks", type: "textarea" },
+];
+
+const CATHODE_SPEC_FIELDS: SpecField[] = ANODE_SPEC_FIELDS.filter((f) => f.name !== "baffle_plate" && f.name !== "downcomer");
+
+function pickSpec(values: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(Object.entries(values).filter(([, v]) => v.trim()));
+}
+
+function SpecGrid({
+  fields,
+  values,
+  onChange,
+  t,
+}: {
+  fields: SpecField[];
+  values: Record<string, string>;
+  onChange: (name: string, value: string) => void;
+  t: T;
+}) {
+  return (
+    <div className="wh-form-grid wf-spec-grid">
+      {fields.map((f) => (
+        <label key={f.name} className={f.type === "textarea" ? "wf-spec-span" : undefined}>
+          {t(f.label)}
+          {f.type === "date" ? (
+            <DateInput type="date" value={values[f.name] || ""} onChange={(e) => onChange(f.name, e.target.value)} />
+          ) : f.type === "textarea" ? (
+            <textarea rows={2} value={values[f.name] || ""} onChange={(e) => onChange(f.name, e.target.value)} />
+          ) : (
+            <input value={values[f.name] || ""} onChange={(e) => onChange(f.name, e.target.value)} />
+          )}
+        </label>
+      ))}
+    </div>
+  );
+}
+
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -422,7 +483,16 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
           <div className="wh-form-inline wf-inline-plain">
             <label>
               {t("wf.coating.palletSize")}
-              <input type="number" min={1} max={200} value={palletSize} onChange={(e) => setPalletSize(Math.max(1, Number(e.target.value) || 20))} />
+              <input
+                type="number"
+                min={1}
+                max={20}
+                value={palletSize}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  setPalletSize(Math.min(20, Math.max(1, Number.isFinite(n) ? n : 20)));
+                }}
+              />
             </label>
             <label className="wh-check">
               <input type="checkbox" checked={separate} onChange={(e) => setSeparate(e.target.checked)} />
@@ -695,6 +765,12 @@ function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; 
         <Fact label={t("wf.col.delay")}>
           <DelayBadge days={d.delay_days} t={t} />
         </Fact>
+        {d.warranty_start ? (
+          <Fact label={t("wf.coating.warrantyStart")}>
+            {formatDate(d.warranty_start)}
+            {d.warranty_months != null ? ` · ${d.warranty_months}` : ""}
+          </Fact>
+        ) : null}
         {d.delay_party ? <Fact label={t("wf.delayParty")}>{t(`wf.party.${d.delay_party}`)}</Fact> : null}
         {d.delay_reason ? <Fact label={t("wf.delayReason")}>{d.delay_reason}</Fact> : null}
         {coating && d.rework_count ? <Fact label={t("wf.reworks")}>{d.rework_count}</Fact> : null}
@@ -855,8 +931,8 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
   const [packageId, setPackageId] = useState<number | "">("");
   const [regAnodes, setRegAnodes] = useState("");
   const [regCathodes, setRegCathodes] = useState("");
-  const [regCoating, setRegCoating] = useState("");
-  const [regMaker, setRegMaker] = useState("");
+  const [anodeSpec, setAnodeSpec] = useState<Record<string, string>>({});
+  const [cathodeSpec, setCathodeSpec] = useState<Record<string, string>>({});
   const [info, setInfo] = useState<string | null>(null);
 
   const done = (next: WfDetail) => {
@@ -908,9 +984,11 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
   const go = (action: string, body: Record<string, unknown> = {}) => run.mutate({ action, body: { note: note || undefined, ...body } });
   const coatingCos = companies.filter((c) => c.is_coating);
 
+  const aSpec = pickSpec(anodeSpec);
+  const kSpec = pickSpec(cathodeSpec);
   const regItems = () => [
-    ...parseSerialLines(regAnodes).map((l) => ({ element_kind: "anode", serial: l.serial, coating: regCoating || undefined, manufacturer: regMaker || undefined })),
-    ...parseSerialLines(regCathodes).map((l) => ({ element_kind: "cathode", serial: l.serial, coating: regCoating || undefined, manufacturer: regMaker || undefined })),
+    ...parseSerialLines(regAnodes).map((l) => ({ element_kind: "anode", serial: l.serial, ...aSpec })),
+    ...parseSerialLines(regCathodes).map((l) => ({ element_kind: "cathode", serial: l.serial, ...kSpec })),
   ];
 
   const mustReason = isAdmin || acts.includes("edit");
@@ -1131,14 +1209,14 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
           <button
             type="button"
             className="wf-btn is-primary"
-            disabled={run.isPending || (late && (!party || !reason.trim()))}
+            disabled={run.isPending || (late && (!party || !reason.trim())) || (main.includes("receive") && !warrantyStart)}
             onClick={() =>
               go(main.includes("receive") ? "receive" : "deliver", {
                 actual_date: date1,
                 delay_party: late ? party : undefined,
                 delay_reason: late ? reason : undefined,
                 warranty_months: main.includes("receive") && warrantyMonths !== "" ? Number(warrantyMonths) : undefined,
-                warranty_start: main.includes("receive") && warrantyMonths !== "" ? warrantyStart : undefined,
+                warranty_start: main.includes("receive") ? warrantyStart : undefined,
               })
             }
           >
@@ -1185,22 +1263,52 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
               <textarea rows={4} value={regCathodes} onChange={(e) => setRegCathodes(e.target.value)} disabled={!d.cathode_count} />
             </label>
           </div>
+          {d.anode_count ? (
+            <>
+              <h4>{t("wf.purchase.anodeDetails")}</h4>
+              <SpecGrid
+                fields={ANODE_SPEC_FIELDS}
+                values={anodeSpec}
+                onChange={(name, value) => setAnodeSpec((cur) => ({ ...cur, [name]: value }))}
+                t={t}
+              />
+            </>
+          ) : null}
+          {d.cathode_count ? (
+            <>
+              <h4>{t("wf.purchase.cathodeDetails")}</h4>
+              <SpecGrid
+                fields={CATHODE_SPEC_FIELDS}
+                values={cathodeSpec}
+                onChange={(name, value) => setCathodeSpec((cur) => ({ ...cur, [name]: value }))}
+                t={t}
+              />
+            </>
+          ) : null}
           <div className="wh-form-inline wf-inline-plain">
             <label>
-              {t("wf.col.coating")}
-              <input value={regCoating} onChange={(e) => setRegCoating(e.target.value)} />
+              {t("wf.coating.warrantyStart")}
+              <DateInput type="date" value={warrantyStart} onChange={(e) => setWarrantyStart(e.target.value)} />
             </label>
             <label>
-              {t("wf.col.manufacturer")}
-              <input value={regMaker} onChange={(e) => setRegMaker(e.target.value)} placeholder={d.company_name ?? ""} />
+              {t("wf.coating.warrantyMonths")}
+              <input type="number" min={0} max={240} value={warrantyMonths} onChange={(e) => setWarrantyMonths(e.target.value)} />
             </label>
             <button
               type="button"
               className="wf-btn is-primary"
-              disabled={run.isPending || !regItems().length}
+              disabled={run.isPending || !regItems().length || !warrantyStart}
               onClick={() =>
                 run.mutate(
-                  { action: "register", body: { note: note || undefined, items: regItems() } },
+                  {
+                    action: "register",
+                    body: {
+                      note: note || undefined,
+                      items: regItems(),
+                      warranty_start: warrantyStart,
+                      warranty_months: warrantyMonths !== "" ? Number(warrantyMonths) : undefined,
+                    },
+                  },
                   {
                     onSuccess: () => {
                       setRegAnodes("");

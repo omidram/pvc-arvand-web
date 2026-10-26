@@ -139,7 +139,10 @@ def recoating_on_return(
     row.return_date = _stamp(return_date) or row.return_date
     if warranty_months is not None:
         row.warranty_months = warranty_months
-        row.warranty_start = warranty_start or (return_date if isinstance(return_date, date) else None)
+    if warranty_start is not None:
+        row.warranty_start = warranty_start
+    elif warranty_months is not None and row.warranty_start is None:
+        row.warranty_start = return_date if isinstance(return_date, date) else None
 
 
 def recoating_on_approve(
@@ -281,3 +284,44 @@ def maintenance_from_inspection(
         if (row.finding or "").strip() == text and (row.date.date() if row.date else None) == (when.date() if when else None):
             return
     db.add(models.CathodeMaintenance(cathode_nr=serial, date=when, finding=text, action=act))
+
+
+def write_tafkik_warranty(
+    db: Session,
+    *,
+    serial: str,
+    kind: str | None,
+    company: str | None,
+    warranty_start: date | None,
+    warranty_months: int | None,
+) -> None:
+    """Store the coater/supplier warranty date on the TAFKIK (segregation) row."""
+    serial = (serial or "").strip()
+    if not serial:
+        return
+    parts: list[str] = []
+    if warranty_start is not None:
+        parts.append(warranty_start.isoformat())
+    if warranty_months is not None:
+        parts.append(f"{int(warranty_months)}m")
+    text = " ".join(parts)[:100]
+    if not text:
+        return
+    match = compact_eq(models.ElectrodeSegregation.serial_nr, serial)
+    row = None
+    if match is not None:
+        row = (
+            db.query(models.ElectrodeSegregation)
+            .filter(match)
+            .order_by(models.ElectrodeSegregation.id.desc())
+            .first()
+        )
+    if row is None:
+        row = models.ElectrodeSegregation(serial_nr=serial[:50], electrode_kind=(kind or None))
+        db.add(row)
+    row.warranty = text
+    if kind:
+        row.electrode_kind = kind
+    name = (company or "").strip()[:100]
+    if name and not (row.company or "").strip():
+        row.company = name
