@@ -6771,6 +6771,10 @@ html[data-theme="dark"] .wf-chips button { color: #93c5fd; }
 .wf-spec-grid label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 11px; font-weight: 700; color: var(--win-muted); }
 .wf-spec-grid input, .wf-spec-grid textarea, .wf-spec-grid .date-input { font-size: 12px; }
 .wf-spec-span { grid-column: 1 / -1; }
+.wf-spec-card { align-self: stretch; border: 1px solid var(--win-border, #c8c4b8); border-radius: 6px; padding: 0.55rem 0.7rem 0.7rem; background: #fffdf8; display: flex; flex-direction: column; gap: 0.35rem; }
+.wf-spec-card h4 { margin: 0; font-size: 13px; color: #1d4f91; }
+.wf-spec-nr { margin: 0; font-size: 12px; color: var(--win-muted); }
+.wf-spec-nr strong { color: #1a1a1a; font-size: 13px; }
 .wf-delay-preview { font-size: 12px; padding-bottom: 0.45rem; }
 .wf-pallet { border: 1px solid var(--win-face-dark); border-radius: 0.55rem; background: #fff; }
 .wf-pallet summary { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0.6rem; cursor: pointer; font-size: 12px; flex-wrap: wrap; }

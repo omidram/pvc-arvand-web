@@ -688,6 +688,8 @@ export const extraEn: Tree = {
       registerHint: "Register each new piece code and its specification in the system. Bought: {a} anodes, {k} cathodes · already registered: {done}. One number per line. Anode/cathode detail fields are optional. The company warranty date is required.",
       anodeDetails: "Anode details (optional)",
       cathodeDetails: "Cathode details (optional)",
+      anodePiece: "Anode {nr} — optional details",
+      cathodePiece: "Cathode {nr} — optional details",
     },
     history: {
       title: "Send / return / purchase history",
@@ -1817,6 +1819,8 @@ export const extraFa: Tree = {
       registerHint: "کد هر قطعه و مشخصات آن را به‌عنوان قطعه جدید در سیستم ثبت کنید. خریداری‌شده: {a} آند، {k} کاتد · ثبت‌شده تا کنون: {done}. هر سطر یک شماره. فیلدهای جزئیات آند/کاتد اختیاری‌اند. تاریخ گارانتی شرکت اجباری است.",
       anodeDetails: "جزئیات آند (اختیاری)",
       cathodeDetails: "جزئیات کاتد (اختیاری)",
+      anodePiece: "آند {nr} — جزئیات اختیاری",
+      cathodePiece: "کاتد {nr} — جزئیات اختیاری",
     },
     history: {
       title: "تاریخچه ارسال / برگشت / خرید",

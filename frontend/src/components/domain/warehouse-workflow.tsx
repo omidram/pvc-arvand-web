@@ -101,6 +101,32 @@ function SpecGrid({
   );
 }
 
+function PieceSpecCard({
+  kind,
+  serial,
+  fields,
+  values,
+  onChange,
+  t,
+}: {
+  kind: "anode" | "cathode";
+  serial: string;
+  fields: SpecField[];
+  values: Record<string, string>;
+  onChange: (name: string, value: string) => void;
+  t: T;
+}) {
+  return (
+    <div className="wf-spec-card">
+      <h4>{t(kind === "anode" ? "wf.purchase.anodePiece" : "wf.purchase.cathodePiece", { nr: serial })}</h4>
+      <p className="wf-spec-nr">
+        {t(kind === "anode" ? "fields.anodeNr" : "fields.cathodeNr")}: <strong>{serial}</strong>
+      </p>
+      <SpecGrid fields={fields} values={values} onChange={onChange} t={t} />
+    </div>
+  );
+}
+
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -931,8 +957,8 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
   const [packageId, setPackageId] = useState<number | "">("");
   const [regAnodes, setRegAnodes] = useState("");
   const [regCathodes, setRegCathodes] = useState("");
-  const [anodeSpec, setAnodeSpec] = useState<Record<string, string>>({});
-  const [cathodeSpec, setCathodeSpec] = useState<Record<string, string>>({});
+  const [anodeSpecs, setAnodeSpecs] = useState<Record<string, Record<string, string>>>({});
+  const [cathodeSpecs, setCathodeSpecs] = useState<Record<string, Record<string, string>>>({});
   const [info, setInfo] = useState<string | null>(null);
 
   const done = (next: WfDetail) => {
@@ -984,11 +1010,14 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
   const go = (action: string, body: Record<string, unknown> = {}) => run.mutate({ action, body: { note: note || undefined, ...body } });
   const coatingCos = companies.filter((c) => c.is_coating);
 
-  const aSpec = pickSpec(anodeSpec);
-  const kSpec = pickSpec(cathodeSpec);
+  const anodeLines = parseSerialLines(regAnodes);
+  const cathodeLines = parseSerialLines(regCathodes);
+  const patchSpec =
+    (setter: typeof setAnodeSpecs, serial: string) => (name: string, value: string) =>
+      setter((cur) => ({ ...cur, [serial]: { ...(cur[serial] || {}), [name]: value } }));
   const regItems = () => [
-    ...parseSerialLines(regAnodes).map((l) => ({ element_kind: "anode", serial: l.serial, ...aSpec })),
-    ...parseSerialLines(regCathodes).map((l) => ({ element_kind: "cathode", serial: l.serial, ...kSpec })),
+    ...anodeLines.map((l) => ({ element_kind: "anode", serial: l.serial, ...pickSpec(anodeSpecs[l.serial] || {}) })),
+    ...cathodeLines.map((l) => ({ element_kind: "cathode", serial: l.serial, ...pickSpec(cathodeSpecs[l.serial] || {}) })),
   ];
 
   const mustReason = isAdmin || acts.includes("edit");
@@ -1255,36 +1284,36 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
           <p className="wh-subdesc">{t("wf.purchase.registerHint", { a: d.anode_count, k: d.cathode_count, done: d.registered ?? 0 })}</p>
           <div className="wf-two">
             <label>
-              {t("wf.coating.anodes", { n: parseSerialLines(regAnodes).length })}
+              {t("wf.coating.anodes", { n: anodeLines.length })}
               <textarea rows={4} value={regAnodes} onChange={(e) => setRegAnodes(e.target.value)} disabled={!d.anode_count} />
             </label>
             <label>
-              {t("wf.coating.cathodes", { n: parseSerialLines(regCathodes).length })}
+              {t("wf.coating.cathodes", { n: cathodeLines.length })}
               <textarea rows={4} value={regCathodes} onChange={(e) => setRegCathodes(e.target.value)} disabled={!d.cathode_count} />
             </label>
           </div>
-          {d.anode_count ? (
-            <>
-              <h4>{t("wf.purchase.anodeDetails")}</h4>
-              <SpecGrid
-                fields={ANODE_SPEC_FIELDS}
-                values={anodeSpec}
-                onChange={(name, value) => setAnodeSpec((cur) => ({ ...cur, [name]: value }))}
-                t={t}
-              />
-            </>
-          ) : null}
-          {d.cathode_count ? (
-            <>
-              <h4>{t("wf.purchase.cathodeDetails")}</h4>
-              <SpecGrid
-                fields={CATHODE_SPEC_FIELDS}
-                values={cathodeSpec}
-                onChange={(name, value) => setCathodeSpec((cur) => ({ ...cur, [name]: value }))}
-                t={t}
-              />
-            </>
-          ) : null}
+          {anodeLines.map((l) => (
+            <PieceSpecCard
+              key={`a-${l.serial}`}
+              kind="anode"
+              serial={l.serial}
+              fields={ANODE_SPEC_FIELDS}
+              values={anodeSpecs[l.serial] || {}}
+              onChange={patchSpec(setAnodeSpecs, l.serial)}
+              t={t}
+            />
+          ))}
+          {cathodeLines.map((l) => (
+            <PieceSpecCard
+              key={`k-${l.serial}`}
+              kind="cathode"
+              serial={l.serial}
+              fields={CATHODE_SPEC_FIELDS}
+              values={cathodeSpecs[l.serial] || {}}
+              onChange={patchSpec(setCathodeSpecs, l.serial)}
+              t={t}
+            />
+          ))}
           <div className="wh-form-inline wf-inline-plain">
             <label>
               {t("wf.coating.warrantyStart")}
@@ -1313,6 +1342,8 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
                     onSuccess: () => {
                       setRegAnodes("");
                       setRegCathodes("");
+                      setAnodeSpecs({});
+                      setCathodeSpecs({});
                     },
                   }
                 )
