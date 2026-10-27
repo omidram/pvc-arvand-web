@@ -165,7 +165,7 @@ export function VoltageReportPanel({
                     online: line.online,
                     total: line.total,
                     ka: formatNumber(line.ka, 1),
-                    kwh: formatNumber(line.kwh, 0),
+                    mwh: formatNumber(line.kwh / 1000, 1),
                     danger: formatNumber(line.danger, 0),
                     warning: formatNumber(line.warning, 0),
                   })}

@@ -800,7 +800,12 @@ def parse_c90_coating_company(value: Any) -> dict[str, Any]:
     raw = _clean_code(value)
     if not raw:
         return empty
+    # Newest rule: a name inside parentheses is used as a normal name; the
+    # parentheses are dropped (آند (دنورا) - کاتد آتیه پردازان → anode coating دنورا).
     text = _fold_coating(raw)
+    text = re.sub(r"[\(（]\s*([^()（）]*?)\s*[\)）]", r" \1 ", text)
+    text = re.sub(r"\boriginal\b", " ", text, flags=re.I)
+    text = re.sub(r"\s+", " ", text).strip()
     shared = _COATING_SHARED_RE.match(text)
     if shared:
         rest = shared.group(1).strip()

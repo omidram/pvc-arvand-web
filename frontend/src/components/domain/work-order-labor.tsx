@@ -54,6 +54,28 @@ export function actualTotal(rows: WoLaborLine[]) {
   return rows.reduce((s, r) => s + (r.work_hours || 0), 0);
 }
 
+/** Required jobs are computed from the actual labour rows; only the notes stay manual. */
+export function deriveJobs(stage: WoStage, actual: WoLaborLine[], prev: WoLaborLine[]): WoLaborLine[] {
+  const notes = new Map(prev.filter((r) => r.skill).map((r) => [r.skill as string, r.description || ""]));
+  const groups = new Map<string, { people: Set<string>; hours: number; titles: string[] }>();
+  actual.forEach((r, i) => {
+    if (!r.skill) return;
+    const g = groups.get(r.skill) || { people: new Set<string>(), hours: 0, titles: [] };
+    g.people.add(r.person_code || r.person_name || `#${i}`);
+    g.hours += r.work_hours || 0;
+    const title = String((r.data || {}).title || "").trim();
+    if (title && !g.titles.includes(title)) g.titles.push(title);
+    groups.set(r.skill, g);
+  });
+  if (!groups.size) return [emptyJob(stage)];
+  return [...groups.entries()].map(([skill, g]) => ({
+    ...emptyJob(stage),
+    skill,
+    description: notes.get(skill) || "",
+    data: { persons: g.people.size, hours: Math.round(g.hours * 100) / 100, title: g.titles.join("، ") },
+  }));
+}
+
 const fmt = (n: number) => String(Math.round(n * 100) / 100);
 
 export function JobRows({
@@ -80,7 +102,7 @@ export function JobRows({
   const totals = jobTotals(rows);
   return (
     <div className="wo-lines">
-      <div className="wo-lines-title">{fa("مشاغل / نفرساعت مورد نیاز", "Required jobs / man-hours")}</div>
+      <div className="wo-lines-title">{fa("مشاغل / نفرساعت مورد نیاز (خودکار از کارکرد نفرات)", "Required jobs / man-hours (auto from actual labour)")}</div>
       <table className="wo-lines-table">
         <thead>
           <tr>
@@ -101,7 +123,7 @@ export function JobRows({
                   <select
                     className="ui-input"
                     value={row.skill || ""}
-                    disabled={!editable}
+                    disabled
                     onChange={(e) => setRow(idx, { skill: e.target.value })}
                   >
                     <option value="">—</option>
@@ -113,28 +135,18 @@ export function JobRows({
                   </select>
                 </td>
                 <td>
-                  <Input type="number" min="0" value={d.persons ?? ""} disabled={!editable} onChange={(e) => setRow(idx, {}, { persons: e.target.value })} />
+                  <Input type="number" min="0" value={d.persons ?? ""} disabled readOnly onChange={(e) => setRow(idx, {}, { persons: e.target.value })} />
                 </td>
                 <td>
-                  <Input type="number" min="0" step="0.25" value={d.hours ?? ""} disabled={!editable} onChange={(e) => setRow(idx, {}, { hours: e.target.value })} />
+                  <Input type="number" min="0" step="0.25" value={d.hours ?? ""} disabled readOnly onChange={(e) => setRow(idx, {}, { hours: e.target.value })} />
                 </td>
                 <td>
-                  <Input value={String(d.title ?? "")} disabled={!editable} onChange={(e) => setRow(idx, {}, { title: e.target.value })} />
+                  <Input value={String(d.title ?? "")} disabled readOnly onChange={(e) => setRow(idx, {}, { title: e.target.value })} />
                 </td>
                 <td>
                   <Input value={row.description || ""} disabled={!editable} onChange={(e) => setRow(idx, { description: e.target.value })} />
                 </td>
-                <td>
-                  {editable ? (
-                    <button
-                      type="button"
-                      className="wo-icon-btn"
-                      onClick={() => onChange(rows.length <= 1 ? [emptyJob(stage)] : rows.filter((_, i) => i !== idx))}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  ) : null}
-                </td>
+                <td />
               </tr>
             );
           })}
@@ -150,11 +162,6 @@ export function JobRows({
           </tr>
         </tfoot>
       </table>
-      {editable ? (
-        <Button type="button" variant="ghost" size="sm" onClick={() => onChange([...rows, emptyJob(stage)])}>
-          <Plus size={14} /> {fa("افزودن شغل", "Add job")}
-        </Button>
-      ) : null}
     </div>
   );
 }

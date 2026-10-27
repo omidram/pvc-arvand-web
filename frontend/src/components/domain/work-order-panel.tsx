@@ -24,7 +24,7 @@ import {
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
 import { refreshWarehouseData } from "@/lib/workflow";
-import { ActualRows, JobRows, emptyActual, emptyJob } from "./work-order-labor";
+import { ActualRows, JobRows, deriveJobs, emptyActual, emptyJob } from "./work-order-labor";
 
 const STAGES: WoStage[] = ["generation", "install", "pickup", "store", "disassemble"];
 
@@ -96,7 +96,7 @@ function fromDetail(d: WorkOrderDetail): FormState {
     const act = all.filter((r) => r.kind !== "job");
     const job = all.filter((r) => r.kind === "job");
     labors[stage] = act.length ? act.map((r) => ({ ...r, stage })) : [emptyActual(stage)];
-    jobs[stage] = job.length ? job.map((r) => ({ ...r, stage })) : [emptyJob(stage)];
+    jobs[stage] = deriveJobs(stage, labors[stage], job.map((r) => ({ ...r, stage })));
   }
   return {
     report_date: d.report_date || "",
@@ -214,7 +214,12 @@ function StageFields({
         skills={skills}
         people={people}
         editable={editable}
-        onChange={(rows) => patch({ labors: { ...form.labors, [stage]: rows } })}
+        onChange={(rows) =>
+          patch({
+            labors: { ...form.labors, [stage]: rows },
+            jobs: { ...form.jobs, [stage]: deriveJobs(stage, rows, form.jobs[stage]) },
+          })
+        }
         fa={fa}
       />
     </section>

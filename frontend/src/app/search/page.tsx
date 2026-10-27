@@ -8,11 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
 import { formatDate } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n/context";
 import { DateInput } from "@/components/ui/date-input";
 import { useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
-import { appAlert, appConfirm } from "@/lib/dialog";
+import { appAlert } from "@/lib/dialog";
 import { GlobalSearchPanel } from "@/components/domain/global-search-panel";
 
 type SearchKind =
@@ -122,13 +124,15 @@ const SEARCH_COLUMNS: SearchBtn[][] = [
 const SEARCH_ROWS = 9;
 
 
+type Ask = { mode: "term"; kind: SearchKind } | { mode: "date"; field: string };
+
 export default function SearchPage() {
   const { t } = useI18n();
-  const [term, setTerm] = useState("");
-  const [date, setDate] = useState("");
   const electrolyzerNames = useElectrolyzerNames();
   const [kindQuery, setKindQuery] = useState<{ kind: SearchKind; q?: string } | null>(null);
   const [dateQuery, setDateQuery] = useState<{ field: string; date: string } | null>(null);
+  const [ask, setAsk] = useState<Ask | null>(null);
+  const [draft, setDraft] = useState("");
 
   const kindResult = useQuery({
     queryKey: ["search-kind", kindQuery],
@@ -144,51 +148,47 @@ export default function SearchPage() {
 
   const results = kindResult.data;
 
-  function runKind(kind: SearchKind, needsTerm?: boolean) {
-    if (needsTerm && !term.trim()) {
-      void appAlert(t("search.termRequired"));
-      return;
-    }
+  function runKind(kind: SearchKind, q?: string) {
     setDateQuery(null);
-    setKindQuery({ kind, q: term.trim() || undefined });
+    setKindQuery({ kind, q });
   }
 
-  function runDate(field: string) {
-    if (!date) {
-      void appAlert(t("search.pickDate"));
+  function openAsk(item: SearchBtn) {
+    if (item.dateField) {
+      setDraft("");
+      setAsk({ mode: "date", field: item.dateField });
       return;
     }
-    setKindQuery(null);
-    setDateQuery({ field, date });
+    if (item.needsTerm && item.kind) {
+      setDraft("");
+      setAsk({ mode: "term", kind: item.kind });
+      return;
+    }
+    if (item.kind) runKind(item.kind);
+  }
+
+  function submitAsk() {
+    if (!ask) return;
+    if (ask.mode === "term") {
+      const q = draft.trim();
+      if (!q) {
+        void appAlert(t("search.termRequired"));
+        return;
+      }
+      runKind(ask.kind, q);
+    } else if (!draft) {
+      void appAlert(t("search.pickDate"));
+      return;
+    } else {
+      setKindQuery(null);
+      setDateQuery({ field: ask.field, date: draft });
+    }
+    setAsk(null);
   }
 
   return (
     <AccessHub title={t("search.title")}>
       <GlobalSearchPanel />
-      <div className="search-filters mb-3 flex flex-wrap items-end gap-3 text-[12px]">
-        <label className="inline-flex min-w-0 flex-1 items-center gap-1 sm:flex-none">
-          {t("search.searchTerm")}
-          <input
-            className="access-inset-field w-full min-w-0 sm:w-[220px]"
-            list="search-electrolyzer-options"
-            placeholder={t("search.searchTermPlaceholder")}
-            value={term}
-            onChange={(e) => setTerm(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && term.trim()) runKind("element", true);
-            }}
-          />
-          <datalist id="search-electrolyzer-options">
-            {electrolyzerNames.map((name) => (
-              <option key={name} value={name} />
-            ))}
-          </datalist>
-        </label>
-        <label className="inline-flex min-w-0 items-center gap-1">
-          {t("search.date")}
-          <DateInput className="access-inset-field w-full min-w-0 sm:w-[140px]" value={date} onChange={(e) => setDate(e.target.value)} />
-        </label>
-      </div>
 
       <div className="search-menu grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-7">
         {SEARCH_COLUMNS.map((col, ci) => (
@@ -196,7 +196,7 @@ export default function SearchPage() {
             {col.map((item) => (
               <div key={item.labelKey} style={{ gridRow: item.row }}>
                 <AccessBtn
-                  onClick={() => (item.dateField ? runDate(item.dateField) : runKind(item.kind!, item.needsTerm))}
+                  onClick={() => openAsk(item)}
                 >
                   {t(item.labelKey)}
                 </AccessBtn>
@@ -286,6 +286,41 @@ export default function SearchPage() {
           />
         </div>
       ) : null}
+
+      <Modal open={ask != null} onClose={() => setAsk(null)} title={ask?.mode === "date" ? t("search.date") : t("search.searchTerm")}>
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            submitAsk();
+          }}
+        >
+          {ask?.mode === "date" ? (
+            <DateInput className="access-inset-field w-full" value={draft} onChange={(e) => setDraft(e.target.value)} />
+          ) : (
+            <>
+              <input
+                className="access-inset-field w-full"
+                list="search-electrolyzer-options"
+                placeholder={t("search.searchTermPlaceholder")}
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                autoFocus
+              />
+              <datalist id="search-electrolyzer-options">
+                {electrolyzerNames.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
+            </>
+          )}
+          <div className="flex justify-end">
+            <Button type="submit" variant="primary">
+              {t("common.search")}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </AccessHub>
   );
 }
