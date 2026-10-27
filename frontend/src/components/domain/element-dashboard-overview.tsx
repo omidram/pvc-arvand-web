@@ -14,7 +14,7 @@ import {
   ShieldAlert,
   Wrench,
 } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { elementDashboardApi } from "@/lib/endpoints";
 import type { ElementStage, LifeBin } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ import { ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime, formatNumber } from "@/lib/utils";
 import { ElementReportGuideButton } from "./element-report-guide";
+import { MonthFlow } from "./element-report-panel";
+import { InServiceBreakdown } from "@/components/domain/in-service-breakdown";
 import { MiniStat, STAGE_FLOW, STAGE_TONE, StageBadge } from "./element-dashboard-ui";
 
 export type DashTab = "overview" | "flow" | "requests" | "shop" | "parts" | "installed" | "cells" | "coating" | "integrity" | "settings";
@@ -207,24 +209,8 @@ export function ElementOverviewTab({ onOpen }: { onOpen: (target: OpenTarget) =>
             </ResponsiveContainer>
           </div>
         </section>
-        <section className="mon-panel">
-          <h3 className="mon-panel-title">{t("elDash.chart.flow")}</h3>
-          <div className="ed-chart-tall">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.monthly_flow.slice(-12)} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Line type="monotone" dataKey="assembled" name={t("elDash.flow.assembled")} stroke="#7c3aed" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="commissioned" name={t("elDash.flow.commissioned")} stroke="#16a34a" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="decommissioned" name={t("elDash.flow.decommissioned")} stroke="#dc2626" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="disassembled" name={t("elDash.flow.disassembled")} stroke="#64748b" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
+        <MonthFlow compact />
+        <InServiceBreakdown />
       </div>
 
       <div className="ed-grid-3">

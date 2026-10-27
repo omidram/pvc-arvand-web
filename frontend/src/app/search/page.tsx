@@ -13,6 +13,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { DateInput } from "@/components/ui/date-input";
 import { useElectrolyzerNames } from "@/components/ui/electrolyzer-combo";
 import { appAlert, appConfirm } from "@/lib/dialog";
+import { GlobalSearchPanel } from "@/components/domain/global-search-panel";
 
 type SearchKind =
   | "element"
@@ -163,6 +164,7 @@ export default function SearchPage() {
 
   return (
     <AccessHub title={t("search.title")}>
+      <GlobalSearchPanel />
       <div className="search-filters mb-3 flex flex-wrap items-end gap-3 text-[12px]">
         <label className="inline-flex min-w-0 flex-1 items-center gap-1 sm:flex-none">
           {t("search.searchTerm")}

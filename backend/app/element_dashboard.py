@@ -1376,7 +1376,7 @@ def management_board(
     }
 
 
-def _monthly_flow(db: Session, months: int = 12) -> list[dict[str, Any]]:
+def _monthly_flow(db: Session, months: int = 36) -> list[dict[str, Any]]:
     today = date.today()
     first = today.replace(day=1)
     tags: list[str] = []
@@ -1386,14 +1386,73 @@ def _monthly_flow(db: Session, months: int = 12) -> list[dict[str, Any]]:
         cursor = (cursor - timedelta(days=1)).replace(day=1)
     tags.reverse()
     flow = {tag: {"month": tag, "assembled": 0, "commissioned": 0, "decommissioned": 0, "disassembled": 0} for tag in tags}
+    fields = (
+        ("assembly_date", "assembled"),
+        ("commissioning_date", "commissioned"),
+        ("decommissioning_date", "decommissioned"),
+        ("disassembly_date", "disassembled"),
+    )
     for el in db.query(models.Element).all():
-        for field, name in (("assembly_date", "assembled"), ("commissioning_date", "commissioned"), ("decommissioning_date", "decommissioned"), ("disassembly_date", "disassembled")):
+        for field, name in fields:
             day = _as_date(getattr(el, field))
-            if day:
-                tag = day.strftime("%Y-%m")
-                if tag in flow:
-                    flow[tag][name] += 1
+            if day and (tag := day.strftime("%Y-%m")) in flow:
+                flow[tag][name] += 1
     return [flow[t] for t in tags]
+
+
+def _activity_bucket(day: date, grain: str) -> str:
+    if grain == "day":
+        return day.isoformat()
+    if grain == "year":
+        return f"{day.year:04d}"
+    if grain == "week":
+        start = day - timedelta(days=day.weekday())
+        return start.isoformat()
+    return day.strftime("%Y-%m")
+
+
+def _dated_events(db: Session) -> list[dict[str, Any]]:
+    fields = (
+        ("assembly_date", "assembled"),
+        ("commissioning_date", "commissioned"),
+        ("decommissioning_date", "decommissioned"),
+        ("disassembly_date", "disassembled"),
+    )
+    events: list[dict[str, Any]] = []
+    for el in db.query(
+        models.Element.element_nr,
+        models.Element.assembly_date,
+        models.Element.commissioning_date,
+        models.Element.decommissioning_date,
+        models.Element.disassembly_date,
+        models.Element.decommission_reason,
+    ).all():
+        reason = (el.decommission_reason or "").strip() or None
+        nr = "" if el.element_nr is None else str(el.element_nr)
+        for field, name in fields:
+            day = _as_date(getattr(el, field))
+            if not day:
+                continue
+            events.append({"date": day.isoformat(), "kind": name, "element_nr": nr, "reason": reason if name == "decommissioned" else None, "_day": day})
+    return events
+
+
+def activity_series(db: Session, grain: str) -> list[dict[str, Any]]:
+    counts: dict[str, dict[str, Any]] = {}
+    for event in _dated_events(db):
+        key = _activity_bucket(event["_day"], grain)
+        row = counts.setdefault(key, {"key": key, "assembled": 0, "commissioned": 0, "decommissioned": 0, "disassembled": 0})
+        row[event["kind"]] += 1
+    return [counts[key] for key in sorted(counts)]
+
+
+def activity_why(db: Session, grain: str, key: str) -> list[dict[str, Any]]:
+    out = []
+    for event in _dated_events(db):
+        if _activity_bucket(event["_day"], grain) != key:
+            continue
+        out.append({"date": event["date"], "kind": event["kind"], "element_nr": event["element_nr"], "reason": event["reason"]})
+    return out
 
 
 @_memo
@@ -1627,3 +1686,84 @@ def life_log(db: Session, element_nr: str) -> list[dict[str, Any]]:
 
     items.sort(key=lambda row: (row["at"] or "", row["title"]))
     return items
+
+
+# ---------------------------------------------------------------- cells in the plant: by group and by coating company
+
+
+def in_service_breakdown(db: Session) -> dict[str, Any]:
+    """Cells running now, counted per Group Definition and per coating company."""
+    running = {str(item["element_nr"]): item for item in build_pipeline(db) if item["state"] == "in_service"}
+    live: dict[str, models.Element] = {}
+    for el in db.query(models.Element).order_by(models.Element.id).all():
+        nr = str(el.element_nr or "")
+        if nr in running and el.commissioning_date and not el.disassembly_date and not el.decommissioning_date:
+            live[nr] = el  # newest open installation wins
+    defs = {g.group_nr: g for g in db.query(models.GroupDefinition).all()}
+    groups: dict[str, dict[str, Any]] = {}
+    companies: dict[str, dict[str, int]] = {}
+    for nr, item in running.items():
+        el = live.get(nr)
+        group = str((el.group_nr if el else None) or item.get("group_nr") or "").strip() or "—"
+        row = groups.setdefault(group, {"group": group, "cells": 0, "anodes": 0, "cathodes": 0})
+        row["cells"] += 1
+        for side, col in (("anode", "anode_coating"), ("cathode", "cathode_coating")):
+            name = str((getattr(el, col, None) if el else None) or "").strip() or "—"
+            comp = companies.setdefault(name, {"anode": 0, "cathode": 0})
+            comp[side] += 1
+    by_group = []
+    for group, row in groups.items():
+        g = defs.get(group)
+        by_group.append(
+            {
+                **row,
+                "anode_coating": g.anode_coating if g else None,
+                "cathode_coating": g.cathode_coating if g else None,
+                "membrane_type": g.membrane_type if g else None,
+                "gap_mm": g.gap_mm if g else None,
+            }
+        )
+    by_group.sort(key=lambda r: (-r["cells"], r["group"]))
+    by_company = [{"company": name, "anode": v["anode"], "cathode": v["cathode"], "total": v["anode"] + v["cathode"]} for name, v in companies.items()]
+    by_company.sort(key=lambda r: (-r["total"], r["company"]))
+    return {"total": len(running), "by_group": by_group, "by_company": by_company}
+
+
+def in_service_cells(db: Session, group: str | None = None, company: str | None = None, side: str | None = None) -> list[dict[str, Any]]:
+    """The running cells behind one row of the breakdown (a group, or a coating company on one side)."""
+    running = {str(item["element_nr"]): item for item in build_pipeline(db) if item["state"] == "in_service"}
+    live: dict[str, models.Element] = {}
+    for el in db.query(models.Element).order_by(models.Element.id).all():
+        nr = str(el.element_nr or "")
+        if nr in running and el.commissioning_date and not el.disassembly_date and not el.decommissioning_date:
+            live[nr] = el
+    out: list[dict[str, Any]] = []
+    for nr, item in running.items():
+        el = live.get(nr)
+        grp = str((el.group_nr if el else None) or item.get("group_nr") or "").strip() or "\u2014"
+        anode_co = str((el.anode_coating if el else None) or "").strip() or "\u2014"
+        cathode_co = str((el.cathode_coating if el else None) or "").strip() or "\u2014"
+        if group is not None and grp != group:
+            continue
+        if company is not None:
+            hit_a = anode_co == company and side in (None, "anode", "total")
+            hit_c = cathode_co == company and side in (None, "cathode", "total")
+            if not (hit_a or hit_c):
+                continue
+        out.append(
+            {
+                "element_nr": nr,
+                "electrolyzer": item.get("electrolyzer"),
+                "position": item.get("position"),
+                "group": grp,
+                "anode_nr": el.anode_nr if el else item.get("anode_nr"),
+                "cathode_nr": el.cathode_nr if el else item.get("cathode_nr"),
+                "membrane_nr": el.membrane_nr if el else item.get("membrane_nr"),
+                "anode_coating": anode_co,
+                "cathode_coating": cathode_co,
+                "commissioning_date": _iso(el.commissioning_date) if el else item.get("commissioning_date"),
+                "dol": item.get("dol"),
+            }
+        )
+    out.sort(key=lambda r: (str(r["electrolyzer"] or ""), str(r["position"] or "")))
+    return out

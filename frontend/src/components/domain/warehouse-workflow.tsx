@@ -581,7 +581,7 @@ export function PurchaseWorkflowPanel({ companies, onOpen }: { companies: WhComp
   const { t } = useI18n();
   const qc = useQueryClient();
   const meta = useWorkflowMeta();
-  const canCreate = (meta.data?.groups ?? []).includes("procurement");
+  const canCreate = (meta.data?.groups ?? []).includes("process");
   const suppliers = companies.filter((c) => c.is_supplier);
   const [openOnly, setOpenOnly] = useState(true);
   const list = useQuery({ queryKey: ["wf", "list", "purchase", openOnly], queryFn: () => workflowApi.list("purchase", { open_only: openOnly }), refetchInterval: LIVE_MS });
@@ -664,13 +664,13 @@ export function PurchaseWorkflowPanel({ companies, onOpen }: { companies: WhComp
           </div>
           {create.error ? <div className="wf-alert">{create.error.message}</div> : null}
           <div>
-            <button type="submit" className="wf-btn is-primary" disabled={create.isPending || !supplierId || anodeCount + cathodeCount <= 0 || files.length === 0}>
+            <button type="submit" className="wf-btn is-primary" disabled={create.isPending || !supplierId || anodeCount + cathodeCount <= 0}>
               <Plus size={14} /> {t("wf.purchase.create")}
             </button>
           </div>
         </form>
       ) : (
-        <p className="wh-subdesc">{t("wf.purchase.onlyProcurement")}</p>
+        <p className="wh-subdesc">{t("wf.purchase.onlyProcess")}</p>
       )}
       <div className="wf-head">
         <h3>{t("wf.purchase.listTitle")}</h3>
@@ -1116,9 +1116,24 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
         </div>
       ) : null}
 
+      {main.includes("confirm") ? (
+        <div className="wf-receive">
+          <p className="wh-subdesc">{t("wf.purchase.confirmHint")}</p>
+          <p className="wh-subdesc">
+            {t("wf.group.inspection")}: {d.decisions?.inspection?.name || "—"}
+            {" · "}
+            {t("wf.group.process")}: {d.decisions?.process?.name || "—"}
+          </p>
+          <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("confirm", {})}>
+            <Send size={14} /> {t("wf.action.confirm")}
+          </button>
+        </div>
+      ) : null}
+
       {main.includes("order") ? (
         <div className="wf-receive">
           <p className="wh-subdesc">{t("wf.purchase.buyHint")}</p>
+          {(d.files || []).length === 0 ? <p className="wf-alert">{t("wf.purchase.docsRequired")}</p> : null}
           <div className="wh-form-inline wf-inline-plain">
             <label>
               {t("wf.col.requestDate")}
@@ -1155,7 +1170,7 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
           <button
             type="button"
             className="wf-btn is-primary"
-            disabled={!date2 || !plansDelivery || run.isPending || ((daysBetween(date2, plansDelivery) ?? 0) > 0 && (!party || !reason.trim()))}
+            disabled={(d.files || []).length === 0 || !date2 || !plansDelivery || run.isPending || ((daysBetween(date2, plansDelivery) ?? 0) > 0 && (!party || !reason.trim()))}
             onClick={() =>
               go("order", {
                 request_date: date1,

@@ -40,6 +40,7 @@ from .routers import (
     remarks,
     reports,
     roles as roles_router_module,
+    global_search,
     search,
     segregation,
     shutdowns,
@@ -169,6 +170,8 @@ def _ensure_workflow_redesign() -> None:
     alters = {
         "wf_coating_batches": {"excel_emailed_at": "DATETIME"},
         "wf_coating_packages": {"dispatch_date": "DATE", "expected_return_date": "DATE"},
+        "wf_settings": {"planner_skills": "TEXT"},
+        "wf_work_order_labors": {"kind": "VARCHAR(10) DEFAULT 'actual'", "data": "TEXT"},
     }
     try:
         tables = set(inspect(engine).get_table_names())
@@ -203,7 +206,12 @@ def _ensure_workflow_redesign() -> None:
             if "request_kind" not in present:
                 conn.execute(text("ALTER TABLE wf_cell_requests ADD COLUMN request_kind VARCHAR(20) DEFAULT 'removal'"))
         if "wf_purchases" in tables:
+            present = {col["name"] for col in inspect(engine).get_columns("wf_purchases")}
+            if "decisions" not in present:
+                conn.execute(text("ALTER TABLE wf_purchases ADD COLUMN decisions TEXT"))
             conn.execute(text("UPDATE wf_purchases SET status = 'await_registration' WHERE status = 'ordered' AND delivery_date IS NOT NULL"))
+            conn.execute(text("DELETE FROM wf_planner_people WHERE skill LIKE '%?%'")) if "wf_planner_people" in tables else None
+            conn.execute(text("UPDATE wf_purchases SET status = 'await_confirm_insp' WHERE status = 'await_confirm' AND decisions LIKE '%\"process\"%'"))
             conn.execute(text("UPDATE wf_purchases SET status = 'await_order' WHERE status = 'ordered' AND delivery_date IS NULL"))
 
 
@@ -486,6 +494,12 @@ with SessionLocal() as _db:
     persist_industrial_names(_db)
     persist_industrial_reasons(_db)
     try:
+        from .routers.field_options import seed_field_options
+
+        seed_field_options(_db)
+    except Exception:  # noqa: BLE001
+        _db.rollback()
+    try:
         from . import arialims_sync as _arialims_sync
 
         _arialims_sync.get_or_create_settings(_db)  # default URL + bundled sample points
@@ -712,6 +726,7 @@ _api(analyses.router, dependencies=_perm("analyses"))
 # --- Remarks / search / statistics (statistics has per-route dashboard/statistics deps) ---
 _api(remarks.router, dependencies=_perm("remarks"))
 _api(remarks.performance_tests_router, dependencies=_perm("voltage"))
+_api(global_search.router, dependencies=_perm("search"))  # before search.router: /search/global
 _api(search.router, dependencies=_perm("search"))
 _api(statistics.router)
 

@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { electrodeSegregationsApi, type ImportProgress } from "@/lib/endpoints";
 import { ImportProgressBar } from "@/components/domain/import-progress";
 import { useCrudResource } from "@/lib/use-resource";
+import { useFieldOptions, withCombos } from "@/lib/use-field-options";
 import type { ElectrodeSegregation } from "@/lib/types";
 import { AccessWorkspace } from "@/components/layout/access-workspace";
 import { SegregationRelations } from "@/components/domain/access-relations";
@@ -35,6 +36,7 @@ export default function SegregationPage() {
     enabled: freshSerial.length >= 4,
   });
   const [showImport, setShowImport] = useState(false);
+  const { opts } = useFieldOptions("segregations");
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<ElectrodeSegregation>(
     "electrode-segregations",
     electrodeSegregationsApi,
@@ -42,7 +44,7 @@ export default function SegregationPage() {
   );
   if (!allowed) return null;
 
-  const fields: FieldDef[] = [
+  const baseFields: FieldDef[] = [
     { name: "serial_nr", label: t("segregation.serialNr"), required: true },
     {
       name: "electrode_kind",
@@ -76,6 +78,8 @@ export default function SegregationPage() {
     { name: "inspection_form_serial", label: t("segregation.inspectionFormSerial") },
     { name: "remarks", label: t("fields.remarks"), type: "textarea", span: 2 },
   ];
+
+  const fields = withCombos(baseFields, opts, ["company", "voltage_quality", "warranty", "coating_quality", "decision"]);
 
   const columns: Column<ElectrodeSegregation>[] = [
     { key: "serial_nr", header: t("segregation.serialNr") },

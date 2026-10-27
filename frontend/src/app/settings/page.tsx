@@ -50,6 +50,7 @@ import { DatabaseTab } from "@/components/domain/database-tab";
 import { TableFilesTab } from "@/components/domain/table-files-tab";
 import { DirectoryTab } from "@/components/domain/directory-tab";
 import { WorkflowSlaTab } from "@/components/domain/workflow-sla-tab";
+import { PlannerJobsTab } from "@/components/domain/planner-jobs-tab";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useTheme } from "@/lib/theme/context";
@@ -407,7 +408,7 @@ function AppearanceTab() {
 }
 
 function SettingsPageInner() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { canEdit, isAdmin } = useAuth();
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || undefined;
@@ -645,6 +646,7 @@ function SettingsPageInner() {
             ? [{ key: "import-export", label: t("importExport.title"), content: <ImportExportTab /> }]
             : []),
           ...(canEdit("settings") || isAdmin ? [{ key: "workflow-sla", label: t("wfSla.title"), content: <WorkflowSlaTab /> }] : []),
+          ...(canEdit("settings") || isAdmin ? [{ key: "planner-jobs", label: locale === "fa" ? "شغل‌های برنامه‌ریز" : "Planner jobs", content: <PlannerJobsTab /> }] : []),
           ...(canEdit("settings") ? [{ key: "backup", label: t("backup.title"), content: <BackupTab /> }] : []),
           ...(canEdit("settings")
             ? [{ key: "voltage-sync", label: t("voltageSync.title"), content: <VoltageSyncTab /> }]

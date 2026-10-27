@@ -24,20 +24,9 @@ import {
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
 import { refreshWarehouseData } from "@/lib/workflow";
+import { ActualRows, JobRows, emptyActual, emptyJob } from "./work-order-labor";
 
 const STAGES: WoStage[] = ["generation", "install", "pickup", "store", "disassemble"];
-
-function emptyLabor(stage: WoStage): WoLaborLine {
-  return {
-    stage,
-    person_code: "",
-    person_name: "",
-    skill: "",
-    work_hours: null,
-    work_qty: "",
-    description: "",
-  };
-}
 
 function flattenLabors(byStage: Record<string, WoLaborLine[]> | undefined): WoLaborLine[] {
   const out: WoLaborLine[] = [];
@@ -65,6 +54,7 @@ type FormState = {
   disassemble_date: string;
   remarks: string;
   labors: Record<WoStage, WoLaborLine[]>;
+  jobs: Record<WoStage, WoLaborLine[]>;
 };
 
 function blankForm(): FormState {
@@ -82,20 +72,31 @@ function blankForm(): FormState {
     disassemble_date: "",
     remarks: "",
     labors: {
-      generation: [emptyLabor("generation")],
-      install: [emptyLabor("install")],
-      pickup: [emptyLabor("pickup")],
-      store: [emptyLabor("store")],
-      disassemble: [emptyLabor("disassemble")],
+      generation: [emptyActual("generation")],
+      install: [emptyActual("install")],
+      pickup: [emptyActual("pickup")],
+      store: [emptyActual("store")],
+      disassemble: [emptyActual("disassemble")],
+    },
+    jobs: {
+      generation: [emptyJob("generation")],
+      install: [emptyJob("install")],
+      pickup: [emptyJob("pickup")],
+      store: [emptyJob("store")],
+      disassemble: [emptyJob("disassemble")],
     },
   };
 }
 
 function fromDetail(d: WorkOrderDetail): FormState {
   const labors = blankForm().labors;
+  const jobs = blankForm().jobs;
   for (const stage of STAGES) {
-    const rows = d.labors?.[stage] || [];
-    labors[stage] = rows.length ? rows.map((r) => ({ ...r, stage })) : [emptyLabor(stage)];
+    const all = d.labors?.[stage] || [];
+    const act = all.filter((r) => r.kind !== "job");
+    const job = all.filter((r) => r.kind === "job");
+    labors[stage] = act.length ? act.map((r) => ({ ...r, stage })) : [emptyActual(stage)];
+    jobs[stage] = job.length ? job.map((r) => ({ ...r, stage })) : [emptyJob(stage)];
   }
   return {
     report_date: d.report_date || "",
@@ -111,6 +112,7 @@ function fromDetail(d: WorkOrderDetail): FormState {
     disassemble_date: d.disassemble_date || "",
     remarks: d.remarks || "",
     labors,
+    jobs,
   };
 }
 
@@ -128,173 +130,8 @@ function toWrite(form: FormState): WorkOrderWrite {
     store_date: form.store_date || null,
     disassemble_date: form.disassemble_date || null,
     remarks: form.remarks.trim() || null,
-    labors: flattenLabors(form.labors),
+    labors: [...flattenLabors(form.jobs), ...flattenLabors(form.labors)],
   };
-}
-
-function peopleForSkill(people: WoPerson[], skill: string) {
-  return people.filter((p) => p.skill === skill);
-}
-
-function LaborRows({
-  stage,
-  rows,
-  skills,
-  people,
-  editable,
-  onChange,
-  t,
-}: {
-  stage: WoStage;
-  rows: WoLaborLine[];
-  skills: string[];
-  people: WoPerson[];
-  editable: boolean;
-  onChange: (rows: WoLaborLine[]) => void;
-  t: (k: string, vars?: Record<string, string | number>) => string;
-}) {
-  const setRow = (idx: number, patch: Partial<WoLaborLine>) => {
-    onChange(rows.map((r, i) => (i === idx ? { ...r, ...patch, stage } : r)));
-  };
-  return (
-    <div className="wo-labors">
-      <p className="wo-skill-hint">{t("wo.skillFirst")}</p>
-      {rows.map((row, idx) => {
-        const jobPicked = Boolean(row.skill);
-        const roster = peopleForSkill(people, row.skill || "");
-        const known = roster.some((p) => p.person_code === (row.person_code || ""));
-        const pickValue = !row.person_code ? "" : known ? row.person_code : "__new__";
-        const restLocked = !editable || !jobPicked;
-        return (
-          <div key={`${stage}-${idx}`} className={`wo-labor-row${jobPicked ? "" : " is-waiting-job"}`}>
-            <label>
-              <span>{t("wo.skill")}</span>
-              <select
-                className="ui-input"
-                value={row.skill || ""}
-                disabled={!editable}
-                onChange={(e) => {
-                  const skill = e.target.value;
-                  const match = people.find((p) => p.skill === skill && p.person_code === (row.person_code || ""));
-                  setRow(idx, {
-                    skill,
-                    person_name: match?.person_name || row.person_name,
-                  });
-                }}
-              >
-                <option value="">—</option>
-                {skills.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>{t("wo.pickPerson")}</span>
-              <select
-                className="ui-input"
-                value={pickValue}
-                disabled={restLocked}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (!value) {
-                    setRow(idx, { person_code: "", person_name: "" });
-                    return;
-                  }
-                  if (value === "__new__") {
-                    setRow(idx, { person_code: "", person_name: "" });
-                    return;
-                  }
-                  const match = roster.find((p) => p.person_code === value);
-                  setRow(idx, { person_code: value, person_name: match?.person_name || "" });
-                }}
-              >
-                <option value="">—</option>
-                {roster.map((p) => (
-                  <option key={`${p.skill}-${p.person_code}`} value={p.person_code}>
-                    {p.person_code}
-                    {p.person_name ? ` — ${p.person_name}` : ""}
-                  </option>
-                ))}
-                <option value="__new__">{t("wo.newPerson")}</option>
-              </select>
-            </label>
-            <label>
-              <span>{t("wo.personCode")}</span>
-              <Input
-                value={row.person_code || ""}
-                disabled={restLocked}
-                list={`wo-people-${stage}-${idx}`}
-                onChange={(e) => {
-                  const code = e.target.value;
-                  const match = roster.find((p) => p.person_code === code);
-                  setRow(idx, { person_code: code, person_name: match?.person_name || row.person_name });
-                }}
-              />
-              <datalist id={`wo-people-${stage}-${idx}`}>
-                {roster.map((p) => (
-                  <option key={`${p.skill}-${p.person_code}`} value={p.person_code}>
-                    {p.person_name || p.person_code}
-                  </option>
-                ))}
-              </datalist>
-            </label>
-            <label>
-              <span>{t("wo.personName")}</span>
-              <Input
-                value={row.person_name || ""}
-                disabled={restLocked}
-                onChange={(e) => setRow(idx, { person_name: e.target.value })}
-              />
-            </label>
-            <label>
-              <span>{t("wo.workHours")}</span>
-              <Input
-                type="number"
-                step="0.25"
-                min="0"
-                value={row.work_hours ?? ""}
-                disabled={restLocked}
-                onChange={(e) => setRow(idx, { work_hours: e.target.value === "" ? null : Number(e.target.value) })}
-              />
-            </label>
-            <label>
-              <span>{t("wo.workQty")}</span>
-              <Input
-                value={row.work_qty || ""}
-                disabled={restLocked}
-                onChange={(e) => setRow(idx, { work_qty: e.target.value })}
-              />
-            </label>
-            <label className="wo-span-2">
-              <span>{t("wo.description")}</span>
-              <Input
-                value={row.description || ""}
-                disabled={restLocked}
-                onChange={(e) => setRow(idx, { description: e.target.value })}
-              />
-            </label>
-            {editable ? (
-              <button
-                type="button"
-                className="wo-icon-btn"
-                title={t("common.delete")}
-                onClick={() => onChange(rows.length <= 1 ? [emptyLabor(stage)] : rows.filter((_, i) => i !== idx))}
-              >
-                <Trash2 size={14} />
-              </button>
-            ) : null}
-          </div>
-        );
-      })}
-      {editable ? (
-        <Button type="button" variant="ghost" size="sm" onClick={() => onChange([...rows, emptyLabor(stage)])}>
-          <Plus size={14} /> {t("wo.addLabor")}
-        </Button>
-      ) : null}
-    </div>
-  );
 }
 
 function stageDate(form: FormState, stage: WoStage) {
@@ -318,6 +155,7 @@ function StageFields({
   people,
   editable,
   t,
+  fa,
 }: {
   stage: WoStage;
   form: FormState;
@@ -326,6 +164,7 @@ function StageFields({
   people: WoPerson[];
   editable: boolean;
   t: (k: string, vars?: Record<string, string | number>) => string;
+  fa: (fa: string, en: string) => string;
 }) {
   const patch = (p: Partial<FormState>) => setForm({ ...form, ...p });
   const started = Boolean(stageDate(form, stage));
@@ -361,14 +200,22 @@ function StageFields({
           />
         </label>
       )}
-      <LaborRows
+      <JobRows
+        stage={stage}
+        rows={form.jobs[stage]}
+        skills={skills}
+        editable={editable}
+        onChange={(rows) => patch({ jobs: { ...form.jobs, [stage]: rows } })}
+        fa={fa}
+      />
+      <ActualRows
         stage={stage}
         rows={form.labors[stage]}
         skills={skills}
         people={people}
         editable={editable}
         onChange={(rows) => patch({ labors: { ...form.labors, [stage]: rows } })}
-        t={t}
+        fa={fa}
       />
     </section>
   );
@@ -397,6 +244,8 @@ function WorkOrderForm({
   t: (k: string, vars?: Record<string, string | number>) => string;
   onOpenHistory?: (id: number) => void;
 }) {
+  const { locale } = useI18n();
+  const fa = (f: string, e: string) => (locale === "fa" ? f : e);
   const patch = (p: Partial<FormState>) => setForm({ ...form, ...p });
   const [tab, setTab] = useState<WoStage>(() => latestStarted(form));
   useEffect(() => {
@@ -476,6 +325,7 @@ function WorkOrderForm({
               people={people}
               editable={editable}
               t={t}
+              fa={fa}
             />
           ),
         }))}

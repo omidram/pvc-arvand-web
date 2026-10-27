@@ -22,6 +22,16 @@ def _fresh(refresh: bool = Query(False, description="drop the short-lived cache 
 router = APIRouter(prefix="/element-dashboard", tags=["element-dashboard"], dependencies=[Depends(_fresh)])
 
 
+@router.get("/in-service-cells")
+def in_service_cells(group: str | None = None, company: str | None = None, side: str | None = None, db: Session = Depends(get_db)):
+    return svc.in_service_cells(db, group, company, side)
+
+
+@router.get("/in-service-breakdown")
+def in_service_breakdown(db: Session = Depends(get_db)):
+    return svc.in_service_breakdown(db)
+
+
 @router.get("/overview")
 def get_overview(db: Session = Depends(get_db)):
     return svc.overview(db)
@@ -273,6 +283,20 @@ def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict
 
 
 # ---------------------------------------------------------------- element workflow (flowchart)
+
+
+@router.get("/activity")
+def activity(grain: str = "month", db: Session = Depends(get_db)):
+    if grain not in ("day", "week", "month", "year"):
+        raise HTTPException(400, "grain must be day, week, month or year")
+    return svc.activity_series(db, grain)
+
+
+@router.get("/activity/why")
+def activity_why(grain: str, key: str, db: Session = Depends(get_db)):
+    if grain not in ("day", "week", "month", "year"):
+        raise HTTPException(400, "grain must be day, week, month or year")
+    return svc.activity_why(db, grain, key)
 
 
 @router.get("/flow")

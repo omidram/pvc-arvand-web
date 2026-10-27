@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { ElementStage } from "@/lib/types";
 import type { LifePick } from "@/components/domain/assembly-lifecycle";
 import { cn, formatNumber } from "@/lib/utils";
+import { InServiceBreakdown } from "@/components/domain/in-service-breakdown";
 
 type T = (path: string) => string;
 
@@ -138,6 +139,8 @@ export function ElementWorkflowChart({
           </div>
         </div>
       </div>
+
+      <InServiceBreakdown />
 
       {pieces ? (
         <div className="ewc-track">

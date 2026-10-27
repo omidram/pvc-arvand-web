@@ -45,7 +45,14 @@ CATALOG: dict[str, tuple[Any, list[str]]] = {
             "cathode_electrode",
             "cathode_shell",
             "membrane_info",
+            "membrane_remark",  # membrane use: نو / reused
+            "remarks",  # current status of the element
         ],
+    ),
+    # TAFKIK segregation sheet: quality grades and decisions repeat from row to row.
+    "segregations": (
+        models.ElectrodeSegregation,
+        ["company", "voltage_quality", "warranty", "coating_quality", "decision"],
     ),
     # Group Definition: its combos offer what the cell elements / anodes / cathodes / membranes already carry
     # (the plant's Excel lists were imported into those), plus anything added in Settings → Field lists.
@@ -53,7 +60,20 @@ CATALOG: dict[str, tuple[Any, list[str]]] = {
 }
 
 # (table, field) -> further (model, column) pairs whose values are offered too and renamed together.
+_COATERS = [(models.Element, "anode_coating"), (models.Element, "cathode_coating"), (models.Anode, "coating"), (models.Cathode, "coating")]
+
+
+def _others(model: Any, column: str) -> list[tuple[Any, str]]:
+    return [pair for pair in _COATERS if pair != (model, column)]
+
+
 EXTRA_SOURCES: dict[tuple[str, str], list[tuple[Any, str]]] = {
+    # One shared pool of coating companies for every table that names one (rename = rename everywhere).
+    ("elements", "anode_coating"): _others(models.Element, "anode_coating"),
+    ("elements", "cathode_coating"): _others(models.Element, "cathode_coating"),
+    ("anodes", "coating"): _others(models.Anode, "coating"),
+    ("cathodes", "coating"): _others(models.Cathode, "coating"),
+    ("segregations", "company"): list(_COATERS),
     ("group_definitions", "anode_coating"): [(models.Element, "anode_coating"), (models.Anode, "coating")],
     ("group_definitions", "cathode_coating"): [(models.Element, "cathode_coating"), (models.Cathode, "coating")],
     ("group_definitions", "membrane_type"): [(models.Element, "membrane_type"), (models.Membrane, "membrane_type")],
@@ -63,7 +83,41 @@ EXTRA_SOURCES: dict[tuple[str, str], list[tuple[Any, str]]] = {
 # Values every installation starts with (shown even before any record uses them).
 BUILT_IN: dict[tuple[str, str], list[str]] = {
     ("elements", "generation"): ["3", "4", "5", "5+", "6", "6+", "Blue Star"],
+    ("elements", "membrane_remark"): ["نو", "reused"],
+    ("elements", "anode_shell"): ["دنوار(ایتالیا)", "بلو استار (چین)", "دنورا"],
+    ("elements", "cathode_shell"): ["دنوار(ایتالیا)", "بلو استار (چین)", "دنورا"],
 }
+
+SEED_VERSION = "2"
+
+
+def seed_field_options(db: Session) -> int:
+    """Write the built-in lists into ``field_options`` once, so the rules live in the database.
+
+    After this the plant edits them in Settings -> Field lists like any other value. A marker row
+    (table ``_meta``) stops a deleted value from coming back on the next start.
+    """
+    marker = db.query(models.FieldOption).filter_by(table_name="_meta", field_name="seed").first()
+    if marker and marker.value == SEED_VERSION:
+        return 0
+    added = 0
+    have = {(o.table_name, o.field_name, _key(o.value)) for o in db.query(models.FieldOption).all()}
+    previous = int(marker.value) if marker and marker.value.isdigit() else 0
+    for (table, field), values in BUILT_IN.items():
+        # version 1 already seeded the generation list; only add what is new
+        if previous >= 1 and (table, field) == ("elements", "generation"):
+            continue
+        for value in values:
+            if (table, field, _key(value)) in have:
+                continue
+            db.add(models.FieldOption(table_name=table, field_name=field, value=value))
+            added += 1
+    if marker:
+        marker.value = SEED_VERSION
+    else:
+        db.add(models.FieldOption(table_name="_meta", field_name="seed", value=SEED_VERSION))
+    db.commit()
+    return added
 
 
 def _natural(value: str):

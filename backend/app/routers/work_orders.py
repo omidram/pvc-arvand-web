@@ -15,6 +15,7 @@ from ..database import get_db
 from ..warehouse import compact_nr
 from ..workflow_models import (
     WO_SKILLS,
+    WfSettings,
     WO_STAGES,
     WfEvent,
     WfNotification,
@@ -68,6 +69,12 @@ def _level(db: Session, user: models.User) -> str:
     if any(LEVEL_RANK.get(perms.get(k, "none"), 0) >= LEVEL_RANK["view"] for k in ("wf_c90", "wf_cellshop", "elements")):
         return "view"
     return "none"
+
+
+def _skills(db: Session) -> list[str]:
+    row = db.get(WfSettings, 1)
+    saved = [str(x).strip() for x in (row.planner_skills or [])] if row else []
+    return [x for x in saved if x] or list(WO_SKILLS)
 
 
 def _require_view(db: Session, user: models.User) -> None:
@@ -132,6 +139,8 @@ def _labor_out(row: WfWorkOrderLabor) -> dict:
         "work_hours": row.work_hours,
         "work_qty": row.work_qty,
         "description": row.description,
+        "kind": row.kind or "actual",
+        "data": row.data or {},
     }
 
 
@@ -139,7 +148,7 @@ def _wo_out(db: Session, wo: WfWorkOrder) -> dict:
     labors = (
         db.query(WfWorkOrderLabor)
         .filter(WfWorkOrderLabor.work_order_id == wo.id)
-        .order_by(WfWorkOrderLabor.stage, WfWorkOrderLabor.line_no, WfWorkOrderLabor.id)
+        .order_by(WfWorkOrderLabor.stage, WfWorkOrderLabor.kind, WfWorkOrderLabor.line_no, WfWorkOrderLabor.id)
         .all()
     )
     by_stage: dict[str, list[dict]] = {s: [] for s in WO_STAGES}
@@ -170,7 +179,7 @@ def _wo_out(db: Session, wo: WfWorkOrder) -> dict:
         "updated_at": _iso(wo.updated_at),
         "completed_at": _iso(wo.completed_at),
         "labors": by_stage,
-        "skills": list(WO_SKILLS),
+        "skills": _skills(db),
         "stages": list(WO_STAGES),
         "processes": _process_dates(wo),
         "element_history": [
@@ -417,6 +426,8 @@ class LaborIn(BaseModel):
     work_hours: float | None = None
     work_qty: str | None = None
     description: str | None = None
+    kind: str | None = "actual"
+    data: dict | None = None
 
 
 class WorkOrderIn(BaseModel):
@@ -500,7 +511,7 @@ def _upsert_people(db: Session, labors: list[LaborIn]) -> None:
 
 def _replace_labors(db: Session, wo: WfWorkOrder, labors: list[LaborIn]) -> None:
     db.query(WfWorkOrderLabor).filter(WfWorkOrderLabor.work_order_id == wo.id).delete()
-    counters: dict[str, int] = {}
+    counters: dict[tuple[str, str], int] = {}
     for item in labors:
         stage = (item.stage or "").strip()
         if stage not in WO_STAGES:
@@ -513,16 +524,20 @@ def _replace_labors(db: Session, wo: WfWorkOrder, labors: list[LaborIn]) -> None
                 item.work_hours is not None,
                 (item.work_qty or "").strip(),
                 (item.description or "").strip(),
+                any(v not in (None, "", 0) for v in (item.data or {}).values()),
             ]
         )
         if blank:
             continue
-        counters[stage] = counters.get(stage, 0) + 1
+        kind = "job" if item.kind == "job" else "actual"
+        counters[(stage, kind)] = counters.get((stage, kind), 0) + 1
         db.add(
             WfWorkOrderLabor(
                 work_order_id=wo.id,
                 stage=stage,
-                line_no=counters[stage],
+                line_no=counters[(stage, kind)],
+                kind=kind,
+                data=item.data or None,
                 person_code=(item.person_code or "").strip() or None,
                 person_name=(item.person_name or "").strip() or None,
                 skill=(item.skill or "").strip() or None,
@@ -531,7 +546,36 @@ def _replace_labors(db: Session, wo: WfWorkOrder, labors: list[LaborIn]) -> None
                 description=(item.description or "").strip() or None,
             )
         )
-    _upsert_people(db, labors)
+    _upsert_people(db, [i for i in labors if i.kind != "job"])
+
+
+class SkillsIn(BaseModel):
+    skills: list[str]
+
+
+@router.get("/skills")
+def get_skills(db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    return {"skills": _skills(db), "defaults": list(WO_SKILLS)}
+
+
+@router.put("/skills")
+def put_skills(body: SkillsIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    if user.role != "admin" and user_permission_map(db, user).get("settings") != "edit":
+        raise HTTPException(403, "Only administrators can change the planner jobs")
+    clean: list[str] = []
+    for item in body.skills:
+        name = " ".join(str(item).split())[:80]
+        if name and name not in clean:
+            clean.append(name)
+    if not clean:
+        raise HTTPException(400, "Keep at least one job")
+    row = db.get(WfSettings, 1)
+    if row is None:
+        row = WfSettings(id=1, sla_hours={}, warn_percent=25)
+        db.add(row)
+    row.planner_skills = clean
+    db.commit()
+    return {"skills": clean, "defaults": list(WO_SKILLS)}
 
 
 @router.get("/meta")
@@ -539,7 +583,7 @@ def meta(db: Session = Depends(get_db), user: models.User = Depends(get_current_
     _require_view(db, user)
     return {
         "stages": list(WO_STAGES),
-        "skills": list(WO_SKILLS),
+        "skills": _skills(db),
         "people": _people_catalog(db),
         "can_edit": _level(db, user) == "edit" or user.role == "admin",
     }
@@ -680,3 +724,4 @@ def cancel_work_order(
     _event(db, wo, "cancel", user, prev, body.note)
     db.commit()
     return _wo_out(db, wo)
+

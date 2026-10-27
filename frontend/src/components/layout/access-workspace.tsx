@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AccessFields, accessPayload, valuesFromRecord, toAccessValue } from "@/components/ui/access-fields";
+import { AccessFields, MultiReason, accessPayload, valuesFromRecord, toAccessValue } from "@/components/ui/access-fields";
 import type { FieldDef } from "@/components/ui/resource-form";
 import type { Column } from "@/components/ui/data-table";
 import { DatasheetPane } from "@/components/ui/datasheet-pane";
@@ -72,6 +72,13 @@ function SheetEdit({
           className="sheet-cell-input"
           onChange={(event) => onChange(field.name, event.target.value)}
         />
+      </span>
+    );
+  }
+  if (field.type === "multi") {
+    return (
+      <span className="sheet-date" onClick={stop} onDoubleClick={stop} onMouseDown={stop}>
+        <MultiReason options={field.options || []} value={String(value ?? "")} onChange={(next) => onChange(field.name, next)} />
       </span>
     );
   }

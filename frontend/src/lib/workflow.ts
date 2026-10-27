@@ -7,7 +7,7 @@ export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "oper
 export type WfKind = "anode" | "cathode";
 
 export const COATING_STEPS = ["c90_select", "code_generate", "await_company", "await_indent", "await_dispatch", "await_return", "await_inspection", "await_approval", "completed"] as const;
-export const PURCHASE_STEPS = ["purchase_request", "await_indent", "await_order", "await_registration", "completed"] as const;
+export const PURCHASE_STEPS = ["await_tech", "await_indent", "await_order", "await_confirm", "await_confirm_insp", "await_registration", "completed"] as const;
 export const CELL_STEPS = ["await_shutdown", "await_shop", "in_shop", "completed"] as const;
 export const NUMBERING_STEPS = ["await_numbering", "completed"] as const;
 
@@ -26,7 +26,7 @@ export const ASSEMBLE_STEPS = ["await_assembly", "await_air", "await_insp_sign",
 const VIRTUAL_STEPS = new Set(["c90_select", "code_generate", "purchase_request"]);
 export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
   coating: COATING_STEPS.filter((s) => s !== "completed" && !VIRTUAL_STEPS.has(s)),
-  purchase: PURCHASE_STEPS.filter((s) => s !== "completed" && !VIRTUAL_STEPS.has(s)),
+  purchase: PURCHASE_STEPS.filter((s) => s !== "completed" && s !== "await_tech" && !VIRTUAL_STEPS.has(s)),
   cell: [...CELL_STEPS.filter((s) => s !== "completed"), "await_disassembly", "await_reinstall", "await_numbering"],
   inspection: INSPECTION_STEPS.filter((s) => s !== "completed"),
   assemble: ASSEMBLE_STEPS.filter((s) => s !== "completed"),
@@ -148,6 +148,7 @@ export interface WfDetail extends WfSummary {
   delay_party: string | null;
   delay_reason: string | null;
   remarks: string | null;
+  decisions?: { inspection?: { name?: string; at?: string }; process?: { name?: string; at?: string } };
   completed_at: string | null;
   inspections_done?: number;
   inspections_total?: number;
@@ -168,6 +169,24 @@ export interface WfNotice {
   from_name: string | null;
   created_at: string | null;
   read: boolean;
+}
+
+export interface ProcessLogRow {
+  flow: WfFlow;
+  id: number;
+  code: string;
+  status: string;
+  element_nr?: string | null;
+  summary?: string | null;
+  actor?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  codes?: string[];
+}
+
+export interface ProcessLogDetail extends ProcessLogRow {
+  events: { id: number; action: string; from_status: string | null; to_status: string | null; actor: string | null; note: string | null; created_at: string | null }[];
+  work: Record<string, string | number | null | undefined>[];
 }
 
 export interface WfHistoryRow {
@@ -519,6 +538,10 @@ export const workflowApi = {
   downloadDispatchPack: (id: number, name: string) => saveBlob(`/workflow/coating/${id}/dispatch-pack`, `${name}-pack.zip`),
   history: async (params: Record<string, string>): Promise<{ rows: WfHistoryRow[]; totals: Record<string, number> }> =>
     (await apiClient.get("/workflow/history", { params })).data,
+  processLog: async (params: { q?: string; flow?: string } = {}): Promise<ProcessLogRow[]> =>
+    (await apiClient.get("/workflow/process-log", { params })).data,
+  processLogDetail: async (flow: string, id: number): Promise<ProcessLogDetail> =>
+    (await apiClient.get(`/workflow/process-log/${flow}/${id}`)).data,
   companyReport: async (params: { date_from?: string; date_to?: string } = {}): Promise<WfCompanyStats[]> =>
     (await apiClient.get("/workflow/reports/companies", { params })).data,
   cellList: async (params: { open_only?: boolean; element_nr?: string; status?: string } = {}): Promise<CellRequest[]> =>

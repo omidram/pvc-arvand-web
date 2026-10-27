@@ -9,6 +9,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { DateInput } from "@/components/ui/date-input";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { PositionCombo } from "@/components/ui/position-combo";
+import { MultiReason } from "@/components/ui/access-fields";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/context";
@@ -98,19 +99,18 @@ export function CellRequestForm({ elementNr, onSent }: { elementNr: string; onSe
       onSent?.(res);
     },
   });
-  const listId = `cell-reasons-${elementNr}`;
   return (
     <div className="cr-form">
       <p className="mon-sub">{t("cellReq.newHint")}</p>
       <div className="cr-grid">
-        <label className="ed-filters">
+        <label className="ed-filters cr-wide">
           <span className="text-xs font-bold">{t("cellReq.reason")} *</span>
-          <input list={listId} value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("cellReq.reasonHint")} maxLength={200} />
-          <datalist id={listId}>
-            {(reasons.data ?? []).slice(0, 80).map((v) => (
-              <option key={v} value={v} />
-            ))}
-          </datalist>
+          <MultiReason
+            options={(reasons.data ?? []).slice(0, 80)}
+            value={reason}
+            placeholder={t("cellReq.reasonHint")}
+            onChange={setReason}
+          />
         </label>
         <label className="ed-filters cr-check">
           <input type="checkbox" checked={urgent} onChange={(e) => setUrgent(e.target.checked)} />

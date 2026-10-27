@@ -178,7 +178,8 @@ export function AssemblyDataForm() {
     {
       name: "decommission_reason",
       label: t("fields.decommissionReason"),
-      type: "combo",
+      type: "multi",
+      placeholder: t("fields.decommissionReason"),
       options: reasonOptions,
     },
     { name: "ispb", label: t("fields.ispb") },
@@ -205,6 +206,8 @@ export function AssemblyDataForm() {
       "cathode_electrode",
       "cathode_shell",
       "membrane_info",
+      "membrane_remark",
+      "remarks",
     ]),
     ELEMENT_REQUIRED
   );

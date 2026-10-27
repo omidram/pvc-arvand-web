@@ -1077,3 +1077,4 @@ class ElectrodeSegregationRead(ElectrodeSegregationBase):
     flow_outcome: str | None = None  # reusable | coating_problem | mechanical_problem | rate_off | undecided
     flow_destination: str | None = None  # assembly | vendor | warehouse | rate_off | decision
     flow_vendor: str | None = None
+    warranty_alert: str | None = None

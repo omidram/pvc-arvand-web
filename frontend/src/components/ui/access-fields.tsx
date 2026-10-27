@@ -42,6 +42,61 @@ export function valuesFromRecord(fields: FieldDef[], record?: object | null): Re
   return initial;
 }
 
+function reasonBits(value: string): string[] {
+  return value
+    .split(",")
+    .map((bit) => bit.trim())
+    .filter(Boolean);
+}
+
+/** Combo that keeps several choices in one comma-separated value. */
+export function MultiReason({
+  options,
+  value,
+  onChange,
+  disabled,
+  placeholder,
+}: {
+  options: Array<string | { label: string; value: string }>;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+}) {
+  const bits = reasonBits(value || "");
+  const list = options.map((opt) => (typeof opt === "string" ? { label: opt, value: opt } : opt));
+  const write = (next: string[]) => onChange(next.join(", "));
+  const add = (raw: string) => {
+    const bit = raw.trim();
+    if (!bit || bits.includes(bit)) return;
+    write([...bits, bit]);
+  };
+  return (
+    <div className="multi-reason">
+      {bits.length ? (
+        <div className="multi-reason-picks">
+          {bits.map((bit) => (
+            <button key={bit} type="button" disabled={disabled} onClick={() => write(bits.filter((item) => item !== bit))}>
+              {bit}
+              <span aria-hidden>×</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <select className="ui-input" value="" disabled={disabled} onChange={(e) => add(e.target.value)}>
+        <option value="">{placeholder || "—"}</option>
+        {list
+          .filter((opt) => opt.value && !bits.includes(opt.value))
+          .map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+      </select>
+    </div>
+  );
+}
+
 export function AccessFields({
   fields,
   values,
@@ -142,6 +197,17 @@ export function AccessFields({
                       scheduleCommit(f.name, value);
                     }}
                     onBlur={(value) => flushCommit(f.name, value)}
+                  />
+                ) : f.type === "multi" ? (
+                  <MultiReason
+                    options={f.options || []}
+                    value={String(values[f.name] ?? "")}
+                    disabled={locked}
+                    placeholder={f.placeholder}
+                    onChange={(value) => {
+                      onChange(f.name, value);
+                      scheduleCommit(f.name, value);
+                    }}
                   />
                 ) : f.type === "combo" ? (
                   <>

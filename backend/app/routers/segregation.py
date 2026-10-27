@@ -403,8 +403,12 @@ def create_segregation(payload: schemas.ElectrodeSegregationBase, db: Session = 
     obj = models.ElectrodeSegregation(**_row_kwargs(fields))
     _link_master(db, obj)
     db.add(obj)
+    from ..electrode_lifecycle import warn_failed_under_warranty
+
+    alert = warn_failed_under_warranty(db, obj)
     db.commit()
     db.refresh(obj)
+    obj.warranty_alert = alert
     return obj
 
 
@@ -416,8 +420,12 @@ def update_segregation(item_id: int, payload: schemas.ElectrodeSegregationBase, 
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
     _link_master(db, obj)
+    from ..electrode_lifecycle import warn_failed_under_warranty
+
+    alert = warn_failed_under_warranty(db, obj)
     db.commit()
     db.refresh(obj)
+    obj.warranty_alert = alert
     return obj
 
 

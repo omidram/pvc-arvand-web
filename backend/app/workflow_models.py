@@ -12,15 +12,15 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
 
-# Cell-shop labor tracking (C-90 / برنامه‌ریز). Stage keys match the work-order form.
+# Cell-shop labor tracking (C-90 / ??????????). Stage keys match the work-order form.
 WO_STAGES = ("generation", "install", "pickup", "store", "disassemble")
 WO_SKILLS = (
-    "مونتاژ المان",
-    "دیس‌اسمبل المان",
-    "جابجایی به کارگاه",
-    "انبارش در کارگاه",
-    "نصب در سل‌روم",
-    "آماده‌سازی قطعه",
+    "مکانیک سل شاپ",
+    "مدیریت، برنامه‌ریزی، پشتیبانی، سرپرستی",
+    "جوشکار",
+    "برقکار",
+    "ابزار دقیق",
+    "ایمنی و محیط زیست",
     "سایر",
 )
 
@@ -104,6 +104,8 @@ class WfPurchase(Base):
     warranty_start: Mapped[date | None] = mapped_column(Date)
     remarks: Mapped[str | None] = mapped_column(Text)
     last_note: Mapped[str | None] = mapped_column(Text)
+    # {inspection|process: {name, at}} — both must confirm before C-90 registers the pieces.
+    decisions: Mapped[dict | None] = mapped_column(JSON)
     created_by_id: Mapped[int | None] = mapped_column(Integer)
     created_by_name: Mapped[str | None] = mapped_column(String(150))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
@@ -138,7 +140,7 @@ class WfCellRequest(Base):
     element_id: Mapped[int | None] = mapped_column(Integer, index=True)  # Assembly Data row of the life being ended
     electrolyzer: Mapped[str | None] = mapped_column(String(50))
     position: Mapped[str | None] = mapped_column(String(20))
-    reason: Mapped[str] = mapped_column(String(200))
+    reason: Mapped[str] = mapped_column(String(800))
     urgent: Mapped[bool] = mapped_column(default=False)
     problem: Mapped[str | None] = mapped_column(Text)
     planned_date: Mapped[date | None] = mapped_column(Date)
@@ -170,7 +172,7 @@ class WfInspectionRequest(Base):
     cathode_nr: Mapped[str | None] = mapped_column(String(50), index=True)
     membrane_nr: Mapped[str | None] = mapped_column(String(50))
     disassembly_date: Mapped[date | None] = mapped_column(Date)
-    reason: Mapped[str | None] = mapped_column(String(200))
+    reason: Mapped[str | None] = mapped_column(String(800))
     report_id: Mapped[int | None] = mapped_column(Integer, index=True)  # inspection_reports.id once filled
     # {inspection|process: {anode|cathode: {healthy, result}}} — the step ends when both sides have both pieces
     decisions: Mapped[dict | None] = mapped_column(JSON)
@@ -218,6 +220,7 @@ class WfSettings(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     sla_hours: Mapped[dict] = mapped_column(JSON, default=dict)
     warn_percent: Mapped[int] = mapped_column(Integer, default=25)
+    planner_skills: Mapped[list | None] = mapped_column(JSON)  # jobs offered in the planner's Job combo
     updated_by: Mapped[str | None] = mapped_column(String(150))
     updated_at: Mapped[datetime | None] = mapped_column(DateTime)
 
@@ -316,6 +319,9 @@ class WfWorkOrderLabor(Base):
     work_hours: Mapped[float | None] = mapped_column(Float)
     work_qty: Mapped[str | None] = mapped_column(String(40))
     description: Mapped[str | None] = mapped_column(Text)
+    # "job" = required jobs / man-hours tab, "actual" = who really worked (Parseh-style)
+    kind: Mapped[str | None] = mapped_column(String(10), default="actual")
+    data: Mapped[dict | None] = mapped_column(JSON)
 
 
 class WfPlannerPerson(Base):

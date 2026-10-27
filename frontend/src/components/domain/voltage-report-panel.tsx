@@ -35,7 +35,9 @@ function trainLine(live: DashboardVoltageStats, train: TrainId) {
   return {
     train,
     online,
-    cells: present.reduce((sum, row) => sum + (row.cell_count || 0), 0),
+    total: names.size,
+    ka: present.reduce((sum, row) => sum + (row.online !== false ? row.current_ka || 0 : 0), 0),
+    kwh: present.reduce((sum, row) => sum + (row.energy_kwh_24h || 0), 0),
     danger: present.reduce((sum, row) => sum + (row.danger_count || 0), 0),
     warning: present.reduce((sum, row) => sum + (row.warning_count || 0), 0),
   };
@@ -159,9 +161,11 @@ export function VoltageReportPanel({
               <div key={train} className="dash-train-line">
                 <span className="dash-train-name">{t(train === "1" ? "monitoring.train1" : "monitoring.train2")}</span>
                 <span className="dash-train-sum">
-                  {t("monitoring.trainSummary", {
+                  {t("monitoring.trainPower", {
                     online: line.online,
-                    cells: formatNumber(line.cells, 0),
+                    total: line.total,
+                    ka: formatNumber(line.ka, 1),
+                    kwh: formatNumber(line.kwh, 0),
                     danger: formatNumber(line.danger, 0),
                     warning: formatNumber(line.warning, 0),
                   })}

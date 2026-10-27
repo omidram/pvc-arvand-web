@@ -485,7 +485,27 @@ export const electrodeSegregationsApi = {
 };
 
 // ---------------------------------------------------------------- Search
+export interface GlobalSearchGroup {
+  key: string;
+  fa: string;
+  en: string;
+  total: number;
+  rows: {
+    id: string | number | null;
+    title: string;
+    href: string;
+    info: Record<string, string>;
+    matches: { field: string; value: string }[];
+  }[];
+}
+export interface GlobalSearchResult {
+  q: string;
+  total: number;
+  groups: GlobalSearchGroup[];
+}
+
 export const searchApi = {
+  global: async (q: string): Promise<GlobalSearchResult> => (await apiClient.get("/search/global", { params: { q } })).data,
   all: async (q: string): Promise<T.SearchResults> => (await apiClient.get("/search", { params: { q } })).data,
   byDate: async (field: string, date: string): Promise<Record<string, unknown>[]> =>
     (await apiClient.get("/search/by-date", { params: { field, date } })).data,
@@ -1842,6 +1862,13 @@ export const fieldOptionsApi = {
 };
 
 export const elementDashboardApi = {
+  inServiceCells: async (params: { group?: string; company?: string; side?: string }): Promise<Record<string, string | number | null>[]> =>
+    (await apiClient.get("/element-dashboard/in-service-cells", { params })).data,
+  inServiceBreakdown: async (): Promise<{
+    total: number;
+    by_group: { group: string; cells: number; anode_coating: string | null; cathode_coating: string | null; membrane_type: string | null; gap_mm: string | null }[];
+    by_company: { company: string; anode: number; cathode: number; total: number }[];
+  }> => (await apiClient.get("/element-dashboard/in-service-breakdown")).data,
   overview: async (refresh = false): Promise<T.ElementDashOverview> =>
     (await apiClient.get("/element-dashboard/overview", { params: refresh ? { refresh: true } : undefined })).data,
   partsNow: async (params: { anode_nr?: string | null; cathode_nr?: string | null; membrane_nr?: string | null; element_id?: number | null }): Promise<{
@@ -1898,9 +1925,16 @@ export const elementDashboardApi = {
     (await apiClient.get("/element-dashboard/relations", { params: refresh ? { refresh: true } : undefined })).data,
   repair: async (payload: { mode: "all" | "links" | "fill"; only?: string[] }): Promise<T.AuditRepairResult> =>
     (await apiClient.post("/element-dashboard/relations/repair", payload)).data,
+  activity: async (grain: "day" | "week" | "month" | "year"): Promise<{ key: string; assembled: number; commissioned: number; decommissioned: number; disassembled: number }[]> =>
+    (await apiClient.get("/element-dashboard/activity", { params: { grain } })).data,
+  activityWhy: async (
+    grain: "day" | "week" | "month" | "year",
+    key: string
+  ): Promise<{ date: string; kind: string; element_nr: string; reason: string | null }[]> =>
+    (await apiClient.get("/element-dashboard/activity/why", { params: { grain, key } })).data,
 };
 
-// ---------------------------------------------------------------- Cell-shop work orders (کارکرد / برنامه‌ریز)
+// ---------------------------------------------------------------- Cell-shop work orders (?????? / ??????????)
 
 export type WoStage = "generation" | "install" | "pickup" | "store" | "disassemble";
 
@@ -1914,6 +1948,8 @@ export interface WoLaborLine {
   work_qty?: string | null;
   description?: string | null;
   line_no?: number;
+  kind?: "job" | "actual";
+  data?: Record<string, string | number | null | undefined>;
 }
 
 export interface WoPerson {
@@ -1987,6 +2023,9 @@ export type WorkOrderWrite = {
 };
 
 export const workOrdersApi = {
+  skills: async (): Promise<{ skills: string[]; defaults: string[] }> => (await apiClient.get("/work-orders/skills")).data,
+  saveSkills: async (skills: string[]): Promise<{ skills: string[]; defaults: string[] }> =>
+    (await apiClient.put("/work-orders/skills", { skills })).data,
   meta: async (): Promise<{ stages: string[]; skills: string[]; people: WoPerson[]; can_edit: boolean }> =>
     (await apiClient.get("/work-orders/meta")).data,
   list: async (params?: { q?: string; status?: string; element_nr?: string; limit?: number }): Promise<WorkOrderSummary[]> =>

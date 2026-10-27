@@ -193,6 +193,12 @@ export function MainMenu() {
             <MenuButton href="/logs" label={t("nav.logs")} allowed={isAdmin} className="col-start-7 row-start-5" />
             <MenuButton href="/activity" label={t("nav.activity")} allowed={canView("activity")} className="col-start-5 row-start-2" />
             <MenuButton
+              href="/process-history"
+              label={t("nav.processLog")}
+              allowed={CARTABLE_VIEW_KEYS.some((k) => canView(k))}
+              className="col-start-5 row-start-4"
+            />
+            <MenuButton
               href="/tickets"
               label={unreadTickets > 0 ? `${t("nav.tickets")} (${unreadTickets})` : t("nav.tickets")}
               allowed

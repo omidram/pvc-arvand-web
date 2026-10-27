@@ -34,6 +34,7 @@ import {
   ScrollText,
   ListChecks,
   Inbox,
+  History,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -81,6 +82,7 @@ const NAV_GROUPS: {
       { href: "/cathodes", labelKey: "nav.cathodes", icon: CircleDot, formKey: "cathodes" },
       { href: "/membranes", labelKey: "nav.membranes", icon: Layers, formKey: "membranes" },
       { href: "/cartable", labelKey: "nav.cartable", icon: Inbox, formKey: "storage" },
+      { href: "/process-history", labelKey: "nav.processLog", icon: History, formKey: "storage" },
       { href: "/storage", labelKey: "nav.storage", icon: Warehouse, formKey: "storage" },
     ],
   },
@@ -215,7 +217,7 @@ export function ModernSidebar({ open = false, onNavigate }: { open?: boolean; on
             if (item.href === "/inspections") return canSeeInspections(canView);
             if (item.href === "/segregation") return canSeeSegregation(canView);
             if (item.href === "/storage") return WAREHOUSE_VIEW_KEYS.some((k) => canView(k));
-            if (item.href === "/cartable") return CARTABLE_VIEW_KEYS.some((k) => canView(k));
+            if (item.href === "/cartable" || item.href === "/process-history") return CARTABLE_VIEW_KEYS.some((k) => canView(k));
             return canView(item.formKey);
           });
           if (visibleItems.length === 0) return null;

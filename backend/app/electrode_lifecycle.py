@@ -5,6 +5,8 @@ operators used to type by hand (dispatch, return, warranty, inspection).
 """
 from __future__ import annotations
 
+import calendar
+import re
 from datetime import date, datetime
 from typing import Any
 
@@ -325,3 +327,91 @@ def write_tafkik_warranty(
     name = (company or "").strip()[:100]
     if name and not (row.company or "").strip():
         row.company = name
+
+
+def _add_months(day: date, months: int) -> date:
+    month_index = day.month - 1 + months
+    year = day.year + month_index // 12
+    month = month_index % 12 + 1
+    last = calendar.monthrange(year, month)[1]
+    return date(year, month, min(day.day, last))
+
+
+def _as_day(value: date | datetime | None) -> date | None:
+    if value is None:
+        return None
+    return value.date() if isinstance(value, datetime) else value
+
+
+def _end_from_text(text: str | None) -> date | None:
+    raw = (text or "").strip()
+    found = re.search(r"(\d{4}-\d{2}-\d{2})", raw)
+    if not found:
+        return None
+    start = date.fromisoformat(found.group(1))
+    months = re.search(r"(\d+)\s*m", raw, re.I)
+    if not months:
+        return None
+    return _add_months(start, int(months.group(1)))
+
+
+def warranty_end(db: Session, kind: str | None, serial: str, warranty_text: str | None = None) -> date | None:
+    """Latest warranty end: recoating start + months, or the date stored on TAFKIK."""
+    ends: list[date] = []
+    parsed = _end_from_text(warranty_text)
+    if parsed:
+        ends.append(parsed)
+    serial = (serial or "").strip()
+    if serial and kind in ("anode", "cathode"):
+        model = models.AnodeRecoating if kind == "anode" else models.CathodeRecoating
+        key = model.anode_nr if kind == "anode" else model.cathode_nr
+        match = compact_eq(key, serial)
+        query = db.query(model)
+        if match is not None:
+            query = query.filter(match)
+        for row in query.order_by(model.id.desc()).limit(6):
+            start = _as_day(row.warranty_start)
+            if start and row.warranty_months:
+                ends.append(_add_months(start, int(row.warranty_months)))
+                break
+    return max(ends) if ends else None
+
+
+def warn_failed_under_warranty(db: Session, row: models.ElectrodeSegregation) -> str | None:
+    """Open a monitoring alert when a failed electrode is still inside its warranty."""
+    from .segregation_flow import classify_row
+
+    info = classify_row(row)
+    if info.get("outcome") not in ("coating_problem", "mechanical_problem", "rate_off"):
+        return None
+    serial = (row.serial_nr or "").strip()
+    if not serial:
+        return None
+    kind = (row.electrode_kind or "").strip() or None
+    end = warranty_end(db, kind, serial, row.warranty)
+    if end is None or end < date.today():
+        return None
+    until = end.isoformat()
+    message = f"{serial} failed while still under warranty (until {until}). قطعه خراب شده و گارانتی‌اش هنوز تمام نشده است."
+    fingerprint = f"warranty-fail:{compact_nr(serial)}"
+    open_row = (
+        db.query(models.AlertEvent)
+        .filter(models.AlertEvent.fingerprint == fingerprint, models.AlertEvent.status == "open")
+        .first()
+    )
+    if open_row is None:
+        db.add(
+            models.AlertEvent(
+                fingerprint=fingerprint[:200],
+                severity="warning",
+                category=kind if kind in ("anode", "cathode") else "element",
+                metric="warranty_failure",
+                title=f"Warranty failure {serial}"[:200],
+                message=message[:500],
+                component_ref=serial[:50],
+                status="open",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            )
+        )
+    return message

@@ -17,10 +17,21 @@ const TABLE_LABEL: Record<string, string> = {
   membranes: "menus.membraneDetails",
   elements: "menus.assemblyData",
   group_definitions: "menus.groupDefinition",
+  segregations: "segregation.title",
+};
+
+/** Fields whose label lives outside the shared `fields.*` group. */
+const FIELD_LABEL: Record<string, string> = {
+  company: "segregation.company",
+  voltage_quality: "segregation.voltageQuality",
+  warranty: "segregation.warranty",
+  coating_quality: "segregation.coatingQuality",
+  decision: "segregation.decision",
 };
 
 /** Same naming as the form labels: assembly_group -> fields.assemblyGroup */
-function fieldKey(field: string): string {
+function fieldKey(field: string, table?: string): string {
+  if (table === "segregations" && FIELD_LABEL[field]) return FIELD_LABEL[field];
   return "fields." + field.replace(/_([a-z])/g, (_, c: string) => c.toUpperCase());
 }
 
@@ -163,7 +174,7 @@ export function FieldListsTab() {
           >
             {fields.map((f) => (
               <option key={f} value={f}>
-                {t(fieldKey(f))}
+                {t(fieldKey(f, table))}
               </option>
             ))}
           </Select>

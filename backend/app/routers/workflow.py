@@ -66,6 +66,7 @@ from ..workflow_models import (
     WfPurchaseItem,
     WfSettings,
     WfWorkOrder,
+    WfWorkOrderLabor,
 )
 from .tickets import BLOCKED_EXT, INLINE_TYPES, MAX_BYTES, _safe_name
 
@@ -95,11 +96,13 @@ COATING_STAGES: dict[str, list[str]] = {
     "await_inspection": ["inspection"],
     "await_approval": ["c90"],
 }
-# Purchase hand-off (chart): procurement requests, warehouse issues the indent,
-# procurement records the purchase dates, C-90 registers the new piece codes.
+# Purchase hand-off: process (technical services) opens the request, warehouse issues the indent,
+# procurement uploads the purchase documents, process confirms, then inspection confirms (two separate steps), C-90 registers the pieces.
 PURCHASE_STAGES: dict[str, list[str]] = {
     "await_indent": ["warehouse"],
     "await_order": ["procurement"],
+    "await_confirm": ["process"],
+    "await_confirm_insp": ["inspection"],
     "await_registration": ["c90"],
 }
 CELL_STAGES: dict[str, list[str]] = {
@@ -137,7 +140,7 @@ INSPECTION_VIEW_KEYS = VIEW_KEYS + CELL_VIEW_KEYS + ("inspections", "wf_process"
 # promised date (coater return, supplier delivery) is due on that date instead.
 DEFAULT_SLA: dict[str, dict[str, int]] = {
     "coating": {"await_company": 72, "await_indent": 72, "await_dispatch": 120, "await_return": 720, "await_inspection": 72, "await_approval": 48},
-    "purchase": {"await_indent": 72, "await_order": 720, "await_registration": 72},
+    "purchase": {"await_indent": 72, "await_order": 120, "await_confirm": 72, "await_confirm_insp": 72, "await_registration": 72},
     "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120, "await_disassembly": 72, "await_reinstall": 120, "await_numbering": 72},
     "inspection": {"await_request": 24, "await_inspection": 72},
     "assemble": {"await_assembly": 72, "await_air": 72, "await_insp_sign": 72, "await_proc_sign": 72, "await_position": 120},
@@ -486,6 +489,7 @@ def _purchase_summary(db: Session, p: WfPurchase, conf: dict | None = None) -> d
         "registered": registered,
         "warranty_months": p.warranty_months,
         "warranty_start": _iso(p.warranty_start),
+        "decisions": p.decisions or {},
         "created_by": p.created_by_name,
         "created_at": _iso(p.created_at),
         "updated_at": _iso(p.updated_at),
@@ -717,6 +721,7 @@ def cartable_desk(db: Session = Depends(get_db), user: models.User = Depends(get
             ),
             "coating_inspection": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_inspection"),
             "element_inspection": sum(1 for r in waiting if r.get("flow") == "inspection" and r.get("status") == "await_inspection"),
+            "purchase_confirm": sum(1 for r in waiting if r.get("flow") == "purchase" and r.get("status") == "await_confirm_insp"),
         }
     if "process" in desk_groups:
         snapshots["process"] = {
@@ -730,6 +735,7 @@ def cartable_desk(db: Session = Depends(get_db), user: models.User = Depends(get
             ),
             "element_inspection": sum(1 for r in waiting if r.get("flow") == "inspection" and r.get("status") == "await_inspection"),
             "coating_inspection": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_inspection"),
+            "purchase_confirm": sum(1 for r in waiting if r.get("flow") == "purchase" and r.get("status") == "await_confirm"),
         }
     if "operation" in desk_groups:
         snapshots["operation"] = {
@@ -741,6 +747,7 @@ def cartable_desk(db: Session = Depends(get_db), user: models.User = Depends(get
             "await_dispatch": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_dispatch"),
             "await_return": sum(1 for r in waiting if r.get("flow") == "coating" and r.get("status") == "await_return"),
             "await_order": sum(1 for r in waiting if r.get("flow") == "purchase" and r.get("status") == "await_order"),
+            "await_confirm": sum(1 for r in waiting if r.get("flow") == "purchase" and r.get("status") in ("await_confirm", "await_confirm_insp")),
         }
     if "warehouse" in desk_groups:
         snapshots["warehouse"] = {
@@ -1770,9 +1777,9 @@ def _purchase_actions(db: Session, p: WfPurchase, user: models.User) -> list[str
     groups = _groups(db, user)
     mine = bool(groups & set(PURCHASE_STAGES.get(p.status, [])))
     acts: list[str] = []
-    if mine and p.status in ("await_indent", "await_order", "await_registration"):
-        acts.append({"await_indent": "indent", "await_order": "order", "await_registration": "register"}[p.status])
-    early = p.status in ("await_indent", "await_order") and "procurement" in groups
+    if mine and p.status in ("await_indent", "await_order", "await_confirm", "await_confirm_insp", "await_registration"):
+        acts.append({"await_indent": "indent", "await_order": "order", "await_confirm": "confirm", "await_confirm_insp": "confirm", "await_registration": "register"}[p.status])
+    early = p.status in ("await_indent", "await_order", "await_confirm", "await_confirm_insp") and ("procurement" in groups or "process" in groups)
     managed = _can_manage(db, user, "purchase", p.status)
     if _can_cancel(user, p.status, p.created_by_id, "await_indent", also=early or managed):
         acts.append("cancel")
@@ -1830,7 +1837,7 @@ def get_purchase(purchase_id: int, db: Session = Depends(get_db), user: models.U
 
 @router.post("/purchase")
 def create_purchase(body: PurchaseCreateIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    _require_group(db, user, "procurement")
+    _require_group(db, user, "process")
     if body.anode_count + body.cathode_count <= 0:
         raise HTTPException(400, "Enter how many anodes and/or cathodes are bought")
     sup = _company(db, body.supplier_id)
@@ -1866,8 +1873,6 @@ def purchase_indent(purchase_id: int, body: IndentIn, db: Session = Depends(get_
     indent = body.indent_no.strip()[:60]
     if not indent:
         raise HTTPException(400, "Indent number required")
-    if not db.query(WfFile).filter_by(flow="purchase", record_id=p.id).first():
-        raise HTTPException(400, "The purchase documents must be attached before the indent is issued")
     p.indent_no = indent
     _move(db, "purchase", p, "await_order", "indent", user, body.note, {"indent_no": indent})
     db.commit()
@@ -1884,9 +1889,11 @@ class OrderIn(NoteIn):
 
 @router.post("/purchase/{purchase_id}/order")
 def purchase_order(purchase_id: int, body: OrderIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    """Procurement records the request, the expected delivery, the actual delivery and any delay, then C-90 registers the pieces."""
+    """Procurement attaches the purchase documents, then process and inspection confirm."""
     p = _load_purchase(db, purchase_id)
     _require_stage(db, user, "purchase", p.status, ("await_order",))
+    if not db.query(WfFile).filter_by(flow="purchase", record_id=p.id).first():
+        raise HTTPException(400, "Attach the purchase documents before sending them on")
     if body.expected_delivery_date < body.request_date:
         raise HTTPException(400, "Expected delivery date is before the request date")
     if body.delivery_date < body.request_date:
@@ -1901,7 +1908,7 @@ def purchase_order(purchase_id: int, body: OrderIn, db: Session = Depends(get_db
     p.delay_party = body.delay_party if late else None
     p.delay_reason = ((body.delay_reason or "").strip() or None) if late else None
     _move(
-        db, "purchase", p, "await_registration", "order", user, body.note,
+        db, "purchase", p, "await_confirm", "order", user, body.note,
         {
             "request_date": body.request_date.isoformat(),
             "expected_delivery_date": body.expected_delivery_date.isoformat(),
@@ -1910,6 +1917,24 @@ def purchase_order(purchase_id: int, body: OrderIn, db: Session = Depends(get_db
             "delay_reason": p.delay_reason,
         },
     )
+    db.commit()
+    return _purchase_detail(db, p, user)
+
+
+@router.post("/purchase/{purchase_id}/confirm")
+def purchase_confirm(purchase_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """Two separate steps: process confirms first, then inspection; only then does C-90 register the pieces."""
+    p = _load_purchase(db, purchase_id)
+    _require_stage(db, user, "purchase", p.status, ("await_confirm", "await_confirm_insp"))
+    side = "process" if p.status == "await_confirm" else "inspection"
+    signed = dict(p.decisions or {})
+    signed[side] = {"name": _display(user), "at": _iso(_now()), "note": (body.note or "").strip() or None}
+    p.decisions = signed
+    if side == "process" and "inspection" not in signed:
+        target = "await_confirm_insp"
+    else:
+        target = "await_registration"
+    _move(db, "purchase", p, target, "confirm", user, body.note, {"signed": side})
     db.commit()
     return _purchase_detail(db, p, user)
 
@@ -2136,7 +2161,7 @@ def _plant_reason(db: Session, element_nr: str | None, element_id: int | None) -
     if el is None and element_nr:
         el = _life_of(db, element_nr=element_nr)
     text = (el.decommission_reason or "").strip() if el is not None else ""
-    return text[:200] or None
+    return text[:800] or None
 
 
 def _write_plant_reason(db: Session, element_nr: str | None, element_id: int | None, reason: str | None) -> None:
@@ -2146,7 +2171,7 @@ def _write_plant_reason(db: Session, element_nr: str | None, element_id: int | N
     if el is None and element_nr:
         el = _life_of(db, element_nr=element_nr)
     if el is not None:
-        el.decommission_reason = reason[:200]
+        el.decommission_reason = reason[:800]
 
 
 def _latest_xrf(db: Session, serial: str | None) -> str | None:
@@ -2314,14 +2339,14 @@ def _write_decommission(db: Session, r: WfCellRequest, day: date, reason: str | 
             )
         )
     if not (el.decommission_reason or "").strip():
-        el.decommission_reason = (reason or r.reason)[:200]
+        el.decommission_reason = (reason or r.reason)[:800]
     r.decommission_date = day
     return day
 
 
 class CellCreateIn(BaseModel):
     element_nr: str = Field(min_length=1)
-    reason: str = Field(min_length=1, max_length=200)
+    reason: str = Field(min_length=1, max_length=800)
     urgent: bool = False
     problem: str | None = None
     planned_date: date | None = None
@@ -2383,7 +2408,7 @@ def create_cell_request(body: CellCreateIn, db: Session = Depends(get_db), user:
         element_id=item["row_id"],
         electrolyzer=item["electrolyzer"],
         position=item["position"],
-        reason=reason[:200],
+        reason=reason[:800],
         urgent=body.urgent,
         problem=(body.problem or "").strip() or None,
         planned_date=body.planned_date,
@@ -2480,7 +2505,7 @@ def cell_shutdown(request_id: int, body: CellShutdownIn, db: Session = Depends(g
     _require_stage(db, user, "cell", r.status, ("await_shutdown",))
     reason = (body.reason or "").strip() or None
     if reason:
-        r.reason = reason[:200]
+        r.reason = reason[:800]
     day = _write_decommission(db, r, body.date, reason, user)
     from .work_orders import ensure_work_order_process
 
@@ -2733,7 +2758,7 @@ def cell_on_element_saved(db: Session, el: models.Element, actor: models.User, h
         element_id=el.id,
         electrolyzer=format_electrolyzer_name(el.electrolyzer) if el.electrolyzer else None,
         position=el.position,
-        reason=((el.decommission_reason or "").strip() or "Assembly Data")[:200],
+        reason=((el.decommission_reason or "").strip() or "Assembly Data")[:800],
         decommission_date=day,
         created_by_id=actor.id,
         created_by_name=_display(actor),
@@ -3019,7 +3044,7 @@ def _new_insp(
         cathode_nr=(el.cathode_nr if el is not None else None) or cathode_nr,
         membrane_nr=el.membrane_nr if el is not None else None,
         disassembly_date=svc._as_date(el.disassembly_date) if el is not None else None,
-        reason=(reason or "").strip()[:200] or None,
+        reason=(reason or "").strip()[:800] or None,
         created_by_id=getattr(actor, "id", None),
         created_by_name=_display(actor),
         created_at=_now(),
@@ -3466,7 +3491,7 @@ def inspection_on_disassembly(db: Session, el: models.Element, actor: Any) -> No
     done = db.query(WfInspectionRequest).filter(WfInspectionRequest.element_id == el.id, WfInspectionRequest.status.in_(CLOSED)).first()
     if done is not None:
         return
-    r = _new_insp(db, actor, "await_request", el, reason=(el.decommission_reason or "").strip()[:200] or "Dismantled")
+    r = _new_insp(db, actor, "await_request", el, reason=(el.decommission_reason or "").strip()[:800] or "Dismantled")
     _event(db, "inspection", r, "auto_created", actor, None, None, {"date": _iso(svc._as_date(el.disassembly_date))})
     if not _close_if_reported(db, r, actor):
         _notify(db, "inspection", r, actor)
@@ -4317,6 +4342,215 @@ def download_file(file_id: int, db: Session = Depends(get_db), user: models.User
     if path.parent != root or not path.exists():
         raise HTTPException(404, "File missing on the server")
     return FileResponse(path, media_type=f.content_type, filename=f.original_name)
+
+
+# ------------------------------------------------------------------ process log (every workflow, searchable by its code)
+
+
+def _search_blob(*parts: object) -> str:
+    return " ".join(str(part).strip() for part in parts if part is not None and str(part).strip()).lower()
+
+
+def _process_index(db: Session) -> list[dict]:
+    """One row per created process code: coating pallet, purchase, cell, inspection, assemble, work order."""
+    companies = {c.id: c.name for c in db.query(models.WhCompany).all()}
+    rows: list[dict] = []
+    batches = {b.id: b for b in db.query(WfCoatingBatch).all()}
+    serials: dict[int, list[str]] = {}
+    for item in db.query(WfCoatingItem).all():
+        serials.setdefault(item.package_id, []).append(item.serial)
+    for pkg in db.query(WfCoatingPackage).order_by(WfCoatingPackage.id.desc()).all():
+        batch = batches.get(pkg.batch_id)
+        if batch is None:
+            continue
+        pieces = serials.get(pkg.id) or []
+        rows.append(
+            {
+                "flow": "coating",
+                "id": batch.id,
+                "code": pkg.code,
+                "status": batch.status,
+                "element_nr": None,
+                "summary": ", ".join(pieces[:12]),
+                "actor": batch.created_by_name,
+                "created_at": _iso(batch.created_at),
+                "updated_at": _iso(batch.updated_at),
+                "search": _search_blob(pkg.code, batch.indent_no, batch.status, batch.last_note, companies.get(batch.company_id), *pieces),
+            }
+        )
+    buy_serials: dict[int, list[str]] = {}
+    for item in db.query(WfPurchaseItem).all():
+        buy_serials.setdefault(item.purchase_id, []).append(item.serial)
+    for row in db.query(WfPurchase).all():
+        pieces = buy_serials.get(row.id) or []
+        rows.append(
+            {
+                "flow": "purchase",
+                "id": row.id,
+                "code": row.code,
+                "status": row.status,
+                "element_nr": None,
+                "summary": ", ".join(pieces[:12]) or f"{row.anode_count} A + {row.cathode_count} K",
+                "actor": row.created_by_name,
+                "created_at": _iso(row.created_at),
+                "updated_at": _iso(row.updated_at),
+                "search": _search_blob(row.code, row.indent_no, row.approval_ref, row.status, row.last_note, companies.get(row.supplier_id), *pieces),
+            }
+        )
+    for row in db.query(WfCellRequest).all():
+        rows.append(
+            {
+                "flow": "cell",
+                "id": row.id,
+                "code": row.code,
+                "status": row.status,
+                "element_nr": row.element_nr,
+                "summary": row.reason,
+                "actor": row.created_by_name,
+                "created_at": _iso(row.created_at),
+                "updated_at": _iso(row.updated_at),
+                "search": _search_blob(row.code, row.element_nr, row.reason, row.problem, row.status, row.electrolyzer, row.position, row.last_note),
+            }
+        )
+    for row in db.query(WfInspectionRequest).all():
+        rows.append(
+            {
+                "flow": "inspection",
+                "id": row.id,
+                "code": row.code,
+                "status": row.status,
+                "element_nr": row.element_nr,
+                "summary": " / ".join(bit for bit in (row.anode_nr, row.cathode_nr) if bit),
+                "actor": row.created_by_name,
+                "created_at": _iso(row.created_at),
+                "updated_at": _iso(row.updated_at),
+                "search": _search_blob(row.code, row.element_nr, row.anode_nr, row.cathode_nr, row.reason, row.status, row.last_note),
+            }
+        )
+    for row in db.query(WfAssembleRequest).all():
+        rows.append(
+            {
+                "flow": "assemble",
+                "id": row.id,
+                "code": row.code,
+                "status": row.status,
+                "element_nr": row.element_nr,
+                "summary": " / ".join(bit for bit in (row.anode_nr, row.cathode_nr, row.membrane_nr) if bit),
+                "actor": row.created_by_name,
+                "created_at": _iso(row.created_at),
+                "updated_at": _iso(row.updated_at),
+                "search": _search_blob(row.code, row.element_nr, row.anode_nr, row.cathode_nr, row.membrane_nr, row.status, row.last_note),
+            }
+        )
+    for row in db.query(WfWorkOrder).all():
+        rows.append(
+            {
+                "flow": "workorder",
+                "id": row.id,
+                "code": row.code,
+                "status": row.status,
+                "element_nr": row.element_nr,
+                "summary": " / ".join(bit for bit in (row.anode_nr, row.cathode_nr, row.membrane_nr) if bit),
+                "actor": row.created_by_name,
+                "created_at": _iso(row.created_at),
+                "updated_at": _iso(row.updated_at),
+                "search": _search_blob(row.code, row.element_nr, row.anode_nr, row.cathode_nr, row.membrane_nr, row.status, row.remarks, row.last_note),
+            }
+        )
+    return rows
+
+
+def _process_work(db: Session, flow: str, record_id: int) -> list[dict]:
+    """The concrete work recorded on this process, besides the step log."""
+    if flow == "workorder":
+        return [
+            {
+                "stage": row.stage,
+                "person_code": row.person_code,
+                "person_name": row.person_name,
+                "skill": row.skill,
+                "work_hours": row.work_hours,
+                "work_qty": row.work_qty,
+                "description": row.description,
+            }
+            for row in db.query(WfWorkOrderLabor)
+            .filter(WfWorkOrderLabor.work_order_id == record_id)
+            .order_by(WfWorkOrderLabor.stage, WfWorkOrderLabor.line_no)
+            .all()
+        ]
+    if flow == "coating":
+        out = []
+        for item in (
+            db.query(WfCoatingItem)
+            .filter(WfCoatingItem.batch_id == record_id)
+            .order_by(WfCoatingItem.package_id, WfCoatingItem.line_no)
+            .all()
+        ):
+            out.append(
+                {
+                    "kind": item.element_kind,
+                    "serial": item.serial,
+                    "problem": item.problem,
+                    "final_report": item.final_report,
+                    "remark": item.remark,
+                }
+            )
+        return out
+    if flow == "purchase":
+        return [
+            {"kind": item.element_kind, "serial": item.serial, "coating": item.coating, "manufacturer": item.manufacturer}
+            for item in db.query(WfPurchaseItem).filter(WfPurchaseItem.purchase_id == record_id).all()
+        ]
+    return []
+
+
+@router.get("/process-log")
+def process_log(
+    q: str | None = None,
+    flow: str | None = None,
+    limit: int = Query(400, ge=1, le=2000),
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    _require_view(db, user, INSPECTION_VIEW_KEYS)
+    needle = (q or "").strip().lower()
+    want = (flow or "").strip() or None
+    rows = _process_index(db)
+    if want:
+        rows = [row for row in rows if row["flow"] == want]
+    if needle:
+        rows = [row for row in rows if needle in row["search"]]
+    rows.sort(key=lambda row: row.get("updated_at") or "", reverse=True)
+    out = []
+    for row in rows[:limit]:
+        item = dict(row)
+        item.pop("search", None)
+        out.append(item)
+    return out
+
+
+@router.get("/process-log/{flow}/{record_id}")
+def process_log_detail(
+    flow: str,
+    record_id: int,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    _require_view(db, user, INSPECTION_VIEW_KEYS)
+    if flow not in ("coating", "purchase", "cell", "inspection", "assemble", "workorder"):
+        raise HTTPException(404, "Unknown process")
+    match = next((row for row in _process_index(db) if row["flow"] == flow and row["id"] == record_id), None)
+    if match is None:
+        raise HTTPException(404, "Process not found")
+    header = dict(match)
+    header.pop("search", None)
+    if flow == "coating":
+        header["codes"] = [pkg.code for pkg in db.query(WfCoatingPackage).filter_by(batch_id=record_id).order_by(WfCoatingPackage.pallet_no).all()]
+    return {
+        **header,
+        "events": _events(db, flow, record_id),
+        "work": _process_work(db, flow, record_id),
+    }
 
 
 # ------------------------------------------------------------------ history / reports

@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -84,6 +84,13 @@ function durationHm(row: DurationFields): string {
   return `${h}:${String(m).padStart(2, "0")}`;
 }
 
+function lostFmt(row: DurationFields & { ka_before_trip?: number | null }, factor: number): string {
+  const mins = durationMinutes(row);
+  const ka = row.ka_before_trip;
+  if (mins == null || ka == null || Number.isNaN(Number(ka))) return "";
+  return (Number(ka) * factor * (mins / 60)).toFixed(2);
+}
+
 const PLANT_SCOPES = ["Train1", "Train2", "CA Total Plant"] as const;
 
 function plantPartValue(v: string | null | undefined): string {
@@ -98,12 +105,9 @@ function PlantBar() {
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const s = settingsQuery.data;
   // Access header 4th box is the plant date (not Version — DB sometimes stores Format "d" there).
-  const headerDate = s?.date ? formatDate(s.date) : formatDate(new Date().toISOString().slice(0, 10));
   return (
     <div className="access-plant-bar shutdown-plant-bar">
       <span>{s?.customer || "PVC Arvand"}</span>
-      <span>{t("menus.naclElectrolysis")}</span>
-      <span>{headerDate === "—" || headerDate === "d" ? formatDate(new Date().toISOString().slice(0, 10)) : headerDate}</span>
     </div>
   );
 }
@@ -186,6 +190,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   const [to, setTo] = useState(() => dateTo || todayIsoLocal());
   const [draft, setDraft] = useState<Partial<Shutdown>>({});
   const [editing, setEditing] = useState<number | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Partial<Shutdown>>({});
   const [query, setQuery] = useState("");
 
@@ -256,7 +261,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     []
   );
   const sheet = useSheetFilters(sheetCols, shown);
-  const listed = sheet.shown;
+  const mainSort = useSort(sheet.shown, SHUTDOWN_SORT);
+  const listed = mainSort.sorted;
   const totalMins = listed.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
   const totalHm = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, "0")}`;
 
@@ -264,9 +270,11 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     return canViewField("shutdowns", field);
   }
 
-  function saveRow(row: Shutdown, patch: Partial<Shutdown>) {
+  function saveRow(row: Shutdown, patch: Partial<Shutdown>, done?: () => void) {
     if (!editable) return;
-    updateMutation.mutate({
+    setSaveError(null);
+    updateMutation.mutate(
+      {
       id: row.nr,
       payload: {
         plant_part: row.plant_part,
@@ -282,7 +290,12 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         mtbf_days: row.mtbf_days,
         ...patch,
       },
-    });
+      },
+      {
+        onSuccess: () => done?.(),
+        onError: (e) => setSaveError((e as Error).message || "Save failed"),
+      }
+    );
   }
 
   function applyCode(row: Shutdown | null, code: string, isNew: boolean) {
@@ -317,6 +330,16 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
 
   function createNew() {
     if (!editable) return;
+    if (!draft.plant_part || !draft.shutdown_time) {
+      setSaveError(t("shutdowns.plantTimeRequired"));
+      return;
+    }
+    if (draft.startup_time && draft.startup_time < draft.shutdown_time) {
+      setSaveError(t("shutdowns.startBeforeStop"));
+      return;
+    }
+    setSaveError(null);
+    const day = draft.shutdown_time.slice(0, 10);
     createMutation.mutate(
       {
         plant_part: draft.plant_part || null,
@@ -333,7 +356,11 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         onSuccess: () => {
           setDraft({});
           setActive(null);
+          // The new trip must stay visible: widen the date filter when it falls outside it.
+          if (from && day < from) setFrom(day);
+          if (to && day > to) setTo(day);
         },
+        onError: (e) => setSaveError(errText(e)),
       }
     );
   }
@@ -385,19 +412,19 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
           <thead>
             <tr>
               <th className="w-4" />
-              <th className="w-12">{t("menus.number")}</th>
-              {fieldVisible("plant_part") ? <th className="w-28">{t("menus.partOfPlant")}</th> : null}
-              {fieldVisible("shutdown_time") ? <th className="w-40">{t("fields.shutdownTime")}</th> : null}
-              {fieldVisible("startup_time") ? <th className="w-40">{t("fields.startupTime")}</th> : null}
-              <th className="w-24">{t("fields.durationHm")}</th>
-              {fieldVisible("code") ? <th className="w-16">{t("fields.code")}</th> : null}
-              {fieldVisible("cause") ? <th className="w-44">{t("fields.cause")}</th> : null}
-              {fieldVisible("ka_before_trip") ? <th className="w-24">{t("fields.kaBeforeTrip")}</th> : null}
-              {fieldVisible("lost_load") ? <th className="w-28">{t("fields.lostLoad")}</th> : null}
-              {fieldVisible("lost_production") ? <th className="w-28">{t("fields.lostProduction")}</th> : null}
-              {fieldVisible("mtbf_days") ? <th className="w-24">{t("fields.mtbfDays")}</th> : null}
-              {fieldVisible("category") ? <th className="w-28">{t("fields.category")}</th> : null}
-              {fieldVisible("remarks") ? <th>{t("fields.remarks")}</th> : null}
+              <SortTh k="nr" sorter={mainSort} className="w-12">{t("menus.number")}</SortTh>
+              {fieldVisible("plant_part") ? <SortTh k="plant_part" sorter={mainSort} className="w-28">{t("menus.partOfPlant")}</SortTh> : null}
+              {fieldVisible("shutdown_time") ? <SortTh k="shutdown_time" sorter={mainSort} className="w-40">{t("fields.shutdownTime")}</SortTh> : null}
+              {fieldVisible("startup_time") ? <SortTh k="startup_time" sorter={mainSort} className="w-40">{t("fields.startupTime")}</SortTh> : null}
+              <SortTh k="duration" sorter={mainSort} className="w-24">{t("fields.durationHm")}</SortTh>
+              {fieldVisible("code") ? <SortTh k="code" sorter={mainSort} className="w-16">{t("fields.code")}</SortTh> : null}
+              {fieldVisible("cause") ? <SortTh k="cause" sorter={mainSort} className="w-44">{t("fields.cause")}</SortTh> : null}
+              {fieldVisible("ka_before_trip") ? <SortTh k="ka_before_trip" sorter={mainSort} className="w-24">{t("fields.kaBeforeTrip")}</SortTh> : null}
+              {fieldVisible("lost_load") ? <SortTh k="lost_load" sorter={mainSort} className="w-28">{t("fields.lostLoad")}</SortTh> : null}
+              {fieldVisible("lost_production") ? <SortTh k="lost_production" sorter={mainSort} className="w-28">{t("fields.lostProduction")}</SortTh> : null}
+              {fieldVisible("mtbf_days") ? <SortTh k="mtbf_days" sorter={mainSort} className="w-24">{t("fields.mtbfDays")}</SortTh> : null}
+              {fieldVisible("category") ? <SortTh k="category" sorter={mainSort} className="w-28">{t("fields.category")}</SortTh> : null}
+              {fieldVisible("remarks") ? <SortTh k="remarks" sorter={mainSort}>{t("fields.remarks")}</SortTh> : null}
               {editable ? <th className="w-36" /> : null}
             </tr>
             <tr>
@@ -555,12 +582,12 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("lost_load") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={open ? "" : (row.lost_load ?? "")} readOnly tabIndex={-1} title="Chlorine lost = duration × KA / 4.85" />
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(src, 0.2074)} readOnly tabIndex={-1} title="Chlorine lost = KA × 0.2074 × Duration (h)" />
                   </td>
                 ) : null}
                 {fieldVisible("lost_production") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={open ? "" : (row.lost_production ?? "")} readOnly tabIndex={-1} title="NaOH lost = chlorine lost × 1.112" />
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(src, 0.2336)} readOnly tabIndex={-1} title="NaOH lost = KA × 0.2336 × Duration (h)" />
                   </td>
                 ) : null}
                 {fieldVisible("mtbf_days") ? (
@@ -606,8 +633,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                           className="access-btn text-[11px]"
                           disabled={updateMutation.isPending}
                           onClick={() => {
-                            saveRow(src, {});
-                            setEditing(null);
+                            saveRow(src, {}, () => setEditing(null));
                           }}
                         >
                           {t("common.save")}
@@ -719,12 +745,12 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("lost_load") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value="" readOnly tabIndex={-1} title="Duration × KA / 4.85" />
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, 0.2074)} readOnly tabIndex={-1} title="Chlorine lost = KA × 0.2074 × Duration (h)" />
                   </td>
                 ) : null}
                 {fieldVisible("lost_production") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value="" readOnly tabIndex={-1} title="NaOH lost = chlorine lost × 1.112" />
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, 0.2336)} readOnly tabIndex={-1} title="NaOH lost = KA × 0.2336 × Duration (h)" />
                   </td>
                 ) : null}
                 {fieldVisible("mtbf_days") ? (
@@ -770,41 +796,140 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         </table>
       </div>
       {listQuery.isError ? <div className="mt-2 text-[12px] text-red-800">{(listQuery.error as Error).message}</div> : null}
+      {saveError ? <div className="mt-2 text-[12px] font-bold text-red-800">{saveError}</div> : null}
     </AccessHub>
+  );
+}
+
+function errText(e: unknown): string {
+  return (e as Error)?.message || "Save failed";
+}
+
+/** Access "Abschaltungsursachen": Code + Reason + Category. Rows are saved with the Save button, never per keystroke. */
+function CausesTable() {
+  const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const editable = canEdit("shutdowns");
+  const [active, setActive] = useState<number | "new" | null>(null);
+  const [drafts, setDrafts] = useState<Record<number, Partial<ShutdownCause>>>({});
+  const [fresh, setFresh] = useState<Partial<ShutdownCause>>({});
+  const [error, setError] = useState<string | null>(null);
+  const { listQuery, createMutation, updateMutation } = useCrudResource<ShutdownCause>("shutdown-causes", shutdownCausesApi, { limit: 500 });
+  const categoriesQuery = useQuery({
+    queryKey: ["shutdown-categories", "combo"],
+    queryFn: () => shutdownCategoriesApi.list({ limit: 200 }),
+  });
+  const rows = useMemo(
+    () => [...(listQuery.data || [])].filter((r) => (r.code || "").trim() || (r.cause || "").trim()).sort((a, b) => (a.language_id ?? 0) - (b.language_id ?? 0) || (a.code || "").localeCompare(b.code || "")),
+    [listQuery.data]
+  );
+  const causeSort = useSort(rows, CAUSE_SORT);
+  const categoryOptions = useMemo(
+    () => Array.from(new Set((categoriesQuery.data || []).map((c) => c.category || "").filter(Boolean))).sort(),
+    [categoriesQuery.data]
+  );
+
+  function patch(id: number, change: Partial<ShutdownCause>) {
+    setDrafts((d) => ({ ...d, [id]: { ...d[id], ...change } }));
+  }
+
+  function saveRow(row: ShutdownCause) {
+    const draft = drafts[row.id];
+    if (!draft) return;
+    setError(null);
+    updateMutation.mutate(
+      { id: row.id, payload: { ...row, ...draft } },
+      {
+        onSuccess: () => setDrafts((d) => Object.fromEntries(Object.entries(d).filter(([k]) => Number(k) !== row.id))),
+        onError: (e) => setError(errText(e)),
+      }
+    );
+  }
+
+  function addRow() {
+    const code = (fresh.code || "").trim();
+    const cause = (fresh.cause || "").trim();
+    if (!code || !cause) {
+      setError(t("shutdowns.codeReasonRequired"));
+      return;
+    }
+    setError(null);
+    createMutation.mutate({ code, cause, category: fresh.category || null, language_id: 2 } as never, {
+      onSuccess: () => {
+        setFresh({});
+        setActive(null);
+      },
+      onError: (e) => setError(errText(e)),
+    });
+  }
+
+  return (
+    <>
+      <table className="access-cont-table max-w-3xl">
+        <thead>
+          <tr>
+            <th className="w-4" />
+            <SortTh k="code" sorter={causeSort} className="w-20">{t("fields.code")}</SortTh>
+            <SortTh k="cause" sorter={causeSort}>{t("fields.reason")}</SortTh>
+            <SortTh k="category" sorter={causeSort} className="w-40">{t("fields.category")}</SortTh>
+            {editable ? <th className="w-20" /> : null}
+          </tr>
+        </thead>
+        <tbody>
+          {causeSort.sorted.map((row) => {
+            const src = { ...row, ...drafts[row.id] };
+            return (
+              <tr key={row.id} onClick={() => setActive(row.id)}>
+                <td className="access-selector">{active === row.id ? "►" : ""}</td>
+                <td>
+                  <input className="w-16" value={src.code || ""} onChange={(e) => patch(row.id, { code: e.target.value })} disabled={!editable} />
+                </td>
+                <td>
+                  <input className="w-full" value={src.cause || ""} onChange={(e) => patch(row.id, { cause: e.target.value })} disabled={!editable} />
+                </td>
+                <td onClick={(e) => e.stopPropagation()}>
+                  <ComboInput listId={`reason-cat-${row.id}`} options={categoryOptions} value={src.category || ""} disabled={!editable} onChange={(v) => patch(row.id, { category: v })} />
+                </td>
+                {editable ? (
+                  <td onClick={(e) => e.stopPropagation()}>
+                    {drafts[row.id] ? (
+                      <button type="button" className="access-btn text-[11px]" disabled={updateMutation.isPending} onClick={() => saveRow(row)}>
+                        {t("common.save")}
+                      </button>
+                    ) : null}
+                  </td>
+                ) : null}
+              </tr>
+            );
+          })}
+          {editable ? (
+            <tr onClick={() => setActive("new")}>
+              <td className="access-selector">*</td>
+              <td>
+                <input className="w-16" value={fresh.code || ""} onChange={(e) => setFresh((d) => ({ ...d, code: e.target.value }))} />
+              </td>
+              <td>
+                <input className="w-full" value={fresh.cause || ""} onChange={(e) => setFresh((d) => ({ ...d, cause: e.target.value }))} />
+              </td>
+              <td onClick={(e) => e.stopPropagation()}>
+                <ComboInput listId="reason-cat-new" options={categoryOptions} value={fresh.category || ""} onChange={(v) => setFresh((d) => ({ ...d, category: v }))} />
+              </td>
+              <td>
+                <button type="button" className="access-btn text-[11px]" disabled={createMutation.isPending} onClick={addRow}>
+                  {t("common.save")}
+                </button>
+              </td>
+            </tr>
+          ) : null}
+        </tbody>
+      </table>
+      {error ? <div className="mt-2 text-[12px] font-bold text-red-800">{error}</div> : null}
+    </>
   );
 }
 
 function ReasonsForm() {
   const { t } = useI18n();
-  const { canEdit } = useAuth();
-  const editable = canEdit("shutdowns");
-  const [active, setActive] = useState<number | "new" | null>(null);
-  const { listQuery, createMutation, updateMutation } = useCrudResource<ShutdownCause>(
-    "shutdown-causes",
-    shutdownCausesApi,
-    { limit: 500 }
-  );
-  const categoriesQuery = useQuery({
-    queryKey: ["shutdown-categories", "combo"],
-    queryFn: () => shutdownCategoriesApi.list({ limit: 200 }),
-  });
-  const rows = listQuery.data || [];
-  const categoryOptions = useMemo(
-    () =>
-      Array.from(
-        new Set([
-          ...(categoriesQuery.data || []).map((c) => c.category || "").filter(Boolean),
-          ...rows.map((r) => r.category || "").filter(Boolean),
-        ])
-      ).sort(),
-    [categoriesQuery.data, rows]
-  );
-
-  function save(row: ShutdownCause, patch: Partial<ShutdownCause>) {
-    if (!editable) return;
-    updateMutation.mutate({ id: row.id, payload: { ...row, ...patch } });
-  }
-
   return (
     <AccessHub
       title={t("shutdowns.reasonsTitle")}
@@ -813,92 +938,13 @@ function ReasonsForm() {
       backLabel={t("mainMenu.shutDown")}
       extraButtons={<ExportButtons prefix="/shutdown-causes" filenameBase="shutdown-causes" />}
     >
-      <table className="access-cont-table max-w-3xl">
-        <thead>
-          <tr>
-            <th className="w-4" />
-            <th className="w-20">{t("fields.code")}</th>
-            <th>{t("fields.reason")}</th>
-            <th className="w-40">{t("fields.category")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.id} onClick={() => setActive(row.id)}>
-              <td className="access-selector">{active === row.id ? "►" : ""}</td>
-              <td>
-                <input
-                  className="w-16"
-                  value={row.code || ""}
-                  onChange={(e) => save(row, { code: e.target.value })}
-                  disabled={!editable}
-                />
-              </td>
-              <td>
-                <input
-                  className="w-full"
-                  value={row.cause || ""}
-                  onChange={(e) => save(row, { cause: e.target.value || null })}
-                  disabled={!editable}
-                />
-              </td>
-              <td onClick={(e) => e.stopPropagation()}>
-                <ComboInput
-                  listId={`reason-cat-${row.id}`}
-                  options={categoryOptions}
-                  value={row.category || ""}
-                  disabled={!editable}
-                  onChange={(v) => save(row, { category: v })}
-                />
-              </td>
-            </tr>
-          ))}
-          {editable ? (
-            <tr onClick={() => setActive("new")}>
-              <td className="access-selector">*</td>
-              <td>
-                <input
-                  className="w-16"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const code = (e.target as HTMLInputElement).value.trim();
-                      if (code) {
-                        createMutation.mutate({ code, cause: code } as never);
-                        (e.target as HTMLInputElement).value = "";
-                      }
-                    }
-                  }}
-                />
-              </td>
-              <td colSpan={2} />
-            </tr>
-          ) : null}
-        </tbody>
-      </table>
+      <CausesTable />
     </AccessHub>
   );
 }
 
 function TripCausesForm() {
   const { t } = useI18n();
-  const { canEdit } = useAuth();
-  const editable = canEdit("shutdowns");
-  const [active, setActive] = useState<number | "new" | null>(null);
-  const { listQuery, createMutation, updateMutation } = useCrudResource<ShutdownCause>(
-    "shutdown-causes",
-    shutdownCausesApi,
-    { limit: 500 }
-  );
-  const rows = useMemo(
-    () => [...(listQuery.data || [])].filter((row) => (row.cause || "").trim()).sort((a, b) => (a.cause || "").localeCompare(b.cause || "")),
-    [listQuery.data]
-  );
-
-  function save(row: ShutdownCause, cause: string) {
-    if (!editable) return;
-    updateMutation.mutate({ id: row.id, payload: { ...row, cause: cause || null } });
-  }
-
   return (
     <AccessHub
       title={t("menus.tripCause")}
@@ -907,48 +953,9 @@ function TripCausesForm() {
       backLabel={t("mainMenu.shutDown")}
       extraButtons={<ExportButtons prefix="/shutdown-causes" filenameBase="trip-causes" />}
     >
-      <table className="access-cont-table mb-4 max-w-xl">
-        <thead>
-          <tr>
-            <th className="w-4" />
-            <th>{t("menus.tripCause")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.id} onClick={() => setActive(row.id)}>
-              <td className="access-selector">{active === row.id ? "►" : ""}</td>
-              <td>
-                <input
-                  className="w-full"
-                  value={row.cause || ""}
-                  onChange={(e) => save(row, e.target.value)}
-                  disabled={!editable}
-                />
-              </td>
-            </tr>
-          ))}
-          {editable ? (
-            <tr onClick={() => setActive("new")}>
-              <td className="access-selector">*</td>
-              <td>
-                <input
-                  className="w-full"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const cause = (e.target as HTMLInputElement).value.trim();
-                      if (cause) {
-                        createMutation.mutate({ cause } as never);
-                        (e.target as HTMLInputElement).value = "";
-                      }
-                    }
-                  }}
-                />
-              </td>
-            </tr>
-          ) : null}
-        </tbody>
-      </table>
+      <div className="mb-4">
+        <CausesTable />
+      </div>
       <h3 className="mb-2 text-[13px] font-bold">{t("shutdowns.summaryTripTitle")}</h3>
       <ShutdownAnalysis initialGroupBy="cause" />
     </AccessHub>
@@ -960,16 +967,43 @@ function CategoriesForm() {
   const { canEdit } = useAuth();
   const editable = canEdit("shutdowns");
   const [active, setActive] = useState<number | "new" | null>(null);
-  const { listQuery, createMutation, updateMutation } = useCrudResource<ShutdownCategory>(
-    "shutdown-categories",
-    shutdownCategoriesApi,
-    { limit: 200 }
-  );
+  const [drafts, setDrafts] = useState<Record<number, string>>({});
+  const [fresh, setFresh] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const { listQuery, createMutation, updateMutation } = useCrudResource<ShutdownCategory>("shutdown-categories", shutdownCategoriesApi, { limit: 200 });
   const rows = listQuery.data || [];
+  const catSort = useSort(rows, CAT_SORT);
 
-  function save(row: ShutdownCategory, patch: Partial<ShutdownCategory>) {
-    if (!editable) return;
-    updateMutation.mutate({ id: row.id, payload: { ...row, ...patch } });
+  function saveRow(row: ShutdownCategory) {
+    const value = (drafts[row.id] ?? "").trim();
+    if (!value) {
+      setError(t("shutdowns.categoryRequired"));
+      return;
+    }
+    setError(null);
+    updateMutation.mutate(
+      { id: row.id, payload: { ...row, category: value } },
+      {
+        onSuccess: () => setDrafts((d) => Object.fromEntries(Object.entries(d).filter(([k]) => Number(k) !== row.id))),
+        onError: (e) => setError(errText(e)),
+      }
+    );
+  }
+
+  function addRow() {
+    const value = fresh.trim();
+    if (!value) {
+      setError(t("shutdowns.categoryRequired"));
+      return;
+    }
+    setError(null);
+    createMutation.mutate({ category: value } as never, {
+      onSuccess: () => {
+        setFresh("");
+        setActive(null);
+      },
+      onError: (e) => setError(errText(e)),
+    });
   }
 
   return (
@@ -984,12 +1018,13 @@ function CategoriesForm() {
         <thead>
           <tr>
             <th className="w-4" />
-            <th className="w-16">{t("menus.number")}</th>
-            <th>{t("fields.category")}</th>
+            <SortTh k="id" sorter={catSort} className="w-16">{t("menus.number")}</SortTh>
+            <SortTh k="category" sorter={catSort}>{t("fields.category")}</SortTh>
+            {editable ? <th className="w-20" /> : null}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {catSort.sorted.map((row) => (
             <tr key={row.id} onClick={() => setActive(row.id)}>
               <td className="access-selector">{active === row.id ? "►" : ""}</td>
               <td>
@@ -998,11 +1033,20 @@ function CategoriesForm() {
               <td>
                 <input
                   className="w-full"
-                  value={row.category || ""}
-                  onChange={(e) => save(row, { category: e.target.value })}
+                  value={drafts[row.id] ?? row.category ?? ""}
+                  onChange={(e) => setDrafts((d) => ({ ...d, [row.id]: e.target.value }))}
                   disabled={!editable}
                 />
               </td>
+              {editable ? (
+                <td onClick={(e) => e.stopPropagation()}>
+                  {drafts[row.id] !== undefined ? (
+                    <button type="button" className="access-btn text-[11px]" disabled={updateMutation.isPending} onClick={() => saveRow(row)}>
+                      {t("common.save")}
+                    </button>
+                  ) : null}
+                </td>
+              ) : null}
             </tr>
           ))}
           {editable ? (
@@ -1010,23 +1054,18 @@ function CategoriesForm() {
               <td className="access-selector">*</td>
               <td />
               <td>
-                <input
-                  className="w-full"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      const category = (e.target as HTMLInputElement).value.trim();
-                      if (category) {
-                        createMutation.mutate({ category } as never);
-                        (e.target as HTMLInputElement).value = "";
-                      }
-                    }
-                  }}
-                />
+                <input className="w-full" value={fresh} onChange={(e) => setFresh(e.target.value)} />
+              </td>
+              <td>
+                <button type="button" className="access-btn text-[11px]" disabled={createMutation.isPending} onClick={addRow}>
+                  {t("common.save")}
+                </button>
               </td>
             </tr>
           ) : null}
         </tbody>
       </table>
+      {error ? <div className="mt-2 text-[12px] font-bold text-red-800">{error}</div> : null}
     </AccessHub>
   );
 }
@@ -1063,3 +1102,71 @@ export default function ShutdownsPage() {
     </Suspense>
   );
 }
+
+
+// ---- Click a column title to sort the table ascending, click again for descending, once more to clear.
+type SortValue = string | number | null | undefined;
+type SortState = { key: string; dir: 1 | -1 } | null;
+type Sorter = { sort: SortState; toggle: (key: string) => void };
+
+function useSort<T>(rows: T[], getters: Record<string, (r: T) => SortValue>): Sorter & { sorted: T[] } {
+  const [sort, setSort] = useState<SortState>(null);
+  const sorted = useMemo(() => {
+    const get = sort ? getters[sort.key] : null;
+    if (!sort || !get) return rows;
+    const empty = (v: SortValue) => v === null || v === undefined || v === "";
+    return [...rows].sort((a, b) => {
+      const x = get(a);
+      const y = get(b);
+      if (empty(x) && empty(y)) return 0;
+      if (empty(x)) return 1;
+      if (empty(y)) return -1;
+      const c =
+        typeof x === "number" && typeof y === "number"
+          ? x - y
+          : String(x).localeCompare(String(y), undefined, { numeric: true, sensitivity: "base" });
+      return c * sort.dir;
+    });
+  }, [rows, sort, getters]);
+  const toggle = (key: string) =>
+    setSort((s) => (!s || s.key !== key ? { key, dir: 1 } : s.dir === 1 ? { key, dir: -1 } : null));
+  return { sorted, sort, toggle };
+}
+
+function SortTh({ k, sorter, className, children }: { k: string; sorter: Sorter; className?: string; children: ReactNode }) {
+  const on = sorter.sort?.key === k;
+  return (
+    <th
+      className={`${className || ""} cursor-pointer select-none`}
+      onClick={() => sorter.toggle(k)}
+      aria-sort={on ? (sorter.sort!.dir === 1 ? "ascending" : "descending") : "none"}
+    >
+      {children} <span className="opacity-70">{on ? (sorter.sort!.dir === 1 ? "▲" : "▼") : ""}</span>
+    </th>
+  );
+}
+
+const SHUTDOWN_SORT: Record<string, (r: Shutdown) => SortValue> = {
+  nr: (r) => r.nr,
+  plant_part: (r) => plantPartValue(r.plant_part),
+  shutdown_time: (r) => r.shutdown_time,
+  startup_time: (r) => r.startup_time,
+  duration: (r) => durationMinutes(r),
+  code: (r) => r.code,
+  cause: (r) => r.cause,
+  ka_before_trip: (r) => r.ka_before_trip,
+  lost_load: (r) => r.lost_load,
+  lost_production: (r) => r.lost_production,
+  mtbf_days: (r) => r.mtbf_days,
+  category: (r) => r.category,
+  remarks: (r) => r.remarks,
+};
+const CAUSE_SORT: Record<string, (r: ShutdownCause) => SortValue> = {
+  code: (r) => r.code,
+  cause: (r) => r.cause,
+  category: (r) => r.category,
+};
+const CAT_SORT: Record<string, (r: { id: number; category?: string | null }) => SortValue> = {
+  id: (r) => r.id,
+  category: (r) => r.category,
+};

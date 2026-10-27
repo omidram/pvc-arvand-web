@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import { InServiceBreakdown } from "@/components/domain/in-service-breakdown";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
@@ -14,7 +15,23 @@ import { formatDateTime, formatDisplayedDate, formatNumber } from "@/lib/utils";
 import { ElementReportGuideButton } from "./element-report-guide";
 import { STAGE_FLOW, STAGE_TONE } from "./element-dashboard-ui";
 
-const FLOW_SPANS = [3, 6, 12, 24, 36] as const;
+const FLOW_KINDS = ["assembled", "commissioned", "decommissioned", "disassembled"] as const;
+type FlowGrain = "day" | "week" | "month" | "year";
+type FlowHit = { date: string; kind: string; element_nr: string; reason: string | null };
+
+function bucketLabel(key: string, grain: FlowGrain): string {
+  if (grain === "year") return key;
+  if (grain === "month") return formatDisplayedDate(`${key}-01`);
+  return formatDisplayedDate(key);
+}
+
+function reasonBits(reason: string | null | undefined): string[] {
+  const bits = (reason || "")
+    .split(",")
+    .map((bit) => bit.trim())
+    .filter(Boolean);
+  return bits;
+}
 
 function href(tab: string, extra: Record<string, string> = {}): string {
   return `/element-dashboard?${new URLSearchParams({ tab, ...extra }).toString()}`;
@@ -50,13 +67,14 @@ export function ElementReportPanel({ compact = false }: { compact?: boolean }) {
   if (!allowed) return null;
 
   const cls = `dash-voltage-report er-report ${compact ? "is-compact" : ""}`;
-  const head = (
+  const head = (updated?: string) => (
     <div className="dash-voltage-head">
-      <div>
+      <div className="er-report-lead">
         <h2 className="dash-voltage-title">{t("elDash.report.title")}</h2>
         <p className="dash-voltage-sub">{t("elDash.report.sub")}</p>
+        {updated ? <p className="er-updated">{updated}</p> : null}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="er-report-actions">
         <ElementReportGuideButton compact={compact} />
         <Link href="/element-dashboard" className="dash-voltage-link">
           {t("elDash.report.open")}
@@ -69,7 +87,7 @@ export function ElementReportPanel({ compact = false }: { compact?: boolean }) {
   if (query.isLoading && !query.data) {
     return (
       <section className={cls}>
-        {head}
+        {head()}
         <p className="dash-voltage-sub">{t("elDash.loading")}</p>
       </section>
     );
@@ -77,7 +95,7 @@ export function ElementReportPanel({ compact = false }: { compact?: boolean }) {
   if (query.isError || !query.data) {
     return (
       <section className={cls}>
-        {head}
+        {head()}
         <p className="dash-voltage-sub" style={{ color: "#a10000" }}>
           {(query.error as Error | null)?.message || "Error"}
         </p>
@@ -107,7 +125,8 @@ function countSide(rows: AssemblyPoolRow[], kind: "anode" | "cathode", grade?: "
 
 /** Anode and cathode counts: reusable from TAFKIK, plus purchased / recoated stock tables. */
 function AssemblyStockSummary({ board }: { board?: ElementBoard }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const [open, setOpen] = useState(false);
   const pool = useQuery({
     queryKey: ["workflow", "assembly-pool"],
     queryFn: () => workflowApi.assemblyPool(),
@@ -128,7 +147,10 @@ function AssemblyStockSummary({ board }: { board?: ElementBoard }) {
     <section className="er-panel">
       <h3 className="er-shop-title">
         <Link href="/elements/assembly-stock">{t("elDash.report.stockTitle")}</Link>
+        <CollapseBtn open={open} onToggle={() => setOpen((v) => !v)} locale={locale} />
       </h3>
+      {open ? (
+      <>
       <p className="dash-voltage-sub">{t("elDash.report.stockSub")}</p>
       <table className="ed-table er-shop-table">
         <thead>
@@ -175,6 +197,8 @@ function AssemblyStockSummary({ board }: { board?: ElementBoard }) {
         title={t("elDash.report.assemblySerials")}
         rows={[...(data?.purchased ?? []), ...(data?.recoated ?? [])]}
       />
+      </>
+      ) : null}
     </section>
   );
 }
@@ -215,7 +239,8 @@ function SerialStrip({ title, rows }: { title: string; rows: AssemblyPoolRow[] }
 
 /** Workshop inventory in the same groups as the cell-shop paper: assembled cells, spare electrodes, coating, membranes. */
 function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const [open, setOpen] = useState(false);
   const pairLimit = compact ? 4 : sheet.assembled_pairs.length;
   const typeLimit = compact ? 4 : sheet.membrane_types.length;
   const coated = (kind: "anode" | "cathode") => (compact ? sheet[kind].coated.slice(0, 4) : sheet[kind].coated);
@@ -223,7 +248,10 @@ function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean 
     <section className="er-panel">
       <h3 className="er-shop-title">
         <Link href={href("shop")}>{t("elDash.report.shopTitle")}</Link>
+        <CollapseBtn open={open} onToggle={() => setOpen((v) => !v)} locale={locale} />
       </h3>
+      {open ? (
+      <>
       <p className="dash-voltage-sub">{t("elDash.report.shopSub")}</p>
       <div className="er-shop-grid">
         <table className="ed-table er-shop-table">
@@ -348,6 +376,8 @@ function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean 
           </tbody>
         </table>
       </div>
+      </>
+      ) : null}
     </section>
   );
 }
@@ -425,13 +455,22 @@ function GroupedCounts({
 }
 
 function BoardCard({ title, sub, hrefTo, tone, children }: { title: string; sub: string; hrefTo: string; tone: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
   return (
-    <article className={`er-board-card is-${tone}`}>
-      <h3 className="er-shop-title">
-        <Link href={hrefTo}>{title}</Link>
-      </h3>
+    <article className={`er-board-card is-${tone}${open ? " is-open" : " is-min"}`}>
+      <button type="button" className="er-board-toggle" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        <h3 className="er-shop-title">{title}</h3>
+        <span aria-hidden>{open ? "−" : "+"}</span>
+      </button>
       <p className="er-board-sub">{sub}</p>
-      {children}
+      {open ? (
+        <>
+          <Link className="er-board-open" href={hrefTo}>
+            {title}
+          </Link>
+          {children}
+        </>
+      ) : null}
     </article>
   );
 }
@@ -513,13 +552,15 @@ function ManagementBoard({ board }: { board: ElementBoard }) {
 
 function PalletBoard({ pallets }: { pallets: BoardPallet[] }) {
   const { t } = useI18n();
+  const [open, setOpen] = useState(false);
   return (
-    <section className="er-panel">
-      <h3 className="er-shop-title">
-        <Link href="/cartable">{t("elDash.report.palletTitle")}</Link>
-      </h3>
+    <section className={`er-panel${open ? " is-open" : " is-min"}`}>
+      <button type="button" className="er-board-toggle" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        <h3 className="er-shop-title">{t("elDash.report.palletTitle")}</h3>
+        <span aria-hidden>{open ? "−" : "+"}</span>
+      </button>
       <p className="dash-voltage-sub">{t("elDash.report.palletSub")}</p>
-      {pallets.length === 0 ? (
+      {!open ? null : pallets.length === 0 ? (
         <p className="er-board-empty">{t("elDash.report.palletEmpty")}</p>
       ) : (
         <div className="er-pallet-grid">
@@ -569,45 +610,76 @@ function PalletBoard({ pallets }: { pallets: BoardPallet[] }) {
   );
 }
 
-function MonthFlow({ flow, compact }: { flow: ElementDashOverview["monthly_flow"]; compact: boolean }) {
+export function MonthFlow({ compact }: { compact: boolean }) {
   const { t } = useI18n();
-  const [span, setSpan] = useState<number>(12);
+  const [grain, setGrain] = useState<FlowGrain>("month");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const custom = Boolean(from || to);
+  const [pick, setPick] = useState("");
+  const series = useQuery({
+    queryKey: ["element-dashboard", "activity", grain],
+    queryFn: () => elementDashboardApi.activity(grain),
+    staleTime: 60_000,
+  });
+  const why = useQuery({
+    queryKey: ["element-dashboard", "activity-why", grain, pick],
+    queryFn: () => elementDashboardApi.activityWhy(grain, pick),
+    enabled: Boolean(pick),
+  });
+  const buckets = series.data || [];
   const shown = useMemo(() => {
-    const rows = custom ? flow.filter((row) => (!from || row.month >= from) && (!to || row.month <= to)) : flow.slice(-span);
-    return rows.map((row) => ({ ...row, label: formatDisplayedDate(row.month) }));
-  }, [flow, span, from, to, custom]);
+    // Never plot periods that have not started yet (bad or future-dated events).
+    const today = new Date().toISOString().slice(0, 10);
+    const rows = buckets.filter((row) => row.key <= today.slice(0, row.key.length) && (!from || row.key >= from) && (!to || row.key <= to));
+    const limited = from || to ? rows : grain === "day" ? rows.slice(-31) : grain === "week" ? rows.slice(-16) : grain === "year" ? rows : rows.slice(-12);
+    return limited.map((row) => ({ ...row, label: bucketLabel(row.key, grain) }));
+  }, [buckets, from, to, grain]);
+  const picked = shown.find((row) => row.key === pick) || null;
+  const hits = (why.data || []) as FlowHit[];
+  const reasons = useMemo(() => {
+    const counts = new Map<string, string[]>();
+    for (const event of hits) {
+      if (event.kind !== "decommissioned") continue;
+      const bits = reasonBits(event.reason);
+      const labels = bits.length ? bits : ["—"];
+      for (const label of labels) {
+        const list = counts.get(label) || [];
+        if (event.element_nr && !list.includes(event.element_nr)) list.push(event.element_nr);
+        counts.set(label, list);
+      }
+    }
+    return [...counts.entries()].sort((a, b) => b[1].length - a[1].length);
+  }, [hits]);
   return (
     <section className="er-panel er-flow">
       <div className="er-flow-head">
         <div>
-          <h3 className="er-shop-title">{t("elDash.report.flowTitle")}</h3>
+          <h3 className="er-shop-title">{t(`elDash.report.flowGrainTitle.${grain}`)}</h3>
           <p className="dash-voltage-sub">{t("elDash.report.flowHint")}</p>
         </div>
         <div className="er-flow-filter">
-          {FLOW_SPANS.map((months) => (
+          {(["day", "week", "month", "year"] as const).map((key) => (
             <button
-              key={months}
+              key={key}
               type="button"
-              className={`er-flow-chip ${!custom && span === months ? "is-on" : ""}`}
+              className={`er-flow-chip ${grain === key ? "is-on" : ""}`}
               onClick={() => {
-                setSpan(months);
+                setGrain(key);
                 setFrom("");
                 setTo("");
+                setPick("");
               }}
             >
-              {t("elDash.report.flowMonths", { n: months })}
+              {t(`elDash.report.grain.${key}`)}
             </button>
           ))}
           <label>
             {t("elDash.report.flowFrom")}
             <select value={from} onChange={(e) => setFrom(e.target.value)}>
               <option value="">—</option>
-              {flow.map((row) => (
-                <option key={row.month} value={row.month}>
-                  {formatDisplayedDate(row.month)}
+              {buckets.map((row) => (
+                <option key={row.key} value={row.key}>
+                  {bucketLabel(row.key, grain)}
                 </option>
               ))}
             </select>
@@ -616,35 +688,81 @@ function MonthFlow({ flow, compact }: { flow: ElementDashOverview["monthly_flow"
             {t("elDash.report.flowTo")}
             <select value={to} onChange={(e) => setTo(e.target.value)}>
               <option value="">—</option>
-              {flow.map((row) => (
-                <option key={`to-${row.month}`} value={row.month}>
-                  {formatDisplayedDate(row.month)}
+              {buckets.map((row) => (
+                <option key={`to-${row.key}`} value={row.key}>
+                  {bucketLabel(row.key, grain)}
                 </option>
               ))}
             </select>
           </label>
         </div>
       </div>
-      <div className="er-flow-chart" style={{ height: compact ? 220 : 280 }}>
+      <div className="er-flow-body">
+      <div className="er-flow-chart" style={{ height: compact ? 260 : 300 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={shown} margin={{ top: 8, right: 12, left: -8, bottom: 0 }}>
+          <LineChart
+            data={shown}
+            margin={{ top: 8, right: 12, left: -8, bottom: 0 }}
+            onClick={(state) => {
+              const label = state?.activeLabel == null ? "" : String(state.activeLabel);
+              const index = Number(state?.activeIndex ?? state?.activeTooltipIndex);
+              const row = (label && shown.find((item) => item.label === label)) || (Number.isFinite(index) ? shown[index] : undefined);
+              if (row?.key) setPick(row.key);
+            }}
+          >
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="label" tick={{ fontSize: 11 }} interval="preserveStartEnd" />
             <YAxis tick={{ fontSize: 11 }} allowDecimals={false} width={36} />
             <Tooltip />
             <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Line type="monotone" dataKey="assembled" name={t("elDash.flow.assembled")} stroke="#7c3aed" strokeWidth={2.4} dot={false} />
-            <Line type="monotone" dataKey="commissioned" name={t("elDash.flow.commissioned")} stroke="#16a34a" strokeWidth={2.4} dot={false} />
-            <Line type="monotone" dataKey="decommissioned" name={t("elDash.flow.decommissioned")} stroke="#dc2626" strokeWidth={2.4} dot={false} />
-            <Line type="monotone" dataKey="disassembled" name={t("elDash.flow.disassembled")} stroke="#64748b" strokeWidth={2.4} dot={false} />
+            <Line type="monotone" dataKey="assembled" name={t("elDash.flow.assembled")} stroke="#7c3aed" strokeWidth={2.4} dot={{ r: 2 }} activeDot={{ r: 5 }} />
+            <Line type="monotone" dataKey="commissioned" name={t("elDash.flow.commissioned")} stroke="#16a34a" strokeWidth={2.4} dot={{ r: 2 }} activeDot={{ r: 5 }} />
+            <Line type="monotone" dataKey="decommissioned" name={t("elDash.flow.decommissioned")} stroke="#dc2626" strokeWidth={2.4} dot={{ r: 2 }} activeDot={{ r: 5 }} />
+            <Line type="monotone" dataKey="disassembled" name={t("elDash.flow.disassembled")} stroke="#64748b" strokeWidth={2.4} dot={{ r: 2 }} activeDot={{ r: 5 }} />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+      <div className="er-flow-why">
+        <h4>{t("elDash.report.whyTitle")}</h4>
+        {!picked ? <p>{t("elDash.report.whyHint")}</p> : null}
+        {picked && why.isFetching ? <p>{t("common.loading")}</p> : null}
+        {picked && !why.isFetching ? (
+          <>
+            <p>
+              {bucketLabel(picked.key, grain)}
+            </p>
+            {FLOW_KINDS.map((kind) => {
+              const list = hits.filter((event) => event.kind === kind);
+              if (!list.length) return null;
+              return (
+                <div key={kind} className="er-flow-why-block">
+                  <strong>
+                    {t(`elDash.flow.${kind}`)} · {list.length}
+                  </strong>
+                  {kind === "decommissioned" ? (
+                    <ul>
+                      {reasons.map(([reason, elements]) => (
+                        <li key={reason}>
+                          <span>{reason === "—" ? t("elDash.report.reasonUnknown") : reason}</span>
+                          <em>{elements.join("، ")}</em>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>{list.map((event) => event.element_nr).filter(Boolean).join("، ")}</p>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        ) : null}
+      </div>
       </div>
     </section>
   );
 }
 
-function Report({ data, compact, cls, head }: { data: ElementDashOverview; compact: boolean; cls: string; head: React.ReactNode }) {
+function Report({ data, compact, cls, head }: { data: ElementDashOverview; compact: boolean; cls: string; head: (updated?: string) => React.ReactNode }) {
   const { t } = useI18n();
   const { counts, parts } = data;
   const kinds = ["anode", "cathode", "membrane"] as const;
@@ -652,8 +770,7 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
 
   return (
     <section className={cls}>
-      {head}
-      <p className="er-updated">{t("elDash.updatedAt", { time: formatDateTime(data.generated_at) })}</p>
+      {head(t("elDash.updatedAt", { time: formatDateTime(data.generated_at) }))}
 
       <div className="er-pipeline" role="list">
         {stages.map((stage: ElementStage) => (
@@ -669,14 +786,17 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
         ))}
       </div>
 
-      <MonthFlow flow={data.monthly_flow} compact={compact} />
-
       {data.board ? <ManagementBoard board={data.board} /> : null}
+
+      <MonthFlow compact={compact} />
+      <InServiceBreakdown />
+
       {data.board ? <PalletBoard pallets={data.board.pallets} /> : null}
 
-      <AssemblyStockSummary board={data.board} />
-
-      {data.workshop ? <ShopSheet sheet={data.workshop} compact={compact} /> : null}
+      <div className="er-two">
+        <AssemblyStockSummary board={data.board} />
+        {data.workshop ? <ShopSheet sheet={data.workshop} compact={compact} /> : null}
+      </div>
 
       {!compact ? (
         <div className="er-parts">
@@ -695,5 +815,14 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
         </div>
       ) : null}
     </section>
+  );
+}
+
+function CollapseBtn({ open, onToggle, locale }: { open: boolean; onToggle: () => void; locale: string }) {
+  const label = open ? (locale === "fa" ? "کوچک کردن" : "Minimize") : locale === "fa" ? "باز کردن" : "Expand";
+  return (
+    <button type="button" className="er-collapse-btn" onClick={onToggle} title={label} aria-label={label} aria-expanded={open}>
+      {open ? "▾" : "▸"} <span>{label}</span>
+    </button>
   );
 }

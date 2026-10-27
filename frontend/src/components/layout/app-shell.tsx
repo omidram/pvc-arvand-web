@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth/context";
 import { LoginScreen } from "@/components/auth/login-screen";
 import { SessionControls } from "@/components/layout/session-controls";
-import { AllFormsPane } from "@/components/layout/all-forms-pane";
 import { ModernSidebar } from "@/components/layout/modern-sidebar";
 import { AlertToaster } from "@/components/domain/alert-toaster";
 import { Spinner } from "@/components/ui/spinner";
@@ -20,7 +19,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { t } = useI18n();
   const { isModern } = useUiStyle();
   const isMainMenu = pathname === "/";
-  const [formsOpen, setFormsOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
 
   function goBack() {
@@ -33,7 +31,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setNavOpen(false);
-    if (typeof window !== "undefined" && window.innerWidth <= 1100) setFormsOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -109,13 +106,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ) : null}
         </div>
         <div className="app-topbar-actions flex min-w-0 flex-wrap items-center justify-end gap-1">
-          <button
-            type="button"
-            className="app-forms-toggle access-toolbar-btn h-[22px] px-2 text-[11px]"
-            onClick={() => setFormsOpen((open) => !open)}
-          >
-            {t("menus.allForms")}
-          </button>
           <SessionControls classic={isMainMenu} />
           <button type="button" onClick={logout} className="access-toolbar-btn h-[22px] px-2 text-[11px]">
             {t("mainMenu.exit")}
@@ -124,36 +114,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
       <div className="flex min-h-0 min-w-0 flex-1">
         <main className="min-h-0 min-w-0 flex-1 overflow-auto">{children}</main>
-        {formsOpen ? (
-          <button type="button" className="app-drawer-backdrop" aria-label={t("menus.collapseForms")} onClick={() => setFormsOpen(false)} />
-        ) : (
-          <button
-            type="button"
-            className="access-forms-expand"
-            onClick={() => setFormsOpen(true)}
-            title={t("menus.expandForms")}
-            aria-label={t("menus.expandForms")}
-            aria-expanded={false}
-          >
-            <span className="access-forms-expand-chevron" aria-hidden>
-              ‹
-            </span>
-            <span className="access-forms-expand-label">{t("menus.allForms")}</span>
-          </button>
-        )}
-        <div className={`access-forms-slot ${formsOpen ? "is-open" : ""}`}>
-        <Suspense
-          fallback={
-            <aside className="access-forms-pane min-h-0 self-stretch" dir="ltr">
-              <div className="access-forms-pane-header">
-                <span>{t("menus.allForms")}</span>
-              </div>
-            </aside>
-          }
-        >
-          <AllFormsPane onCollapse={() => setFormsOpen(false)} />
-        </Suspense>
-        </div>
       </div>
       <AlertToaster />
     </div>
