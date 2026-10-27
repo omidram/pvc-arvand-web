@@ -117,6 +117,8 @@ export type CellDossier = {
 export const arrangementBoardApi = {
   get: async (electrolyzer?: string): Promise<ArrangementBoard> =>
     (await apiClient.get("/arrangement-board", { params: { electrolyzer } })).data,
+  clearToShop: async (electrolyzer: string): Promise<{ electrolyzer: string; cleared: number; kept_in_shop: string[] }> =>
+    (await apiClient.post("/arrangement-board/clear-to-shop", { electrolyzer })).data,
   cell: async (electrolyzer: string, position: number, elementId?: number | null): Promise<CellDossier> =>
     (
       await apiClient.get("/arrangement-board/cell", {

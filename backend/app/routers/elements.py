@@ -20,7 +20,7 @@ from ..assembly_integrity import (
     summarize,
 )
 from ..calculations import element_dol, last_assembly_date, shutdowns_affecting
-from ..relations_sync import apply_defined_groups, find_master, link_group, link_serial
+from ..relations_sync import apply_defined_groups, find_master, link_group, link_serial, sync_element_group
 from ..warehouse import compact_eq, compact_nr, ensure_indexed, import_contractor_repairs, load_compact_index, load_shutdown_windows
 from ..crud import build_crud_router
 from ..database import get_db
@@ -147,6 +147,28 @@ def _sync_saved_element(db: Session, obj: models.Element) -> None:
     obj.membrane_nr = link_serial(db, "membrane", obj.membrane_nr, extra={"membrane_type": obj.membrane_type})
     obj.group_nr = link_group(db, obj.group_nr)
     _share_with_masters(db, obj)
+    # Coatings decide the group, so a changed anode/cathode/membrane follows Group Definition immediately.
+    sync_element_group(db, obj)
+    obj.group_nr = link_group(db, obj.group_nr)
+    from .field_options import publish_assembly_value
+
+    for field in (
+        "generation",
+        "membrane_type",
+        "decommission_reason",
+        "gap_mm",
+        "ispb",
+        "anode_coating",
+        "anode_electrode",
+        "anode_shell",
+        "cathode_coating",
+        "cathode_electrode",
+        "cathode_shell",
+        "membrane_info",
+        "membrane_remark",
+        "remarks",
+    ):
+        publish_assembly_value(db, "elements", field, getattr(obj, field, None))
     # A newer installation of the same cell / anode / cathode / membrane ends the earlier one.
     close_superseded_by(db, obj)
 
@@ -829,8 +851,23 @@ def _rename_group(db: Session, old: str, new: str) -> None:
     )
 
 
-def _fill_groups_after_definition(db: Session, _obj: models.GroupDefinition) -> None:
+def _fill_groups_after_definition(db: Session, obj: models.GroupDefinition) -> None:
+    from .field_options import publish_assembly_value
+
+    for field in ("anode_coating", "cathode_coating", "membrane_type", "gap_mm"):
+        publish_assembly_value(db, "group_definitions", field, getattr(obj, field, None))
     apply_defined_groups(db)
+
+
+def _realign_after_group_delete(db: Session, _obj: models.GroupDefinition) -> None:
+    apply_defined_groups(db)
+
+
+def _refresh_group_dashboard() -> None:
+    """Drop the element-dashboard cache so a new group shows on the next read."""
+    from ..element_dashboard import clear_cache
+
+    clear_cache()
 
 
 group_definitions_router = build_crud_router(
@@ -844,6 +881,8 @@ group_definitions_router = build_crud_router(
     unique_compact=True,
     sort_key=lambda row: natural_key(row.group_nr),
     after_save=_fill_groups_after_definition,
+    after_delete=_realign_after_group_delete,
+    after_commit=_refresh_group_dashboard,
     on_rename=_rename_group,
 )
 

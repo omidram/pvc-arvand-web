@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 
 from .. import models
 from ..database import get_db
+from ..workflow_models import MembraneStock
 
 router = APIRouter(prefix="/field-options", tags=["field-options"])
 
@@ -59,65 +60,176 @@ CATALOG: dict[str, tuple[Any, list[str]]] = {
     "group_definitions": (models.GroupDefinition, ["anode_coating", "cathode_coating", "membrane_type", "gap_mm"]),
 }
 
-# (table, field) -> further (model, column) pairs whose values are offered too and renamed together.
-_COATERS = [(models.Element, "anode_coating"), (models.Element, "cathode_coating"), (models.Anode, "coating"), (models.Cathode, "coating")]
+# One shared pool: every combo that is tied to Assembly Data, the columns it is read from,
+# and the dropdowns that must offer the same values.
+# fields: (field_options table, field). sources: (model, column) distinct values.
+ASSEMBLY_RELATIONS: list[dict[str, Any]] = [
+    {
+        # One coating-company pool: assembly, anode, cathode, group definition and segregation.
+        "fields": [
+            ("elements", "anode_coating"),
+            ("elements", "cathode_coating"),
+            ("anodes", "coating"),
+            ("cathodes", "coating"),
+            ("group_definitions", "anode_coating"),
+            ("group_definitions", "cathode_coating"),
+            ("segregations", "company"),
+        ],
+        "sources": [
+            (models.Element, "anode_coating"),
+            (models.Element, "cathode_coating"),
+            (models.Anode, "coating"),
+            (models.Cathode, "coating"),
+            (models.GroupDefinition, "anode_coating"),
+            (models.GroupDefinition, "cathode_coating"),
+            (models.ElectrodeSegregation, "company"),
+        ],
+    },
+    {
+        "fields": [("elements", "membrane_type"), ("membranes", "membrane_type"), ("group_definitions", "membrane_type")],
+        "sources": [(models.Element, "membrane_type"), (models.Membrane, "membrane_type"), (models.GroupDefinition, "membrane_type"), (MembraneStock, "membrane_type")],
+    },
+    {
+        "fields": [("elements", "gap_mm"), ("group_definitions", "gap_mm")],
+        "sources": [(models.Element, "gap_mm"), (models.GroupDefinition, "gap_mm")],
+    },
+    {
+        "fields": [("elements", "generation")],
+        "sources": [(models.Element, "generation"), (models.Anode, "generation"), (models.Cathode, "generation")],
+        "built_in": ["3", "4", "5", "5+", "6", "6+", "Blue Star"],
+    },
+    {
+        "fields": [("elements", "membrane_remark")],
+        "sources": [(models.Element, "membrane_remark")],
+        "built_in": ["نو", "reused"],
+    },
+    {
+        "fields": [("elements", "anode_shell")],
+        "sources": [(models.Element, "anode_shell")],
+        "built_in": ["دنوار(ایتالیا)", "بلو استار (چین)", "دنورا"],
+    },
+    {
+        "fields": [("elements", "cathode_shell")],
+        "sources": [(models.Element, "cathode_shell")],
+        "built_in": ["دنوار(ایتالیا)", "بلو استار (چین)", "دنورا"],
+    },
+    {"fields": [("elements", "anode_electrode")], "sources": [(models.Element, "anode_electrode")]},
+    {"fields": [("elements", "cathode_electrode")], "sources": [(models.Element, "cathode_electrode")]},
+    {"fields": [("elements", "membrane_info")], "sources": [(models.Element, "membrane_info")]},
+    {"fields": [("elements", "ispb")], "sources": [(models.Element, "ispb")]},
+    {"fields": [("elements", "remarks")], "sources": [(models.Element, "remarks")]},
+    {"fields": [("elements", "decommission_reason")], "sources": [(models.Element, "decommission_reason")]},
+]
 
 
-def _others(model: Any, column: str) -> list[tuple[Any, str]]:
-    return [pair for pair in _COATERS if pair != (model, column)]
+def _relation(table: str, field: str) -> dict[str, Any] | None:
+    for rel in ASSEMBLY_RELATIONS:
+        if (table, field) in rel["fields"]:
+            return rel
+    return None
 
 
+def _extras(table: str, field: str, sources: list[tuple[Any, str]]) -> list[tuple[Any, str]]:
+    model = CATALOG[table][0]
+    return [pair for pair in sources if pair != (model, field)]
+
+
+_CATALOG_FIELDS = {(name, col) for name, (_model, cols) in CATALOG.items() for col in cols}
 EXTRA_SOURCES: dict[tuple[str, str], list[tuple[Any, str]]] = {
-    # One shared pool of coating companies for every table that names one (rename = rename everywhere).
-    ("elements", "anode_coating"): _others(models.Element, "anode_coating"),
-    ("elements", "cathode_coating"): _others(models.Element, "cathode_coating"),
-    ("anodes", "coating"): _others(models.Anode, "coating"),
-    ("cathodes", "coating"): _others(models.Cathode, "coating"),
-    ("segregations", "company"): list(_COATERS),
-    ("group_definitions", "anode_coating"): [(models.Element, "anode_coating"), (models.Anode, "coating")],
-    ("group_definitions", "cathode_coating"): [(models.Element, "cathode_coating"), (models.Cathode, "coating")],
-    ("group_definitions", "membrane_type"): [(models.Element, "membrane_type"), (models.Membrane, "membrane_type")],
-    ("group_definitions", "gap_mm"): [(models.Element, "gap_mm")],
+    (table, field): _extras(table, field, rel["sources"])
+    for rel in ASSEMBLY_RELATIONS
+    for table, field in rel["fields"]
+    if (table, field) in _CATALOG_FIELDS
 }
 
-# Values every installation starts with (shown even before any record uses them).
 BUILT_IN: dict[tuple[str, str], list[str]] = {
-    ("elements", "generation"): ["3", "4", "5", "5+", "6", "6+", "Blue Star"],
-    ("elements", "membrane_remark"): ["نو", "reused"],
-    ("elements", "anode_shell"): ["دنوار(ایتالیا)", "بلو استار (چین)", "دنورا"],
-    ("elements", "cathode_shell"): ["دنوار(ایتالیا)", "بلو استار (چین)", "دنورا"],
+    (table, field): list(rel.get("built_in") or [])
+    for rel in ASSEMBLY_RELATIONS
+    for table, field in rel["fields"]
+    if rel.get("built_in")
 }
 
-SEED_VERSION = "2"
+SEED_VERSION = "3"
+
+
+def _distinct(db: Session, model: Any, column: str) -> list[str]:
+    col = getattr(model, column)
+    found: list[str] = []
+    seen: set[str] = set()
+    for (raw,) in db.query(col).filter(col.isnot(None)).distinct().all():
+        text = _clean(str(raw))
+        if not text or len(text) > 200:
+            continue
+        key = _key(text)
+        if key in seen:
+            continue
+        seen.add(key)
+        found.append(text)
+    return found
+
+
+def sync_assembly_combos(db: Session) -> int:
+    """Delete every Assembly-linked combo value and write it again from the related tables.
+
+    Built-in seeds (generation, membrane use, shell) are written even when no row uses them yet.
+    """
+    written = 0
+    for rel in ASSEMBLY_RELATIONS:
+        values: list[str] = []
+        seen: set[str] = set()
+        for text in list(rel.get("built_in") or []):
+            clean = _clean(text)
+            if clean and _key(clean) not in seen:
+                seen.add(_key(clean))
+                values.append(clean)
+        for model, column in rel["sources"]:
+            for text in _distinct(db, model, column):
+                if _key(text) not in seen:
+                    seen.add(_key(text))
+                    values.append(text)
+        for table, field in rel["fields"]:
+            if table not in CATALOG or field not in CATALOG[table][1]:
+                continue
+            db.query(models.FieldOption).filter_by(table_name=table, field_name=field).delete(synchronize_session=False)
+            for text in values:
+                db.add(models.FieldOption(table_name=table, field_name=field, value=text))
+                written += 1
+    db.flush()
+    return written
+
+
+def publish_assembly_value(db: Session, table: str, field: str, value: str | None) -> None:
+    """Keep a newly saved Assembly value in every combo that shares its relation."""
+    text = _clean(value)
+    if not text or len(text) > 200:
+        return
+    rel = _relation(table, field)
+    targets = rel["fields"] if rel else [(table, field)]
+    for item_table, item_field in targets:
+        if item_table not in CATALOG or item_field not in CATALOG[item_table][1]:
+            continue
+        rows = db.query(models.FieldOption).filter_by(table_name=item_table, field_name=item_field).all()
+        if any(_key(row.value) == _key(text) for row in rows):
+            continue
+        db.add(models.FieldOption(table_name=item_table, field_name=item_field, value=text))
 
 
 def seed_field_options(db: Session) -> int:
-    """Write the built-in lists into ``field_options`` once, so the rules live in the database.
+    """Rebuild Assembly combos from the related tables once per rules version.
 
-    After this the plant edits them in Settings -> Field lists like any other value. A marker row
-    (table ``_meta``) stops a deleted value from coming back on the next start.
+    A marker row (table ``_meta``) stops the wipe from running again on the next start,
+    so a value added later in Settings → Field lists is kept.
     """
     marker = db.query(models.FieldOption).filter_by(table_name="_meta", field_name="seed").first()
     if marker and marker.value == SEED_VERSION:
         return 0
-    added = 0
-    have = {(o.table_name, o.field_name, _key(o.value)) for o in db.query(models.FieldOption).all()}
-    previous = int(marker.value) if marker and marker.value.isdigit() else 0
-    for (table, field), values in BUILT_IN.items():
-        # version 1 already seeded the generation list; only add what is new
-        if previous >= 1 and (table, field) == ("elements", "generation"):
-            continue
-        for value in values:
-            if (table, field, _key(value)) in have:
-                continue
-            db.add(models.FieldOption(table_name=table, field_name=field, value=value))
-            added += 1
+    written = sync_assembly_combos(db)
     if marker:
         marker.value = SEED_VERSION
     else:
         db.add(models.FieldOption(table_name="_meta", field_name="seed", value=SEED_VERSION))
     db.commit()
-    return added
+    return written
 
 
 def _natural(value: str):

@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDateTime, formatDisplayedDate, formatNumber } from "@/lib/utils";
 import { ElementReportGuideButton } from "./element-report-guide";
+import { MembraneUsedModal } from "./membrane-stock-panel";
 import { STAGE_FLOW, STAGE_TONE } from "./element-dashboard-ui";
 
 const FLOW_KINDS = ["assembled", "commissioned", "decommissioned", "disassembled"] as const;
@@ -241,6 +242,7 @@ function SerialStrip({ title, rows }: { title: string; rows: AssemblyPoolRow[] }
 function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean }) {
   const { t, locale } = useI18n();
   const [open, setOpen] = useState(false);
+  const [usedPick, setUsedPick] = useState<{ type: string | undefined } | null>(null);
   const pairLimit = compact ? 4 : sheet.assembled_pairs.length;
   const typeLimit = compact ? 4 : sheet.membrane_types.length;
   const coated = (kind: "anode" | "cathode") => (compact ? sheet[kind].coated.slice(0, 4) : sheet[kind].coated);
@@ -302,6 +304,40 @@ function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean 
               </td>
               <td className="ed-num">
                 <Link href={href("shop", { stage: "awaiting_disassembly" })}>{formatNumber(sheet.awaiting_disassembly, 0)}</Link>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <button type="button" className="asm-link" onClick={() => setUsedPick({ type: undefined })}>
+                  <strong>{t("membraneStock.dashTitle")}</strong>
+                </button>
+              </td>
+              <td className="ed-num">
+                <button type="button" className="asm-link" onClick={() => setUsedPick({ type: undefined })}>
+                  {formatNumber(sheet.membrane_used?.total ?? 0, 0)}
+                </button>
+              </td>
+            </tr>
+            {(sheet.membrane_used?.types ?? []).slice(0, typeLimit).map((row) => (
+              <tr key={`used-${row.type}`}>
+                <td>
+                  <button type="button" className="asm-link" onClick={() => setUsedPick({ type: row.type })}>
+                    {row.type}
+                  </button>
+                </td>
+                <td className="ed-num">
+                  <button type="button" className="asm-link" onClick={() => setUsedPick({ type: row.type })}>
+                    {formatNumber(row.count, 0)}
+                  </button>
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td>
+                <Link href="/elements/assembly-stock">{t("membraneStock.dashStore")}</Link>
+              </td>
+              <td className="ed-num">
+                <Link href="/elements/assembly-stock">{formatNumber(sheet.membrane_store?.total ?? 0, 0)}</Link>
               </td>
             </tr>
           </tbody>
@@ -378,6 +414,7 @@ function ShopSheet({ sheet, compact }: { sheet: WorkshopSheet; compact: boolean 
       </div>
       </>
       ) : null}
+      <MembraneUsedModal open={usedPick != null} onClose={() => setUsedPick(null)} type={usedPick?.type} />
     </section>
   );
 }

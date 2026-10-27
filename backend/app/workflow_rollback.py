@@ -283,6 +283,9 @@ def _cancel_open_work_orders(db: Session, element_nr: str | None, since: datetim
 
 def rollback_assemble(db: Session, r: WfAssembleRequest) -> None:
     origin = recall(db, "assemble", r.id)
+    from .routers.membrane_stock import release_for_request
+
+    release_for_request(db, r.code)
     _delete_air_for_assemble(db, r)
     el = db.get(models.Element, r.element_id) if r.element_id else None
     _cancel_open_work_orders(db, r.element_nr or (el.element_nr if el is not None else None), r.created_at)

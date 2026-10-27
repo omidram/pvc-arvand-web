@@ -1,7 +1,7 @@
 ﻿from datetime import datetime
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from sqlalchemy import inspect as sa_inspect, or_
+from sqlalchemy import and_, inspect as sa_inspect, or_
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
@@ -84,10 +84,17 @@ def list_shutdowns(
         query = query.filter(
             or_(models.Shutdown.plant_part.ilike(like), models.Shutdown.cause.ilike(like), models.Shutdown.category.ilike(like))
         )
-    if date_from is not None:
-        query = query.filter(models.Shutdown.shutdown_time >= date_from)
-    if date_to is not None:
-        query = query.filter(models.Shutdown.shutdown_time <= date_to)
+    if date_from is not None or date_to is not None:
+        def in_window(column):
+            parts = []
+            if date_from is not None:
+                parts.append(column >= date_from)
+            if date_to is not None:
+                parts.append(column <= date_to)
+            return and_(*parts)
+
+        # A row matches when either the trip or the restart falls inside the window.
+        query = query.filter(or_(in_window(models.Shutdown.shutdown_time), in_window(models.Shutdown.startup_time)))
     # Access continuous form order: by No. ascending (1, 2, 3 …), newest at the bottom.
     items = query.order_by(models.Shutdown.nr.asc()).offset(skip).limit(limit).all()
     return [_enrich(i) for i in items]

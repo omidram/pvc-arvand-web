@@ -28,6 +28,8 @@ def build_crud_router(
     required_fields: list[str] | None = None,
     sort_key: Callable[[Any], Any] | None = None,
     after_save: Callable[[Session, Any], None] | None = None,
+    after_delete: Callable[[Session, Any], None] | None = None,
+    after_commit: Callable[[], None] | None = None,
     on_rename: Callable[[Session, Any, Any], None] | None = None,
     unique_compact: bool = False,
 ) -> APIRouter:
@@ -200,6 +202,9 @@ def build_crud_router(
         if after_save:
             after_save(db, obj)  # keeps related tables in step before the commit
         db.commit()
+        _bust_caches()
+        if after_commit:
+            after_commit()
         db.refresh(obj)
         return _read(obj)
 
@@ -249,6 +254,9 @@ def build_crud_router(
             # Assigning a primary key on the instance often does not emit UPDATE.
             db.query(model).filter(pk_column == old_pk).update({pk_column: new_pk}, synchronize_session=False)
         db.commit()
+        _bust_caches()
+        if after_commit:
+            after_commit()
         db.expire_all()
         saved = db.query(model).filter(pk_column == (new_pk if new_pk is not None else old_pk)).first()
         if saved is None:
@@ -261,7 +269,22 @@ def build_crud_router(
         if not obj:
             raise HTTPException(status_code=404, detail="Not found")
         db.delete(obj)
+        db.flush()
+        if after_delete:
+            after_delete(db, obj)
         db.commit()
+        _bust_caches()
+        if after_commit:
+            after_commit()
         return None
 
     return router
+
+
+def _bust_caches() -> None:
+    try:
+        from .element_dashboard import clear_cache
+        clear_cache()
+    except Exception:
+        pass
+

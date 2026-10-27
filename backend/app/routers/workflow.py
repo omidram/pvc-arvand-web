@@ -123,6 +123,7 @@ ASSEMBLE_STAGES: dict[str, list[str]] = {
     "await_insp_sign": ["inspection"],
     "await_proc_sign": ["process"],
     "await_position": ["c90"],
+    "await_disassembly": ["c90"],  # a failed test sends the new element back to C-90 to be taken apart
 }
 WORKORDER_STAGES: dict[str, list[str]] = {
     "open": ["planner"],
@@ -143,7 +144,7 @@ DEFAULT_SLA: dict[str, dict[str, int]] = {
     "purchase": {"await_indent": 72, "await_order": 120, "await_confirm": 72, "await_confirm_insp": 72, "await_registration": 72},
     "cell": {"await_shutdown": 48, "await_shop": 48, "in_shop": 120, "await_disassembly": 72, "await_reinstall": 120, "await_numbering": 72},
     "inspection": {"await_request": 24, "await_inspection": 72},
-    "assemble": {"await_assembly": 72, "await_air": 72, "await_insp_sign": 72, "await_proc_sign": 72, "await_position": 120},
+    "assemble": {"await_assembly": 72, "await_air": 72, "await_insp_sign": 72, "await_proc_sign": 72, "await_position": 120, "await_disassembly": 72},
     "workorder": {"open": 120},
 }
 DEFAULT_WARN_PERCENT = 25
@@ -1015,7 +1016,7 @@ def create_coating(body: CoatingCreateIn, db: Session = Depends(get_db), user: m
     origin_states = [snapshot_wh(db, ln["kind"], ln["serial"]) for ln in lines]
     today = date.today()
     batch = WfCoatingBatch(
-        status="await_company",
+        status="await_indent",
         anode_count=len(anodes),
         cathode_count=len(cathodes),
         pallet_size=body.pallet_size,
@@ -1062,8 +1063,8 @@ def create_coating(body: CoatingCreateIn, db: Session = Depends(get_db), user: m
 
 
 def coating_from_board(db: Session, kind: str, serial: str, user: models.User, note: str | None) -> dict:
-    """Live board "Send to recoating": the piece joins the open request that still waits for a
-    coating company (procurement has not picked one yet), otherwise a new request is opened."""
+    """Live board "Send to recoating": the piece joins the open request that still waits for the
+    warehouse indent, otherwise a new request is opened."""
     model, field = (models.Anode, "anode_nr") if kind == "anode" else (models.Cathode, "cathode_nr")
     ensure_indexed(db, model, field, serial, None)
     stored = load_compact_index(db, model, field).get(compact_nr(serial)) or serial.strip()[:50]
@@ -1071,14 +1072,14 @@ def coating_from_board(db: Session, kind: str, serial: str, user: models.User, n
     today = date.today()
     b = (
         db.query(WfCoatingBatch)
-        .filter(WfCoatingBatch.status == "await_company")
+        .filter(WfCoatingBatch.status == "await_indent")
         .order_by(WfCoatingBatch.created_at.desc())
         .first()
     )
     created = b is None
     if created:
         b = WfCoatingBatch(
-            status="await_company",
+            status="await_indent",
             pallet_size=20,
             remarks="Live board",
             created_by_id=user.id,
@@ -1316,8 +1317,10 @@ def coating_company(batch_id: int, body: CompanyPickIn, db: Session = Depends(ge
     b.dispatch_date = min(p.dispatch_date for p in plans.values())
     b.expected_return_date = max(p.expected_return_date for p in plans.values())
     b.excel_emailed_at = _now()
+    # Warehouse issues the indent first. If that is already done, procurement hands the batch to dispatch.
+    next_status = "await_dispatch" if (b.indent_no or "").strip() else "await_indent"
     _move(
-        db, "coating", b, "await_indent", "company", user, body.note,
+        db, "coating", b, next_status, "company", user, body.note,
         {
             "company": co.name,
             "excel_emailed": True,
@@ -1343,7 +1346,9 @@ def coating_indent(batch_id: int, body: IndentIn, db: Session = Depends(get_db),
     if not indent:
         raise HTTPException(400, "Indent number required")
     b.indent_no = indent
-    _move(db, "coating", b, "await_dispatch", "indent", user, body.note, {"indent_no": indent})
+    # Procurement chooses the company after the indent, unless this batch already has one.
+    next_status = "await_dispatch" if b.company_id else "await_company"
+    _move(db, "coating", b, next_status, "indent", user, body.note, {"indent_no": indent})
     db.commit()
     return _coating_detail(db, b, user)
 
@@ -3791,11 +3796,13 @@ def _assemble_actions(db: Session, r: WfAssembleRequest, user: models.User) -> l
     if r.status == "await_air" and "c90" in groups:
         acts.append("submit_air")
     if r.status == "await_insp_sign" and "inspection" in groups:
-        acts += ["sign_insp", "reject_insp"]
+        acts += ["sign_insp", "reject_insp", "fail_test"]
     if r.status == "await_proc_sign" and "process" in groups:
-        acts += ["sign_proc", "reject_proc"]
+        acts += ["sign_proc", "reject_proc", "fail_test"]
     if r.status == "await_position" and "c90" in groups:
         acts.append("position")
+    if r.status == "await_disassembly" and "c90" in groups:
+        acts.append("disassemble")
     managed = _can_manage(db, user, "assemble", r.status)
     early = r.status == "await_air" and r.created_by_id == user.id
     if _can_cancel(user, r.status, r.created_by_id, "await_assembly", also=managed or early):
@@ -3934,8 +3941,14 @@ def create_assemble_request(body: AssembleCreateIn, db: Session = Depends(get_db
         raise HTTPException(403, "Only C-90 can start assembling a new element")
     anode = (body.anode_nr or "").strip()
     cathode = (body.cathode_nr or "").strip()
+    membrane = (body.membrane_nr or "").strip()
     if not anode or not cathode:
         raise HTTPException(400, "Choose the anode and the cathode from assembly stock")
+    if not membrane:
+        raise HTTPException(400, "Choose the membrane number")
+    membrane_type = (body.membrane_type or "").strip()
+    if not membrane_type:
+        raise HTTPException(400, "Choose the membrane type")
     a_row = _pool_row(db, "anode", anode)
     c_row = _pool_row(db, "cathode", cathode)
     if a_row is None:
@@ -3958,8 +3971,8 @@ def create_assemble_request(body: AssembleCreateIn, db: Session = Depends(get_db
         element_nr=element_nr,
         anode_nr=a_row["serial"],
         cathode_nr=c_row["serial"],
-        membrane_nr=(body.membrane_nr or "").strip()[:50] or None,
-        membrane_type=(body.membrane_type or "").strip()[:100] or None,
+        membrane_nr=membrane[:50],
+        membrane_type=membrane_type[:100],
         anode_source=a_row.get("source"),
         cathode_source=c_row.get("source"),
         created_by_id=user.id,
@@ -3970,10 +3983,14 @@ def create_assemble_request(body: AssembleCreateIn, db: Session = Depends(get_db
     )
     db.add(r)
     db.flush()
+    from .membrane_stock import consume as consume_membrane
+
+    consume_membrane(db, r.membrane_type, r.membrane_nr, r.element_nr, r.code, _display(user))
     remember(db, "assemble", r.id, {"element": None, "shop": None})
     _event(db, "assemble", r, "created", user, None, body.note, {"anode": r.anode_nr, "cathode": r.cathode_nr, "element_nr": r.element_nr})
     _notify(db, "assemble", r, user)
     db.commit()
+    svc.clear_cache()
     return _assemble_detail(db, r, user)
 
 
@@ -4090,6 +4107,76 @@ def assemble_reject_proc(request_id: int, body: NoteIn, db: Session = Depends(ge
     _clear_air_sign(_air_for(db, r), "insp", "proc")
     _move(db, "assemble", r, "await_insp_sign", "reject_proc", user, body.note, notify_creator=True)
     db.commit()
+    return _assemble_detail(db, r, user)
+
+
+@router.post("/assemble/{request_id}/fail_test")
+def assemble_fail_test(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """The test was negative and inspection/process refuses the element: C-90 must take it apart."""
+    r = _load_assemble(db, request_id)
+    _require_stage(db, user, "assemble", r.status, ("await_insp_sign", "await_proc_sign"))
+    note = (body.note or "").strip()
+    if not note:
+        raise HTTPException(400, "Write the result of the failed test")
+    side = "inspection" if r.status == "await_insp_sign" else "process"
+    decisions = dict(r.decisions or {})
+    decisions[side] = {"ok": False, "result": "test_failed", "note": note}
+    r.decisions = decisions
+    _clear_air_sign(_air_for(db, r), "insp", "proc")
+    _try_shop(db, r.element_nr, "awaiting_disassembly", user, f"{r.code}: {note}")
+    _move(db, "assemble", r, "await_disassembly", "fail_test", user, note, {"by": side}, notify_creator=True)
+    db.commit()
+    svc.clear_cache()
+    return _assemble_detail(db, r, user)
+
+
+@router.post("/assemble/{request_id}/disassemble")
+def assemble_disassemble(request_id: int, body: AssembleStampIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+    """C-90 took the failed element apart: Assembly Data is closed and both electrodes go to the Segregation table."""
+    r = _load_assemble(db, request_id)
+    _require_stage(db, user, "assemble", r.status, ("await_disassembly",))
+    day = _edit_date(body.assembly_date) if (body.assembly_date or "").strip() else date.today()
+    el = db.get(models.Element, r.element_id) if r.element_id else None
+    reason = next(
+        (d.get("note") for d in (r.decisions or {}).values() if isinstance(d, dict) and d.get("result") == "test_failed" and d.get("note")),
+        None,
+    ) or "Failed assembly test"
+    if el is not None:
+        from .elements import _sync_saved_element
+
+        el.disassembly_date = day
+        if el.decommissioning_date is None:
+            el.decommissioning_date = day
+        el.decommission_reason = f"{r.code}: {reason}"[:500]
+        _sync_saved_element(db, el)
+        _clear_shop(db, el.element_nr, user, f"{r.code} disassembled")
+        from .work_orders import ensure_work_order_for_disassembly
+
+        ensure_work_order_for_disassembly(db, el.element_nr or "", user, disassemble_date=day)
+    marker = f"WF {r.code}"
+    made: list[str] = []
+    for kind, serial, pair in (("anode", r.anode_nr, r.cathode_nr), ("cathode", r.cathode_nr, r.anode_nr)):
+        if not (serial or "").strip():
+            continue
+        fields = enrich_segregation_fields(db, serial_nr=serial, electrode_kind=kind)
+        row = models.ElectrodeSegregation(
+            serial_nr=serial,
+            electrode_kind=kind,
+            company=fields.get("company"),
+            service_life=fields.get("service_life"),
+            install_date=r.assembly_date,
+            decommission_date=day,
+            disassemble_date=day,
+            pair_serial_nr=pair,
+            problems=f"{reason} ({r.code})"[:1000],
+            remarks=f"{marker} · {r.element_nr or ''}".strip(" ·"),
+        )
+        db.add(row)
+        made.append(serial)
+    note = (body.note or "").strip() or None
+    _move(db, "assemble", r, "completed", "disassemble", user, note, {"date": _iso(day), "segregation": made})
+    db.commit()
+    svc.clear_cache()
     return _assemble_detail(db, r, user)
 
 

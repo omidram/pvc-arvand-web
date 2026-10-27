@@ -6,7 +6,7 @@ export type WfFlow = "coating" | "purchase" | "cell" | "inspection" | "assemble"
 export type WfGroup = "c90" | "procurement" | "warehouse" | "inspection" | "operation" | "cellshop" | "process" | "planner";
 export type WfKind = "anode" | "cathode";
 
-export const COATING_STEPS = ["c90_select", "code_generate", "await_company", "await_indent", "await_dispatch", "await_return", "await_inspection", "await_approval", "completed"] as const;
+export const COATING_STEPS = ["c90_select", "code_generate", "await_indent", "await_company", "await_dispatch", "await_return", "await_inspection", "await_approval", "completed"] as const;
 export const PURCHASE_STEPS = ["await_tech", "await_indent", "await_order", "await_confirm", "await_confirm_insp", "await_registration", "completed"] as const;
 export const CELL_STEPS = ["await_shutdown", "await_shop", "in_shop", "completed"] as const;
 export const NUMBERING_STEPS = ["await_numbering", "completed"] as const;
@@ -22,6 +22,11 @@ export function cellPath(status: string, decision?: string | null): readonly str
 }
 export const INSPECTION_STEPS = ["await_request", "await_inspection", "completed"] as const;
 export const ASSEMBLE_STEPS = ["await_assembly", "await_air", "await_insp_sign", "await_proc_sign", "await_position", "completed"] as const;
+/** A failed test leaves the normal path: the element goes back to C-90 to be taken apart. */
+export function assemblePath(status: string): readonly string[] {
+  if (status === "await_disassembly") return ["await_assembly", "await_air", "await_insp_sign", "await_proc_sign", "await_disassembly", "completed"];
+  return ASSEMBLE_STEPS;
+}
 /** Stages that carry a deadline, per flow (the order of the settings table). */
 const VIRTUAL_STEPS = new Set(["c90_select", "code_generate", "purchase_request"]);
 export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
@@ -29,7 +34,7 @@ export const SLA_STAGES: Record<WfFlow, readonly string[]> = {
   purchase: PURCHASE_STEPS.filter((s) => s !== "completed" && s !== "await_tech" && !VIRTUAL_STEPS.has(s)),
   cell: [...CELL_STEPS.filter((s) => s !== "completed"), "await_disassembly", "await_reinstall", "await_numbering"],
   inspection: INSPECTION_STEPS.filter((s) => s !== "completed"),
-  assemble: ASSEMBLE_STEPS.filter((s) => s !== "completed"),
+  assemble: [...ASSEMBLE_STEPS.filter((s) => s !== "completed"), "await_disassembly"],
   workorder: ["open"],
 };
 
@@ -572,7 +577,7 @@ export const workflowApi = {
   assembleCreate: async (body: {
     anode_nr: string;
     cathode_nr: string;
-    membrane_nr?: string;
+    membrane_nr: string;
     membrane_type?: string;
     element_nr?: string;
     note?: string;
@@ -584,6 +589,57 @@ export const workflowApi = {
   settings: async (): Promise<WfSlaConfig> => (await apiClient.get("/workflow/settings")).data,
   saveSettings: async (body: { hours: WfSlaConfig["hours"]; warn_percent: number }): Promise<WfSlaConfig> =>
     (await apiClient.put("/workflow/settings", body)).data,
+};
+
+export interface MembraneStockItem {
+  id: number;
+  type: string;
+  serial: string | null;
+  quantity: number;
+  purchase_date: string | null;
+  note: string | null;
+  created_by: string | null;
+}
+export interface MembraneStockType {
+  type: string;
+  in_stock: number;
+  used: number;
+  serials: number;
+  last_purchase: string | null;
+}
+export interface MembraneStockOverview {
+  types: MembraneStockType[];
+  items: MembraneStockItem[];
+  total_in_stock: number;
+  total_used: number;
+  can_edit: boolean;
+}
+export interface MembraneUsedRow {
+  id: number;
+  type: string;
+  serial: string | null;
+  date: string | null;
+  purchase_date: string | null;
+  element_nr: string | null;
+  request_code: string | null;
+  from_stock: boolean;
+  user: string | null;
+}
+export interface MembraneUsed {
+  items: MembraneUsedRow[];
+  total: number;
+  types: { type: string; count: number }[];
+}
+
+export const membraneStockApi = {
+  overview: async (): Promise<MembraneStockOverview> => (await apiClient.get("/membrane-stock")).data,
+  types: async (): Promise<{ type: string; in_stock: number; tracked: boolean }[]> => (await apiClient.get("/membrane-stock/types")).data,
+  used: async (type?: string): Promise<MembraneUsed> => (await apiClient.get("/membrane-stock/used", { params: { type } })).data,
+  add: async (body: { type: string; serial?: string; quantity?: number; purchase_date?: string; note?: string }) =>
+    (await apiClient.post("/membrane-stock/add", body)).data,
+  adjust: async (body: { type: string; delta: number; purchase_date?: string; note?: string }) =>
+    (await apiClient.post("/membrane-stock/adjust", body)).data,
+  remove: async (id: number) => (await apiClient.delete(`/membrane-stock/items/${id}`)).data,
 };
 
 /** "A-001 ; dent on flange" or "A-001<TAB>dent" → serial + optional problem note, one per line. */

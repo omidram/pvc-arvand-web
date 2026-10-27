@@ -82,7 +82,14 @@ export function ElementOverviewTab({ onOpen }: { onOpen: (target: OpenTarget) =>
   const integrity = useQuery({ queryKey: ["element-dashboard", "integrity"], queryFn: elementDashboardApi.integrity, staleTime: 60_000 });
   const data = query.data;
 
-  if (query.isLoading) return <Loading label={t("elDash.loading")} />;
+  if (query.isLoading) {
+    return (
+      <div className="mon-page">
+        <InServiceBreakdown />
+        <Loading label={t("elDash.loading")} />
+      </div>
+    );
+  }
   if (query.isError || !data) return <ErrorState message={(query.error as Error)?.message || "Error"} />;
 
   const { counts, parts, coating } = data;

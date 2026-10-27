@@ -24,7 +24,12 @@ export function InServiceBreakdown() {
   const { locale } = useI18n();
   const fa = (f: string, e: string) => (locale === "fa" ? f : e);
   const [pick, setPick] = useState<Pick | null>(null);
-  const q = useQuery({ queryKey: ["element-dashboard", "in-service-breakdown"], queryFn: elementDashboardApi.inServiceBreakdown, staleTime: 60_000 });
+  const q = useQuery({
+    queryKey: ["element-dashboard", "in-service-breakdown"],
+    queryFn: elementDashboardApi.inServiceBreakdown,
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
   const cells = useQuery({
     queryKey: ["element-dashboard", "in-service-cells", pick],
     queryFn: () =>

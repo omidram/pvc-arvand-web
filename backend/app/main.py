@@ -52,6 +52,7 @@ from .routers import (
     cathodic_ce as cathodic_ce_router_module,
     warehouse_lifecycle as warehouse_lifecycle_router_module,
     work_orders as work_orders_router_module,
+    membrane_stock as membrane_stock_router_module,
     workflow as workflow_router_module,
     users as users_router_module,
     voltage,
@@ -718,6 +719,7 @@ _api(storage_router_module.router)
 _api(warehouse_lifecycle_router_module.router)
 # Recoating / new-purchase workflows: access is checked per step against the wf_* group keys.
 _api(workflow_router_module.router)
+_api(membrane_stock_router_module.router)
 _api(work_orders_router_module.router)
 
 # --- Analyses ---

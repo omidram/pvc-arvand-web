@@ -1516,6 +1516,22 @@ def _coating_by_company(db: Session) -> list[dict[str, Any]]:
     return out
 
 
+def _membrane_used(db: Session) -> dict[str, Any]:
+    """Membranes taken from the membrane store by assemble requests (detail rows: /membrane-stock/used)."""
+    from .routers.membrane_stock import used_summary
+
+    return used_summary(db)
+
+
+def _membrane_store(db: Session) -> dict[str, Any]:
+    from .workflow_models import MembraneStock
+
+    by_type: Counter = Counter()
+    for mtype, qty in db.query(MembraneStock.membrane_type, MembraneStock.quantity).filter(MembraneStock.quantity > 0).all():
+        by_type[(mtype or "").strip() or "—"] += int(qty or 0)
+    return {"total": sum(by_type.values()), "types": [{"type": k, "count": v} for k, v in by_type.most_common()]}
+
+
 def workshop_inventory(
     db: Session,
     pipeline: list[dict[str, Any]],
@@ -1553,6 +1569,8 @@ def workshop_inventory(
         "cathode": _stock_block(cathode_rows, tafkik, "cathode"),
         "coating_companies": _coating_by_company(db),
         "membrane_stock": len(stock_mem),
+        "membrane_used": _membrane_used(db),
+        "membrane_store": _membrane_store(db),
         "membrane_types": [{"type": name, "count": n} for name, n in by_type.most_common(12)],
     }
 
@@ -1721,6 +1739,23 @@ def in_service_breakdown(db: Session) -> dict[str, Any]:
                 "cathode_coating": g.cathode_coating if g else None,
                 "membrane_type": g.membrane_type if g else None,
                 "gap_mm": g.gap_mm if g else None,
+            }
+        )
+    seen = {row["group"] for row in by_group}
+    for g in defs.values():
+        number = str(g.group_nr or "").strip()
+        if not number or number in seen:
+            continue
+        by_group.append(
+            {
+                "group": number,
+                "cells": 0,
+                "anodes": 0,
+                "cathodes": 0,
+                "anode_coating": g.anode_coating,
+                "cathode_coating": g.cathode_coating,
+                "membrane_type": g.membrane_type,
+                "gap_mm": g.gap_mm,
             }
         )
     by_group.sort(key=lambda r: (-r["cells"], r["group"]))

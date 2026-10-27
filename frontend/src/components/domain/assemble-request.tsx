@@ -12,12 +12,13 @@ import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { PositionCombo } from "@/components/ui/position-combo";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
-import { elementsApi } from "@/lib/endpoints";
+import { elementsApi, relationsApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import {
   CARTABLE_MS,
   refreshWarehouseData,
+  membraneStockApi,
   workflowApi,
   type AssembleRequest,
   type AssembleRequestDetail,
@@ -109,19 +110,40 @@ export function AssembleStartForm({
     queryFn: elementsApi.nextNumber,
     enabled: can,
   });
+  const membranes = useQuery({
+    queryKey: ["relations", "lookups", "membrane-numbers"],
+    queryFn: () => relationsApi.lookup("membrane-numbers"),
+    enabled: can,
+    staleTime: 60_000,
+  });
   const stock = [...(pool.data?.reusable ?? []), ...(pool.data?.purchased ?? []), ...(pool.data?.recoated ?? [])];
-  const [form, setForm] = useState({ anode_nr: "", cathode_nr: "", membrane_nr: "", element_nr: "", note: "" });
+  const memTypes = useQuery({
+    queryKey: ["membrane-stock", "types"],
+    queryFn: membraneStockApi.types,
+    enabled: can,
+    staleTime: 5_000,
+  });
+  const memStock = useQuery({ queryKey: ["membrane-stock", "overview"], queryFn: membraneStockApi.overview, enabled: can, staleTime: 5_000 });
+  const [form, setForm] = useState({ anode_nr: "", cathode_nr: "", membrane_type: "", membrane_nr: "", element_nr: "", note: "" });
+  const pickedType = (memTypes.data ?? []).find((row) => row.type === form.membrane_type);
+  const serialChoices = Array.from(
+    new Set([
+      ...(memStock.data?.items ?? []).filter((row) => row.serial && row.type === form.membrane_type).map((row) => row.serial as string),
+      ...(form.membrane_type ? [] : (membranes.data ?? [])),
+    ]),
+  );
   const create = useMutation({
     mutationFn: () =>
       workflowApi.assembleCreate({
         anode_nr: form.anode_nr,
         cathode_nr: form.cathode_nr,
-        membrane_nr: form.membrane_nr.trim() || undefined,
+        membrane_type: form.membrane_type,
+        membrane_nr: form.membrane_nr.trim(),
         element_nr: form.element_nr.trim() || undefined,
         note: form.note.trim() || undefined,
       }),
     onSuccess: (d) => {
-      setForm({ anode_nr: "", cathode_nr: "", membrane_nr: "", element_nr: "", note: "" });
+      setForm({ anode_nr: "", cathode_nr: "", membrane_type: "", membrane_nr: "", element_nr: "", note: "" });
       refreshWarehouseData(qc);
       onCreated?.(d.id);
     },
@@ -132,6 +154,7 @@ export function AssembleStartForm({
       className={compact ? "ewc-start-form" : "wh-form"}
       onSubmit={(e) => {
         e.preventDefault();
+        if (!form.membrane_nr.trim() || !form.membrane_type) return;
         create.mutate();
       }}
     >
@@ -141,8 +164,39 @@ export function AssembleStartForm({
         <PoolSelect kind="anode" value={form.anode_nr} rows={stock} t={t} onChange={(v) => setForm({ ...form, anode_nr: v })} />
         <PoolSelect kind="cathode" value={form.cathode_nr} rows={stock} t={t} onChange={(v) => setForm({ ...form, cathode_nr: v })} />
         <label>
-          {t("wf.insp.membrane")}
-          <input value={form.membrane_nr} onChange={(e) => setForm({ ...form, membrane_nr: e.target.value })} />
+          {t("wf.asm.membraneType")}
+          <select
+            value={form.membrane_type}
+            onChange={(e) => setForm({ ...form, membrane_type: e.target.value, membrane_nr: "" })}
+            required
+          >
+            <option value="">—</option>
+            {(memTypes.data ?? []).map((row) => (
+              <option key={row.type} value={row.type}>
+                {row.type}
+                {row.tracked ? ` (${row.in_stock})` : ""}
+              </option>
+            ))}
+          </select>
+          {pickedType ? (
+            <small className="wh-muted">
+              {pickedType.tracked ? t("wf.asm.membraneStockLeft", { n: pickedType.in_stock }) : t("wf.asm.membraneNoStock")}
+            </small>
+          ) : null}
+        </label>
+        <label>
+          {t("wf.asm.membraneNr")}
+          <input
+            list="asm-membrane-serials"
+            value={form.membrane_nr}
+            onChange={(e) => setForm({ ...form, membrane_nr: e.target.value })}
+            required
+          />
+          <datalist id="asm-membrane-serials">
+            {serialChoices.map((nr) => (
+              <option key={nr} value={nr} />
+            ))}
+          </datalist>
         </label>
         <label>
           {t("wf.insp.element")}
@@ -157,7 +211,7 @@ export function AssembleStartForm({
           <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
         </label>
       </div>
-      <button type="submit" className="wf-btn is-primary" disabled={create.isPending || !form.anode_nr || !form.cathode_nr}>
+      <button type="submit" className="wf-btn is-primary" disabled={create.isPending || !form.anode_nr || !form.cathode_nr || !form.membrane_type || !form.membrane_nr.trim()}>
         <Plus size={14} /> {t("wf.asm.create")}
       </button>
       {create.error ? <div className="wf-alert">{(create.error as Error).message}</div> : null}
@@ -229,6 +283,7 @@ function SignRejectBox({
   onDone: (next: AssembleRequestDetail) => void;
 }) {
   const [rejectNote, setRejectNote] = useState("");
+  const [failNote, setFailNote] = useState("");
   const run = useMutation({
     mutationFn: ({ action, note }: { action: string; note?: string }) => workflowApi.assembleStep(d.id, action, { note }),
     onSuccess: onDone,
@@ -258,6 +313,27 @@ function SignRejectBox({
           <Ban size={14} /> {t("wf.asm.rejectBack")}
         </button>
       </div>
+      {d.actions.includes("fail_test") ? (
+        <>
+          <p className="wh-subdesc">{t("wf.asm.failHint")}</p>
+          <div className="wh-form-inline">
+            <label className="wh-grow">
+              {t("wf.asm.failNote")}
+              <input value={failNote} onChange={(e) => setFailNote(e.target.value)} />
+            </label>
+            <button
+              type="button"
+              className="wf-btn is-bad"
+              disabled={run.isPending || !failNote.trim()}
+              onClick={() => {
+                if (window.confirm(t("wf.asm.failTest"))) run.mutate({ action: "fail_test", note: failNote.trim() });
+              }}
+            >
+              <Ban size={14} /> {t("wf.asm.failTest")}
+            </button>
+          </div>
+        </>
+      ) : null}
       {run.error ? <div className="wf-alert">{(run.error as Error).message}</div> : null}
     </div>
   );
@@ -318,13 +394,28 @@ function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
           {d.cathode_nr || "—"}
           {d.cathode_source ? ` · ${t(`wf.asm.source.${d.cathode_source}`)}` : ""}
         </Fact>
-        {d.membrane_nr ? <Fact label={t("wf.insp.membrane")}>{d.membrane_nr}</Fact> : null}
+        {d.membrane_nr ? (
+          <Fact label={t("wf.insp.membrane")}>
+            {d.membrane_nr}
+            {d.membrane_type ? ` · ${d.membrane_type}` : ""}
+          </Fact>
+        ) : null}
         <Fact label={t("wf.asm.assemblyDate")}>{formatDate(d.assembly_date)}</Fact>
         <Fact label={t("wf.insp.position")}>{[d.electrolyzer, d.position].filter(Boolean).join(" / ") || "—"}</Fact>
         <Fact label={t("wf.col.createdBy")}>
           {d.created_by || "—"} · {formatDateTime(d.created_at)}
         </Fact>
       </div>
+
+      {d.decisions && Object.values(d.decisions).some((x) => x?.result === "test_failed") ? (
+        <div className="wf-alert">
+          {t("wf.asm.failedBanner")}
+          {Object.values(d.decisions)
+            .filter((x) => x?.result === "test_failed" && x.note)
+            .map((x) => ` — ${x?.note}`)
+            .join("")}
+        </div>
+      ) : null}
 
       {d.element_nr ? (
         <Link className="wf-link" href={`/elements/assembly?element_nr=${encodeURIComponent(d.element_nr)}`} target="_blank">
@@ -379,6 +470,18 @@ function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
               </Link>
               <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("submit_air")}>
                 <Check size={14} /> {t("wf.asm.submitAir")}
+              </button>
+            </div>
+          ) : null}
+          {acts.includes("disassemble") ? (
+            <div className="wh-form-inline">
+              <p className="wh-subdesc wh-grow">{t("wf.asm.disassembleHint")}</p>
+              <label>
+                {t("elDash.cartable.disassemblyDate")}
+                <DateInput type="date" value={day} onChange={(e) => setDay(e.target.value)} required />
+              </label>
+              <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("disassemble", { assembly_date: day })}>
+                <Check size={14} /> {t("wf.asm.disassembleDo")}
               </button>
             </div>
           ) : null}

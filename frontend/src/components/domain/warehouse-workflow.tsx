@@ -16,7 +16,7 @@ import { formatDate, formatDateTime } from "@/lib/utils";
 import { defaultDateRange } from "@/lib/date-range";
 import {
   CARTABLE_MS,
-  ASSEMBLE_STEPS,
+  assemblePath,
   CELL_STEPS,
   COATING_STEPS,
   DELAY_PARTIES,
@@ -198,7 +198,7 @@ export function Stepper({ flow, status, t }: { flow: WfFlow; status: string; t: 
         : flow === "inspection"
           ? INSPECTION_STEPS
           : flow === "assemble"
-            ? ASSEMBLE_STEPS
+            ? assemblePath(status)
             : PURCHASE_STEPS;
   const shown = status === "at_coater" || status === "await_report" ? "await_return" : status === "ordered" ? "await_order" : status;
   const at = steps.indexOf(shown);

@@ -1011,6 +1011,18 @@ html:not([data-theme="dark"]) .dt-value-filter-foot {
   background: #dce8f8;
 }
 
+.sd-month-mark {
+  display: inline-block;
+  margin-inline-start: 2px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #b45309;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .shutdown-list-scroll {
   border: 1px solid #9aaec8;
   background: #f4f6f9;

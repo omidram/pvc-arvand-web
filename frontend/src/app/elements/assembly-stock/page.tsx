@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { AccessHub } from "@/components/layout/access-hub";
+import { MembraneStockPanel } from "@/components/domain/membrane-stock-panel";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
@@ -81,6 +82,7 @@ export default function AssemblyStockPage() {
             </section>
           ))
         : null}
+      <MembraneStockPanel />
     </AccessHub>
   );
 }

@@ -9,11 +9,12 @@ inspections, voltage) so it can be edited in place.
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
-from ..auth import require_any_form_access
+from ..auth import get_current_user, require_any_form_access
 from ..database import get_db
 from .elements import _enrich
 
@@ -352,3 +353,56 @@ def arrangement_cell(
             "group_catalog": group_ok,
         },
     }
+
+
+class ClearToShopIn(BaseModel):
+    electrolyzer: str = Field(min_length=1)
+
+
+@router.post("/clear-to-shop")
+def clear_electrolyzer_to_shop(
+    body: ClearToShopIn,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    """Wrong cell numbers: take every open cell off this electrolyzer and keep it in the shop.
+
+    The installation is switched off and removed from its position. It is not disassembled.
+    The cell-shop stage becomes ready (healthy — keep in the shop) so the same element can be placed again.
+    """
+    from ..element_dashboard import clear_cache, set_shop_stage
+    from ..plant_topology import format_electrolyzer_name, is_valid_electrolyzer_name
+
+    selected = format_electrolyzer_name(body.electrolyzer.strip()) or body.electrolyzer.strip()
+    if not is_valid_electrolyzer_name(selected):
+        raise HTTPException(status_code=400, detail="Electrolyzer is required")
+    rows = (
+        db.query(models.Element)
+        .filter(models.Element.electrolyzer == selected, models.Element.disassembly_date.is_(None))
+        .all()
+    )
+    if not rows:
+        raise HTTPException(status_code=400, detail=f"No open cells on {selected}")
+    today = date.today()
+    actor = user.full_name or user.username
+    note = f"Cleared from {selected}: numbers were wrong, kept in the shop for a new arrangement"
+    for el in rows:
+        if el.decommissioning_date is None:
+            el.decommissioning_date = today
+        el.electrolyzer = None
+        el.position = None
+    db.flush()
+    clear_cache()
+    kept: list[str] = []
+    for el in rows:
+        number = (el.element_nr or "").strip()
+        if not number:
+            continue
+        try:
+            set_shop_stage(db, number, "ready", note, actor)
+        except ValueError:
+            continue
+        kept.append(number)
+    db.commit()
+    clear_cache()
+    return {"electrolyzer": selected, "cleared": len(rows), "kept_in_shop": kept}

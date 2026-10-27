@@ -131,6 +131,30 @@ def _group_values_match(defined: Any, actual: Any) -> bool:
     return False
 
 
+def group_match_score(
+    group: models.GroupDefinition,
+    *,
+    anode_coating: Any = None,
+    cathode_coating: Any = None,
+    membrane_type: Any = None,
+    gap_mm: Any = None,
+) -> int | None:
+    """How many specified characteristics fit. None = a specified field disagrees. 0 = definition says nothing."""
+    score = 0
+    for defined, actual in (
+        (group.anode_coating, anode_coating),
+        (group.cathode_coating, cathode_coating),
+        (group.membrane_type, membrane_type),
+        (group.gap_mm, gap_mm),
+    ):
+        if _group_wildcard(defined):
+            continue
+        score += 1
+        if not _group_values_match(defined, actual):
+            return None
+    return score
+
+
 def match_defined_group(
     db: Session,
     *,
@@ -138,55 +162,100 @@ def match_defined_group(
     cathode_coating: Any = None,
     membrane_type: Any = None,
     gap_mm: Any = None,
+    definitions: list[models.GroupDefinition] | None = None,
 ) -> str | None:
     """Group number whose defined coating, membrane and gap match this element.
 
     A definition with no characteristics is ignored, so an empty group is not applied to every element.
+    The most specific match wins. Pass ``definitions`` when matching many elements.
     """
     best: tuple[int, str] | None = None
-    for group in db.query(models.GroupDefinition).all():
-        pairs = (
-            (group.anode_coating, anode_coating),
-            (group.cathode_coating, cathode_coating),
-            (group.membrane_type, membrane_type),
-            (group.gap_mm, gap_mm),
+    groups = definitions if definitions is not None else db.query(models.GroupDefinition).all()
+    for group in groups:
+        score = group_match_score(
+            group,
+            anode_coating=anode_coating,
+            cathode_coating=cathode_coating,
+            membrane_type=membrane_type,
+            gap_mm=gap_mm,
         )
-        score = 0
-        ok = True
-        for defined, actual in pairs:
-            if _group_wildcard(defined):
-                continue
-            score += 1
-            if not _group_values_match(defined, actual):
-                ok = False
-                break
-        if ok and score and (best is None or score > best[0]):
+        if score and (best is None or score > best[0]):
             best = (score, group.group_nr)
     return best[1] if best else None
 
 
-def apply_defined_groups(db: Session) -> int:
-    """Write group_nr on every Assembly Data row that still has none and matches a Group Definition."""
-    from sqlalchemy import or_
+def sync_element_group(db: Session, el: models.Element, definitions: list[models.GroupDefinition] | None = None) -> str:
+    """Point one Assembly Data row at the Group Definition its coatings match.
 
-    filled = 0
-    rows = (
-        db.query(models.Element)
-        .filter(or_(models.Element.group_nr.is_(None), models.Element.group_nr == ""))
-        .all()
-    )
-    for el in rows:
-        found = match_defined_group(
-            db,
-            anode_coating=el.anode_coating,
-            cathode_coating=el.cathode_coating,
-            membrane_type=el.membrane_type,
-            gap_mm=el.gap_mm,
-        )
-        if found:
-            el.group_nr = found
-            filled += 1
-    return filled
+    A group that still fits is kept. A blank group, a missing group, or a group whose
+    specification no longer fits moves to a more specific match. Returns assigned, kept,
+    blank, or mismatch (left in place because nothing else fits).
+    """
+    groups = definitions if definitions is not None else db.query(models.GroupDefinition).all()
+    kwargs = {
+        "anode_coating": el.anode_coating,
+        "cathode_coating": el.cathode_coating,
+        "membrane_type": el.membrane_type,
+        "gap_mm": el.gap_mm,
+    }
+    best = match_defined_group(db, definitions=groups, **kwargs)
+    by_nr = {g.group_nr: g for g in groups}
+    current = str(el.group_nr or "").strip()
+    current_group = by_nr.get(current)
+    current_score = group_match_score(current_group, **kwargs) if current_group is not None else None
+    best_score = group_match_score(by_nr[best], **kwargs) if best and best in by_nr else 0
+    if not current:
+        if not best:
+            return "blank"
+        el.group_nr = best
+        return "assigned"
+    if current_score:
+        if best and best != current and best_score > current_score:
+            el.group_nr = best
+            return "assigned"
+        return "kept"
+    if best and best != current:
+        el.group_nr = best
+        return "assigned"
+    return "mismatch"
+
+
+def apply_defined_groups(db: Session) -> int:
+    """Realign every Assembly Data row with Group Definition. Returns how many group numbers changed."""
+    definitions = db.query(models.GroupDefinition).all()
+    changed = 0
+    for el in db.query(models.Element).all():
+        if sync_element_group(db, el, definitions) == "assigned":
+            changed += 1
+    return changed
+
+
+def group_link_report(db: Session) -> dict[str, int]:
+    """How Assembly Data sits against Group Definition right now (no writes)."""
+    definitions = db.query(models.GroupDefinition).all()
+    counts = {"assigned_fit": 0, "blank": 0, "mismatch": 0, "missing_group": 0, "elements": 0}
+    by_nr = {g.group_nr: g for g in definitions}
+    for el in db.query(models.Element).all():
+        counts["elements"] += 1
+        kwargs = {
+            "anode_coating": el.anode_coating,
+            "cathode_coating": el.cathode_coating,
+            "membrane_type": el.membrane_type,
+            "gap_mm": el.gap_mm,
+        }
+        current = str(el.group_nr or "").strip()
+        if not current:
+            counts["blank"] += 1
+            continue
+        group = by_nr.get(current)
+        if group is None:
+            counts["missing_group"] += 1
+            continue
+        if group_match_score(group, **kwargs):
+            counts["assigned_fit"] += 1
+        else:
+            counts["mismatch"] += 1
+    return counts
 
 
 def link_group(db: Session, raw: Any) -> Any:

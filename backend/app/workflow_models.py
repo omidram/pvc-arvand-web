@@ -213,6 +213,39 @@ class WfAssembleRequest(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime)
 
 
+class MembraneStock(Base):
+    """Membranes bought and waiting in the store: one row per serial (qty 1) or one count lot per type."""
+
+    __tablename__ = "membrane_stock"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    membrane_type: Mapped[str] = mapped_column(String(100), index=True)
+    serial: Mapped[str | None] = mapped_column(String(50), index=True)
+    quantity: Mapped[int] = mapped_column(Integer, default=1)  # left in this row
+    purchase_date: Mapped[date | None] = mapped_column(Date)
+    note: Mapped[str | None] = mapped_column(Text)
+    created_by_name: Mapped[str | None] = mapped_column(String(150))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
+
+
+class MembraneStockMove(Base):
+    """Every change of the membrane stock: purchase, manual add/remove, use by an assemble request, return."""
+
+    __tablename__ = "membrane_stock_moves"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    kind: Mapped[str] = mapped_column(String(15), index=True)  # purchase | adjust | used
+    membrane_type: Mapped[str] = mapped_column(String(100), index=True)
+    serial: Mapped[str | None] = mapped_column(String(50), index=True)
+    quantity: Mapped[int] = mapped_column(Integer, default=1)  # signed: + into stock, - out of stock
+    move_date: Mapped[date | None] = mapped_column(Date, index=True)
+    purchase_date: Mapped[date | None] = mapped_column(Date)  # of the stock row it was taken from
+    element_nr: Mapped[str | None] = mapped_column(String(50), index=True)
+    request_code: Mapped[str | None] = mapped_column(String(40), index=True)
+    from_stock: Mapped[bool] = mapped_column(default=True)  # False: type was not tracked, nothing was subtracted
+    note: Mapped[str | None] = mapped_column(Text)
+    user_name: Mapped[str | None] = mapped_column(String(150))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, index=True)
+
+
 class WfSettings(Base):
     """Single row: allowed time per workflow stage ({flow: {status: hours}}) and when a deadline turns yellow."""
 

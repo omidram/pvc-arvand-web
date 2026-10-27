@@ -57,6 +57,7 @@ export function GroupDefinitionTab() {
   function refreshDependents() {
     void queryClient.invalidateQueries({ queryKey: ["group-overview"] });
     void queryClient.invalidateQueries({ queryKey: ["field-options"] });
+    void queryClient.invalidateQueries({ queryKey: ["element-dashboard"] });
   }
 
   function cell(row: GroupDefinition, name: keyof GroupDefinition): string {

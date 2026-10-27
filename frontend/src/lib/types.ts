@@ -613,6 +613,7 @@ export interface DashboardVoltageStats {
   plant_total_ka: number | null;
   plant_power_kw?: number | null;
   plant_energy_kwh_24h: number | null;
+  plant_energy_kwh_7d?: number | null;
   report_date?: string | null;
   online_count?: number;
   cell_count: number;
@@ -1553,6 +1554,8 @@ export interface WorkshopSheet {
   coating_companies: { company: string; anode_open: number; anode_returned: number; cathode_open: number; cathode_returned: number }[];
   membrane_stock: number;
   membrane_types: { type: string; count: number }[];
+  membrane_used?: { total: number; types: { type: string; count: number }[] };
+  membrane_store?: { total: number; types: { type: string; count: number }[] };
 }
 
 export interface CoatingSummary {

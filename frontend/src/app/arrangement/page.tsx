@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { arrangementBoardApi } from "@/lib/endpoints";
 import { CellArrangementEditor } from "@/components/domain/cell-arrangement-editor";
@@ -15,11 +15,13 @@ import { Badge } from "@/components/ui/badge";
 import { ErrorState, Spinner } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
+import { appConfirm } from "@/lib/dialog";
 import { formatDate } from "@/lib/utils";
 
 export default function ArrangementBoardPage() {
   const { t } = useI18n();
-  const { canView } = useAuth();
+  const { canView, canEdit } = useAuth();
+  const queryClient = useQueryClient();
   const [electrolyzer, setElectrolyzer] = useState<string>("");
   const [selectedPos, setSelectedPos] = useState<number | null>(null);
 
@@ -35,6 +37,16 @@ export default function ArrangementBoardPage() {
     () => cells.find((c) => c.position === selectedPos) || null,
     [cells, selectedPos]
   );
+  const currentEz = electrolyzer || data?.electrolyzer || "";
+  const clearShop = useMutation({
+    mutationFn: () => arrangementBoardApi.clearToShop(currentEz),
+    onSuccess: async () => {
+      setSelectedPos(null);
+      await queryClient.invalidateQueries({ queryKey: ["arrangement-board"] });
+      await queryClient.invalidateQueries({ queryKey: ["element-dashboard"] });
+    },
+  });
+  const canClear = canEdit("elements") || canEdit("settings");
 
   if (!canView("settings") && !canView("elements")) {
     return (
@@ -44,16 +56,30 @@ export default function ArrangementBoardPage() {
     );
   }
 
-  const currentEz = electrolyzer || data?.electrolyzer || "";
-
   return (
     <AccessFormWindow
       caption={t("arrangement.title")}
       helpKey="arrangement"
       commands={
+        <>
         <Button type="button" variant="secondary" onClick={() => boardQuery.refetch()}>
           <RefreshCw size={14} /> {t("arrangement.updateDisplay")}
         </Button>
+        {canClear && currentEz ? (
+          <Button
+            type="button"
+            variant="danger"
+            disabled={clearShop.isPending || !(data?.counts.occupied)}
+            onClick={() => {
+              void appConfirm(t("arrangement.clearToShopConfirm", { name: currentEz })).then((ok) => {
+                if (ok) clearShop.mutate();
+              });
+            }}
+          >
+            {t("arrangement.clearToShop")}
+          </Button>
+        ) : null}
+        </>
       }
     >
       <p className="mb-3 text-xs text-[var(--win-muted)]">{t("arrangement.description")}</p>

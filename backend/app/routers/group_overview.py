@@ -85,15 +85,27 @@ def _is_live(status: str) -> bool:
 
 
 def _mismatches(el: models.Element, definition: models.GroupDefinition | None) -> list[str]:
-    """Spec fields where the element deviates from its group (blank on either side is not a deviation)."""
+    """Spec fields where the element deviates from its group. Same rule as the live group link."""
+    from ..relations_sync import _group_values_match, _group_wildcard, group_match_score
+
     if definition is None:
+        return ["group_nr"] if _text(el.group_nr) else []
+    if group_match_score(
+        definition,
+        anode_coating=el.anode_coating,
+        cathode_coating=el.cathode_coating,
+        membrane_type=el.membrane_type,
+        gap_mm=el.gap_mm,
+    ):
         return []
     found = []
     for name in SPEC_FIELDS:
         wanted, actual = getattr(definition, name), getattr(el, name)
-        if _text(wanted) and _text(actual) and not _spec_ok(wanted, actual):
+        if _group_wildcard(wanted):
+            continue
+        if _text(actual) and not _group_values_match(wanted, actual):
             found.append(name)
-    return found
+    return found or ["group_nr"]
 
 
 def _definitions(db: Session) -> dict[str, models.GroupDefinition]:

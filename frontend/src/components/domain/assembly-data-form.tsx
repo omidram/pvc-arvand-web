@@ -270,11 +270,13 @@ export function AssemblyDataForm() {
         }}
         onSave={async (id, values) => {
           await updateMutation.mutateAsync({ id, payload: withAssemblyPayload(values) });
+          await queryClient.invalidateQueries({ queryKey: ["field-options"] });
         }}
         onCreate={async (values) => {
           await createMutation.mutateAsync(withAssemblyPayload(values) as never);
           await queryClient.invalidateQueries({ queryKey: ["elements", "next-number"] });
           await queryClient.invalidateQueries({ queryKey: ["workflow", "assembly-pool"] });
+          await queryClient.invalidateQueries({ queryKey: ["field-options"] });
         }}
         onDelete={(id) => removeMutation.mutate(id)}
         confirmDelete={(el) => t("elements.confirmDelete", { nr: el.element_nr })}

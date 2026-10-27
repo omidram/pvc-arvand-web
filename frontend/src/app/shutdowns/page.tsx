@@ -17,6 +17,7 @@ import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { formatDate } from "@/lib/utils";
 import { useCalendar } from "@/lib/calendar/context";
+import { gregorianToJalali } from "@/lib/calendar/jalali";
 import { DateInput } from "@/components/ui/date-input";
 import { formatElectrolyzer } from "@/lib/plant-topology";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
@@ -129,14 +130,30 @@ function ShutdownMenu() {
         <div>
           <div className="mb-2 text-[12px] font-bold">{t("menus.results")}</div>
           <div className="access-sunken flex w-[220px] flex-col gap-2">
+            <AccessBtn href="/shutdowns?form=period">{t("menus.timePeriod")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=summary-reason">{t("fields.reason")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=summary-category">{t("menus.category")}</AccessBtn>
-            <AccessBtn href="/shutdowns?form=period">{t("menus.timePeriod")}</AccessBtn>
           </div>
         </div>
       </div>
     </AccessHub>
   );
+}
+
+function wallYmd(value: string | null | undefined): { year: number; month: number; day: number } | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ""));
+  if (!match) return null;
+  return { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) };
+}
+
+/** True when shutdown and startup fall in calendar months that are exactly one apart. */
+function oneMonthApart(shutdown: string | null | undefined, startup: string | null | undefined, shamsi: boolean): boolean {
+  const a = wallYmd(shutdown);
+  const b = wallYmd(startup);
+  if (!a || !b) return false;
+  const left = shamsi ? gregorianToJalali(a.year, a.month, a.day) : a;
+  const right = shamsi ? gregorianToJalali(b.year, b.month, b.day) : b;
+  return Math.abs(right.year * 12 + right.month - (left.year * 12 + left.month)) === 1;
 }
 
 function toApiDateTime(localValue: string): string | null {
@@ -183,6 +200,7 @@ function ComboInput({
 
 function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: string; dateTo?: string; showPeriodFilter?: boolean }) {
   const { t } = useI18n();
+  const { isShamsi } = useCalendar();
   const { canEdit, canViewField } = useAuth();
   const editable = canEdit("shutdowns") && !showPeriodFilter;
   const [active, setActive] = useState<number | "new" | null>(null);
@@ -499,7 +517,14 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               const src = (open ? { ...row, ...editDraft } : row) as Shutdown;
               return (
               <tr key={row.nr} onClick={() => setActive(row.nr)} className={active === row.nr ? "is-active-row" : undefined}>
-                <td className="access-selector">{active === row.nr ? "►" : ""}</td>
+                <td className="access-selector">
+                  {active === row.nr ? "►" : ""}
+                  {oneMonthApart(row.shutdown_time, row.startup_time, isShamsi) ? (
+                    <span className="sd-month-mark" title={t("shutdowns.monthApart")}>
+                      ۱م
+                    </span>
+                  ) : null}
+                </td>
                 <td>
                   <input className="w-12" value={row.nr} readOnly tabIndex={-1} />
                 </td>
