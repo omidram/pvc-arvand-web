@@ -7,11 +7,13 @@ is rejected instead of being written into the wrong fields.
 from __future__ import annotations
 
 import io
+import json
 import re
 import unicodedata
 import uuid
+import zipfile
 from pathlib import Path
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from types import UnionType
 from typing import Any, Sequence, Union, get_args, get_origin
 
@@ -277,6 +279,11 @@ def _as_datetime(value: Any) -> datetime | None:
         return datetime(value.year, value.month, value.day)
     if isinstance(value, time):
         return None
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        serial = float(value)
+        if 1 <= serial < 80000:
+            return datetime(1899, 12, 30) + timedelta(days=serial)
+        return None
     text = str(value).strip()
     if not text:
         return None
@@ -294,7 +301,10 @@ def _as_datetime(value: Any) -> datetime | None:
         if 1200 <= year <= 1600:
             year, month, day = jalali_to_gregorian(year, month, day)
         return datetime(year, month, day, hour, minute, second)
-    return datetime.fromisoformat(text.replace("Z", "+00:00")).replace(tzinfo=None)
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00").replace("/", "-")).replace(tzinfo=None)
+    except ValueError:
+        return None
 
 
 def _coerce(value: Any, annotation: Any) -> Any:
@@ -302,7 +312,10 @@ def _coerce(value: Any, annotation: Any) -> Any:
         return None
     target = _unwrap(annotation)
     if target in (datetime, date):
-        parsed = _as_datetime(value)
+        try:
+            parsed = _as_datetime(value)
+        except (ValueError, TypeError, OverflowError):
+            return None
         if target is date and parsed is not None:
             return parsed.date()
         return parsed
@@ -354,21 +367,124 @@ async def read_xlsx(file: UploadFile) -> bytes:
         path.unlink(missing_ok=True)
 
 
-async def stash_upload(file: UploadFile):
-    """Write the upload to disk in 1 MB chunks so a large Assembly workbook is not cut off in memory."""
+def _uploads_dir() -> Path:
     from .paths import data_root
 
+    folder = data_root() / "uploads_tmp"
+    folder.mkdir(parents=True, exist_ok=True)
+    return folder
+
+
+def is_elements_workbook_name(filename: str | None) -> bool:
+    """Program Assembly Data export is named elements.xlsx (Excel may add ' (3)')."""
+    stem = Path(filename or "").name.lower()
+    stem = Path(stem).stem
+    compact_name = re.sub(r"[^a-z0-9]+", "", stem)
+    return compact_name.startswith("elements") or "elements" in compact_name
+
+
+def _assert_xlsx(path: Path, size: int) -> None:
+    if size < 32:
+        path.unlink(missing_ok=True)
+        raise HTTPException(status_code=400, detail="The uploaded file is empty or was cut off.")
+    if not zipfile.is_zipfile(path):
+        path.unlink(missing_ok=True)
+        raise HTTPException(
+            status_code=400,
+            detail="The Excel file arrived incomplete (not a valid .xlsx archive). Upload it again.",
+        )
+    with zipfile.ZipFile(path) as book:
+        bad = book.testzip()
+        if bad:
+            path.unlink(missing_ok=True)
+            raise HTTPException(
+                status_code=400,
+                detail=f"The Excel file arrived incomplete (broken part: {bad}). Upload it again.",
+            )
+
+
+def begin_chunked_upload(filename: str, size: int, chunk_size: int | None = None) -> dict[str, Any]:
+    name = (filename or "").lower()
+    if not name.endswith((".xlsx", ".xlsm")):
+        raise HTTPException(status_code=400, detail="File must be an .xlsx Excel workbook.")
+    upload_id = uuid.uuid4().hex
+    folder = _uploads_dir()
+    dest = folder / f"{upload_id}.part"
+    dest.write_bytes(b"")
+    meta = {
+        "filename": Path(filename).name,
+        "size": int(size),
+        "received": 0,
+        "chunk_size": int(chunk_size or 512 * 1024),
+    }
+    (folder / f"{upload_id}.json").write_text(json.dumps(meta), encoding="utf-8")
+    return {"upload_id": upload_id, "chunk_size": meta["chunk_size"]}
+
+
+def write_chunk(upload_id: str, offset: int, data: bytes) -> dict[str, Any]:
+    folder = _uploads_dir()
+    meta_path = folder / f"{upload_id}.json"
+    dest = folder / f"{upload_id}.part"
+    if not meta_path.is_file() or not dest.is_file():
+        raise HTTPException(status_code=404, detail="Upload session not found.")
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    expected = int(meta["size"])
+    if offset < 0 or offset > expected or offset + len(data) > expected + 64:
+        raise HTTPException(status_code=400, detail="Upload chunk is outside the declared file size.")
+    with dest.open("r+b") as out:
+        out.seek(offset)
+        out.write(data)
+        received = out.tell()
+        if dest.stat().st_size < received:
+            pass
+    meta["received"] = max(int(meta.get("received") or 0), offset + len(data))
+    meta_path.write_text(json.dumps(meta), encoding="utf-8")
+    return {"received": meta["received"], "size": expected}
+
+
+def take_chunked_upload(upload_id: str) -> tuple[Path, str]:
+    folder = _uploads_dir()
+    meta_path = folder / f"{upload_id}.json"
+    dest = folder / f"{upload_id}.part"
+    if not meta_path.is_file() or not dest.is_file():
+        raise HTTPException(status_code=404, detail="Upload session not found.")
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    size = dest.stat().st_size
+    expected = int(meta.get("size") or 0)
+    if expected and size != expected:
+        dest.unlink(missing_ok=True)
+        meta_path.unlink(missing_ok=True)
+        raise HTTPException(
+            status_code=400,
+            detail=f"The Excel file arrived incomplete ({size} of {expected} bytes). Upload it again.",
+        )
+    _assert_xlsx(dest, size)
+    filename = meta.get("filename") or "upload.xlsx"
+    final = folder / f"{upload_id}_{Path(filename).name}"
+    dest.replace(final)
+    meta_path.unlink(missing_ok=True)
+    return final, filename
+
+
+async def resolve_upload(file: UploadFile | None, upload_id: str | None) -> tuple[Path, str]:
+    if upload_id:
+        return take_chunked_upload(upload_id)
+    if file is None:
+        raise HTTPException(status_code=400, detail="No Excel file was sent.")
+    return await stash_upload(file)
+
+
+async def stash_upload(file: UploadFile):
+    """Write the upload to disk in 512 KB chunks so a large Assembly workbook is not cut off in memory."""
     name = (file.filename or "").lower()
     if not name.endswith((".xlsx", ".xlsm")):
         raise HTTPException(status_code=400, detail="File must be an .xlsx Excel workbook.")
-    folder = data_root() / "uploads_tmp"
-    folder.mkdir(parents=True, exist_ok=True)
-    dest = folder / f"{uuid.uuid4().hex}_{Path(file.filename or 'upload.xlsx').name}"
+    dest = _uploads_dir() / f"{uuid.uuid4().hex}_{Path(file.filename or 'upload.xlsx').name}"
     size = 0
     try:
         with dest.open("wb") as out:
             while True:
-                chunk = await file.read(1024 * 1024)
+                chunk = await file.read(512 * 1024)
                 if not chunk:
                     break
                 out.write(chunk)
@@ -376,9 +492,7 @@ async def stash_upload(file: UploadFile):
     except Exception:
         dest.unlink(missing_ok=True)
         raise
-    if size < 32:
-        dest.unlink(missing_ok=True)
-        raise HTTPException(status_code=400, detail="The uploaded file is empty or was cut off.")
+    _assert_xlsx(dest, size)
     return dest, file.filename or dest.name
 
 
@@ -421,11 +535,18 @@ def import_excel_bytes(
             continue
         pk_raw = raw.get(pk_field)
         payload_input: dict[str, Any] = {}
-        try:
-            for key, value in raw.items():
-                if key not in write_schema.model_fields:
-                    continue
+        for key, value in raw.items():
+            if key not in write_schema.model_fields:
+                continue
+            try:
                 payload_input[key] = _coerce(value, write_schema.model_fields[key].annotation)
+            except (ValidationError, ValueError, TypeError) as exc:
+                if len(errors) < 8:
+                    errors.append(f"row {done} {key}: {str(exc).split(chr(10))[0][:200]}")
+                continue
+        if not payload_input and pk_raw is None:
+            continue
+        try:
             payload = write_schema.model_validate(payload_input)
             data = payload.model_dump(exclude_unset=True)
             pk_value = _pk_value(model, pk_field, data.get(pk_field, pk_raw))
@@ -435,31 +556,27 @@ def import_excel_bytes(
                 errors.append(str(exc).split("\n")[0][:300])
             continue
 
-        try:
-            with db.begin_nested():
-                existing = None
-                if pk_value is not None:
-                    existing = db.query(model).filter(getattr(model, pk_field) == pk_value).first()
-                if existing is not None:
-                    for key, value in data.items():
-                        if key == pk_field:
-                            continue
-                        setattr(existing, key, value)
-                    if prepare:
-                        prepare(existing)
-                    updated += 1
-                else:
-                    obj = model(**{k: v for k, v in data.items() if k != pk_field or pk_field in write_fields})
-                    if pk_value is not None and pk_field not in data:
-                        setattr(obj, pk_field, pk_value)
-                    if prepare:
-                        prepare(obj)
-                    db.add(obj)
-                    created += 1
-        except Exception as exc:  # noqa: BLE001
-            skipped += 1
-            if len(errors) < 8:
-                errors.append(str(exc).split("\n")[0][:300])
+        existing = None
+        if pk_value is not None:
+            existing = db.query(model).filter(getattr(model, pk_field) == pk_value).first()
+        if existing is not None:
+            for key, value in data.items():
+                if key == pk_field:
+                    continue
+                setattr(existing, key, value)
+            if prepare:
+                prepare(existing)
+            updated += 1
+        else:
+            obj = model(**{k: v for k, v in data.items() if k != pk_field or pk_field in write_fields})
+            if pk_value is not None and pk_field not in data:
+                setattr(obj, pk_field, pk_value)
+            if prepare:
+                prepare(obj)
+            db.add(obj)
+            created += 1
+        if (created + updated) % 200 == 0:
+            db.flush()
         if progress and (done == total or done % 25 == 0):
             progress(done, total)
 

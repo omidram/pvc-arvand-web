@@ -104,7 +104,7 @@ function PlantInfoTab() {
       name: "electricity_price_per_kw",
       label: t("settings.electricityPrice"),
       type: "number",
-      step: "0.01",
+      step: "1",
       placeholder: t("settings.electricityPriceHint"),
     },
     { name: "date", label: t("settings.recordDate"), type: "date" },

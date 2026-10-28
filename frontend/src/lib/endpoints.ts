@@ -179,12 +179,7 @@ export const elementsApi = {
     mode: "assembly" | "disassembly" | "upsert" = "upsert",
     onProgress?: (progress: ImportProgress) => void
   ): Promise<{ imported_rows: number; created?: number; updated?: number; skipped?: number; mode?: string }> => {
-    const form = new FormData();
-    form.append("file", file);
-    const { data } = await apiClient.post("/elements/import-assembly-excel", form, {
-      headers: { "Content-Type": "multipart/form-data" },
-      params: { mode },
-    });
+    const data = await sendExcelFile("/elements/import-assembly-excel", file, { mode });
     return followImport(data, onProgress);
   },
   nextNumber: async (): Promise<{ element_nr: string }> =>
@@ -600,6 +595,42 @@ export async function downloadExport(
 
 export type ImportProgress = { percent: number; processed: number; total: number };
 
+const EXCEL_CHUNK = 512 * 1024;
+
+async function sendExcelFile(
+  path: string,
+  file: File,
+  extraParams?: Record<string, string>,
+): Promise<{ job_id?: string }> {
+  const { data: session } = await apiClient.post("/uploads/sessions", {
+    filename: file.name,
+    size: file.size,
+    chunk_size: EXCEL_CHUNK,
+  });
+  const uploadId = session.upload_id as string;
+  const chunkSize = Number(session.chunk_size || EXCEL_CHUNK);
+  let offset = 0;
+  while (offset < file.size) {
+    const blob = file.slice(offset, offset + chunkSize);
+    await apiClient.put(`/uploads/sessions/${uploadId}`, blob, {
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "X-Upload-Offset": String(offset),
+      },
+      transformRequest: [(body) => body],
+      timeout: 0,
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+    });
+    offset += blob.size;
+  }
+  const { data } = await apiClient.post(path, null, {
+    params: { ...(extraParams || {}), upload_id: uploadId },
+    timeout: 0,
+  });
+  return data;
+}
+
 export async function followImport<T>(started: { job_id?: string }, onProgress?: (progress: ImportProgress) => void): Promise<T> {
   if (!started?.job_id) return started as T;
   const jobId = started.job_id;
@@ -625,14 +656,7 @@ export async function importExcel(
   file: File,
   onProgress?: (progress: ImportProgress) => void
 ): Promise<{ created: number; updated: number; skipped: number; arranged?: boolean; ignored?: string[]; errors?: string[] }> {
-  const form = new FormData();
-  form.append("file", file);
-  const { data } = await apiClient.post(`${prefix}/import.xlsx`, form, {
-    headers: { "Content-Type": "multipart/form-data" },
-    timeout: 0,
-    maxBodyLength: Infinity,
-    maxContentLength: Infinity,
-  });
+  const data = await sendExcelFile(`${prefix}/import.xlsx`, file);
   return followImport(data, onProgress);
 }
 
@@ -1306,14 +1330,7 @@ export const tableFilesApi = {
   remove: async (key: string): Promise<{ ok: boolean; records: number }> =>
     (await apiClient.delete(`/table-files/${encodeURIComponent(key)}`)).data,
   upload: async (key: string, file: File, onProgress?: (progress: ImportProgress) => void) => {
-    const form = new FormData();
-    form.append("file", file);
-    const { data } = await apiClient.post(`/table-files/${encodeURIComponent(key)}`, form, {
-      headers: { "Content-Type": "multipart/form-data" },
-      timeout: 0,
-      maxBodyLength: Infinity,
-      maxContentLength: Infinity,
-    });
+    const data = await sendExcelFile(`/table-files/${encodeURIComponent(key)}`, file);
     return followImport<{ records?: number; size_bytes?: number; created?: number }>(data, onProgress);
   },
   download: async (key: string, filename: string): Promise<void> => {

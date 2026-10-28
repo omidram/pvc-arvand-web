@@ -14,6 +14,10 @@ def main() -> None:
         port=settings.APP_PORT,
         log_level="info",
         access_log=True,
+        timeout_keep_alive=300,
+        timeout_graceful_shutdown=30,
+        h11_max_incomplete_event_size=16 * 1024 * 1024,
+        limit_max_requests=None,
     )
 
 

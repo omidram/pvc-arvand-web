@@ -32,6 +32,7 @@ from .routers import (
     element_dashboard as element_dashboard_router_module,
     elements,
     imports as imports_router_module,
+    uploads as uploads_router_module,
     inspections,
     logs as logs_router_module,
     maintenance_reports as maintenance_reports_router_module,
@@ -524,6 +525,13 @@ with SessionLocal() as _db:
     except Exception:  # noqa: BLE001
         _db.rollback()
 
+from starlette.formparsers import MultiPartParser
+
+# Starlette 0.41 defaults both of these to 1 MB. File parts spool to disk after
+# max_file_size, but a reverse proxy / incomplete multipart still needs headroom.
+MultiPartParser.max_file_size = 64 * 1024 * 1024
+MultiPartParser.max_part_size = 512 * 1024 * 1024
+
 app = FastAPI(title="Arvand Cell Management", version="1.10")
 
 # Register SQLAlchemy audit listeners (imported for side effects).
@@ -626,6 +634,7 @@ def _api(router, **kwargs):
 # --- Auth & Users (auth is public; users/roles/logs are admin-only in their routers) ---
 _api(auth_router_module.router)
 _api(imports_router_module.router)
+_api(uploads_router_module.router)
 _api(users_router_module.router)
 _api(roles_router_module.router)
 _api(logs_router_module.router)

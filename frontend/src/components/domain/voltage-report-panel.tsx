@@ -147,9 +147,14 @@ export function VoltageReportPanel({
           <div>
             <div className="dash-total-label">{t("dashboard.plantPowerCost")}</div>
             <div className="dash-total-value">
-              {powerCost != null ? formatNumber(powerCost, powerCost >= 100 ? 0 : 2) : "—"}
+              {powerCost != null ? formatNumber(powerCost, powerCost >= 1 ? 0 : 2) : "—"}
+              {powerCost != null ? <span className="dash-total-unit">{t("dashboard.toman")}</span> : null}
             </div>
-            {price != null && price > 0 ? <div className="dash-total-meta">{t("dashboard.plantPowerCostHint", { price: formatNumber(price, 2) })}</div> : null}
+            {price != null && price > 0 ? (
+              <div className="dash-total-meta">
+                {t("dashboard.plantPowerCostHint", { price: formatNumber(price, price >= 1 ? 0 : 2) })}
+              </div>
+            ) : null}
           </div>
         </div>
         <div>

@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    proxyTimeout: 600_000,
+    middlewareClientMaxBodySize: "500mb",
+  },
   ...(staticExport
     ? {
         output: "export" as const,

@@ -24,7 +24,7 @@ from ..relations_sync import apply_defined_groups, find_master, link_group, link
 from ..warehouse import compact_eq, compact_nr, ensure_indexed, import_contractor_repairs, load_compact_index, load_shutdown_windows
 from ..crud import build_crud_router
 from ..database import get_db
-from ..excel_import import import_excel_bytes, read_xlsx, stash_upload
+from ..excel_import import import_excel_bytes, is_elements_workbook_name, read_xlsx, resolve_upload
 from ..import_jobs import spawn_import
 from ..auth import get_current_user, require_admin
 from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx, rows_to_dicts
@@ -205,7 +205,7 @@ def list_elements(
     group_nr: str | None = None,
     active_only: bool = False,
     skip: int = 0,
-    limit: int = Query(default=500, le=20000),
+    limit: int = Query(default=500, le=500000),
     db: Session = Depends(get_db),
 ):
     query = db.query(models.Element)
@@ -252,7 +252,7 @@ def export_elements_xlsx(
     filters: ExportFilters = Depends(),
     db: Session = Depends(get_db),
 ):
-    items = list_elements(q=q, electrolyzer=electrolyzer, limit=20000, db=db)
+    items = list_elements(q=q, electrolyzer=electrolyzer, skip=0, limit=500000, db=db)
     rows = rows_to_dicts(items, ELEMENT_EXPORT_FIELDS)
     rows, fields = filters.apply(rows, ELEMENT_EXPORT_FIELDS)
     return export_xlsx(rows, fields, "elements")
@@ -485,15 +485,26 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
 
 
 def replace_elements_workbook(db: Session, content: bytes, progress, filename: str | None = None) -> dict:
-    """Drop every assembly row, then load the new workbook."""
-    db.query(models.Element).delete(synchronize_session=False)
-    db.commit()
+    """Replace Assembly Data from the uploaded workbook.
+
+    Files named elements.xlsx (the program export) are loaded as-is: every row,
+    every mapped column, no plant montage rules. Other workbooks still use the
+    C90 montage parser when that layout is detected.
+    """
+    if is_elements_workbook_name(filename):
+        return import_excel_bytes(
+            db, models.Element, schemas.ElementBase, content, pk_field="id", mode="replace", progress=progress
+        )
     parsed = parse_assembly_excel(content, from_year=None, filename=filename)
     if parsed.get("recognized"):
+        db.query(models.Element).delete(synchronize_session=False)
+        db.commit()
         result = _apply_assembly_import(db, parsed, "upsert", progress)
         result["contractor_repairs"] = import_contractor_repairs(db, content)
         return result
-    return import_excel_bytes(db, models.Element, schemas.ElementBase, content, pk_field="id", mode="merge", progress=progress)
+    return import_excel_bytes(
+        db, models.Element, schemas.ElementBase, content, pk_field="id", mode="replace", progress=progress
+    )
 
 
 def _remember_elements(db: Session, filename: str | None, content: bytes, uploaded_by: str | None) -> None:
@@ -503,19 +514,36 @@ def _remember_elements(db: Session, filename: str | None, content: bytes, upload
 
 
 @router.post("/import.xlsx", include_in_schema=False)
-async def import_elements(_admin=Depends(require_admin), file: UploadFile = File(...)):
-    stored, filename = await stash_upload(file)
+async def import_elements(
+    _admin=Depends(require_admin),
+    file: UploadFile | None = File(None),
+    upload_id: str | None = Query(None),
+):
+    stored, filename = await resolve_upload(file, upload_id)
     who = _admin.username
 
     def work(db: Session, progress):
         try:
             content = stored.read_bytes()
-            parsed = parse_assembly_excel(content, from_year=None, filename=filename)
-            if parsed.get("recognized"):
-                result = _apply_assembly_import(db, parsed, "upsert", progress)
-                result["contractor_repairs"] = import_contractor_repairs(db, content)
+            if is_elements_workbook_name(filename):
+                result = import_excel_bytes(
+                    db,
+                    models.Element,
+                    schemas.ElementBase,
+                    content,
+                    pk_field="id",
+                    mode="replace",
+                    progress=progress,
+                )
             else:
-                result = import_excel_bytes(db, models.Element, schemas.ElementBase, content, pk_field="id", progress=progress)
+                parsed = parse_assembly_excel(content, from_year=None, filename=filename)
+                if parsed.get("recognized"):
+                    result = _apply_assembly_import(db, parsed, "upsert", progress)
+                    result["contractor_repairs"] = import_contractor_repairs(db, content)
+                else:
+                    result = import_excel_bytes(
+                        db, models.Element, schemas.ElementBase, content, pk_field="id", mode="replace", progress=progress
+                    )
             _remember_elements(db, filename, content, who)
             return result
         finally:
@@ -527,7 +555,8 @@ async def import_elements(_admin=Depends(require_admin), file: UploadFile = File
 @router.post("/import-assembly-excel")
 async def import_assembly_excel(
     _admin=Depends(require_admin),
-    file: UploadFile = File(...),
+    file: UploadFile | None = File(None),
+    upload_id: str | None = Query(None),
     mode: str = Query(default="assembly", description="assembly | disassembly | upsert"),
 ):
     """
@@ -535,7 +564,7 @@ async def import_assembly_excel(
     Assembly and upsert write every mapped column, including dismantle date.
     Disassembly updates the matching installation's dismantle date.
     """
-    stored, filename = await stash_upload(file)
+    stored, filename = await resolve_upload(file, upload_id)
     mode = (mode or "assembly").strip().lower()
     if mode == "assembly":
         mode = "upsert"
@@ -544,6 +573,18 @@ async def import_assembly_excel(
     def work(db: Session, progress):
         try:
             content = stored.read_bytes()
+            if is_elements_workbook_name(filename):
+                result = import_excel_bytes(
+                    db,
+                    models.Element,
+                    schemas.ElementBase,
+                    content,
+                    pk_field="id",
+                    mode="replace",
+                    progress=progress,
+                )
+                _remember_elements(db, filename, content, who)
+                return result
             parsed = parse_assembly_excel(content, from_year=None, filename=filename)
             if not parsed.get("recognized"):
                 raise HTTPException(

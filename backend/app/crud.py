@@ -138,10 +138,14 @@ def build_crud_router(
     )
 
     @router.post("/import.xlsx", include_in_schema=False)
-    async def import_items(_admin=Depends(require_admin), file: UploadFile = File(...)):
-        from .excel_import import stash_upload
+    async def import_items(
+        _admin=Depends(require_admin),
+        file: UploadFile | None = File(None),
+        upload_id: str | None = Query(None),
+    ):
+        from .excel_import import resolve_upload
 
-        stored, filename = await stash_upload(file)
+        stored, filename = await resolve_upload(file, upload_id)
         who = _admin.username
         file_key = prefix.strip("/")
 

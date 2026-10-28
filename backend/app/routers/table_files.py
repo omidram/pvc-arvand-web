@@ -1,12 +1,12 @@
 """Admin catalog of every program table and the Excel file loaded into it."""
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from .. import models
 from ..auth import require_admin
 from ..database import get_db
-from ..excel_import import stash_upload
+from ..excel_import import resolve_upload
 from ..import_jobs import spawn_import
 from ..table_files import delete_table_file, list_tables, replace_table_file, workbook_path
 
@@ -26,10 +26,11 @@ def remove_file(key: str, db: Session = Depends(get_db)):
 @router.post("/{key}")
 async def upload_file(
     key: str,
-    file: UploadFile = File(...),
+    file: UploadFile | None = File(None),
+    upload_id: str | None = Query(None),
     admin: models.User = Depends(require_admin),
 ):
-    stored, filename = await stash_upload(file)
+    stored, filename = await resolve_upload(file, upload_id)
     who = admin.username
 
     def work(db: Session, progress):
