@@ -19,6 +19,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from . import models
+from .database import commit_db
 from .config import DATA_DIR
 from .plant_import import parse_voltage_excel
 
@@ -105,7 +106,7 @@ def ensure_voltage_indexes(db: Session) -> None:
             "ON electrolyzer_normalizations (electrolyzer, date, time)"
         )
     )
-    db.commit()
+    commit_db(db)
 
 
 def _as_midnight(value: str | datetime | None, fallback: datetime) -> str:
@@ -336,7 +337,7 @@ def scan_and_apply(
         if row is None:
             row = models.VoltageSyncSettings()
             db.add(row)
-            db.commit()
+            commit_db(db)
             db.refresh(row)
 
     watch = resolve_watch_dir(row.watch_dir)
@@ -356,7 +357,7 @@ def scan_and_apply(
             row.last_run_at = datetime.utcnow()
             row.last_run_status = "error"
             row.last_run_message = msg[:500]
-            db.commit()
+            commit_db(db)
         return {
             "ok": False,
             "files_scanned": 0,
@@ -380,7 +381,7 @@ def scan_and_apply(
             continue
         try:
             result = apply_excel_bytes(db, path.read_bytes(), hint_from_name=path.stem)
-            db.commit()
+            commit_db(db)
             state[rel] = fp
             files_applied += 1
             rows_total += int(result.get("rows_upserted") or 0)
@@ -421,7 +422,7 @@ def scan_and_apply(
         row.last_run_at = datetime.utcnow()
         row.last_run_status = "error" if not ok else "success"
         row.last_run_message = message[:500]
-    db.commit()
+    commit_db(db)
 
     return {
         "ok": ok,
@@ -457,7 +458,7 @@ def pull_from_ariaorms(
         if row is None:
             row = models.VoltageSyncSettings()
             db.add(row)
-            db.commit()
+            commit_db(db)
             db.refresh(row)
 
     username = (row.username or "").strip()
@@ -467,7 +468,7 @@ def pull_from_ariaorms(
         row.last_run_at = datetime.utcnow()
         row.last_run_status = "error"
         row.last_run_message = msg[:500]
-        db.commit()
+        commit_db(db)
         return {
             "ok": False,
             "mode": "ariaorms",
@@ -496,7 +497,7 @@ def pull_from_ariaorms(
         row.last_run_at = datetime.utcnow()
         row.last_run_status = "error"
         row.last_run_message = msg[:500]
-        db.commit()
+        commit_db(db)
         return {
             "ok": False,
             "mode": "ariaorms",
@@ -529,7 +530,7 @@ def pull_from_ariaorms(
                 hint_from_name=name,
                 evaluate_alerts=False,
             )
-            db.commit()
+            commit_db(db)
             files_applied += 1
             rows_total += int(info.get("rows_upserted") or 0)
             details.append(
@@ -583,7 +584,7 @@ def pull_from_ariaorms(
 
         alerts_engine.ensure_default_rules(db)
         alerts_engine.evaluate_voltage_rules(db)
-        db.commit()
+        commit_db(db)
     except Exception:  # noqa: BLE001
         logger.exception("Alert evaluation after AriaORMS pull failed")
 
@@ -607,7 +608,7 @@ def pull_from_ariaorms(
     row.last_run_at = datetime.utcnow()
     row.last_run_status = "success" if ok else "error"
     row.last_run_message = message[:500]
-    db.commit()
+    commit_db(db)
 
     return {
         "ok": ok,

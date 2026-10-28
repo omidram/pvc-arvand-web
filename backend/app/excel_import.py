@@ -23,6 +23,8 @@ from pydantic import BaseModel, ValidationError
 from sqlalchemy import Integer
 from sqlalchemy.orm import Session
 
+from .database import commit_db
+
 _DROP = re.compile(r"[\s_\-./\\()\[\]{}%#:;,'\"`+]+")
 _JALALI = re.compile(
     r"^(\d{4})[/-](\d{1,2})[/-](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)?)?$",
@@ -515,7 +517,7 @@ def import_excel_bytes(
     mapping, data_rows, arranged, ignored = parse_sheet(content, write_fields, optional)
     if mode == "replace":
         db.query(model).delete()
-        db.commit()
+        commit_db(db)
 
     created = updated = skipped = 0
     errors: list[str] = []
@@ -576,7 +578,7 @@ def import_excel_bytes(
             db.add(obj)
             created += 1
         if (created + updated) % 200 == 0:
-            db.flush()
+            commit_db(db)
         if progress and (done == total or done % 25 == 0):
             progress(done, total)
 
@@ -587,7 +589,7 @@ def import_excel_bytes(
             detail = f"{detail} {errors[0]}"
         raise HTTPException(status_code=400, detail=detail)
 
-    db.commit()
+    commit_db(db)
     if file_key:
         from .table_files import remember_workbook
 

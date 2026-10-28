@@ -6,7 +6,9 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from . import models, voltage_sync
-from .database import SessionLocal
+from sqlalchemy.exc import OperationalError
+
+from .database import SessionLocal, is_sqlite_lock
 
 logger = logging.getLogger("pvc_arvand.voltage_sync")
 
@@ -47,6 +49,11 @@ def _run_daily_pull() -> None:
             return
         result = voltage_sync.pull_from_ariaorms(db, row, include_today=False)
         logger.info("AriaORMS daily pull: %s", result.get("message"))
+    except OperationalError as exc:
+        if is_sqlite_lock(exc):
+            logger.warning("AriaORMS daily pull deferred: database is busy")
+        else:
+            logger.exception("AriaORMS daily pull failed")
     except Exception:  # noqa: BLE001
         logger.exception("AriaORMS daily pull failed")
     finally:
@@ -63,6 +70,11 @@ def _run_watch_cycle() -> None:
         result = voltage_sync.scan_and_apply(db, row)
         if result.get("files_applied"):
             logger.info("Voltage watch sync: %s", result.get("message"))
+    except OperationalError as exc:
+        if is_sqlite_lock(exc):
+            logger.warning("Voltage watch sync deferred: database is busy")
+        else:
+            logger.exception("Voltage sync watch cycle failed")
     except Exception:  # noqa: BLE001
         logger.exception("Voltage sync watch cycle failed")
     finally:

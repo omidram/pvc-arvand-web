@@ -422,7 +422,7 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
             _write_electrode_coating(db, models.Anode, "anode_nr", payload.get("anode_nr"), payload.get("anode_coating"), anode_index)
             _write_electrode_coating(db, models.Cathode, "cathode_nr", payload.get("cathode_nr"), payload.get("cathode_coating"), cathode_index)
         if (created + updated) % 500 == 0:
-            db.flush()
+            db.commit()
         if progress and (done == total or done % 25 == 0):
             progress(done, total)
 

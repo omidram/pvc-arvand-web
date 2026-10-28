@@ -10,16 +10,17 @@ from datetime import date, datetime
 from pathlib import Path
 
 from sqlalchemy import String, TypeDecorator, create_engine, event
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.exc import OperationalError, PendingRollbackError
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from .config import settings
 
 _log = logging.getLogger("uvicorn.error")
 
 _sqlite = settings.DATABASE_URL.startswith("sqlite")
-# timeout is SQLite's busy wait, in seconds. Without it a short password update
-# fails as soon as a report or import still holds the file.
-connect_args = {"check_same_thread": False, "timeout": 30} if _sqlite else {}
+# timeout is SQLite's busy wait, in seconds. Voltage sync, Excel import and
+# the web UI share one file; wait instead of failing with "database is locked".
+connect_args = {"check_same_thread": False, "timeout": 120} if _sqlite else {}
 engine = create_engine(settings.DATABASE_URL, connect_args=connect_args, pool_pre_ping=True)
 
 
@@ -35,12 +36,67 @@ def _sqlite_on_connect(dbapi_connection, connection_record) -> None:
         return
     cursor = dbapi_connection.cursor()
     try:
-        cursor.execute("PRAGMA busy_timeout=30000")
+        cursor.execute("PRAGMA busy_timeout=120000")
     finally:
         cursor.close()
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def is_sqlite_lock(exc: BaseException) -> bool:
+    text = str(exc).lower()
+    return "database is locked" in text or "database is busy" in text
+
+
+def commit_db(session: Session, *, attempts: int = 8) -> bool:
+    """Commit, waiting out a brief SQLite lock. Returns False if the file stayed busy."""
+    import time
+
+    delay = 0.4
+    for step in range(attempts):
+        try:
+            session.commit()
+            return True
+        except PendingRollbackError:
+            session.rollback()
+            time.sleep(delay)
+            delay = min(delay * 1.7, 8)
+        except OperationalError as exc:
+            if not _sqlite or not is_sqlite_lock(exc):
+                raise
+            _log.warning("SQLite locked on commit (try %s/%s); waiting %.1fs", step + 1, attempts, delay)
+            try:
+                session.rollback()
+            except Exception:  # noqa: BLE001
+                pass
+            time.sleep(delay)
+            delay = min(delay * 1.7, 8)
+    _log.warning("SQLite stayed locked; commit skipped")
+    return False
+
+
+def _try_enable_wal() -> None:
+    """WAL lets voltage sync wait as a second writer instead of failing immediately.
+
+    Some Windows plant files abort PRAGMA journal_mode with a malformed schema;
+    on those files we keep rollback journal and only rely on busy_timeout.
+    """
+    path = _sqlite_file()
+    if path is None or not path.is_file():
+        return
+    try:
+        conn = sqlite3.connect(str(path), timeout=30)
+        try:
+            mode = conn.execute("PRAGMA journal_mode=WAL").fetchone()
+            conn.execute("PRAGMA synchronous=NORMAL")
+            conn.execute("PRAGMA busy_timeout=120000")
+            _log.info("SQLite journal_mode=%s", (mode or ["?"])[0])
+        finally:
+            conn.close()
+    except sqlite3.Error as exc:
+        _log.warning("SQLite WAL not enabled (%s)", exc)
+
 
 # Plant tables. A broken entry with one of these names is reported, not deleted.
 _CORE_SCHEMA = {
@@ -67,6 +123,9 @@ def _sqlite_file() -> Path | None:
     if not rest or rest == ":memory:":
         return None
     return Path(rest)
+
+
+_try_enable_wal()
 
 
 def _schema_object_name(exc: BaseException) -> str | None:
