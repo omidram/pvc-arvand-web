@@ -256,10 +256,12 @@ export function FieldListsTab() {
           <Button
             type="button"
             size="sm"
-            disabled={picked.length < 2 || mergeMutation.isPending}
-            onClick={() => {
+            disabled={picked.length < 1 || mergeMutation.isPending || (!(into.trim() || picked[0]) || (picked.length === 1 && !(into.trim() && into.trim() !== picked[0])))}
+            onClick={async () => {
               const name = (into.trim() || picked[0] || "").trim();
-              if (picked.length < 2 || !name) return;
+              if (!picked.length || !name) return;
+              if (picked.length === 1 && name === picked[0]) return;
+              if (!(await appConfirm(t("fieldLists.confirmMerge", { count: String(picked.length), value: name })))) return;
               mergeMutation.mutate(name);
             }}
           >
@@ -279,7 +281,7 @@ export function FieldListsTab() {
             <Trash2 className="h-3.5 w-3.5" />
             {t("fieldLists.deleteList")}
           </Button>
-          {picked.length === 1 ? <span className="text-sm text-[var(--win-text-dim)]">{t("fieldLists.mergeNeed")}</span> : null}
+          {picked.length < 2 ? <span className="text-sm text-[var(--win-text-dim)]">{t("fieldLists.mergeNeed")}</span> : null}
         </div>
       ) : null}
 
@@ -302,8 +304,14 @@ export function FieldListsTab() {
               {rows.map((row) => {
                 const isEditing = editing != null && editing.from === row.value && (row.id != null ? editing.id === row.id : editing.id < 0);
                 return (
-                  <tr key={row.value.toLowerCase()} className="border-b border-[var(--win-face-dark)]">
-                    <td className="px-2 py-1">
+                  <tr
+                    key={`${row.id ?? "u"}:${row.value}`}
+                    className={`border-b border-[var(--win-face-dark)] ${picked.includes(row.value) ? "bg-[var(--win-sel)]/20" : ""}`}
+                    onClick={() => {
+                      if (!isEditing) toggle(row.value);
+                    }}
+                  >
+                    <td className="px-2 py-1" onClick={(e) => e.stopPropagation()}>
                       <input type="checkbox" checked={picked.includes(row.value)} onChange={() => toggle(row.value)} />
                     </td>
                     <td className="px-2 py-1 font-semibold">
@@ -326,7 +334,7 @@ export function FieldListsTab() {
                       {row.managed ? t("fieldLists.sourceDefined") : row.built_in ? t("fieldLists.sourceBuiltIn") : t("fieldLists.sourceInUse")}
                     </td>
                     <td className="px-2 py-1">{row.count || ""}</td>
-                    <td className="px-2 py-1 text-end">
+                    <td className="px-2 py-1 text-end" onClick={(e) => e.stopPropagation()}>
                       {editable ? (
                         <span className="inline-flex items-center gap-2">
                           {isEditing ? (

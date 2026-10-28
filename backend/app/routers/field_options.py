@@ -19,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from .. import models
 from ..database import get_db
-from ..workflow_models import MembraneStock
+from ..workflow_models import MembraneStock, MembraneStockMove
 
 router = APIRouter(prefix="/field-options", tags=["field-options"])
 
@@ -349,20 +349,25 @@ def _rewrite(db: Session, table: str, field: str, old_values: list[str], new_val
             col = getattr(model, column)
             updated += db.execute(update(model).where(col.in_(raws)).values({column: new_value})).rowcount or 0
     keep_text = _clean(new_value) if new_value else ""
+    keep_key = _key(keep_text) if keep_text else ""
     for item_table, item_field in _targets(table, field):
         rows = db.query(models.FieldOption).filter_by(table_name=item_table, field_name=item_field).all()
-        hit = [row for row in rows if _key(row.value) in keys or (keep_text and _key(row.value) == _key(keep_text))]
+        hit = [row for row in rows if _key(row.value) in keys or (keep_key and _key(row.value) == keep_key)]
         if not keep_text:
             for row in hit:
                 db.delete(row)
             continue
-        for row in hit[1:]:
+        keeper = next((row for row in hit if _key(row.value) == keep_key), hit[0] if hit else None)
+        for row in hit:
+            if keeper is None or row.id == keeper.id:
+                continue
             db.delete(row)
         db.flush()
-        if hit:
-            hit[0].value = keep_text
+        if keeper is not None:
+            keeper.value = keep_text
         else:
             db.add(models.FieldOption(table_name=item_table, field_name=item_field, value=keep_text))
+    db.flush()
     return updated
 
 
@@ -490,12 +495,12 @@ def merge_options(payload: OptionMerge, db: Session = Depends(get_db)):
     _check(payload.table, payload.field)
     into = _clean(payload.into)
     values = [_clean(value) for value in payload.values if _clean(value)]
-    distinct = {_key(value) for value in values}
-    distinct.add(_key(into))
-    if len(distinct) < 2:
-        raise HTTPException(status_code=400, detail="Choose at least two different values")
     if not into:
         raise HTTPException(status_code=400, detail="Value is empty")
+    if not values:
+        raise HTTPException(status_code=400, detail="Select the values to merge")
+    if all(_clean(value) == into for value in values) and len({_key(value) for value in values}) == 1:
+        raise HTTPException(status_code=400, detail="Choose a different name to keep, or select another spelling to fold in")
     updated = _rewrite(db, payload.table, payload.field, values, into)
     db.commit()
     _bust()

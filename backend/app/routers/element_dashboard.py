@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import date as date_type
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -79,6 +79,40 @@ def list_shop(
     return {"counts": counts, "items": items[:limit], "truncated": len(items) > limit}
 
 
+class ShopStartProcess(BaseModel):
+    element_nrs: list[str] = Field(min_length=1)
+    note: str | None = None
+    reason: str | None = None
+
+
+@router.post("/shop/start-process")
+def start_shop_process(
+    body: ShopStartProcess,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    """Start the workflow that belongs to each selected element's current shop stage."""
+    from .workflow import start_shop_process as start_one
+
+    svc.clear_cache()
+    started: list[dict] = []
+    errors: list[dict[str, str]] = []
+    for nr in dict.fromkeys(n.strip() for n in body.element_nrs if n and n.strip()):
+        try:
+            started.append(start_one(db, nr, user, (body.note or "").strip() or None, (body.reason or "").strip() or None))
+        except PermissionError as exc:
+            errors.append({"element_nr": nr, "error": str(exc)})
+        except ValueError as exc:
+            errors.append({"element_nr": nr, "error": str(exc)})
+        except HTTPException as exc:
+            errors.append({"element_nr": nr, "error": str(exc.detail)})
+    if not started and errors:
+        raise HTTPException(status_code=400, detail=errors[0]["error"])
+    db.commit()
+    svc.clear_cache()
+    return {"started": started, "errors": errors}
+
+
 class ShopMove(BaseModel):
     element_nrs: list[str] = Field(min_length=1)
     stage: str  # one of the manual stages or "clear"
@@ -123,6 +157,55 @@ def move_shop(body: ShopMove, db: Session = Depends(get_db), user: models.User =
     db.commit()
     svc.clear_cache()
     return {"moved": moved, "errors": errors}
+
+
+@router.get("/shop/export.xlsx", include_in_schema=False)
+def export_shop_xlsx(
+    state: str | None = Query(None),
+    q: str | None = None,
+    db: Session = Depends(get_db),
+):
+    from ..export_utils import export_xlsx
+    from ..shop_excel import SHOP_FIELDS, shop_export_rows
+
+    listed = list_shop(state=state, q=q, element_nr=None, limit=20000, db=db)
+    rows = shop_export_rows(listed.get("items") or [])
+    name = f"shop-{(state or 'all')}"
+    return export_xlsx(rows, SHOP_FIELDS, name)
+
+
+@router.post("/shop/import.xlsx", include_in_schema=False)
+async def import_shop_xlsx(
+    state: str | None = Query(None),
+    file: UploadFile | None = File(None),
+    upload_id: str | None = Query(None),
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    from ..excel_import import resolve_upload
+    from ..import_jobs import spawn_import
+    from ..routers.workflow import _groups
+    from ..shop_excel import import_shop_workbook
+
+    stored, _filename = await resolve_upload(file, upload_id)
+    groups = set(_groups(db, user))
+    user_id = user.id
+
+    def work(job_db: Session, progress):
+        try:
+            actor = job_db.get(models.User, user_id)
+            return import_shop_workbook(
+                job_db,
+                stored.read_bytes(),
+                tab_state=state,
+                actor=actor,
+                groups=groups,
+                progress=progress,
+            )
+        finally:
+            stored.unlink(missing_ok=True)
+
+    return spawn_import(work)
 
 
 class ShopAdvance(BaseModel):

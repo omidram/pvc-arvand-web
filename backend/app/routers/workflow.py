@@ -3896,6 +3896,201 @@ def _clear_shop(db: Session, element_nr: str | None, user: models.User, note: st
         return
 
 
+_ASM_RANK = {
+    "await_assembly": 1,
+    "await_air": 2,
+    "await_insp_sign": 3,
+    "await_proc_sign": 4,
+    "await_position": 5,
+    "await_disassembly": 6,
+}
+_CELL_RANK = {
+    "await_shutdown": 1,
+    "await_shop": 2,
+    "in_shop": 3,
+    "await_disassembly": 4,
+    "await_reinstall": 4,
+    "await_numbering": 5,
+}
+
+
+def _open_assemble_by_element(db: Session, element_nr: str | None) -> WfAssembleRequest | None:
+    key = compact_nr(element_nr)
+    if not key:
+        return None
+    for r in db.query(WfAssembleRequest).filter(WfAssembleRequest.status.notin_(CLOSED)).all():
+        if compact_nr(r.element_nr) == key:
+            return r
+    return None
+
+
+def _shop_process_plan(item: dict) -> tuple[str, str]:
+    """(flow, target status) for one pipeline row."""
+    state, base = item["state"], item["base_state"]
+    if state == "ready" and base == "decommissioned":
+        return "cell", "await_reinstall"
+    if state == "ready":
+        return "assemble", "await_position"
+    if state == "awaiting_assembly":
+        return "assemble", "await_assembly"
+    if state == "assembling":
+        return "assemble", "await_air"
+    if state == "awaiting_qc":
+        return "assemble", "await_insp_sign"
+    if state == "awaiting_disassembly":
+        return "cell", "await_disassembly"
+    if state == "decommissioned":
+        return "cell", "in_shop"
+    if state in ("in_service", "installed"):
+        return "cell", "await_shutdown"
+    if state == "disassembled":
+        return "inspection", "await_inspection"
+    raise ValueError(f"No workflow is defined for stage '{state}'")
+
+
+def _need_groups_for_process(flow: str, status: str) -> set[str]:
+    return set(STAGES.get(flow, {}).get(status, []))
+
+
+def _ensure_assemble_from_shop(db: Session, item: dict, user: models.User, target: str, note: str | None) -> tuple[WfAssembleRequest, bool]:
+    existing = _open_assemble_by_element(db, item["element_nr"])
+    if existing:
+        if _ASM_RANK.get(target, 0) > _ASM_RANK.get(existing.status, 0) and existing.status not in CLOSED:
+            existing.status = target
+            existing.updated_at = _now()
+            if note:
+                existing.last_note = note
+        return existing, False
+    anode = (item.get("anode_nr") or "").strip()
+    cathode = (item.get("cathode_nr") or "").strip()
+    if not anode or not cathode:
+        raise ValueError(f"Element {item['element_nr']} has no anode/cathode to assemble")
+    membrane = (item.get("membrane_nr") or "").strip()
+    membrane_type = (item.get("membrane_type") or "").strip()
+    if target == "await_assembly" and (not membrane or not membrane_type):
+        raise ValueError(f"Element {item['element_nr']} needs membrane number and type")
+    seq = _next_seq(db, WfAssembleRequest.seq)
+    r = WfAssembleRequest(
+        code=_code("AS", date.today(), seq),
+        seq=seq,
+        status=target,
+        element_nr=item["element_nr"][:50],
+        element_id=item.get("row_id"),
+        anode_nr=anode[:50],
+        cathode_nr=cathode[:50],
+        membrane_nr=membrane[:50] or None,
+        membrane_type=membrane_type[:100] or None,
+        electrolyzer=item.get("electrolyzer"),
+        position=item.get("position"),
+        created_by_id=user.id,
+        created_by_name=_display(user),
+        created_at=_now(),
+        updated_at=_now(),
+        last_note=note,
+    )
+    db.add(r)
+    db.flush()
+    remember(db, "assemble", r.id, {"element": None, "shop": snapshot_shop(db, item["element_nr"])})
+    _event(db, "assemble", r, "created", user, None, note, {"from_shop": item["state"], "element_nr": r.element_nr})
+    _notify(db, "assemble", r, user)
+    return r, True
+
+
+def _ensure_cell_from_shop(db: Session, item: dict, user: models.User, target: str, note: str | None, reason: str | None) -> tuple[WfCellRequest, bool]:
+    existing = _open_cell_requests(db, item["element_nr"])
+    if existing:
+        r = existing[0]
+        if _CELL_RANK.get(target, 0) > _CELL_RANK.get(r.status, 0) and r.status not in CLOSED:
+            r.status = target
+            r.updated_at = _now()
+            if note:
+                r.last_note = note
+        return r, False
+    why = (reason or note or item.get("decommission_reason") or f"Started from cell shop ({item['state']})").strip()
+    if not why:
+        raise ValueError("Enter the reason for the cell request")
+    seq = _next_seq(db, WfCellRequest.seq)
+    r = WfCellRequest(
+        code=_code("CR", date.today(), seq),
+        seq=seq,
+        status=target,
+        element_nr=item["element_nr"][:50],
+        element_id=item.get("row_id"),
+        electrolyzer=item.get("electrolyzer"),
+        position=item.get("position"),
+        reason=why[:800],
+        created_by_id=user.id,
+        created_by_name=_display(user),
+        created_at=_now(),
+        updated_at=_now(),
+        last_note=note,
+    )
+    if target == "await_disassembly":
+        r.decision = "disassemble"
+    if target == "await_reinstall":
+        r.decision = "keep"
+    db.add(r)
+    db.flush()
+    el_row = db.get(models.Element, item["row_id"]) if item.get("row_id") else None
+    remember(db, "cell", r.id, {"element": snapshot_element(el_row) if el_row else None, "shop": snapshot_shop(db, item["element_nr"])})
+    _event(db, "cell", r, "created", user, None, note, {"from_shop": item["state"], "status": target})
+    _notify(db, "cell", r, user)
+    return r, True
+
+
+def _ensure_insp_from_shop(db: Session, item: dict, user: models.User, note: str | None) -> tuple[Any, bool]:
+    existing = _open_insp_for(db, item["element_nr"], item.get("anode_nr"), item.get("cathode_nr"))
+    if existing:
+        return existing, False
+    el = db.get(models.Element, item["row_id"]) if item.get("row_id") else None
+    r = _new_insp(
+        db,
+        user,
+        "await_inspection",
+        el,
+        element_nr=item["element_nr"],
+        anode_nr=item.get("anode_nr"),
+        cathode_nr=item.get("cathode_nr"),
+        reason=note or "Rate off — inspection from cell shop",
+    )
+    _event(db, "inspection", r, "created", user, None, note, {"from_shop": item["state"]})
+    _notify(db, "inspection", r, user)
+    return r, True
+
+
+def start_shop_process(db: Session, element_nr: str, user: models.User, note: str | None = None, reason: str | None = None) -> dict:
+    """Open the workflow that belongs to this element's current shop stage, keeping the stage's role."""
+    key = compact_nr(element_nr)
+    item = next((i for i in svc.build_pipeline(db) if i["key"] == key), None)
+    if item is None:
+        raise ValueError(f"Element {element_nr} was not found")
+    flow, target = _shop_process_plan(item)
+    if item["state"] == "awaiting_disassembly":
+        if _open_assemble_by_element(db, item["element_nr"]):
+            flow, target = "assemble", "await_disassembly"
+    need = _need_groups_for_process(flow, target)
+    groups = _groups(db, user)
+    if need and not (groups & need) and user.role != "admin":
+        raise PermissionError("This step belongs to: " + ", ".join(sorted(need)))
+    created = False
+    if flow == "assemble":
+        rec, created = _ensure_assemble_from_shop(db, item, user, target, note)
+    elif flow == "cell":
+        rec, created = _ensure_cell_from_shop(db, item, user, target, note, reason)
+    else:
+        rec, created = _ensure_insp_from_shop(db, item, user, note)
+    return {
+        "element_nr": item["element_nr"],
+        "flow": flow,
+        "id": rec.id,
+        "code": rec.code,
+        "status": rec.status,
+        "created": created,
+        "groups": list(STAGES.get(flow, {}).get(rec.status, [])),
+        "href": f"/cartable?wf={flow}:{rec.id}" if flow != "cell" else f"/element-dashboard?tab=requests&req={rec.id}",
+    }
+
+
 class AssembleCreateIn(BaseModel):
     anode_nr: str
     cathode_nr: str

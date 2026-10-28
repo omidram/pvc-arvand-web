@@ -1905,6 +1905,34 @@ export const elementDashboardApi = {
   }> => (await apiClient.get("/element-dashboard/parts-now", { params })).data,
   shop: async (params: { state?: string; q?: string; element_nr?: string; limit?: number; refresh?: boolean }): Promise<T.ShopList> =>
     (await apiClient.get("/element-dashboard/shop", { params })).data,
+  exportShopExcel: async (params: { state?: string; q?: string }, filename: string): Promise<void> => {
+    const { data } = await apiClient.get("/element-dashboard/shop/export.xlsx", { params, responseType: "blob" });
+    const url = window.URL.createObjectURL(new Blob([data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename.endsWith(".xlsx") ? filename : `${filename}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  },
+  importShopExcel: async (
+    file: File,
+    state?: string,
+    onProgress?: (progress: ImportProgress) => void,
+  ): Promise<{ created?: number; updated?: number; moved?: number; skipped?: number; errors?: string[] }> => {
+    const extra = state ? { state } : undefined;
+    const data = await sendExcelFile("/element-dashboard/shop/import.xlsx", file, extra);
+    return followImport(data, onProgress);
+  },
+  startProcess: async (payload: {
+    element_nrs: string[];
+    note?: string | null;
+    reason?: string | null;
+  }): Promise<{
+    started: { element_nr: string; flow: string; id: number; code: string; status: string; href: string; groups: string[]; created: boolean }[];
+    errors: { element_nr: string; error: string }[];
+  }> => (await apiClient.post("/element-dashboard/shop/start-process", payload)).data,
   move: async (payload: {
     element_nrs: string[];
     stage: T.ManualElementStage | "clear";

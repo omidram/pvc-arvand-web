@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRightLeft, Eraser, History } from "lucide-react";
+import { ArrowRightLeft, Eraser, FileUp, GitBranch, History } from "lucide-react";
 import { elementDashboardApi } from "@/lib/endpoints";
 import type { ElementStage, ManualElementStage, PipelineItem } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/context";
+import { appAlert } from "@/lib/dialog";
 import { useI18n } from "@/lib/i18n/context";
+import type { ImportProgress } from "@/lib/endpoints";
 import { formatDate, formatDateTime } from "@/lib/utils";
+import { ImportProgressBar } from "./import-progress";
 import { Chips, ExportButton, StageBadge } from "./element-dashboard-ui";
 import { ElementShopCartable } from "./element-shop-cartable";
 
@@ -67,6 +71,7 @@ function History_({ elementNr, onClose }: { elementNr: string; onClose: () => vo
 export function ElementShopTab({ initialStage }: { initialStage?: string }) {
   const { t } = useI18n();
   const { canEdit } = useAuth();
+  const router = useRouter();
   const qc = useQueryClient();
   const editable = canEdit("elements");
   const operator = canEdit("wf_operation");
@@ -80,12 +85,30 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
   const [typed, setTyped] = useState("");
   const [history, setHistory] = useState<string | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [progress, setProgress] = useState<ImportProgress | null>(null);
+  const excelRef = useRef<HTMLInputElement>(null);
 
   const query = useQuery({
     queryKey: ["element-dashboard", "shop", stage, search],
     queryFn: () => elementDashboardApi.shop({ state: stage, q: search.trim() || undefined, limit: 600 }),
   });
   const counts = query.data?.counts;
+
+  const startWf = useMutation({
+    mutationFn: (nrs: string[]) =>
+      elementDashboardApi.startProcess({ element_nrs: nrs, note: note.trim() || null, reason: note.trim() || null }),
+    onSuccess: async (res) => {
+      const failed = res.errors.length ? ` ${t("elDash.skipped", { count: res.errors.length })}: ${res.errors.map((e) => e.error).join("; ")}` : "";
+      const text = `${t("elDash.processStarted", { count: res.started.length })}${failed}`;
+      setMessage({ ok: res.errors.length === 0, text });
+      setSelected(new Set());
+      void qc.invalidateQueries({ queryKey: ["element-dashboard"] });
+      void qc.invalidateQueries({ queryKey: ["wf"] });
+      await appAlert(text);
+      if (res.started.length === 1 && res.started[0].href) router.push(res.started[0].href);
+    },
+    onError: (err: Error) => setMessage({ ok: false, text: err.message }),
+  });
 
   const move = useMutation({
     mutationFn: (payload: { nrs: string[]; stage: ManualElementStage | "clear" }) =>
@@ -138,13 +161,69 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
         <ExportButton
           filename={`elements-${stage}`}
           disabled={!rows.length}
-          header={[t("elDash.col.element"), t("elDash.col.stage"), t("elDash.col.cell"), t("elDash.col.group"), t("elDash.col.anode"), t("elDash.col.cathode"), t("elDash.col.membrane"), t("elDash.col.since"), t("elDash.col.days"), t("elDash.col.note")]}
+          header={[t("elDash.col.element"), t("elDash.col.stage"), t("elDash.col.cell"), t("elDash.col.group"), t("elDash.col.anode"), t("elDash.col.cathode"), t("elDash.col.membrane"), t("elDash.col.membraneType"), t("elDash.col.since"), t("elDash.col.days"), t("elDash.col.note")]}
           rows={() =>
-            rows.map((r) => [r.element_nr, t(`elDash.stage.${r.state}`), r.electrolyzer ? `${r.electrolyzer}-${r.position ?? ""}` : "", r.group_nr, r.anode_nr, r.cathode_nr, r.membrane_nr, r.since, r.days_in_state, r.note])
+            rows.map((r) => [r.element_nr, t(`elDash.stage.${r.state}`), r.electrolyzer ? `${r.electrolyzer}-${r.position ?? ""}` : "", r.group_nr, r.anode_nr, r.cathode_nr, r.membrane_nr, r.membrane_type, r.since, r.days_in_state, r.note])
           }
         />
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => elementDashboardApi.exportShopExcel({ state: stage, q: search.trim() || undefined }, `elements-${stage}`)}
+        >
+          {t("elDash.exportExcel")}
+        </Button>
+        {editable ? (
+          <>
+            <input
+              ref={excelRef}
+              type="file"
+              accept=".xlsx,.xlsm"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setProgress({ percent: 0, processed: 0, total: 0 });
+                setMessage({ ok: true, text: t("elDash.importing", { name: file.name }) });
+                elementDashboardApi
+                  .importShopExcel(file, stage, setProgress)
+                  .then(async (res) => {
+                    await qc.invalidateQueries({ queryKey: ["element-dashboard"] });
+                    const text = t("elDash.imported", {
+                      updated: res.updated ?? 0,
+                      created: res.created ?? 0,
+                      moved: res.moved ?? 0,
+                    });
+                    setMessage({ ok: true, text });
+                    await appAlert(text);
+                  })
+                  .catch(async (err: Error) => {
+                    setMessage({ ok: false, text: err.message });
+                    await appAlert(err.message);
+                  })
+                  .finally(() => {
+                    setProgress(null);
+                    if (excelRef.current) excelRef.current.value = "";
+                  });
+              }}
+            />
+            <Button type="button" variant="secondary" onClick={() => excelRef.current?.click()}>
+              <FileUp className="h-4 w-4" />
+              {t("elDash.importExcel")}
+            </Button>
+          </>
+        ) : null}
       </div>
 
+      <div className="ed-actionbar">
+        <Button type="button" disabled={!selected.size || startWf.isPending} onClick={() => startWf.mutate([...selected])}>
+          <GitBranch className="h-4 w-4" />
+          {t("elDash.startProcess", { count: selected.size })}
+          {" — "}
+          {t(`elDash.process.${FILTERS.includes(stage as ElementStage | "shop" | "all") ? stage : "shop"}`)}
+        </Button>
+        <span className="text-xs text-[var(--win-muted)]">{t("elDash.startProcessHint")}</span>
+      </div>
       {moveTargets.length ? (
         <div className="ed-actionbar">
           <label className="ed-filters">
@@ -178,6 +257,7 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
           </Button>
         </div>
       ) : null}
+      {progress ? <ImportProgressBar progress={progress} /> : null}
       {message ? <p className={`ed-note ${message.ok ? "is-ok" : "is-danger"}`}>{message.text}</p> : null}
 
       {query.isLoading ? (
@@ -192,11 +272,9 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
             <table className="ed-table">
               <thead>
                 <tr>
-                  {moveTargets.length ? (
-                    <th>
-                      <input type="checkbox" checked={selected.size === rows.length && rows.length > 0} onChange={toggleAll} aria-label={t("elDash.selectAll")} />
-                    </th>
-                  ) : null}
+                  <th>
+                    <input type="checkbox" checked={selected.size === rows.length && rows.length > 0} onChange={toggleAll} aria-label={t("elDash.selectAll")} />
+                  </th>
                   <th>{t("elDash.col.element")}</th>
                   <th>{t("elDash.col.stage")}</th>
                   <th>{t("elDash.col.cell")}</th>
@@ -213,11 +291,9 @@ export function ElementShopTab({ initialStage }: { initialStage?: string }) {
               <tbody>
                 {rows.map((r: PipelineItem) => (
                   <tr key={r.key} className={selected.has(r.element_nr) ? "is-selected" : undefined}>
-                    {moveTargets.length ? (
-                      <td>
-                        <input type="checkbox" checked={selected.has(r.element_nr)} onChange={() => toggle(r.element_nr)} aria-label={r.element_nr} />
-                      </td>
-                    ) : null}
+                    <td>
+                      <input type="checkbox" checked={selected.has(r.element_nr)} onChange={() => toggle(r.element_nr)} aria-label={r.element_nr} />
+                    </td>
                     <td>
                       <strong>{r.element_nr}</strong>
                     </td>
