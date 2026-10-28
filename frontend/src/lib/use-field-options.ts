@@ -32,7 +32,8 @@ export function useFieldOptions(table: string) {
   const query = useQuery({
     queryKey: ["field-options", "values", table],
     queryFn: () => fieldOptionsApi.values(table),
-    staleTime: 60_000,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
   const opts = useCallback(
     (field: string, ...extra: (readonly (string | null | undefined)[] | undefined)[]): ComboOption[] =>

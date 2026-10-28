@@ -12,7 +12,7 @@ import { ImportProgressBar } from "@/components/domain/import-progress";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { archiveTableLabel } from "@/lib/archive-names";
 import { useI18n } from "@/lib/i18n/context";
-import { appConfirm } from "@/lib/dialog";
+import { appAlert, appConfirm } from "@/lib/dialog";
 import { formatDateTime } from "@/lib/utils";
 
 function tableLabel(row: TableFileRow, t: (path: string) => string, locale: string): string {
@@ -74,19 +74,28 @@ export function TableFilesTab() {
       if (fileRef.current) fileRef.current.value = "";
       return;
     }
-    setNote("");
+    setNote(t("tableFiles.uploading", { name: tableLabel(row, t, locale) }));
     setProgress({ percent: 0, processed: 0, total: 0 });
-    try {
-      const result = await tableFilesApi.upload(row.key, file, setProgress);
-      setNote(t("tableFiles.uploadedOk", { records: result.records ?? 0 }));
-      await queryClient.invalidateQueries({ queryKey: ["table-files"] });
-    } catch (err) {
-      setNote(err instanceof Error ? err.message : t("common.import"));
-    } finally {
-      setProgress(null);
-      setTarget(null);
-      if (fileRef.current) fileRef.current.value = "";
-    }
+    const name = tableLabel(row, t, locale);
+    tableFilesApi
+      .upload(row.key, file, setProgress)
+      .then(async (result) => {
+        const text = t("tableFiles.uploadedOk", { records: result.records ?? 0 });
+        setNote(text);
+        await queryClient.invalidateQueries({ queryKey: ["table-files"] });
+        await appAlert(text);
+      })
+      .catch(async (err) => {
+        const text = err instanceof Error ? err.message : t("common.import");
+        setNote(text);
+        await appAlert(text);
+      })
+      .finally(() => {
+        setProgress(null);
+        setTarget(null);
+        if (fileRef.current) fileRef.current.value = "";
+      });
+    if (fileRef.current) fileRef.current.value = "";
   }
 
   const columns: Column<TableFileRow>[] = [
@@ -159,7 +168,7 @@ export function TableFilesTab() {
                   type="button"
                   size="sm"
                   variant="secondary"
-                  disabled={progress !== null}
+                  disabled={false}
                   onClick={() => {
                     setTarget(row);
                     fileRef.current?.click();

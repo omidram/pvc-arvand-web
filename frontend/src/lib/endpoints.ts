@@ -629,6 +629,9 @@ export async function importExcel(
   form.append("file", file);
   const { data } = await apiClient.post(`${prefix}/import.xlsx`, form, {
     headers: { "Content-Type": "multipart/form-data" },
+    timeout: 0,
+    maxBodyLength: Infinity,
+    maxContentLength: Infinity,
   });
   return followImport(data, onProgress);
 }
@@ -1307,6 +1310,9 @@ export const tableFilesApi = {
     form.append("file", file);
     const { data } = await apiClient.post(`/table-files/${encodeURIComponent(key)}`, form, {
       headers: { "Content-Type": "multipart/form-data" },
+      timeout: 0,
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
     });
     return followImport<{ records?: number; size_bytes?: number; created?: number }>(data, onProgress);
   },
@@ -1861,6 +1867,10 @@ export const fieldOptionsApi = {
   ): Promise<{ id: number; value: string; records_updated: number }> =>
     (await apiClient.put(`/field-options/${id}`, { value, apply_to_records: applyToRecords })).data,
   remove: async (id: number): Promise<{ ok: boolean }> => (await apiClient.delete(`/field-options/${id}`)).data,
+  merge: async (table: string, field: string, values: string[], into: string): Promise<{ value: string; records_updated: number }> =>
+    (await apiClient.post("/field-options/merge", { table, field, values, into })).data,
+  purge: async (table: string, field: string, values: string[] = []): Promise<{ ok: boolean; records_updated: number }> =>
+    (await apiClient.post("/field-options/purge", { table, field, values, clear_records: true })).data,
 };
 
 export const elementDashboardApi = {

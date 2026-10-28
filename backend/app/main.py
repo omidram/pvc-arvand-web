@@ -272,6 +272,20 @@ def _ensure_plant_settings_session_idle() -> None:
 _ensure_plant_settings_session_idle()
 
 
+def _ensure_plant_settings_electricity_price() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("plant_settings")}
+    except Exception:
+        return
+    if "electricity_price_per_kw" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE plant_settings ADD COLUMN electricity_price_per_kw FLOAT"))
+
+
+_ensure_plant_settings_electricity_price()
+
+
 def _ensure_user_last_seen() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("users")}

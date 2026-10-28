@@ -4,7 +4,7 @@ Live Cell Arrangement board (Access frmAnordnung / qryAnordnung).
 Shows every position in an electrolyzer's arrangement blocks with the currently
 mounted (non-disassembled) element components — matching Uhde Access behavior.
 Selecting a cell loads every related record (assembly, anode, cathode, membrane,
-inspections, voltage) so it can be edited in place.
+inspections) so it can be edited in place. Voltage readings stay on the voltage pages.
 """
 from datetime import date
 
@@ -288,13 +288,6 @@ def arrangement_cell(
         )
 
     pos_keys = [str(position), f"{position}.0"]
-    voltage = (
-        db.query(models.VoltageReading)
-        .filter(models.VoltageReading.electrolyzer == selected, models.VoltageReading.position.in_(pos_keys))
-        .order_by(models.VoltageReading.date.desc(), models.VoltageReading.id.desc())
-        .limit(40)
-        .all()
-    )
     efficiency = (
         db.query(models.CurrentEfficiencyEntry)
         .filter(
@@ -344,7 +337,6 @@ def arrangement_cell(
             }
             for grid in _find_many(db, models.InspectionHalfshellGrid, "element_nr", element_nr)
         ],
-        "voltage": _dump_many(schemas.VoltageReadingRead, voltage),
         "current_efficiency": _dump_many(schemas.CurrentEfficiencyEntryRead, efficiency),
         "links": {
             "anode_catalog": anode is not None,

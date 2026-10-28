@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from .. import models
 from ..auth import require_admin
 from ..database import get_db
-from ..excel_import import read_xlsx
+from ..excel_import import stash_upload
 from ..import_jobs import spawn_import
 from ..table_files import delete_table_file, list_tables, replace_table_file, workbook_path
 
@@ -29,12 +29,15 @@ async def upload_file(
     file: UploadFile = File(...),
     admin: models.User = Depends(require_admin),
 ):
-    content = await read_xlsx(file)
-    filename = file.filename
+    stored, filename = await stash_upload(file)
     who = admin.username
 
     def work(db: Session, progress):
-        return replace_table_file(db, key, filename, content, who, progress)
+        try:
+            content = stored.read_bytes()
+            return replace_table_file(db, key, filename, content, who, progress)
+        finally:
+            stored.unlink(missing_ok=True)
 
     return spawn_import(work)
 

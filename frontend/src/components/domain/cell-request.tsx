@@ -14,6 +14,7 @@ import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/context";
 import { relationsApi } from "@/lib/endpoints";
+import { useFieldOptions } from "@/lib/use-field-options";
 import { useI18n } from "@/lib/i18n/context";
 import { todayIsoLocal } from "@/lib/date-range";
 import type { PipelineItem } from "@/lib/types";
@@ -83,7 +84,9 @@ export function CellRequestForm({ elementNr, onSent }: { elementNr: string; onSe
   const [planned, setPlanned] = useState(todayIsoLocal());
   const [alreadyOff, setAlreadyOff] = useState(false);
   const [offDate, setOffDate] = useState(todayIsoLocal());
-  const reasons = useQuery({ queryKey: ["relations", "decommission-reasons"], queryFn: () => relationsApi.lookup("decommission-reasons"), staleTime: 300_000 });
+  const { opts } = useFieldOptions("elements");
+  const listed = useQuery({ queryKey: ["relations", "decommission-reasons"], queryFn: () => relationsApi.lookup("decommission-reasons"), staleTime: 0 });
+  const reasons = opts("decommission_reason", listed.data).map((row) => row.value);
   const send = useMutation({
     mutationFn: () =>
       workflowApi.cellCreate({
@@ -106,7 +109,7 @@ export function CellRequestForm({ elementNr, onSent }: { elementNr: string; onSe
         <label className="ed-filters cr-wide">
           <span className="text-xs font-bold">{t("cellReq.reason")} *</span>
           <MultiReason
-            options={(reasons.data ?? []).slice(0, 80)}
+            options={reasons}
             value={reason}
             placeholder={t("cellReq.reasonHint")}
             onChange={setReason}

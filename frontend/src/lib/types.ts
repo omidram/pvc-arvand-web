@@ -56,6 +56,8 @@ export interface PlantSettings {
   date: string | null;
   /** Minutes without input before auto-logout. 0 = disabled. */
   session_idle_minutes: number;
+  /** Approved price of one kilowatt. Live cost = current kW × this price. */
+  electricity_price_per_kw?: number | null;
 }
 
 export interface CorrectionFactor {

@@ -100,6 +100,13 @@ function PlantInfoTab() {
     },
     { name: "reference_current_density", label: t("fields.referenceCurrentDensity"), type: "number", step: "0.01" },
     { name: "zero_voltage", label: t("fields.zeroVoltage"), type: "number", step: "0.001" },
+    {
+      name: "electricity_price_per_kw",
+      label: t("settings.electricityPrice"),
+      type: "number",
+      step: "0.01",
+      placeholder: t("settings.electricityPriceHint"),
+    },
     { name: "date", label: t("settings.recordDate"), type: "date" },
     {
       name: "session_idle_minutes",
@@ -131,9 +138,11 @@ function PlantInfoTab() {
           readOnly={!editable}
           onSubmit={async (values) => {
             const idle = Number(values.session_idle_minutes);
+            const price = Number(values.electricity_price_per_kw);
             await updateMutation.mutateAsync({
               ...values,
               session_idle_minutes: Number.isFinite(idle) ? Math.max(0, Math.min(24 * 60, Math.round(idle))) : 30,
+              electricity_price_per_kw: Number.isFinite(price) && price >= 0 ? price : null,
             } as Partial<PlantSettings>);
             setSaved(true);
             settingsQuery.refetch();
@@ -141,7 +150,8 @@ function PlantInfoTab() {
             setTimeout(() => setSaved(false), 2000);
           }}
         />
-        <p className="mt-2 text-[11px] text-[var(--win-muted)]">{t("settings.sessionIdleHint")}</p>
+        <p className="mt-2 text-[11px] text-[var(--win-muted)]">{t("settings.electricityPriceHint")}</p>
+        <p className="mt-1 text-[11px] text-[var(--win-muted)]">{t("settings.sessionIdleHint")}</p>
         {saved && <div className="mt-3 text-sm font-semibold text-[#0d5c0d]">{t("common.saved")}</div>}
       </CardContent>
     </Card>

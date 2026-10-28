@@ -9,6 +9,8 @@ from __future__ import annotations
 import io
 import re
 import unicodedata
+import uuid
+from pathlib import Path
 from datetime import date, datetime, time
 from types import UnionType
 from typing import Any, Sequence, Union, get_args, get_origin
@@ -344,10 +346,40 @@ def _pk_value(model: type, pk_field: str, value: Any) -> Any:
 
 
 async def read_xlsx(file: UploadFile) -> bytes:
+    """Keep the old helper: some callers still want the bytes on the request thread."""
+    path, _name = await stash_upload(file)
+    try:
+        return path.read_bytes()
+    finally:
+        path.unlink(missing_ok=True)
+
+
+async def stash_upload(file: UploadFile):
+    """Write the upload to disk in 1 MB chunks so a large Assembly workbook is not cut off in memory."""
+    from .paths import data_root
+
     name = (file.filename or "").lower()
     if not name.endswith((".xlsx", ".xlsm")):
         raise HTTPException(status_code=400, detail="File must be an .xlsx Excel workbook.")
-    return await file.read()
+    folder = data_root() / "uploads_tmp"
+    folder.mkdir(parents=True, exist_ok=True)
+    dest = folder / f"{uuid.uuid4().hex}_{Path(file.filename or 'upload.xlsx').name}"
+    size = 0
+    try:
+        with dest.open("wb") as out:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                out.write(chunk)
+                size += len(chunk)
+    except Exception:
+        dest.unlink(missing_ok=True)
+        raise
+    if size < 32:
+        dest.unlink(missing_ok=True)
+        raise HTTPException(status_code=400, detail="The uploaded file is empty or was cut off.")
+    return dest, file.filename or dest.name
 
 
 def import_excel_bytes(

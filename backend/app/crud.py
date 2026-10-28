@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from .auth import require_admin
 from .database import get_db
-from .excel_import import import_excel_bytes, read_xlsx
+from .excel_import import import_excel_bytes
 from .import_jobs import spawn_import
 from .export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx, rows_to_dicts
 
@@ -139,23 +139,28 @@ def build_crud_router(
 
     @router.post("/import.xlsx", include_in_schema=False)
     async def import_items(_admin=Depends(require_admin), file: UploadFile = File(...)):
-        content = await read_xlsx(file)
-        filename = file.filename
+        from .excel_import import stash_upload
+
+        stored, filename = await stash_upload(file)
         who = _admin.username
         file_key = prefix.strip("/")
 
         def work(db: Session, progress):
-            return import_excel_bytes(
-                db,
-                model,
-                write_schema,
-                content,
-                pk_field=pk_field,
-                progress=progress,
-                file_key=file_key,
-                file_name=filename,
-                uploaded_by=who,
-            )
+            try:
+                content = stored.read_bytes()
+                return import_excel_bytes(
+                    db,
+                    model,
+                    write_schema,
+                    content,
+                    pk_field=pk_field,
+                    progress=progress,
+                    file_key=file_key,
+                    file_name=filename,
+                    uploaded_by=who,
+                )
+            finally:
+                stored.unlink(missing_ok=True)
 
         return spawn_import(work)
 

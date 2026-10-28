@@ -24,7 +24,7 @@ from ..relations_sync import apply_defined_groups, find_master, link_group, link
 from ..warehouse import compact_eq, compact_nr, ensure_indexed, import_contractor_repairs, load_compact_index, load_shutdown_windows
 from ..crud import build_crud_router
 from ..database import get_db
-from ..excel_import import import_excel_bytes, read_xlsx
+from ..excel_import import import_excel_bytes, read_xlsx, stash_upload
 from ..import_jobs import spawn_import
 from ..auth import get_current_user, require_admin
 from ..export_utils import ExportFilters, build_export_meta, export_pdf, export_xlsx, rows_to_dicts
@@ -504,19 +504,22 @@ def _remember_elements(db: Session, filename: str | None, content: bytes, upload
 
 @router.post("/import.xlsx", include_in_schema=False)
 async def import_elements(_admin=Depends(require_admin), file: UploadFile = File(...)):
-    content = await read_xlsx(file)
-    filename = file.filename
-    parsed = parse_assembly_excel(content, from_year=None, filename=filename)
+    stored, filename = await stash_upload(file)
     who = _admin.username
 
     def work(db: Session, progress):
-        if parsed.get("recognized"):
-            result = _apply_assembly_import(db, parsed, "upsert", progress)
-            result["contractor_repairs"] = import_contractor_repairs(db, content)
-        else:
-            result = import_excel_bytes(db, models.Element, schemas.ElementBase, content, pk_field="id", progress=progress)
-        _remember_elements(db, filename, content, who)
-        return result
+        try:
+            content = stored.read_bytes()
+            parsed = parse_assembly_excel(content, from_year=None, filename=filename)
+            if parsed.get("recognized"):
+                result = _apply_assembly_import(db, parsed, "upsert", progress)
+                result["contractor_repairs"] = import_contractor_repairs(db, content)
+            else:
+                result = import_excel_bytes(db, models.Element, schemas.ElementBase, content, pk_field="id", progress=progress)
+            _remember_elements(db, filename, content, who)
+            return result
+        finally:
+            stored.unlink(missing_ok=True)
 
     return spawn_import(work)
 
@@ -532,28 +535,31 @@ async def import_assembly_excel(
     Assembly and upsert write every mapped column, including dismantle date.
     Disassembly updates the matching installation's dismantle date.
     """
-    content = await file.read()
-    parsed = parse_assembly_excel(content, from_year=None, filename=file.filename)
-    if not parsed.get("recognized"):
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "This Excel file does not match Assembly Data. "
-                "Expected the montage / demontage sheet (ANODE, CATHODE, شماره المنت, تاریخ مونتاژ در C90, تاریخ دی مونتاژ). "
-                "فایل با فرم مونتاژ جور نیست. همه سال‌های تاریخ C90 وارد می‌شوند."
-            ),
-        )
+    stored, filename = await stash_upload(file)
     mode = (mode or "assembly").strip().lower()
     if mode == "assembly":
         mode = "upsert"
-    filename = file.filename
     who = _admin.username
 
     def work(db: Session, progress):
-        result = _apply_assembly_import(db, parsed, mode, progress)
-        result["contractor_repairs"] = import_contractor_repairs(db, content)
-        _remember_elements(db, filename, content, who)
-        return result
+        try:
+            content = stored.read_bytes()
+            parsed = parse_assembly_excel(content, from_year=None, filename=filename)
+            if not parsed.get("recognized"):
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "This Excel file does not match Assembly Data. "
+                        "Expected the montage / demontage sheet (ANODE, CATHODE, شماره المنت, تاریخ مونتاژ در C90, تاریخ دی مونتاژ). "
+                        "فایل با فرم مونتاژ جور نیست. همه سال‌های تاریخ C90 وارد می‌شوند."
+                    ),
+                )
+            result = _apply_assembly_import(db, parsed, mode, progress)
+            result["contractor_repairs"] = import_contractor_repairs(db, content)
+            _remember_elements(db, filename, content, who)
+            return result
+        finally:
+            stored.unlink(missing_ok=True)
 
     return spawn_import(work)
 

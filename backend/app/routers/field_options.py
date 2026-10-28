@@ -298,6 +298,86 @@ def _items(db: Session, table: str, field: str) -> list[dict[str, Any]]:
     return sorted(by_key.values(), key=lambda r: _natural(r["value"]))
 
 
+def _targets(table: str, field: str) -> list[tuple[str, str]]:
+    """Every combo that must show the same values as this one."""
+    rel = _relation(table, field)
+    pairs = rel["fields"] if rel else [(table, field)]
+    return [(item_table, item_field) for item_table, item_field in pairs if item_table in CATALOG and item_field in CATALOG[item_table][1]]
+
+
+def _sources(table: str, field: str) -> list[tuple[Any, str]]:
+    """Every column whose stored text is this combo."""
+    rel = _relation(table, field)
+    if rel:
+        return list(rel["sources"])
+    return [(CATALOG[table][0], field)]
+
+
+def _raw_matches(db: Session, model: Any, column: str, keys: set[str]) -> list[Any]:
+    col = getattr(model, column)
+    found: list[Any] = []
+    for (raw,) in db.query(col).filter(col.isnot(None)).distinct().all():
+        text = _clean(str(raw))
+        if text and _key(text) in keys:
+            found.append(raw)
+    return found
+
+
+def _bust() -> None:
+    from ..element_dashboard import clear_cache
+
+    clear_cache()
+
+
+def _rewrite(db: Session, table: str, field: str, old_values: list[str], new_value: str | None) -> int:
+    """Replace old spellings with one name (or blank) on every linked combo and every record that uses them."""
+    keys = {_key(value) for value in old_values if _clean(value)}
+    if not keys:
+        return 0
+    updated = 0
+    for model, column in _sources(table, field):
+        raws = _raw_matches(db, model, column, keys)
+        if not raws:
+            continue
+        col = getattr(model, column)
+        updated += db.execute(update(model).where(col.in_(raws)).values({column: new_value})).rowcount or 0
+    if new_value and (field == "membrane_type" or any(column == "membrane_type" for _, column in _sources(table, field))):
+        for model, column in ((MembraneStock, "membrane_type"), (MembraneStockMove, "membrane_type")):
+            raws = _raw_matches(db, model, column, keys)
+            if not raws:
+                continue
+            col = getattr(model, column)
+            updated += db.execute(update(model).where(col.in_(raws)).values({column: new_value})).rowcount or 0
+    keep_text = _clean(new_value) if new_value else ""
+    for item_table, item_field in _targets(table, field):
+        rows = db.query(models.FieldOption).filter_by(table_name=item_table, field_name=item_field).all()
+        hit = [row for row in rows if _key(row.value) in keys or (keep_text and _key(row.value) == _key(keep_text))]
+        if not keep_text:
+            for row in hit:
+                db.delete(row)
+            continue
+        for row in hit[1:]:
+            db.delete(row)
+        db.flush()
+        if hit:
+            hit[0].value = keep_text
+        else:
+            db.add(models.FieldOption(table_name=item_table, field_name=item_field, value=keep_text))
+    return updated
+
+
+def _clear_list(db: Session, table: str, field: str, clear_records: bool) -> int:
+    """Remove every value of a combo. With clear_records the cells that used those values are blanked too."""
+    updated = 0
+    if clear_records:
+        for model, column in _sources(table, field):
+            col = getattr(model, column)
+            updated += db.execute(update(model).where(col.isnot(None), col != "").values({column: None})).rowcount or 0
+    for item_table, item_field in _targets(table, field):
+        db.query(models.FieldOption).filter_by(table_name=item_table, field_name=item_field).delete(synchronize_session=False)
+    return updated
+
+
 class OptionIn(BaseModel):
     table: str
     field: str
@@ -306,7 +386,21 @@ class OptionIn(BaseModel):
 
 class OptionRename(BaseModel):
     value: str = Field(min_length=1, max_length=200)
-    apply_to_records: bool = False
+    apply_to_records: bool = True
+
+
+class OptionMerge(BaseModel):
+    table: str
+    field: str
+    values: list[str] = Field(min_length=1)
+    into: str = Field(min_length=1, max_length=200)
+
+
+class OptionPurge(BaseModel):
+    table: str
+    field: str
+    values: list[str] = []
+    clear_records: bool = True
 
 
 @router.get("/catalog")
@@ -341,8 +435,11 @@ def add_option(payload: OptionIn, db: Session = Depends(get_db)):
         raise HTTPException(status_code=409, detail=f"'{value}' is already in the list")
     row = models.FieldOption(table_name=payload.table, field_name=payload.field, value=value)
     db.add(row)
+    db.flush()
+    publish_assembly_value(db, payload.table, payload.field, value)
     db.commit()
     db.refresh(row)
+    _bust()
     return {"id": row.id, "value": row.value}
 
 
@@ -362,21 +459,84 @@ def rename_option(option_id: int, payload: OptionRename, db: Session = Depends(g
         raise HTTPException(status_code=409, detail=f"'{new_value}' is already in the list")
     old_value = row.value
     updated = 0
-    if payload.apply_to_records and old_value != new_value:
-        sources = [(CATALOG[row.table_name][0], row.field_name)] + EXTRA_SOURCES.get((row.table_name, row.field_name), [])
-        for model, column in sources:
-            col = getattr(model, column)
-            updated += db.execute(update(model).where(col == old_value).values({column: new_value})).rowcount or 0
-    row.value = new_value
+    if old_value != new_value:
+        if payload.apply_to_records:
+            updated = _rewrite(db, row.table_name, row.field_name, [old_value], new_value)
+        else:
+            _rewrite_lists_only(db, row.table_name, row.field_name, [old_value], new_value)
     db.commit()
-    return {"id": row.id, "value": row.value, "records_updated": updated}
+    _bust()
+    return {"id": option_id, "value": new_value, "records_updated": updated}
+
+
+def _rewrite_lists_only(db: Session, table: str, field: str, old_values: list[str], new_value: str) -> None:
+    keys = {_key(value) for value in old_values if _clean(value)}
+    keep_text = _clean(new_value)
+    for item_table, item_field in _targets(table, field):
+        rows = db.query(models.FieldOption).filter_by(table_name=item_table, field_name=item_field).all()
+        hit = [row for row in rows if _key(row.value) in keys or _key(row.value) == _key(keep_text)]
+        for row in hit[1:]:
+            db.delete(row)
+        db.flush()
+        if hit:
+            hit[0].value = keep_text
+        elif keep_text:
+            db.add(models.FieldOption(table_name=item_table, field_name=item_field, value=keep_text))
+
+
+@router.post("/merge")
+def merge_options(payload: OptionMerge, db: Session = Depends(get_db)):
+    """Fold several spellings of one combo into a single name, on every form and every record."""
+    _check(payload.table, payload.field)
+    into = _clean(payload.into)
+    values = [_clean(value) for value in payload.values if _clean(value)]
+    distinct = {_key(value) for value in values}
+    distinct.add(_key(into))
+    if len(distinct) < 2:
+        raise HTTPException(status_code=400, detail="Choose at least two different values")
+    if not into:
+        raise HTTPException(status_code=400, detail="Value is empty")
+    updated = _rewrite(db, payload.table, payload.field, values, into)
+    db.commit()
+    _bust()
+    return {"value": into, "records_updated": updated}
+
+
+@router.post("/purge")
+def purge_options(payload: OptionPurge, db: Session = Depends(get_db)):
+    """Delete one combo list, or the chosen values, from every linked dropdown and (by default) from the records."""
+    _check(payload.table, payload.field)
+    if payload.values:
+        if payload.clear_records:
+            updated = _rewrite(db, payload.table, payload.field, payload.values, None)
+        else:
+            updated = 0
+            keys = {_key(_clean(value)) for value in payload.values if _clean(value)}
+            for item_table, item_field in _targets(payload.table, payload.field):
+                for row in db.query(models.FieldOption).filter_by(table_name=item_table, field_name=item_field).all():
+                    if _key(row.value) in keys:
+                        db.delete(row)
+    else:
+        updated = _clear_list(db, payload.table, payload.field, payload.clear_records)
+    db.commit()
+    _bust()
+    return {"ok": True, "records_updated": updated}
 
 
 @router.delete("/{option_id}")
-def delete_option(option_id: int, db: Session = Depends(get_db)):
+def delete_option(option_id: int, complete: bool = False, db: Session = Depends(get_db)):
     row = db.get(models.FieldOption, option_id)
     if not row:
         raise HTTPException(status_code=404, detail="Not found")
-    db.delete(row)
+    updated = 0
+    if complete:
+        updated = _rewrite(db, row.table_name, row.field_name, [row.value], None)
+    else:
+        keys = {_key(row.value)}
+        for item_table, item_field in _targets(row.table_name, row.field_name):
+            for opt in db.query(models.FieldOption).filter_by(table_name=item_table, field_name=item_field).all():
+                if _key(opt.value) in keys:
+                    db.delete(opt)
     db.commit()
-    return {"ok": True}
+    _bust()
+    return {"ok": True, "records_updated": updated}

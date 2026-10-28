@@ -43,6 +43,9 @@ export const API_URL = resolveApiUrl();
 export const apiClient = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" },
+  timeout: 0,
+  maxContentLength: Infinity,
+  maxBodyLength: Infinity,
 });
 
 // Keep baseURL in sync on the client (SSR may have resolved localhost).

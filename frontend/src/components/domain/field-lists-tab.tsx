@@ -57,7 +57,9 @@ export function FieldListsTab() {
   const [fieldSel, setField] = useState("");
   const [draft, setDraft] = useState("");
   const [filter, setFilter] = useState("");
-  const [editing, setEditing] = useState<{ id: number; value: string } | null>(null);
+  const [editing, setEditing] = useState<{ id: number; from: string; value: string } | null>(null);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [into, setInto] = useState("");
   const [message, setMessage] = useState<string | null>(null);
 
   const tables = catalog.data || [];
@@ -69,10 +71,15 @@ export function FieldListsTab() {
     queryKey: ["field-options", "items", table, field],
     queryFn: () => fieldOptionsApi.items(table, field),
     enabled: Boolean(table && field),
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   function refresh() {
+    setPicked([]);
     queryClient.invalidateQueries({ queryKey: ["field-options"] });
+    queryClient.invalidateQueries({ queryKey: ["membrane-stock"] });
+    queryClient.invalidateQueries({ queryKey: ["element-dashboard"] });
   }
   function flash(text: string) {
     setMessage(text);
@@ -104,14 +111,26 @@ export function FieldListsTab() {
     onSuccess: (data) => {
       setEditing(null);
       refresh();
-      queryClient.invalidateQueries();
       flash(data.records_updated ? t("fieldLists.renamedRecords", { count: String(data.records_updated) }) : t("fieldLists.renamed"));
     },
     onError: (err) => void appAlert(errText(err)),
   });
-  const removeMutation = useMutation({
-    mutationFn: (id: number) => fieldOptionsApi.remove(id),
-    onSuccess: refresh,
+  const mergeMutation = useMutation({
+    mutationFn: (name: string) => fieldOptionsApi.merge(table, field, picked, name),
+    onSuccess: (data) => {
+      setInto("");
+      refresh();
+      flash(t("fieldLists.merged", { value: data.value, count: String(data.records_updated) }));
+    },
+    onError: (err) => void appAlert(errText(err)),
+  });
+  const purgeMutation = useMutation({
+    mutationFn: (values: string[]) => fieldOptionsApi.purge(table, field, values),
+    onSuccess: (data, values) => {
+      refresh();
+      flash(values.length ? t("fieldLists.purged", { count: String(data.records_updated) }) : t("fieldLists.deletedList", { count: String(data.records_updated) }));
+    },
+    onError: (err) => void appAlert(errText(err)),
   });
 
   function submitAdd() {
@@ -123,17 +142,38 @@ export function FieldListsTab() {
   }
 
   async function saveRename(row: FieldOptionItem) {
-    if (!editing || row.id == null) return;
+    if (!editing) return;
     const value = editing.value.trim();
     if (!value || value === row.value) {
       setEditing(null);
       return;
     }
-    let apply = false;
-    if (row.count > 0) {
-      apply = await appConfirm(t("fieldLists.confirmApply", { count: String(row.count), from: row.value, to: value }));
+    if (row.id == null) {
+      const ok = await appConfirm(t("fieldLists.confirmApply", { count: String(row.count), from: row.value, to: value }));
+      if (!ok) {
+        setEditing(null);
+        return;
+      }
+      try {
+        const data = await fieldOptionsApi.merge(table, field, [row.value], value);
+        setEditing(null);
+        refresh();
+        flash(t("fieldLists.renamedRecords", { count: String(data.records_updated) }));
+      } catch (err) {
+        void appAlert(errText(err));
+      }
+      return;
     }
-    renameMutation.mutate({ id: row.id, value, apply });
+    const apply = await appConfirm(t("fieldLists.confirmApply", { count: String(row.count), from: row.value, to: value }));
+    if (!apply) {
+      setEditing(null);
+      return;
+    }
+    renameMutation.mutate({ id: row.id, value, apply: true });
+  }
+
+  function toggle(value: string) {
+    setPicked((prev) => (prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]));
   }
 
   const needle = filter.trim().toLowerCase();
@@ -152,6 +192,8 @@ export function FieldListsTab() {
               setTable(e.target.value);
               setField("");
               setEditing(null);
+              setPicked([]);
+              setInto("");
             }}
             className="min-w-[200px]"
           >
@@ -169,6 +211,8 @@ export function FieldListsTab() {
             onChange={(e) => {
               setField(e.target.value);
               setEditing(null);
+              setPicked([]);
+              setInto("");
             }}
             className="min-w-[220px]"
           >
@@ -203,6 +247,42 @@ export function FieldListsTab() {
         </div>
       ) : null}
 
+      {editable && field ? (
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-semibold">{t("fieldLists.mergeInto")}</span>
+            <Input value={into} onChange={(e) => setInto(e.target.value)} placeholder={picked[0] || ""} className="w-52" />
+          </label>
+          <Button
+            type="button"
+            size="sm"
+            disabled={picked.length < 2 || mergeMutation.isPending}
+            onClick={() => {
+              const name = (into.trim() || picked[0] || "").trim();
+              if (picked.length < 2 || !name) return;
+              mergeMutation.mutate(name);
+            }}
+          >
+            {t("fieldLists.merge")} ({picked.length})
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="text-red-700"
+            disabled={purgeMutation.isPending}
+            onClick={async () => {
+              const label = t(fieldKey(field, table));
+              if (await appConfirm(t("fieldLists.confirmDeleteList", { field: label }))) purgeMutation.mutate([]);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            {t("fieldLists.deleteList")}
+          </Button>
+          {picked.length === 1 ? <span className="text-sm text-[var(--win-text-dim)]">{t("fieldLists.mergeNeed")}</span> : null}
+        </div>
+      ) : null}
+
       {items.isLoading ? <LoadingState /> : null}
       {items.isError ? <ErrorState message={errText(items.error)} /> : null}
 
@@ -211,6 +291,7 @@ export function FieldListsTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[var(--win-shadow)]">
+                <th className="px-2 py-1" />
                 <th className="px-2 py-1 text-start">{t("fieldLists.value")}</th>
                 <th className="px-2 py-1 text-start">{t("fieldLists.source")}</th>
                 <th className="px-2 py-1 text-start">{t("fieldLists.usedBy")}</th>
@@ -219,15 +300,18 @@ export function FieldListsTab() {
             </thead>
             <tbody>
               {rows.map((row) => {
-                const isEditing = editing != null && row.id != null && editing.id === row.id;
+                const isEditing = editing != null && editing.from === row.value && (row.id != null ? editing.id === row.id : editing.id < 0);
                 return (
                   <tr key={row.value.toLowerCase()} className="border-b border-[var(--win-face-dark)]">
+                    <td className="px-2 py-1">
+                      <input type="checkbox" checked={picked.includes(row.value)} onChange={() => toggle(row.value)} />
+                    </td>
                     <td className="px-2 py-1 font-semibold">
                       {isEditing ? (
                         <Input
                           autoFocus
                           value={editing.value}
-                          onChange={(e) => setEditing({ id: editing.id, value: e.target.value })}
+                          onChange={(e) => setEditing({ id: editing.id, from: editing.from, value: e.target.value })}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") void saveRename(row);
                             if (e.key === "Escape") setEditing(null);
@@ -259,7 +343,7 @@ export function FieldListsTab() {
                               <button
                                 type="button"
                                 title={t("fieldLists.rename")}
-                                onClick={() => setEditing({ id: row.id as number, value: row.value })}
+                                onClick={() => setEditing({ id: row.id as number, from: row.value, value: row.value })}
                               >
                                 <Pencil className="h-4 w-4" />
                               </button>
@@ -268,18 +352,43 @@ export function FieldListsTab() {
                                 title={t("fieldLists.remove")}
                                 className="text-red-700"
                                 onClick={async () => {
-                                  if (await appConfirm(t("fieldLists.confirmRemove", { value: row.value }))) removeMutation.mutate(row.id as number);
+                                  if (await appConfirm(t("fieldLists.confirmRemove", { value: row.value, count: String(row.count) }))) {
+                                    purgeMutation.mutate([row.value]);
+                                  }
                                 }}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </button>
                             </>
-                          ) : !row.built_in ? (
-                            <Button type="button" size="sm" variant="ghost" onClick={() => addMutation.mutate([row.value])}>
-                              <Plus className="h-3.5 w-3.5" />
-                              {t("fieldLists.pin")}
-                            </Button>
-                          ) : null}
+                          ) : (
+                            <>
+                              {!row.built_in ? (
+                                <button type="button" title={t("fieldLists.rename")} onClick={() => setEditing({ id: -1, from: row.value, value: row.value })}>
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                              ) : null}
+                              {!row.built_in && !row.managed ? (
+                                <Button type="button" size="sm" variant="ghost" onClick={() => addMutation.mutate([row.value])}>
+                                  <Plus className="h-3.5 w-3.5" />
+                                  {t("fieldLists.pin")}
+                                </Button>
+                              ) : null}
+                              {!row.built_in ? (
+                                <button
+                                  type="button"
+                                  title={t("fieldLists.remove")}
+                                  className="text-red-700"
+                                  onClick={async () => {
+                                    if (await appConfirm(t("fieldLists.confirmRemove", { value: row.value, count: String(row.count) }))) {
+                                      purgeMutation.mutate([row.value]);
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              ) : null}
+                            </>
+                          )}
                         </span>
                       ) : null}
                     </td>
@@ -288,7 +397,7 @@ export function FieldListsTab() {
               })}
               {!rows.length ? (
                 <tr>
-                  <td colSpan={4} className="px-2 py-3 text-center text-[var(--win-text-dim)]">
+                  <td colSpan={5} className="px-2 py-3 text-center text-[var(--win-text-dim)]">
                     {t("fieldLists.empty")}
                   </td>
                 </tr>

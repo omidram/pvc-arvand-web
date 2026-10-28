@@ -318,6 +318,8 @@ class PlantSettings(Base):
     date: Mapped[datetime | None] = mapped_column(DateTime)
     # Auto-logout after this many minutes without user input. 0 = disabled.
     session_idle_minutes: Mapped[int] = mapped_column(Integer, default=30)
+    # Approved price of one kilowatt. Live electricity cost = current plant kW × this price.
+    electricity_price_per_kw: Mapped[float | None] = mapped_column(Float)
 
 
 class UnCeSettings(Base):

@@ -19,7 +19,6 @@ import {
   membraneMaintenanceApi,
   membranesApi,
   relationsApi,
-  voltageReadingsApi,
   elementsApi,
 } from "@/lib/endpoints";
 import { AccessFields, accessPayload, valuesFromRecord } from "@/components/ui/access-fields";
@@ -436,18 +435,6 @@ export function CellArrangementEditor({
     [t, reasons.data]
   );
 
-  const voltageFields = useMemo<FieldDef[]>(
-    () => [
-      { name: "date", label: t("fields.date"), type: "date" },
-      { name: "time", label: t("fields.time") },
-      { name: "voltage", label: t("fields.voltage"), type: "number", step: "0.001" },
-      { name: "voltage_prev", label: t("fields.voltagePrev"), type: "number", step: "0.001" },
-      { name: "standardized_voltage", label: t("fields.standardizedVoltage"), type: "number", step: "0.001" },
-      { name: "element_nr", label: t("fields.elementNr") },
-    ],
-    [t]
-  );
-
   const efficiencyFields = useMemo<FieldDef[]>(
     () => [
       { name: "date", label: t("fields.date"), type: "date" },
@@ -840,25 +827,6 @@ export function CellArrangementEditor({
           </Section>
         </>
       ) : null}
-
-      <Section title={t("arrangement.voltage")} hint={t("arrangement.voltageHint")} count={dossier.voltage.length} open={dossier.voltage.length > 0}>
-        <RowList
-          rows={dossier.voltage}
-          fields={voltageFields}
-          canEdit={editVoltage}
-          seed={{ electrolyzer, position: String(position), element_nr: elementNr }}
-          addLabel={t("common.add")}
-          emptyLabel={t("arrangement.noRows")}
-          onCreate={async (payload) => {
-            await voltageReadingsApi.create({ ...payload, electrolyzer, position: String(position) });
-            await refresh();
-          }}
-          onUpdate={async (id, payload) => {
-            await voltageReadingsApi.update(id, { ...payload, electrolyzer, position: String(position) });
-            await refresh();
-          }}
-        />
-      </Section>
 
       <Section
         title={t("arrangement.currentEfficiency")}

@@ -193,6 +193,8 @@ def all_types(db: Session) -> list[str]:
         db.query(MembraneStockMove.membrane_type),
         db.query(models.Membrane.membrane_type),
         db.query(models.Element.membrane_type),
+        db.query(models.GroupDefinition.membrane_type),
+        db.query(models.FieldOption.value).filter(models.FieldOption.field_name == "membrane_type"),
     ]
     for q in sources:
         for (value,) in q.distinct().all():

@@ -13,6 +13,7 @@ import {
 import { ImportProgressBar } from "@/components/domain/import-progress";
 import { downloadExport, importExcel, type ImportProgress } from "@/lib/endpoints";
 import { useAuth } from "@/lib/auth/context";
+import { appAlert } from "@/lib/dialog";
 import { useI18n } from "@/lib/i18n/context";
 
 /** Excel export, Excel import, and PDF export for the form the user is in. */
@@ -61,20 +62,27 @@ export function ExportButtons({
   async function onFile(file: File | undefined) {
     if (!file || !canImport) return;
     setBusy("import");
-    setNote("");
+    setNote(t("tableFiles.uploading", { name: file.name }));
     setProgress({ percent: 0, processed: 0, total: 0 });
-    try {
-      const result = await importExcel(prefix, file, setProgress);
-      await queryClient.invalidateQueries();
-      const done = t("common.importDone", { created: result.created ?? 0, updated: result.updated ?? 0 });
-      setNote(result.arranged ? `${done} ${t("common.importArranged")}` : done);
-    } catch (err) {
-      setNote(err instanceof Error ? err.message : t("common.import"));
-    } finally {
-      setBusy(null);
-      setProgress(null);
-      if (fileRef.current) fileRef.current.value = "";
-    }
+    importExcel(prefix, file, setProgress)
+      .then(async (result) => {
+        await queryClient.invalidateQueries();
+        const done = t("common.importDone", { created: result.created ?? 0, updated: result.updated ?? 0 });
+        const text = result.arranged ? `${done} ${t("common.importArranged")}` : done;
+        setNote(text);
+        await appAlert(text);
+      })
+      .catch(async (err) => {
+        const text = err instanceof Error ? err.message : t("common.import");
+        setNote(text);
+        await appAlert(text);
+      })
+      .finally(() => {
+        setBusy(null);
+        setProgress(null);
+        if (fileRef.current) fileRef.current.value = "";
+      });
+    if (fileRef.current) fileRef.current.value = "";
   }
 
   return (

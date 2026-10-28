@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
+import { settingsApi } from "@/lib/endpoints";
 import type { DashboardVoltageStats } from "@/lib/types";
 import { TRAIN_LETTERS, electrolyzerName, formatElectrolyzer, type TrainId } from "@/lib/plant-topology";
 import { VoltageGauge } from "@/components/domain/voltage-gauge";
@@ -56,6 +58,10 @@ export function VoltageReportPanel({
   error?: string | null;
 }) {
   const { t } = useI18n();
+  const priceQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get, staleTime: 15_000 });
+  const price = priceQuery.data?.electricity_price_per_kw;
+  const powerKw = voltage?.plant_power_kw;
+  const powerCost = price != null && price > 0 && powerKw != null ? powerKw * price : null;
 
   if (loading && !voltage) {
     return (
@@ -137,6 +143,13 @@ export function VoltageReportPanel({
               {live.plant_power_kw != null ? formatNumber(live.plant_power_kw / 1000, 2) : "—"}
               <span className="dash-total-unit">MW</span>
             </div>
+          </div>
+          <div>
+            <div className="dash-total-label">{t("dashboard.plantPowerCost")}</div>
+            <div className="dash-total-value">
+              {powerCost != null ? formatNumber(powerCost, powerCost >= 100 ? 0 : 2) : "—"}
+            </div>
+            {price != null && price > 0 ? <div className="dash-total-meta">{t("dashboard.plantPowerCostHint", { price: formatNumber(price, 2) })}</div> : null}
           </div>
         </div>
         <div>

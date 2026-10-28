@@ -186,7 +186,9 @@ def lookup(name: str, db: Session = Depends(get_db)):
     elif name == "shutdown-categories":
         values = _values(db.query(models.ShutdownCategory.category).distinct().all())
     elif name == "decommission-reasons":
-        values = _values(db.query(models.Element.decommission_reason).distinct().all())
+        from .field_options import _items
+
+        values = [row["value"] for row in _items(db, "elements", "decommission_reason")]
     elif name == "generations":
         fixed = ["3", "4", "5", "5+", "6", "6+", "Blue Star"]
         extras = _values(
