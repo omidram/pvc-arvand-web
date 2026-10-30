@@ -139,8 +139,15 @@ export function VoltageReportPanel({
   const [span, setSpan] = useState<"day" | "week" | "month">("week");
   const priceQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get, staleTime: 15_000 });
   const price = priceQuery.data?.electricity_price_per_kw;
-  const powerKw = voltage?.plant_power_kw;
-  const powerCost = price != null && price > 0 && powerKw != null ? powerKw * price : null;
+  const spanPick = () => (
+    <div className="dv-span" role="group">
+      {(["day", "week", "month"] as const).map((key) => (
+        <button key={key} type="button" className={span === key ? "is-on" : ""} onClick={() => setSpan(key)}>
+          {t(key === "day" ? "dashboard.spanDay" : key === "week" ? "dashboard.spanWeek" : "dashboard.spanMonth")}
+        </button>
+      ))}
+    </div>
+  );
 
   if (loading && !voltage) {
     return (
@@ -194,6 +201,10 @@ export function VoltageReportPanel({
   ];
   const okPct = Math.round((live.ok_count / healthTotal) * 100);
   const trains = (["1", "2"] as const).map((train) => trainLine(live, train));
+  const spanKwh = span === "day" ? live.plant_energy_kwh_24h : span === "month" ? live.plant_energy_kwh_30d : live.plant_energy_kwh_7d;
+  const spanHours = span === "day" ? 24 : span === "month" ? 720 : 168;
+  const avgMw = spanKwh != null ? spanKwh / spanHours / 1000 : null;
+  const periodCost = price != null && price > 0 && spanKwh != null ? spanKwh * price : null;
 
   return (
     <section className={`dash-voltage-report dv ${compact ? "is-compact" : ""}`}>
@@ -227,21 +238,9 @@ export function VoltageReportPanel({
           icon={Activity}
           tone="violet"
           label={t("dashboard.plantPowerAvg")}
-          value={(() => {
-            const kwh = span === "day" ? live.plant_energy_kwh_24h : span === "month" ? live.plant_energy_kwh_30d : live.plant_energy_kwh_7d;
-            const hours = span === "day" ? 24 : span === "month" ? 720 : 168;
-            return kwh != null ? formatNumber(kwh / hours / 1000, 2) : "—";
-          })()}
+          value={avgMw != null ? formatNumber(avgMw, 2) : "—"}
           unit={U.mw}
-          extra={
-            <div className="dv-span" role="group">
-              {(["day", "week", "month"] as const).map((key) => (
-                <button key={key} type="button" className={span === key ? "is-on" : ""} onClick={() => setSpan(key)}>
-                  {t(key === "day" ? "dashboard.spanDay" : key === "week" ? "dashboard.spanWeek" : "dashboard.spanMonth")}
-                </button>
-              ))}
-            </div>
-          }
+          extra={spanPick()}
         />
         <Kpi
           icon={Gauge}
@@ -254,8 +253,9 @@ export function VoltageReportPanel({
           icon={Banknote}
           tone="green"
           label={t("dashboard.plantPowerCost")}
-          value={powerCost != null ? formatNumber(powerCost, powerCost >= 1 ? 0 : 2) : "—"}
-          unit={powerCost != null ? t("dashboard.toman") : undefined}
+          value={periodCost != null ? formatNumber(periodCost, periodCost >= 1 ? 0 : 2) : "—"}
+          unit={periodCost != null ? t("dashboard.toman") : undefined}
+          extra={spanPick()}
           meta={price != null && price > 0 ? t("dashboard.plantPowerCostHint", { price: formatNumber(price, price >= 1 ? 0 : 2) }) : undefined}
         />
       </div>

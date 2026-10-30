@@ -3951,6 +3951,13 @@ html[data-theme="dark"] .mon-cell.is-danger {
 .psm-cell.is-dim { opacity: 0.28; }
 .psm-tick.is-stale { opacity: 0.45; }
 .psm-cell.is-dim { opacity: 0.28; }
+.psm-face-body { display: flex; align-items: center; gap: 0.35rem; margin-top: auto; }
+.psm-gauge { width: 78px; height: 78px; flex: none; }
+.psm-gauge text { font-size: 13px; font-weight: 800; fill: #0f2744; }
+.psm-face-readout { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.psm-face-readout .psm-metric small { font-size: 9px; }
+html[data-theme="dark"] .psm-gauge text { fill: #f8fafc; }
+html[data-theme="dark"] .psm-gauge-track { stroke: #334155; }
 .psm-face-metrics { margin-top: auto; }
 .psm-chip-v { background: #eff6ff; color: #1d4ed8; }
 .psm-face-alerts {

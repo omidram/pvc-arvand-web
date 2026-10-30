@@ -34,16 +34,61 @@ function fmtFixed(value: number | null | undefined, digits: number): string {
   return value.toFixed(digits);
 }
 
-function powerMetric(kw: number | null | undefined): { label: string; value: string } {
-  if (kw == null || Number.isNaN(kw) || kw <= 0) return { label: "MW", value: "—" };
-  if (kw >= 1000) return { label: "MW", value: (kw / 1000).toFixed(2) };
-  return { label: "kW", value: String(Math.round(kw)) };
+function powerValue(kw: number | null | undefined): { scale: "mw" | "kw" | "none"; value: string } {
+  if (kw == null || Number.isNaN(kw) || kw <= 0) return { scale: "none", value: "—" };
+  if (kw >= 1000) return { scale: "mw", value: (kw / 1000).toFixed(2) };
+  return { scale: "kw", value: String(Math.round(kw)) };
 }
 
-function energyMetric(kwh: number | null | undefined): { label: string; value: string } {
-  if (kwh == null || Number.isNaN(kwh) || kwh <= 0) return { label: "MWh", value: "—" };
-  if (kwh >= 1_000_000) return { label: "GWh", value: (kwh / 1_000_000).toFixed(2) };
-  return { label: "MWh", value: (kwh / 1000).toFixed(1) };
+function energyValue(kwh: number | null | undefined): { scale: "gwh" | "mwh" | "none"; value: string } {
+  if (kwh == null || Number.isNaN(kwh) || kwh <= 0) return { scale: "none", value: "—" };
+  if (kwh >= 1_000_000) return { scale: "gwh", value: (kwh / 1_000_000).toFixed(2) };
+  return { scale: "mwh", value: (kwh / 1000).toFixed(1) };
+}
+
+function gaugeArc(cx: number, cy: number, r: number, value: number): string {
+  const start = -Math.PI * 0.75;
+  const sweep = Math.PI * 1.5 * Math.max(0, Math.min(1, value));
+  if (sweep <= 0.001) return "";
+  const end = start + sweep;
+  const x1 = cx + r * Math.cos(start);
+  const y1 = cy + r * Math.sin(start);
+  const x2 = cx + r * Math.cos(end);
+  const y2 = cy + r * Math.sin(end);
+  return `M ${x1} ${y1} A ${r} ${r} 0 ${sweep > Math.PI ? 1 : 0} 1 ${x2} ${y2}`;
+}
+
+/** Three rings: match to design, load, cell voltage. The centre is the match percent. */
+function StatusGauge({
+  match,
+  voltage,
+  current,
+  tone,
+}: {
+  match: number | null;
+  voltage: number | null;
+  current: number | null;
+  tone: "ok" | "warning" | "danger" | "muted";
+}) {
+  const toneColor = tone === "ok" ? "#10b981" : tone === "warning" ? "#f59e0b" : tone === "danger" ? "#ef4444" : "#94a3b8";
+  const rings = [
+    { r: 32, value: match == null ? 0 : match / 100, color: toneColor },
+    { r: 25, value: current == null || current <= 0 ? 0 : current / 16, color: "#0891b2" },
+    { r: 18, value: voltage == null || voltage <= 0 ? 0 : voltage / 4, color: "#2563eb" },
+  ];
+  return (
+    <svg className="psm-gauge" viewBox="0 0 78 78" aria-hidden>
+      {rings.map((ring) => (
+        <g key={ring.r}>
+          <path className="psm-gauge-track" d={gaugeArc(39, 39, ring.r, 1)} fill="none" stroke="#e2e8f0" strokeWidth="4.5" strokeLinecap="round" />
+          <path d={gaugeArc(39, 39, ring.r, ring.value)} fill="none" stroke={ring.color} strokeWidth="4.5" strokeLinecap="round" />
+        </g>
+      ))}
+      <text x="39" y="43" textAnchor="middle">
+        {match == null ? "—" : `${Math.round(match)}%`}
+      </text>
+    </svg>
+  );
 }
 
 function Metric({
@@ -119,12 +164,21 @@ function Faceplate({
   focus: Focus;
   onOpen: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const fa = locale === "fa";
+  const unit = {
+    v: fa ? "ولت" : "Volt",
+    ka: fa ? "کیلوآمپر" : "Kiloampere",
+    mw: fa ? "مگاوات" : "Megawatt",
+    kw: fa ? "کیلووات" : "Kilowatt",
+  };
   const health = healthOf(block);
   const letter = name.slice(0, -1);
   const train = name.slice(-1);
   const last = lastVoltages(block);
-  const sec = secMatch(block?.avg_voltage ?? last.avg, block?.current_ka);
+  const voltage = block?.avg_voltage ?? last.avg;
+  const sec = secMatch(voltage, block?.current_ka);
+  const power = powerValue(block?.power_kw);
   return (
     <button type="button" className={`psm-face is-${health}`} onClick={onOpen}>
       <div className="psm-face-top">
@@ -135,10 +189,18 @@ function Faceplate({
         <span className={`psm-lamp is-${health}`} />
       </div>
       <RackMeter cells={cellMap(block)} focus={focus} />
-      <div className="psm-face-metrics">
-        <Metric kind="v" label="V" value={fmtFixed(block?.avg_voltage ?? last.avg, 3)} />
-        <Metric kind="i" label="kA" value={fmtFixed(block?.current_ka, 1)} />
-        <Metric kind="p" {...powerMetric(block?.power_kw)} />
+      <div className="psm-face-body">
+        <StatusGauge
+          match={sec?.matchPct ?? null}
+          voltage={voltage}
+          current={block?.current_ka ?? null}
+          tone={sec?.tone ?? "muted"}
+        />
+        <div className="psm-face-readout">
+          <Metric kind="v" label={unit.v} value={fmtFixed(voltage, 3)} />
+          <Metric kind="i" label={unit.ka} value={fmtFixed(block?.current_ka, 1)} />
+          <Metric kind="p" label={power.scale === "kw" ? unit.kw : unit.mw} value={power.value} />
+        </div>
       </div>
       {sec ? (
         <div
@@ -151,8 +213,9 @@ function Faceplate({
         >
           <span>{t("monitoring.secPair")}</span>
           <b>
-            {fmtFixed(block?.avg_voltage ?? last.avg, 1)} / {fmtFixed(sec.designVoltage, 1)}
+            {fmtFixed(voltage, 1)} / {fmtFixed(sec.designVoltage, 1)}
           </b>
+          <b>{fmtFixed(sec.matchPct, 0)}%</b>
         </div>
       ) : null}
       <div className="psm-face-alerts">
@@ -188,7 +251,15 @@ export function PlantSchematic({
   onOpenCell: (cell: Pick<MonitoringCellStatus, "electrolyzer" | "position">) => void;
   onOpenTotal: (electrolyzer: string) => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const fa = locale === "fa";
+  const unit = {
+    ka: fa ? "کیلوآمپر" : "Kiloampere",
+    mw: fa ? "مگاوات" : "Megawatt",
+    kw: fa ? "کیلووات" : "Kilowatt",
+    mwh: fa ? "مگاوات‌ساعت" : "Megawatt-hour",
+    gwh: fa ? "گیگاوات‌ساعت" : "Gigawatt-hour",
+  };
   const byName = useMemo(() => {
     const map = new Map<string, MonitoringElectrolyzerBlock>();
     for (const block of blocks) map.set(block.electrolyzer.toUpperCase(), block);
@@ -247,8 +318,8 @@ export function PlantSchematic({
         <div className="psm-trains">
           {(["1", "2"] as const).map((train) => {
             const stats = trainStats(train);
-            const trainPower = powerMetric(stats.power);
-            const trainEnergy = energyMetric(stats.energy);
+            const trainPower = powerValue(stats.power);
+            const trainEnergy = energyValue(stats.energy);
             return (
               <article key={train} className="psm-train">
                 <header className="psm-train-head">
@@ -270,9 +341,9 @@ export function PlantSchematic({
                     })}
                   </span>
                   <div className="psm-train-metrics">
-                    <Metric kind="i" label="kA" value={stats.load > 0 ? stats.load.toFixed(1) : "—"} />
-                    <Metric kind="p" {...trainPower} />
-                    <Metric kind="e" label={`${trainEnergy.label} / 24h`} value={trainEnergy.value} />
+                    <Metric kind="i" label={unit.ka} value={stats.load > 0 ? stats.load.toFixed(1) : "—"} />
+                    <Metric kind="p" label={trainPower.scale === "kw" ? unit.kw : unit.mw} value={trainPower.value} />
+                    <Metric kind="e" label={trainEnergy.scale === "gwh" ? unit.gwh : unit.mwh} value={trainEnergy.value} />
                   </div>
                 </div>
                 <div className="psm-train-export">
@@ -355,7 +426,8 @@ function ElectrolyzerMimic({
   onOpenTotal: () => void;
   onBack: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const fa = locale === "fa";
   const cells = cellMap(block);
   const train = trainOf(name);
   const last = lastVoltages(block);
@@ -421,9 +493,9 @@ function ElectrolyzerMimic({
                   {live
                     ? t("monitoring.liveCount", { count: live })
                     : t("monitoring.lastReadingCount", { count: lastKnown })}
-                  {rackLive?.power_kw != null ? ` · ${formatNumber(rackLive.power_kw, 0)} kW` : ""}
+                  {rackLive?.power_kw != null ? ` · ${formatNumber(rackLive.power_kw, 0)} ${fa ? "کیلووات" : "Kilowatt"}` : ""}
                   {rackLive?.energy_kwh_24h != null && rackLive.energy_kwh_24h > 0
-                    ? ` · ${formatNumber(rackLive.energy_kwh_24h, 0)} kWh/24h`
+                    ? ` · ${formatNumber(rackLive.energy_kwh_24h, 0)} ${fa ? "کیلووات‌ساعت" : "Kilowatt-hour"}`
                     : ""}
                 </span>
               </header>
