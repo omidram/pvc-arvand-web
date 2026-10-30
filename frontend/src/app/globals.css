@@ -7909,3 +7909,36 @@ html[data-theme="dark"][data-ui="modern"] .psm-sec.is-danger { background: #7f1d
 html[data-theme="dark"][data-ui="modern"] .sms { background: linear-gradient(135deg, #0f172a, #1e293b); border-color: #334155; }
 html[data-theme="dark"][data-ui="modern"] .sms-title { color: #f1f5f9; }
 html[data-theme="dark"][data-ui="modern"] .sms-summary, html[data-theme="dark"][data-ui="modern"] .sms-gauge-label { color: #94a3b8; }
+/* period switch on the plant-power card */
+.dv-span { display: flex; justify-content: center; gap: 0.25rem; margin-top: 0.15rem; }
+.dv-span button {
+  border: 1px solid #dbe4ee; background: #f8fafc; color: #475569;
+  border-radius: 999px; padding: 0.12rem 0.55rem; font-size: 0.68rem; font-weight: 800; cursor: pointer;
+}
+.dv-span button.is-on { background: #6d28d9; color: #fff; border-color: #6d28d9; }
+html[data-theme="dark"] .dv-span button { background: #0f172a; color: #cbd5e1; border-color: #334155; }
+html[data-theme="dark"] .dv-span button.is-on { background: #7c3aed; color: #fff; }
+
+/* element dashboard: management hero + richer pipeline */
+.ed-hero { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.7rem; margin-bottom: 0.85rem; }
+.ed-hero-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem;
+  min-height: 92px; padding: 0.7rem 0.5rem; text-align: center; cursor: pointer;
+  border-radius: 16px; border: 1px solid #d7e3f0; background: #fff;
+  box-shadow: 0 8px 20px rgba(15, 39, 68, 0.06);
+}
+.ed-hero-card span { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.03em; text-transform: uppercase; color: #64748b; }
+.ed-hero-card b { font-size: 1.7rem; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.ed-hero-card.is-green b { color: #047857; }
+.ed-hero-card.is-blue b { color: #1d4ed8; }
+.ed-hero-card.is-amber b { color: #b45309; }
+.ed-hero-card.is-rose b { color: #b91c1c; }
+.ed-mgmt .ed-flow-step {
+  min-height: 4.6rem; border-radius: 14px; border-top-width: 4px;
+  box-shadow: 0 6px 16px rgba(15, 39, 68, 0.06);
+}
+.ed-mgmt .ed-flow-value { font-size: 1.35rem; text-align: center; }
+.ed-mgmt .ed-flow-label { text-align: center; }
+.ed-mgmt .mon-panel { border-radius: 16px; box-shadow: 0 8px 22px rgba(15, 39, 68, 0.05); }
+html[data-theme="dark"] .ed-hero-card { background: #1e293b; border-color: #334155; }
+html[data-theme="dark"] .ed-hero-card span { color: #94a3b8; }

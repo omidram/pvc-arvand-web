@@ -149,8 +149,10 @@ function Faceplate({
             pct: fmtFixed(sec.matchPct, 0),
           })}
         >
-          <span>{t("monitoring.secMatch")}</span>
-          <b>{fmtFixed(sec.matchPct, 0)}%</b>
+          <span>{t("monitoring.secPair")}</span>
+          <b>
+            {fmtFixed(block?.avg_voltage ?? last.avg, 1)} / {fmtFixed(sec.designVoltage, 1)}
+          </b>
         </div>
       ) : null}
       <div className="psm-face-alerts">

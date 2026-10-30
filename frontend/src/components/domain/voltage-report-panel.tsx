@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, type ComponentType } from "react";
+import { useId, useState, type ComponentType, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, ArrowRight, Banknote, Gauge, Zap } from "lucide-react";
 import { settingsApi } from "@/lib/endpoints";
@@ -77,6 +77,7 @@ function Kpi({
   unit,
   meta,
   spark,
+  extra,
 }: {
   icon: ComponentType<{ size?: number }>;
   tone: KpiTone;
@@ -85,6 +86,7 @@ function Kpi({
   unit?: string;
   meta?: string;
   spark?: { name: string; v: number }[];
+  extra?: ReactNode;
 }) {
   const uid = useId().replace(/:/g, "");
   return (
@@ -97,7 +99,8 @@ function Kpi({
         {value}
         {unit ? <span className="dv-kpi-unit">{unit}</span> : null}
       </div>
-      {meta ? <div className="dv-kpi-meta">{meta}</div> : <div className="dv-kpi-meta">&nbsp;</div>}
+      {extra}
+      {meta ? <div className="dv-kpi-meta">{meta}</div> : extra ? null : <div className="dv-kpi-meta">&nbsp;</div>}
       {spark && spark.length > 1 ? (
         <div className="dv-spark" aria-hidden>
           <ResponsiveContainer width="100%" height="100%">
@@ -133,6 +136,7 @@ export function VoltageReportPanel({
   const fa = locale === "fa";
   const U = { mw: fa ? "مگاوات" : "Megawatt", mwh: fa ? "مگاوات‌ساعت" : "Megawatt-hour", v: fa ? "ولت" : "Volt", ka: fa ? "کیلوآمپر" : "Kiloampere" };
   const uid = useId().replace(/:/g, "");
+  const [span, setSpan] = useState<"day" | "week" | "month">("week");
   const priceQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get, staleTime: 15_000 });
   const price = priceQuery.data?.electricity_price_per_kw;
   const powerKw = voltage?.plant_power_kw;
@@ -222,9 +226,22 @@ export function VoltageReportPanel({
         <Kpi
           icon={Activity}
           tone="violet"
-          label={t("dashboard.plantTotalEnergy")}
-          value={live.plant_energy_kwh_7d != null ? formatNumber(live.plant_energy_kwh_7d / 168_000, 2) : "—"}
-          unit={U.mwh}
+          label={t("dashboard.plantPowerAvg")}
+          value={(() => {
+            const kwh = span === "day" ? live.plant_energy_kwh_24h : span === "month" ? live.plant_energy_kwh_30d : live.plant_energy_kwh_7d;
+            const hours = span === "day" ? 24 : span === "month" ? 720 : 168;
+            return kwh != null ? formatNumber(kwh / hours / 1000, 2) : "—";
+          })()}
+          unit={U.mw}
+          extra={
+            <div className="dv-span" role="group">
+              {(["day", "week", "month"] as const).map((key) => (
+                <button key={key} type="button" className={span === key ? "is-on" : ""} onClick={() => setSpan(key)}>
+                  {t(key === "day" ? "dashboard.spanDay" : key === "week" ? "dashboard.spanWeek" : "dashboard.spanMonth")}
+                </button>
+              ))}
+            </div>
+          }
         />
         <Kpi
           icon={Gauge}

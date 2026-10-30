@@ -110,7 +110,27 @@ export function ElementOverviewTab({ onOpen }: { onOpen: (target: OpenTarget) =>
   const shopTotal = counts.awaiting_disassembly + counts.awaiting_assembly + counts.assembling + counts.awaiting_qc + counts.ready;
 
   return (
-    <div className="mon-page">
+    <div className="mon-page ed-mgmt">
+      <div className="ed-hero">
+        <button type="button" className="ed-hero-card is-green" onClick={() => onOpen({ tab: "installed" })}>
+          <span>{t("elDash.stage.in_service")}</span>
+          <b>{formatNumber(counts.in_service, 0)}</b>
+        </button>
+        <button type="button" className="ed-hero-card is-blue" onClick={() => onOpen({ tab: "installed" })}>
+          <span>{t("elDash.kpi.capacity")}</span>
+          <b>{data.occupancy_pct != null ? `${formatNumber(data.occupancy_pct, 0)}%` : "—"}</b>
+        </button>
+        <button type="button" className="ed-hero-card is-amber" onClick={() => onOpen({ tab: "shop", stage: "shop" })}>
+          <span>{t("elDash.kpi.shop")}</span>
+          <b>{formatNumber(shopTotal, 0)}</b>
+        </button>
+        <button type="button" className="ed-hero-card is-rose">
+          <span>{t("elDash.kpi.voltageAlerts")}</span>
+          <b>
+            {data.alerts.danger} / {data.alerts.warning}
+          </b>
+        </button>
+      </div>
       <div className="mon-toolbar">
         <div>
           <h2 className="mon-heading">{t("elDash.heading")}</h2>

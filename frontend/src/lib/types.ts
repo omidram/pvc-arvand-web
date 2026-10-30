@@ -616,6 +616,7 @@ export interface DashboardVoltageStats {
   plant_power_kw?: number | null;
   plant_energy_kwh_24h: number | null;
   plant_energy_kwh_7d?: number | null;
+  plant_energy_kwh_30d?: number | null;
   report_date?: string | null;
   online_count?: number;
   cell_count: number;

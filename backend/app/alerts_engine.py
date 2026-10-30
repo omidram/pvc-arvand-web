@@ -520,9 +520,11 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     now = tehran_now()
     e24 = energy_since(db, now - timedelta(hours=24)) if live_loads else {}
     e7 = energy_since(db, now - timedelta(days=7))
+    e30 = energy_since(db, now - timedelta(days=30))
     plant_ka = 0.0
     plant_kwh = 0.0
     plant_kwh_7d = sum(float((bucket or {}).get("energy_kwh") or 0) for bucket in e7.values())
+    plant_kwh_30d = sum(float((bucket or {}).get("energy_kwh") or 0) for bucket in e30.values())
     plant_kw = 0.0
     for el, item in live_loads.items():
         plant_ka += float(item.get("current_ka") or 0)
@@ -569,6 +571,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         "plant_power_kw": round(plant_kw, 1) if plant_kw else None,
         "plant_energy_kwh_24h": round(plant_kwh, 1) if plant_kwh else None,
         "plant_energy_kwh_7d": round(plant_kwh_7d, 1) if plant_kwh_7d else None,
+        "plant_energy_kwh_30d": round(plant_kwh_30d, 1) if plant_kwh_30d else None,
         "report_date": today.isoformat(),
         "online_count": len(names),
         "cell_count": cell_count,
