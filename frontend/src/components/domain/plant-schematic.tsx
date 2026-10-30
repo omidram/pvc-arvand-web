@@ -10,6 +10,7 @@ import { formatNumber } from "@/lib/utils";
 import { MonitoringExport } from "@/components/domain/export-buttons";
 import { ElectrolyzerPropertiesPanel } from "@/components/domain/electrolyzer-properties";
 import { CellHealthMini } from "@/components/domain/cell-health-chip";
+import { secMatch } from "@/lib/sec-formula";
 
 type Focus = "danger" | "warning" | "ok" | null;
 type View =
@@ -123,6 +124,7 @@ function Faceplate({
   const letter = name.slice(0, -1);
   const train = name.slice(-1);
   const last = lastVoltages(block);
+  const sec = secMatch(block?.avg_voltage ?? last.avg, block?.current_ka);
   return (
     <button type="button" className={`psm-face is-${health}`} onClick={onOpen}>
       <div className="psm-face-top">
@@ -138,6 +140,19 @@ function Faceplate({
         <Metric kind="i" label="kA" value={fmtFixed(block?.current_ka, 1)} />
         <Metric kind="p" {...powerMetric(block?.power_kw)} />
       </div>
+      {sec ? (
+        <div
+          className={`psm-sec is-${sec.tone}`}
+          title={t("monitoring.secMatchHint", {
+            actual: fmtFixed(sec.actualSec, 0),
+            design: fmtFixed(sec.designSec, 0),
+            pct: fmtFixed(sec.matchPct, 0),
+          })}
+        >
+          <span>{t("monitoring.secMatch")}</span>
+          <b>{fmtFixed(sec.matchPct, 0)}%</b>
+        </div>
+      ) : null}
       <div className="psm-face-alerts">
         {block?.cell_count ? (
           <>

@@ -66,8 +66,9 @@ export function InServiceBreakdown() {
             <table className="isb-table">
               <thead>
                 <tr>
-                  <th>{fa("گروه", "Group")}</th>
-                  <th>{fa("تعداد سل", "Cells")}</th>
+                  <th className="isb-col-name">{fa("گروه", "Group")}</th>
+                  <th className="isb-num">{fa("تعداد سل", "Cells")}</th>
+                  <th className="isb-bar-col" aria-hidden />
                   <th>{fa("پوشش آند", "Anode coating")}</th>
                   <th>{fa("پوشش کاتد", "Cathode coating")}</th>
                   <th>{fa("ممبران", "Membrane")}</th>
@@ -82,11 +83,11 @@ export function InServiceBreakdown() {
                         {r.group}
                       </span>
                     </td>
-                    <td>
-                      <span className="isb-count">
-                        <strong>{formatNumber(r.cells, 0)}</strong>
-                        <Bar value={r.cells} max={maxGroup} color={PALETTE[i % PALETTE.length]} />
-                      </span>
+                    <td className="isb-num">
+                      <strong>{formatNumber(r.cells, 0)}</strong>
+                    </td>
+                    <td className="isb-bar-col">
+                      <Bar value={r.cells} max={maxGroup} color={PALETTE[i % PALETTE.length]} />
                     </td>
                     <td>{r.anode_coating || "—"}</td>
                     <td>{r.cathode_coating || "—"}</td>
@@ -108,10 +109,11 @@ export function InServiceBreakdown() {
             <table className="isb-table">
               <thead>
                 <tr>
-                  <th>{fa("شرکت", "Company")}</th>
-                  <th>{fa("آند", "Anode")}</th>
-                  <th>{fa("کاتد", "Cathode")}</th>
-                  <th>{fa("جمع", "Total")}</th>
+                  <th className="isb-col-name">{fa("شرکت", "Company")}</th>
+                  <th className="isb-num">{fa("آند", "Anode")}</th>
+                  <th className="isb-num">{fa("کاتد", "Cathode")}</th>
+                  <th className="isb-num">{fa("جمع", "Total")}</th>
+                  <th className="isb-bar-col" aria-hidden />
                 </tr>
               </thead>
               <tbody>
@@ -128,11 +130,17 @@ export function InServiceBreakdown() {
                     <td className={cn("isb-num", isCompany(r.company, "cathode") && "is-cell-on")} onClick={() => setPick(isCompany(r.company, "cathode") ? null : { kind: "company", value: r.company, side: "cathode" })}>
                       {formatNumber(r.cathode, 0)}
                     </td>
-                    <td onClick={() => setPick(isCompany(r.company, "total") ? null : { kind: "company", value: r.company, side: "total" })}>
-                      <span className="isb-count">
-                        <strong>{formatNumber(r.total, 0)}</strong>
-                        <Bar value={r.total} max={maxCompany} color={PALETTE[i % PALETTE.length]} />
-                      </span>
+                    <td
+                      className={cn("isb-num", isCompany(r.company, "total") && "is-cell-on")}
+                      onClick={() => setPick(isCompany(r.company, "total") ? null : { kind: "company", value: r.company, side: "total" })}
+                    >
+                      <strong>{formatNumber(r.total, 0)}</strong>
+                    </td>
+                    <td
+                      className="isb-bar-col"
+                      onClick={() => setPick(isCompany(r.company, "total") ? null : { kind: "company", value: r.company, side: "total" })}
+                    >
+                      <Bar value={r.total} max={maxCompany} color={PALETTE[i % PALETTE.length]} />
                     </td>
                   </tr>
                 ))}

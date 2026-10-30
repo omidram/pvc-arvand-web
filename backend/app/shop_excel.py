@@ -18,7 +18,8 @@ from .excel_import import parse_sheet
 from .plant_import import ensure_electrode_serial_prefix
 from .relations_sync import link_serial, sync_element_group
 from .routers.field_options import publish_assembly_value
-from .warehouse import compact_nr, ensure_indexed, load_compact_index
+from .database import commit_db
+from .warehouse import compact_nr, load_compact_index
 
 SHOP_FIELDS = [
     "element_nr",
@@ -120,17 +121,18 @@ def _sync_parts(db: Session, el: models.Element, data: dict[str, Any], indexes: 
     membrane_type = _text(data.get("membrane_type"))
     group_nr = _text(data.get("group_nr"))
     if anode:
-        el.anode_nr = link_serial(db, "anode", anode)
-        created["anodes"] += ensure_indexed(db, models.Anode, "anode_nr", el.anode_nr, indexes["anode"])
+        size = len(indexes["anode"])
+        el.anode_nr = link_serial(db, "anode", anode, index=indexes["anode"])
+        created["anodes"] += int(len(indexes["anode"]) > size)
     if cathode:
-        el.cathode_nr = link_serial(db, "cathode", cathode)
-        created["cathodes"] += ensure_indexed(db, models.Cathode, "cathode_nr", el.cathode_nr, indexes["cathode"])
+        size = len(indexes["cathode"])
+        el.cathode_nr = link_serial(db, "cathode", cathode, index=indexes["cathode"])
+        created["cathodes"] += int(len(indexes["cathode"]) > size)
     if membrane:
         extra = {"membrane_type": membrane_type} if membrane_type else None
-        el.membrane_nr = link_serial(db, "membrane", membrane, extra=extra)
-        created["membranes"] += ensure_indexed(
-            db, models.Membrane, "membrane_nr", el.membrane_nr, indexes["membrane"], extra=extra
-        )
+        size = len(indexes["membrane"])
+        el.membrane_nr = link_serial(db, "membrane", membrane, extra=extra, index=indexes["membrane"])
+        created["membranes"] += int(len(indexes["membrane"]) > size)
         if membrane_type:
             hit = db.query(models.Membrane).filter(models.Membrane.membrane_nr == el.membrane_nr).first()
             if hit is not None:
@@ -140,7 +142,7 @@ def _sync_parts(db: Session, el: models.Element, data: dict[str, Any], indexes: 
         publish_assembly_value(db, "elements", "membrane_type", el.membrane_type)
     if group_nr:
         el.group_nr = group_nr[:50]
-    else:
+    elif not (el.group_nr or "").strip():
         sync_element_group(db, el)
     return created
 
@@ -154,7 +156,7 @@ def import_shop_workbook(
     groups: set[str],
     progress=None,
 ) -> dict[str, Any]:
-    mapping, data_rows, arranged, ignored = parse_sheet(content, SHOP_FIELDS, optional=["id"])
+    mapping, data_rows, arranged, ignored = parse_sheet(content, SHOP_FIELDS, optional=["id", "since", "days"])
     indexes = {
         "anode": load_compact_index(db, models.Anode, "anode_nr"),
         "cathode": load_compact_index(db, models.Cathode, "cathode_nr"),
@@ -211,10 +213,14 @@ def import_shop_workbook(
                 skipped += 1
                 if len(errors) < 8:
                     errors.append(f"{nr}: this stage belongs to {', '.join(need)}")
+            elif (pipeline.get(key) or {}).get("state") == wanted:
+                moved += 1
             else:
                 try:
                     svc.set_shop_stage(db, el.element_nr, wanted, _text(raw.get("note")), who, pipeline)
                     moved += 1
+                    if key in pipeline:
+                        pipeline[key]["state"] = wanted
                     if wanted == "awaiting_disassembly" and actor is not None:
                         from .routers.workflow import handoff_cell_requests
 
@@ -226,17 +232,13 @@ def import_shop_workbook(
                     skipped += 1
                     if len(errors) < 8:
                         errors.append(str(exc))
-        if (updated + created) % 80 == 0:
-            db.commit()
-            pipeline = {i["key"]: i for i in svc.build_pipeline(db)}
-            latest = _latest_map(db)
-        if progress and (done == total or done % 25 == 0):
+        if progress and (done == total or done % 5 == 0):
             progress(done, total)
 
     if updated + created == 0:
         db.rollback()
         raise HTTPException(status_code=400, detail="No element rows were found in the Excel file.")
-    db.commit()
+    commit_db(db)
     svc.clear_cache()
     return {
         "ok": True,

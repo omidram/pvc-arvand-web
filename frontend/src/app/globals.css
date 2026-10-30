@@ -7685,21 +7685,22 @@ html[data-theme="dark"] .wo-lines-table th, html[data-theme="dark"] .wo-lines-to
 .isb-card h4 { display: flex; align-items: center; gap: 0.5rem; }
 .isb-card h4 b { margin-inline-start: auto; padding: 0.05rem 0.6rem; border-radius: 999px; background: #e8f1fb; color: #0f4c81; font-size: 0.8rem; }
 .isb-dot { width: 0.7rem; height: 0.7rem; border-radius: 50%; display: inline-block; }
-.isb-table { width: 100%; border-collapse: separate; border-spacing: 0 3px; font-size: 0.8rem; }
-.isb-table th { position: sticky; top: 0; background: #eef4fb; color: #334155; font-weight: 800; padding: 0.35rem 0.5rem; text-align: start; z-index: 1; }
-.isb-table td { padding: 0.3rem 0.5rem; background: #f8fbff; }
+.isb-table { width: 100%; border-collapse: separate; border-spacing: 0 3px; font-size: 0.8rem; table-layout: auto; }
+.isb-table th { position: sticky; top: 0; background: #eef4fb; color: #334155; font-weight: 800; padding: 0.35rem 0.5rem; text-align: center; z-index: 1; }
+.isb-table td { padding: 0.3rem 0.5rem; background: #f8fbff; text-align: center; vertical-align: middle; }
+.isb-table th.isb-col-name, .isb-table td:first-child { text-align: start; }
 .isb-table td:first-child { border-start-start-radius: 8px; border-end-start-radius: 8px; }
 .isb-table td:last-child { border-start-end-radius: 8px; border-end-end-radius: 8px; }
 .isb-row { cursor: pointer; transition: transform 0.12s, box-shadow 0.12s; }
 .isb-row:hover td { background: #e6f1fd; }
 .isb-row.is-on td { background: #d6e8fb; box-shadow: inset 0 1px 0 #0f4c81, inset 0 -1px 0 #0f4c81; }
-.isb-num { cursor: pointer; text-align: center; font-weight: 700; }
+.isb-num { cursor: pointer; text-align: center !important; font-weight: 700; font-variant-numeric: tabular-nums; }
+.isb-table th.isb-num { cursor: default; }
 .isb-num:hover { background: #cfe3fa !important; text-decoration: underline; }
 .isb-num.is-cell-on { background: #0f4c81 !important; color: #fff; }
 .isb-chip { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 999px; color: #fff; font-weight: 700; font-size: 0.76rem; }
-.isb-count { display: flex; align-items: center; gap: 0.5rem; min-width: 7rem; }
-.isb-count strong { min-width: 2.6rem; }
-.isb-bar { flex: 1; height: 0.5rem; border-radius: 999px; background: #e3ebf4; overflow: hidden; display: block; }
+.isb-bar-col { width: 22%; min-width: 5.5rem; padding-inline: 0.35rem !important; }
+.isb-bar { height: 0.5rem; border-radius: 999px; background: #e3ebf4; overflow: hidden; display: block; width: 100%; }
 .isb-bar i { display: block; height: 100%; border-radius: 999px; }
 .isb-detail h4 { border-bottom: 1px solid #e3ebf4; padding-bottom: 0.4rem; }
 .isb-close { border: 0; background: #f1f5f9; border-radius: 50%; width: 1.6rem; height: 1.6rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -7841,3 +7842,70 @@ html[data-theme="dark"] .dv-kpi-label, html[data-theme="dark"] .dv-card-title, h
 html[data-theme="dark"] .dv-legend-item b, html[data-theme="dark"] .dv-train-stats b, html[data-theme="dark"] .dv-train-head { color: #f1f5f9; }
 html[data-theme="dark"] .vg-track { stroke: #334155; }
 @media (prefers-reduced-motion: reduce) { .dv-live-dot { animation: none; } .dv-kpi { transition: none; } }
+/* ================= DC power SEC vs. design-curve match ================= */
+.psm-sec {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid transparent;
+}
+.psm-sec span { opacity: 0.85; }
+.psm-sec b { font-variant-numeric: tabular-nums; }
+.psm-sec.is-ok { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+.psm-sec.is-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.psm-sec.is-danger { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+html[data-theme="dark"][data-ui="modern"] .psm-sec { background: #1e293b; color: #cbd5e1; }
+html[data-theme="dark"][data-ui="modern"] .psm-sec.is-ok { background: #064e3b; color: #a7f3d0; border-color: #047857; }
+html[data-theme="dark"][data-ui="modern"] .psm-sec.is-warning { background: #78350f; color: #fde68a; border-color: #92400e; }
+html[data-theme="dark"][data-ui="modern"] .psm-sec.is-danger { background: #7f1d1d; color: #fecaca; border-color: #991b1b; }
+
+/* ---- Compact management strip (main dashboard) ---- */
+.sms {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 0.8rem 0;
+  padding: 0.7rem 1rem;
+  border-radius: 14px;
+  border: 1px solid #c7dcf2;
+  background: linear-gradient(135deg, #f8fbff, #ffffff);
+  box-shadow: 0 4px 14px rgba(15, 39, 68, 0.06);
+}
+.sms-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #34d399, #047857);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(15, 39, 68, 0.18);
+}
+.sms.sms-warning .sms-icon { background: linear-gradient(135deg, #fbbf24, #d97706); }
+.sms.sms-danger .sms-icon { background: linear-gradient(135deg, #f87171, #b91c1c); }
+.sms-body { flex: 1 1 auto; min-width: 0; }
+.sms-title { font-size: 0.78rem; font-weight: 800; color: #0f2744; }
+.sms-summary { font-size: 0.72rem; color: #64748b; font-weight: 600; }
+.sms-gauge { text-align: center; flex: none; min-width: 72px; }
+.sms-gauge-value {
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #047857;
+}
+.sms.sms-warning .sms-gauge-value { color: #b45309; }
+.sms.sms-danger .sms-gauge-value { color: #b91c1c; }
+.sms-gauge-label { font-size: 0.64rem; color: #64748b; font-weight: 700; }
+html[data-theme="dark"][data-ui="modern"] .sms { background: linear-gradient(135deg, #0f172a, #1e293b); border-color: #334155; }
+html[data-theme="dark"][data-ui="modern"] .sms-title { color: #f1f5f9; }
+html[data-theme="dark"][data-ui="modern"] .sms-summary, html[data-theme="dark"][data-ui="modern"] .sms-gauge-label { color: #94a3b8; }

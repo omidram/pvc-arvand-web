@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
+import { SecMatchSummary } from "@/components/domain/sec-match-summary";
 import { ElementReportPanel } from "@/components/domain/element-report-panel";
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
@@ -64,6 +65,8 @@ export default function OverviewPage() {
         loading={false}
         error={null}
       />
+
+      <SecMatchSummary />
 
       <ElementReportPanel />
 

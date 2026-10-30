@@ -76,6 +76,14 @@ def load_compact_index(db: Session, model, field: str) -> dict[str, str]:
     return index
 
 
+def _session_has_serial(db: Session, model, field: str, key: str):
+    """Pending or loaded row with this compact serial (SQL would miss unflushed inserts)."""
+    for obj in list(db.new) + list(db.dirty):
+        if isinstance(obj, model) and compact_nr(getattr(obj, field, None)) == key:
+            return obj
+    return None
+
+
 def ensure_indexed(db: Session, model, field: str, raw, index: dict[str, str] | None, extra: dict | None = None) -> int:
     """Create a master row when this serial is not already in the catalog. Does not overwrite details."""
     text = (raw or "").strip()
@@ -86,11 +94,17 @@ def ensure_indexed(db: Session, model, field: str, raw, index: dict[str, str] | 
         return 0
     if index is not None and key in index:
         return 0
+    pending = _session_has_serial(db, model, field, key)
+    if pending is not None:
+        if index is not None:
+            index[key] = getattr(pending, field)
+        return 0
     column = getattr(model, field)
-    if index is None:
-        hit = db.query(model).filter(func.replace(func.upper(column), " ", "") == key).first()
-        if hit:
-            return 0
+    hit = db.query(model).filter(func.replace(func.upper(column), " ", "") == key).first()
+    if hit:
+        if index is not None:
+            index[key] = getattr(hit, field)
+        return 0
     stored = text[:50]
     kwargs = {field: stored}
     if extra:

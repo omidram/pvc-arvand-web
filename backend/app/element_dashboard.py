@@ -357,8 +357,16 @@ def set_shop_stage(
         items = {i["key"]: i for i in build_pipeline(db)}
     item = items.get(key)
     base = item["base_state"] if item else "new"
-    row = next((s for s in db.query(models.ElementShopState).all() if compact_nr(s.element_nr) == key), None)
+    row = db.query(models.ElementShopState).filter(models.ElementShopState.element_nr == (item["element_nr"] if item else element_nr).strip()[:50]).first()
+    if row is None:
+        row = next((s for s in db.query(models.ElementShopState).all() if compact_nr(s.element_nr) == key), None)
     previous = item["state"] if item else None
+    if row is not None and stage != "clear" and row.stage == stage:
+        if note:
+            row.note = note
+            row.updated_by = user
+            row.updated_at = datetime.now()
+        return {"element_nr": row.element_nr, "stage": stage}
     if stage == "clear":
         if row is not None:
             db.add(models.ElementShopEvent(element_nr=row.element_nr, from_stage=previous, to_stage="clear", note=note, user=user, created_at=datetime.now()))

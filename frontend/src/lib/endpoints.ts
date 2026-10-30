@@ -1906,7 +1906,7 @@ export const elementDashboardApi = {
   shop: async (params: { state?: string; q?: string; element_nr?: string; limit?: number; refresh?: boolean }): Promise<T.ShopList> =>
     (await apiClient.get("/element-dashboard/shop", { params })).data,
   exportShopExcel: async (params: { state?: string; q?: string }, filename: string): Promise<void> => {
-    const { data } = await apiClient.get("/element-dashboard/shop/export.xlsx", { params, responseType: "blob" });
+    const { data } = await apiClient.get("/element-dashboard/shop/export-xlsx", { params, responseType: "blob" });
     const url = window.URL.createObjectURL(new Blob([data]));
     const link = document.createElement("a");
     link.href = url;
@@ -1922,7 +1922,7 @@ export const elementDashboardApi = {
     onProgress?: (progress: ImportProgress) => void,
   ): Promise<{ created?: number; updated?: number; moved?: number; skipped?: number; errors?: string[] }> => {
     const extra = state ? { state } : undefined;
-    const data = await sendExcelFile("/element-dashboard/shop/import.xlsx", file, extra);
+    const data = await sendExcelFile("/element-dashboard/shop/import-xlsx", file, extra);
     return followImport(data, onProgress);
   },
   startProcess: async (payload: {

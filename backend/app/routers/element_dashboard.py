@@ -159,6 +159,7 @@ def move_shop(body: ShopMove, db: Session = Depends(get_db), user: models.User =
     return {"moved": moved, "errors": errors}
 
 
+@router.get("/shop/export-xlsx", include_in_schema=False)
 @router.get("/shop/export.xlsx", include_in_schema=False)
 def export_shop_xlsx(
     state: str | None = Query(None),
@@ -174,6 +175,7 @@ def export_shop_xlsx(
     return export_xlsx(rows, SHOP_FIELDS, name)
 
 
+@router.post("/shop/import-xlsx", include_in_schema=False)
 @router.post("/shop/import.xlsx", include_in_schema=False)
 async def import_shop_xlsx(
     state: str | None = Query(None),

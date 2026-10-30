@@ -1,5 +1,6 @@
 """Shared helpers to export a list of ORM/dict rows to Excel (.xlsx) or PDF."""
 import io
+import re
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
@@ -7,7 +8,8 @@ from typing import Any
 from fastapi import Query
 from fastapi.responses import StreamingResponse
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
@@ -51,11 +53,40 @@ def _ensure_pdf_fonts() -> tuple[str, str]:
     return _PDF_FONT, _PDF_FONT_BOLD
 
 
+_ISO_DAY = re.compile(r"^(\d{4})-(\d{2})-(\d{2})")
+
+
+def _to_jalali_text(year: int, month: int, day: int) -> str:
+    from .plant_import import gregorian_to_jalali
+
+    jy, jm, jd = gregorian_to_jalali(year, month, day)
+    return f"{jy:04d}/{jm:02d}/{jd:02d}"
+
+
 def _cell_value(value: Any) -> Any:
-    if isinstance(value, (datetime, date)):
-        return value.isoformat()
+    """Write dates as Shamsi text so Excel does not hide them as #### / ???."""
+    if isinstance(value, datetime):
+        text = _to_jalali_text(value.year, value.month, value.day)
+        if value.hour or value.minute:
+            return f"{text} {value.hour:02d}:{value.minute:02d}"
+        return text
+    if isinstance(value, date):
+        return _to_jalali_text(value.year, value.month, value.day)
     if isinstance(value, (dict, list)):
         return str(value)
+    if isinstance(value, str):
+        text = value.strip()
+        match = _ISO_DAY.match(text)
+        if match:
+            year, month, day = int(match.group(1)), int(match.group(2)), int(match.group(3))
+            if year >= 1700:
+                jalali = _to_jalali_text(year, month, day)
+                time_bit = ""
+                tm = re.search(r"[T ](\d{2}:\d{2})", text)
+                if tm and tm.group(1) not in ("00:00",):
+                    time_bit = " " + tm.group(1)
+                return jalali + time_bit
+        return value
     return value
 
 
@@ -178,16 +209,26 @@ def export_xlsx(rows: list[dict[str, Any]], fields: list[str], title: str) -> St
     ws = wb.active
     ws.title = title[:31] or "Data"
     header_fill = PatternFill(start_color="0A246A", end_color="0A246A", fill_type="solid")
-    header_font = Font(color="FFFFFF", bold=True)
+    header_font = Font(name="Calibri", color="FFFFFF", bold=True)
+    body_font = Font(name="Calibri")
+    center = Alignment(horizontal="center", vertical="center", wrap_text=False)
     ws.append(fields)
     for cell in ws[1]:
         cell.fill = header_fill
         cell.font = header_font
+        cell.alignment = center
     for row in rows:
-        ws.append([row.get(f) for f in fields])
+        ws.append([_cell_value(row.get(f)) for f in fields])
+    for r in ws.iter_rows(min_row=2, max_row=ws.max_row, max_col=len(fields)):
+        for cell in r:
+            cell.font = body_font
+            cell.alignment = center
+            if isinstance(cell.value, str) and ("/" in cell.value or "-" in cell.value):
+                cell.number_format = "@"
     for i, f in enumerate(fields, start=1):
-        max_len = max([len(str(f))] + [len(str(r.get(f, ""))) for r in rows[:200]])
-        ws.column_dimensions[ws.cell(row=1, column=i).column_letter].width = min(max(max_len + 2, 10), 40)
+        samples = [_cell_value(r.get(f)) for r in rows[:200]]
+        max_len = max([len(str(f))] + [len(str(v if v is not None else "")) for v in samples] + [12])
+        ws.column_dimensions[get_column_letter(i)].width = min(max(max_len + 4, 14), 48)
 
     buf = io.BytesIO()
     wb.save(buf)

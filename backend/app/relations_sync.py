@@ -55,17 +55,24 @@ def find_master(db: Session, kind: str, raw: Any):
     return db.query(model).filter(func.replace(func.upper(column), " ", "") == key).first()
 
 
-def link_serial(db: Session, kind: str, raw: Any, extra: dict | None = None) -> Any:
+def link_serial(db: Session, kind: str, raw: Any, extra: dict | None = None, index: dict | None = None) -> Any:
     """Spelling of this number as the master table has it; the master row is created when it is new."""
     if is_placeholder(raw):
         return raw
     model, field = MASTERS[kind]
+    key = compact_nr(raw)
+    if index is not None and key and key in index:
+        return index[key]
     hit = find_master(db, kind, raw)
     if hit is not None:
+        if index is not None and key:
+            index[key] = getattr(hit, field)
         return getattr(hit, field)
     if is_junk_serial(raw):
         return raw  # kept as typed; never becomes a master row
-    ensure_indexed(db, model, field, raw, None, extra=extra)
+    ensure_indexed(db, model, field, raw, index, extra=extra)
+    if index is not None and key and key in index:
+        return index[key]
     return str(raw).strip()[:50]
 
 
