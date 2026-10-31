@@ -24,6 +24,7 @@ import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { appAlert, appConfirm } from "@/lib/dialog";
 import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
 import { ShutdownAnalysis, type ShutdownGroupBy } from "@/components/domain/shutdown-analysis";
+import { ShutdownTripBoard } from "@/components/domain/shutdown-trip-board";
 import { FilterHeadCell } from "@/components/ui/data-table";
 import { useSheetFilters } from "@/components/ui/table-sheet";
 
@@ -117,6 +118,7 @@ function ShutdownMenu() {
   const { t } = useI18n();
   return (
     <AccessHub title={t("mainMenu.shutDown")} titleBlue>
+      <ShutdownTripBoard />
       <div className="flex flex-wrap items-start gap-8 pt-4">
         <div>
           <div className="mb-2 text-[12px] font-bold">{t("menus.input")}</div>

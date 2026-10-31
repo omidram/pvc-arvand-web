@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend-import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend
+        working-directory: backend
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+      - name: App imports without a live plant database
+        working-directory: backend
+        env:
+          DATABASE_URL: sqlite:///./instance/ci-empty.db
+        run: |
+          mkdir -p instance
+          python -c "from app.database import repair_malformed_schema; repair_malformed_schema(); print('ok')"

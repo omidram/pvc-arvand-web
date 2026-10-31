@@ -382,3 +382,77 @@ def shutdown_summary(
         "by_reason": list(by_reason.values()),
     }
 
+
+def _cause_label(row: models.Shutdown) -> str:
+    text = (row.cause or "").strip() or (row.code or "").strip() or (row.category or "").strip()
+    return text or "—"
+
+
+def _top_causes(rows: list[models.Shutdown], limit: int = 3) -> list[dict]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        label = _cause_label(row)
+        counts[label] = counts.get(label, 0) + 1
+    ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))[:limit]
+    return [{"cause": cause, "count": count} for cause, count in ranked]
+
+
+@summary_router.get("/board")
+def shutdown_trip_board(
+    span: str = Query(default="month", pattern="^(month|year)$"),
+    calendar: str = Query(default="jalali", pattern="^(jalali|gregorian)$"),
+    db: Session = Depends(get_db),
+):
+    """Trip count and the three most repeated causes for the current month or year, plus every month of that year."""
+    from datetime import date
+
+    from ..plant_import import gregorian_to_jalali, jalali_to_gregorian
+
+    today = date.today()
+    months: list[tuple[int, int, date, date]] = []
+    if calendar == "jalali":
+        year, month, _day = gregorian_to_jalali(today.year, today.month, today.day)
+        for m in range(1, 13):
+            start = jalali_to_gregorian(year, m, 1)
+            end = jalali_to_gregorian(year + 1, 1, 1) if m == 12 else jalali_to_gregorian(year, m + 1, 1)
+            months.append((year, m, start, end))
+    else:
+        year, month = today.year, today.month
+        for m in range(1, 13):
+            start = date(year, m, 1)
+            end = date(year + 1, 1, 1) if m == 12 else date(year, m + 1, 1)
+            months.append((year, m, start, end))
+
+    year_start, year_end = months[0][2], months[-1][3]
+    rows = (
+        db.query(models.Shutdown)
+        .filter(models.Shutdown.shutdown_time >= datetime.combine(year_start, datetime.min.time()))
+        .filter(models.Shutdown.shutdown_time < datetime.combine(year_end, datetime.min.time()))
+        .all()
+    )
+
+    def in_span(row: models.Shutdown, start: date, end: date) -> bool:
+        stamp = row.shutdown_time
+        if stamp is None:
+            return False
+        day = stamp.date() if isinstance(stamp, datetime) else stamp
+        return start <= day < end
+
+    month_rows = []
+    focus: list[models.Shutdown] = []
+    for y, m, start, end in months:
+        bucket = [row for row in rows if in_span(row, start, end)]
+        month_rows.append({"year": y, "month": m, "count": len(bucket), "top_causes": _top_causes(bucket)})
+        if span == "year" or m == month:
+            focus.extend(bucket)
+
+    return {
+        "calendar": calendar,
+        "span": span,
+        "year": year,
+        "month": month,
+        "trips": len(focus),
+        "top_causes": _top_causes(focus),
+        "months": month_rows,
+    }
+

@@ -20,6 +20,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { VoltageReportPanel } from "@/components/domain/voltage-report-panel";
 import { SecMatchSummary } from "@/components/domain/sec-match-summary";
 import { ElementReportPanel } from "@/components/domain/element-report-panel";
+import { ShutdownTripBoard } from "@/components/domain/shutdown-trip-board";
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
 import {
@@ -87,6 +88,8 @@ export default function OverviewPage() {
           accent="blue"
         />
       </div>
+
+      <ShutdownTripBoard />
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>

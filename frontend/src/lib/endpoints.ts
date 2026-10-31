@@ -325,6 +325,8 @@ export const shutdownCausesApi = resource<T.ShutdownCause>("/shutdown-causes");
 
 export const shutdownSummaryApi = {
   get: async (): Promise<T.ShutdownSummary> => (await apiClient.get("/shutdowns-summary")).data,
+  board: async (span: "month" | "year", calendar: "jalali" | "gregorian") =>
+    (await apiClient.get("/shutdowns-summary/board", { params: { span, calendar } })).data,
 };
 
 // ---------------------------------------------------------------- Voltage
