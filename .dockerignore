@@ -11,12 +11,12 @@
 frontend/.env.local
 backend/.env
 backend/instance/backups
-docs
+# Keep the plant seed inside the image. Ignoring the docs folder itself
+# also drops every file under it, so the shutdown tables never reach the server.
+docs/*
 !docs/plant-data/
+docs/plant-data/*
 !docs/plant-data/pvc_arvand_plant_seed.db
-!docs/plant-data/shutdowns.xlsx
-!docs/plant-data/shutdown-causes.xlsx
-!docs/plant-data/shutdown-categories.xlsx
 *.md
 packaging/output
 agent-transcripts

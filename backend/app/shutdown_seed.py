@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import sqlite3
+import time
 
 _log = logging.getLogger("uvicorn.error")
 
@@ -19,7 +20,22 @@ def _columns(con: sqlite3.Connection, schema: str, table: str) -> list[tuple[str
 
 
 def apply_shutdown_tables(dest: str, seed: str) -> dict[str, int]:
-    live = sqlite3.connect(dest)
+    last: sqlite3.OperationalError | None = None
+    for attempt in range(6):
+        try:
+            return _apply_once(dest, seed)
+        except sqlite3.OperationalError as exc:
+            if "locked" not in str(exc).lower() and "busy" not in str(exc).lower():
+                raise
+            last = exc
+            time.sleep(0.4 * (attempt + 1))
+    assert last is not None
+    raise last
+
+
+def _apply_once(dest: str, seed: str) -> dict[str, int]:
+    live = sqlite3.connect(dest, timeout=120)
+    live.execute("PRAGMA busy_timeout=120000")
     live.execute("PRAGMA foreign_keys=OFF")
     live.execute("ATTACH DATABASE ? AS seed", (seed,))
     counts: dict[str, int] = {}

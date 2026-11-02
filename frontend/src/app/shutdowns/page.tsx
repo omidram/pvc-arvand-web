@@ -206,8 +206,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   const { canEdit, canViewField } = useAuth();
   const editable = canEdit("shutdowns") && !showPeriodFilter;
   const [active, setActive] = useState<number | "new" | null>(null);
-  const [from, setFrom] = useState(() => dateFrom || monthStartIso());
-  const [to, setTo] = useState(() => dateTo || todayIsoLocal());
+  const [from, setFrom] = useState(() => (showPeriodFilter ? dateFrom || monthStartIso() : dateFrom || ""));
+  const [to, setTo] = useState(() => (showPeriodFilter ? dateTo || todayIsoLocal() : dateTo || ""));
   const [draft, setDraft] = useState<Partial<Shutdown>>({});
   const [editing, setEditing] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);

@@ -391,6 +391,7 @@ def _sync_shutdown_tables_from_seed() -> None:
     try:
         from .shutdown_seed import apply_shutdown_tables
 
+        engine.dispose()
         apply_shutdown_tables(str(live), str(seed))
     except Exception as exc:  # noqa: BLE001
         import logging
