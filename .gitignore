@@ -88,3 +88,12 @@ coverage/
 .pytest_cache/
 .mypy_cache/
 .next/
+
+# Last: shutdown tables must always be pulled onto the server.
+# Git applies later rules over earlier ones, so these negations stay at the end.
+!docs/plant-data/
+!docs/plant-data/**
+!docs/plant-data/pvc_arvand_plant_seed.db
+!docs/plant-data/shutdowns.xlsx
+!docs/plant-data/shutdown-causes.xlsx
+!docs/plant-data/shutdown-categories.xlsx

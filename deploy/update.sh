@@ -40,6 +40,25 @@ git pull --ff-only origin main
 SEED="$ROOT/docs/plant-data/pvc_arvand_plant_seed.db"
 APPLY="$ROOT/deploy/apply_shutdown_tables.py"
 
+load_shutdown_host() {
+  if [[ -f "$DB" && -f "$SEED" ]]; then
+    echo "Loading committed shutdown tables into $DB ..."
+    python3 "$APPLY" "$DB" "$SEED" || "$ROOT/backend/venv/bin/python" "$APPLY" "$DB" "$SEED"
+  fi
+}
+
+load_shutdown_docker() {
+  local seed_in="/tmp/pvc_arvand_plant_seed.db"
+  if [[ -f "$SEED" ]]; then
+    echo "Copying shutdown seed into the container ..."
+    docker compose cp "$SEED" "pvc-arvand:${seed_in}"
+  else
+    seed_in="/app/seed/pvc_arvand.db"
+  fi
+  echo "Loading committed shutdown tables into /data/pvc_arvand.db ..."
+  docker compose exec -T pvc-arvand python -c "from app.shutdown_seed import apply_shutdown_tables; apply_shutdown_tables('/data/pvc_arvand.db', '${seed_in}')"
+}
+
 restore_snapshot() {
   if [[ -f "$SNAPSHOT" ]] && sqlite3 "$SNAPSHOT" "SELECT count(*) FROM sqlite_master WHERE type='table';" >/dev/null 2>&1; then
     echo "Update failed — restoring $SNAPSHOT"
@@ -55,13 +74,36 @@ health_ok() {
   curl -fsS --max-time 8 "http://127.0.0.1:${port}/health" >/dev/null 2>&1
 }
 
-if [[ -f "$DB" && -f "$SEED" ]]; then
-  echo "Loading committed shutdown tables into the live database ..."
-  python3 "$APPLY" "$DB" "$SEED" || "$ROOT/backend/venv/bin/python" "$APPLY" "$DB" "$SEED"
-  rm -f "${DB}-wal" "${DB}-shm"
+if docker compose ps --status running --services 2>/dev/null | grep -qx 'pvc-arvand'; then
+  SNAPSHOT_IN="/data/backups/pre_update_${STAMP}.db"
+  echo "Creating pre-update DB snapshot inside Docker ..."
+  docker compose exec -T pvc-arvand python - <<PY || echo "Warning: could not snapshot DB before update."
+from pathlib import Path
+import shutil
+src = Path("/data/pvc_arvand.db")
+dst = Path("${SNAPSHOT_IN}")
+dst.parent.mkdir(parents=True, exist_ok=True)
+if src.is_file() and src.stat().st_size > 0:
+    shutil.copy2(src, dst)
+    print(f"wrote {dst}")
+else:
+    print("no live database to snapshot")
+PY
+  docker compose cp "pvc-arvand:${SNAPSHOT_IN}" "$BACKUP_DIR/" 2>/dev/null \
+    && echo "Host copy: $BACKUP_DIR/pre_update_${STAMP}.db" \
+    || echo "Snapshot kept inside container volume only."
+  docker compose up -d --build
+  load_shutdown_docker
+  docker compose restart pvc-arvand
+  docker compose ps
+  echo "Update finished. Shutdown tables were loaded from docs/plant-data into the server database."
+  echo "Never run: docker compose down -v"
+  exit 0
 fi
 
 if [[ -x "$ROOT/backend/venv/bin/pip" ]]; then
+  load_shutdown_host
+  rm -f "${DB}-wal" "${DB}-shm"
   echo "Updating Python venv ..."
   "$ROOT/backend/venv/bin/pip" install -q -r "$ROOT/backend/requirements.txt"
   if [[ -d "$ROOT/frontend" && -f "$ROOT/frontend/package.json" ]]; then
@@ -85,39 +127,6 @@ if [[ -x "$ROOT/backend/venv/bin/pip" ]]; then
   restore_snapshot || true
   echo "If the API is still down, start it, then: bash deploy/repair-sqlite.sh"
   exit 1
-fi
-
-if docker compose ps --status running --services 2>/dev/null | grep -qx 'pvc-arvand'; then
-  SNAPSHOT_IN="/data/backups/pre_update_${STAMP}.db"
-  echo "Creating pre-update DB snapshot inside Docker ..."
-  docker compose exec -T pvc-arvand python - <<PY || echo "Warning: could not snapshot DB before update."
-from pathlib import Path
-import shutil
-src = Path("/data/pvc_arvand.db")
-dst = Path("${SNAPSHOT_IN}")
-dst.parent.mkdir(parents=True, exist_ok=True)
-if src.is_file() and src.stat().st_size > 0:
-    shutil.copy2(src, dst)
-    print(f"wrote {dst}")
-else:
-    print("no live database to snapshot")
-PY
-  docker compose cp "pvc-arvand:${SNAPSHOT_IN}" "$BACKUP_DIR/" 2>/dev/null \
-    && echo "Host copy: $BACKUP_DIR/pre_update_${STAMP}.db" \
-    || echo "Snapshot kept inside container volume only."
-  docker compose up -d --build
-  if [[ -f "$SEED" ]]; then
-    echo "Loading committed shutdown tables into the server database ..."
-    docker compose cp "$SEED" pvc-arvand:/tmp/pvc_arvand_plant_seed.db
-    docker compose cp "$APPLY" pvc-arvand:/tmp/apply_shutdown_tables.py
-    docker compose exec -T pvc-arvand python /tmp/apply_shutdown_tables.py /data/pvc_arvand.db /tmp/pvc_arvand_plant_seed.db
-    docker compose restart pvc-arvand
-  fi
-  docker compose ps
-  echo "Update finished. Named volume pvc_arvand_data was preserved."
-  echo "Shutdown tables were replaced from docs/plant-data/pvc_arvand_plant_seed.db."
-  echo "Never run: docker compose down -v"
-  exit 0
 fi
 
 echo "No backend/venv and no running Docker service. Code was pulled; start the API yourself."

@@ -28,6 +28,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/app ./app
 COPY --from=frontend /src/out ./static
 RUN mkdir -p ./seed
+COPY docs/plant-data/pvc_arvand_plant_seed.db ./seed/pvc_arvand.db
 
 ENV PVC_ENV=production
 ENV PVC_STATIC_DIR=/app/static
