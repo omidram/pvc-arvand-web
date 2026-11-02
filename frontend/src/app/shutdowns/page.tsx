@@ -22,7 +22,7 @@ import { DateInput } from "@/components/ui/date-input";
 import { formatElectrolyzer } from "@/lib/plant-topology";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { appAlert, appConfirm } from "@/lib/dialog";
-import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
+import { monthStartIso, recentMonthOptions, todayIsoLocal } from "@/lib/date-range";
 import { ShutdownAnalysis, type ShutdownGroupBy } from "@/components/domain/shutdown-analysis";
 import { ShutdownTripBoard } from "@/components/domain/shutdown-trip-board";
 import { FilterHeadCell } from "@/components/ui/data-table";
@@ -201,7 +201,7 @@ function ComboInput({
 }
 
 function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: string; dateTo?: string; showPeriodFilter?: boolean }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { isShamsi } = useCalendar();
   const { canEdit, canViewField } = useAuth();
   const editable = canEdit("shutdowns") && !showPeriodFilter;
@@ -213,6 +213,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Partial<Shutdown>>({});
   const [query, setQuery] = useState("");
+  const months = useMemo(() => recentMonthOptions(isShamsi, locale === "fa"), [isShamsi, locale]);
+  const monthKey = months.find((month) => month.from === from && month.to === to)?.key || "";
 
   const listParams = useMemo(() => {
     const params: Record<string, unknown> = { limit: 2000 };
@@ -272,6 +274,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       { key: "code", filterText: (r: Shutdown) => r.code || "" },
       { key: "cause", filterText: (r: Shutdown) => r.cause || "" },
       { key: "ka_before_trip", filterText: (r: Shutdown) => (r.ka_before_trip == null ? "" : String(r.ka_before_trip)) },
+      { key: "ka_after_trip", filterText: (r: Shutdown) => (r.ka_after_trip == null ? "" : String(r.ka_after_trip)) },
       { key: "lost_load", filterText: (r: Shutdown) => (r.lost_load == null ? "" : String(r.lost_load)) },
       { key: "lost_production", filterText: (r: Shutdown) => (r.lost_production == null ? "" : String(r.lost_production)) },
       { key: "mtbf_days", filterText: (r: Shutdown) => (r.mtbf_days == null ? "" : String(r.mtbf_days)) },
@@ -305,6 +308,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         category: row.category,
         cause: row.cause,
         ka_before_trip: row.ka_before_trip,
+        ka_after_trip: row.ka_after_trip,
         lost_load: row.lost_load,
         lost_production: row.lost_production,
         mtbf_days: row.mtbf_days,
@@ -370,6 +374,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         category: draft.category || null,
         cause: draft.cause || null,
         ka_before_trip: draft.ka_before_trip ?? null,
+        ka_after_trip: draft.ka_after_trip ?? null,
         mtbf_days: draft.mtbf_days ?? null,
       } as never,
       {
@@ -411,6 +416,30 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       <div className="shutdown-list-toolbar mb-3 flex flex-wrap items-end justify-between gap-3 text-[12px]">
         <div className="flex flex-wrap items-end gap-3">
           <label className="flex flex-col gap-1">
+            <span>{t("shutdowns.month")}</span>
+            <select
+              className="access-inset-field"
+              value={monthKey}
+              onChange={(e) => {
+                const picked = months.find((month) => month.key === e.target.value);
+                if (!picked) {
+                  setFrom("");
+                  setTo("");
+                  return;
+                }
+                setFrom(picked.from);
+                setTo(picked.to);
+              }}
+            >
+              <option value="">{t("shutdowns.allMonths")}</option>
+              {months.map((month) => (
+                <option key={month.key} value={month.key}>
+                  {month.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
             <span>{t("menus.from")}</span>
             <DateInput className="access-inset-field" value={from} onChange={(e) => setFrom(e.target.value)} />
           </label>
@@ -440,6 +469,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               {fieldVisible("code") ? <SortTh k="code" sorter={mainSort} className="w-16">{t("fields.code")}</SortTh> : null}
               {fieldVisible("cause") ? <SortTh k="cause" sorter={mainSort} className="w-44">{t("fields.cause")}</SortTh> : null}
               {fieldVisible("ka_before_trip") ? <SortTh k="ka_before_trip" sorter={mainSort} className="w-24">{t("fields.kaBeforeTrip")}</SortTh> : null}
+              {fieldVisible("ka_after_trip") ? <SortTh k="ka_after_trip" sorter={mainSort} className="w-24">{t("fields.kaAfterTrip")}</SortTh> : null}
               {fieldVisible("lost_load") ? <SortTh k="lost_load" sorter={mainSort} className="w-28">{t("fields.lostLoad")}</SortTh> : null}
               {fieldVisible("lost_production") ? <SortTh k="lost_production" sorter={mainSort} className="w-28">{t("fields.lostProduction")}</SortTh> : null}
               {fieldVisible("mtbf_days") ? <SortTh k="mtbf_days" sorter={mainSort} className="w-24">{t("fields.mtbfDays")}</SortTh> : null}
@@ -483,6 +513,11 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               {fieldVisible("ka_before_trip") ? (
                 <th>
                   <FilterHeadCell columnKey="ka_before_trip" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+                </th>
+              ) : null}
+              {fieldVisible("ka_after_trip") ? (
+                <th>
+                  <FilterHeadCell columnKey="ka_after_trip" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
                 </th>
               ) : null}
               {fieldVisible("lost_load") ? (
@@ -603,6 +638,20 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                       disabled={!open}
                       onChange={(e) =>
                         setEditDraft((d) => ({ ...d, ka_before_trip: e.target.value === "" ? null : Number(e.target.value) }))
+                      }
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("ka_after_trip") ? (
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-20 text-center tabular-nums"
+                      value={src.ka_after_trip ?? ""}
+                      disabled={!open}
+                      onChange={(e) =>
+                        setEditDraft((d) => ({ ...d, ka_after_trip: e.target.value === "" ? null : Number(e.target.value) }))
                       }
                     />
                   </td>
@@ -766,6 +815,19 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                       value={draft.ka_before_trip ?? ""}
                       onChange={(e) =>
                         setDraft((d) => ({ ...d, ka_before_trip: e.target.value === "" ? null : Number(e.target.value) }))
+                      }
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("ka_after_trip") ? (
+                  <td>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-20 text-center tabular-nums"
+                      value={draft.ka_after_trip ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, ka_after_trip: e.target.value === "" ? null : Number(e.target.value) }))
                       }
                     />
                   </td>
@@ -1182,6 +1244,7 @@ const SHUTDOWN_SORT: Record<string, (r: Shutdown) => SortValue> = {
   code: (r) => r.code,
   cause: (r) => r.cause,
   ka_before_trip: (r) => r.ka_before_trip,
+  ka_after_trip: (r) => r.ka_after_trip,
   lost_load: (r) => r.lost_load,
   lost_production: (r) => r.lost_production,
   mtbf_days: (r) => r.mtbf_days,

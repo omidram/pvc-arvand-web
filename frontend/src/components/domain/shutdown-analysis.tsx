@@ -10,7 +10,7 @@ import { useCalendar } from "@/lib/calendar/context";
 import { DateInput } from "@/components/ui/date-input";
 import { formatDateTime } from "@/lib/utils";
 import { formatElectrolyzer } from "@/lib/plant-topology";
-import { monthStartIso, todayIsoLocal } from "@/lib/date-range";
+import { monthStartIso, recentMonthOptions, todayIsoLocal } from "@/lib/date-range";
 
 export type ShutdownGroupBy = "reason" | "cause" | "category" | "plant" | "detail";
 
@@ -112,13 +112,15 @@ function SortTh({
 }
 
 export function ShutdownAnalysis({ initialGroupBy = "reason" }: { initialGroupBy?: ShutdownGroupBy }) {
-  const { t } = useI18n();
-  useCalendar();
+  const { t, locale } = useI18n();
+  const { isShamsi } = useCalendar();
   const [from, setFrom] = useState(monthStartIso);
   const [to, setTo] = useState(todayIsoLocal);
   const [groupBy, setGroupBy] = useState<ShutdownGroupBy>(initialGroupBy);
   const [sort, setSort] = useState<{ key: SortKey; desc: boolean }>({ key: "minutes", desc: true });
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const months = useMemo(() => recentMonthOptions(isShamsi, locale === "fa"), [isShamsi, locale]);
+  const monthKey = months.find((month) => month.from === from && month.to === to)?.key || "";
 
   const params = useMemo(() => {
     const p: Record<string, unknown> = { limit: 5000 };
@@ -194,6 +196,30 @@ export function ShutdownAnalysis({ initialGroupBy = "reason" }: { initialGroupBy
   return (
     <div className="sd-analysis">
       <div className="shutdown-list-toolbar mb-3 flex flex-wrap items-end gap-3 text-[12px]">
+        <label className="flex flex-col gap-1">
+          <span>{t("shutdowns.month")}</span>
+          <select
+            className="access-inset-field"
+            value={monthKey}
+            onChange={(e) => {
+              const picked = months.find((month) => month.key === e.target.value);
+              if (!picked) {
+                setFrom("");
+                setTo("");
+                return;
+              }
+              setFrom(picked.from);
+              setTo(picked.to);
+            }}
+          >
+            <option value="">{t("shutdowns.allMonths")}</option>
+            {months.map((month) => (
+              <option key={month.key} value={month.key}>
+                {month.label}
+              </option>
+            ))}
+          </select>
+        </label>
         <label className="flex flex-col gap-1">
           <span>{t("menus.from")}</span>
           <DateInput className="access-inset-field" value={from} onChange={(e) => setFrom(e.target.value)} />

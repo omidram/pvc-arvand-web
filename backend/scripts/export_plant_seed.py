@@ -76,9 +76,9 @@ def export_shutdown_excels() -> None:
         return len(rows)
 
     dump(
-        "SELECT nr, plant_part, shutdown_time, startup_time, code, cause, category, remarks FROM shutdowns ORDER BY nr",
+        "SELECT nr, plant_part, shutdown_time, startup_time, code, cause, category, remarks, ka_before_trip, ka_after_trip, lost_load, lost_production, mtbf_days FROM shutdowns ORDER BY nr",
         OUT_DIR / "shutdowns.xlsx",
-        ["nr", "plant_part", "shutdown_time", "startup_time", "code", "cause", "category", "remarks"],
+        ["nr", "plant_part", "shutdown_time", "startup_time", "code", "cause", "category", "remarks", "ka_before_trip", "ka_after_trip", "lost_load", "lost_production", "mtbf_days"],
     )
     dump(
         "SELECT id, language_id, code, cause, category FROM shutdown_causes ORDER BY id",

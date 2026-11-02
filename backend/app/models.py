@@ -815,6 +815,7 @@ class Shutdown(Base):
     cause: Mapped[str | None] = mapped_column(String(200))  # Trip Cause (IDC / lookup)
     # Trip report extras (plant note 2026-10): KA before trip, lost load/production, MTBF
     ka_before_trip: Mapped[float | None] = mapped_column(Float)
+    ka_after_trip: Mapped[float | None] = mapped_column(Float)
     lost_load: Mapped[float | None] = mapped_column(Float)  # Duration(h) * KA / 4.85
     lost_production: Mapped[float | None] = mapped_column(Float)  # lost_load * 1.112
     mtbf_days: Mapped[float | None] = mapped_column(Float)  # days since previous trip of same plant_part

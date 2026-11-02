@@ -359,7 +359,7 @@ def _ensure_shutdown_trip_columns() -> None:
         present = {col["name"] for col in inspect(engine).get_columns("shutdowns")}
     except Exception:
         return
-    for name in ("ka_before_trip", "lost_load", "lost_production", "mtbf_days"):
+    for name in ("ka_before_trip", "ka_after_trip", "lost_load", "lost_production", "mtbf_days"):
         if name in present:
             continue
         with engine.begin() as conn:

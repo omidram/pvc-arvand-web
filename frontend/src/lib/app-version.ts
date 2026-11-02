@@ -1,5 +1,5 @@
 /** Display / release version shown on the main menu (bump on each release). */
-export const APP_VERSION = "V 1.99";
+export const APP_VERSION = "V 2.00";
 
 
 

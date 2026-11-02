@@ -932,6 +932,7 @@ class ShutdownBase(ORMModel):
     category: str | None = None
     cause: str | None = None  # Trip Cause
     ka_before_trip: float | None = None
+    ka_after_trip: float | None = None
     lost_load: float | None = None
     lost_production: float | None = None
     mtbf_days: float | None = None
