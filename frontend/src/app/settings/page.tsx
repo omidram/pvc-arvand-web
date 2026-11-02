@@ -417,6 +417,82 @@ function AppearanceTab() {
   );
 }
 
+function RequirementsTab() {
+  const { t } = useI18n();
+  const workstation = [
+    { part: t("settings.reqOs"), min: t("settings.reqWsOsMin"), rec: t("settings.reqWsOsRec") },
+    { part: t("settings.reqCpu"), min: t("settings.reqWsCpuMin"), rec: t("settings.reqWsCpuRec") },
+    { part: t("settings.reqRam"), min: t("settings.reqWsRamMin"), rec: t("settings.reqWsRamRec") },
+    { part: t("settings.reqDisk"), min: t("settings.reqWsDiskMin"), rec: t("settings.reqWsDiskRec") },
+    { part: t("settings.reqDisplay"), min: t("settings.reqWsDisplayMin"), rec: t("settings.reqWsDisplayRec") },
+    { part: t("settings.reqBrowser"), min: t("settings.reqWsBrowserMin"), rec: t("settings.reqWsBrowserRec") },
+    { part: t("settings.reqNetwork"), min: t("settings.reqWsNetMin"), rec: t("settings.reqWsNetRec") },
+  ];
+  const server = [
+    { part: t("settings.reqOs"), min: t("settings.reqSrvOsMin"), rec: t("settings.reqSrvOsRec") },
+    { part: t("settings.reqCpu"), min: t("settings.reqSrvCpuMin"), rec: t("settings.reqSrvCpuRec") },
+    { part: t("settings.reqRam"), min: t("settings.reqSrvRamMin"), rec: t("settings.reqSrvRamRec") },
+    { part: t("settings.reqDisk"), min: t("settings.reqSrvDiskMin"), rec: t("settings.reqSrvDiskRec") },
+    { part: t("settings.reqSoftware"), min: t("settings.reqSrvSoftMin"), rec: t("settings.reqSrvSoftRec") },
+    { part: t("settings.reqNetwork"), min: t("settings.reqSrvNetMin"), rec: t("settings.reqSrvNetRec") },
+  ];
+
+  function SpecTable({ rows }: { rows: { part: string; min: string; rec: string }[] }) {
+    return (
+      <div className="overflow-auto">
+        <table className="access-cont-table w-full min-w-[32rem] text-[12px]">
+          <thead>
+            <tr>
+              <th className="w-36 text-start">{t("settings.reqPart")}</th>
+              <th className="text-start">{t("settings.reqMinimum")}</th>
+              <th className="text-start">{t("settings.reqRecommended")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.part}>
+                <td className="font-bold">{row.part}</td>
+                <td>{row.min}</td>
+                <td>{row.rec}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.reqTitle")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-[12px] leading-relaxed text-[var(--win-text)]">
+          <p>{t("settings.reqIntro")}</p>
+          <p className="text-[var(--win-muted)]">{t("settings.reqNote")}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.reqWorkstation")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SpecTable rows={workstation} />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.reqServer")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SpecTable rows={server} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function SettingsPageInner() {
   const { t, locale } = useI18n();
   const { canEdit, isAdmin } = useAuth();
@@ -652,6 +728,7 @@ function SettingsPageInner() {
           },
           { key: "field-lists", label: t("fieldLists.title"), content: <FieldListsTab /> },
           { key: "appearance", label: t("appearance.title"), content: <AppearanceTab /> },
+          { key: "requirements", label: t("settings.tabRequirements"), content: <RequirementsTab /> },
           ...(canEdit("import_export")
             ? [{ key: "import-export", label: t("importExport.title"), content: <ImportExportTab /> }]
             : []),
