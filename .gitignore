@@ -25,8 +25,12 @@ backend/build/
 # frontend/.env.local
 *.pem
 
-# SQLite databases (live/runtime — never commit)
-# Committed plant snapshot (Git): docs/plant-data/pvc_arvand_plant_seed.db
+# SQLite databases (live/runtime — never commit; the server keeps its own file)
+# Shutdown tables that MUST travel with git and be loaded by deploy/update.sh:
+#   docs/plant-data/pvc_arvand_plant_seed.db
+#   docs/plant-data/shutdowns.xlsx
+#   docs/plant-data/shutdown-causes.xlsx
+#   docs/plant-data/shutdown-categories.xlsx
 backend/instance/pvc_arvand.db
 backend/instance/pvc_arvand_plant_seed.db
 backend/instance/backups/*.db
@@ -46,7 +50,14 @@ backend/instance/*.db-shm
 backend/instance/backups/
 backend/instance/*.json
 !backend/instance/.gitkeep
+
+# Never ignore the committed shutdown snapshot. update.sh copies these three
+# tables into the server database after each pull.
+!docs/plant-data/
 !docs/plant-data/pvc_arvand_plant_seed.db
+!docs/plant-data/shutdowns.xlsx
+!docs/plant-data/shutdown-causes.xlsx
+!docs/plant-data/shutdown-categories.xlsx
 
 # Packaging artifacts (large)
 packaging/output/

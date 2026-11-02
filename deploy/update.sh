@@ -37,6 +37,9 @@ grep -qxF 'backend/instance/' "$ROOT/.git/info/exclude" 2>/dev/null || echo 'bac
 git fetch origin
 git pull --ff-only origin main
 
+SEED="$ROOT/docs/plant-data/pvc_arvand_plant_seed.db"
+APPLY="$ROOT/deploy/apply_shutdown_tables.py"
+
 restore_snapshot() {
   if [[ -f "$SNAPSHOT" ]] && sqlite3 "$SNAPSHOT" "SELECT count(*) FROM sqlite_master WHERE type='table';" >/dev/null 2>&1; then
     echo "Update failed — restoring $SNAPSHOT"
@@ -51,6 +54,12 @@ health_ok() {
   local port="${APP_PUBLISH_PORT:-8080}"
   curl -fsS --max-time 8 "http://127.0.0.1:${port}/health" >/dev/null 2>&1
 }
+
+if [[ -f "$DB" && -f "$SEED" ]]; then
+  echo "Loading committed shutdown tables into the live database ..."
+  python3 "$APPLY" "$DB" "$SEED" || "$ROOT/backend/venv/bin/python" "$APPLY" "$DB" "$SEED"
+  rm -f "${DB}-wal" "${DB}-shm"
+fi
 
 if [[ -x "$ROOT/backend/venv/bin/pip" ]]; then
   echo "Updating Python venv ..."
@@ -69,7 +78,7 @@ if [[ -x "$ROOT/backend/venv/bin/pip" ]]; then
   fi
   sleep 3
   if health_ok; then
-    echo "Update finished. Database volume/file was preserved."
+    echo "Update finished. Shutdown tables were replaced from the committed seed."
     exit 0
   fi
   echo "Health check failed after restart."
@@ -97,8 +106,16 @@ PY
     && echo "Host copy: $BACKUP_DIR/pre_update_${STAMP}.db" \
     || echo "Snapshot kept inside container volume only."
   docker compose up -d --build
+  if [[ -f "$SEED" ]]; then
+    echo "Loading committed shutdown tables into the server database ..."
+    docker compose cp "$SEED" pvc-arvand:/tmp/pvc_arvand_plant_seed.db
+    docker compose cp "$APPLY" pvc-arvand:/tmp/apply_shutdown_tables.py
+    docker compose exec -T pvc-arvand python /tmp/apply_shutdown_tables.py /data/pvc_arvand.db /tmp/pvc_arvand_plant_seed.db
+    docker compose restart pvc-arvand
+  fi
   docker compose ps
   echo "Update finished. Named volume pvc_arvand_data was preserved."
+  echo "Shutdown tables were replaced from docs/plant-data/pvc_arvand_plant_seed.db."
   echo "Never run: docker compose down -v"
   exit 0
 fi
