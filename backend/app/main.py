@@ -610,12 +610,21 @@ async def _unhandled_error(request: Request, exc: Exception):
     import logging
 
     logging.getLogger("uvicorn.error").exception("Unhandled error on %s", request.url.path, exc_info=exc)
+    detail = f"Server error: {type(exc).__name__}: {str(exc)[:300]}"
+    if "disk i/o" in str(exc).lower():
+        try:
+            from .database import recover_sqlite_io
+
+            if recover_sqlite_io():
+                detail = "پایگاه داده لحظه‌ای از دسترس خارج شد و دوباره باز شد. صفحه را یک بار تازه کنید."
+        except Exception:  # noqa: BLE001
+            logging.getLogger("uvicorn.error").exception("SQLite I/O recovery failed")
     headers = {}
     origin = request.headers.get("origin")
     if origin:
         headers = {"Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true", "Vary": "Origin"}
     return JSONResponse(
-        {"detail": f"Server error: {type(exc).__name__}: {str(exc)[:300]}"},
+        {"detail": detail},
         status_code=500,
         headers=headers,
     )

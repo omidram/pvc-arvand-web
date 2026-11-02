@@ -37,6 +37,10 @@ def _sqlite_on_connect(dbapi_connection, connection_record) -> None:
     cursor = dbapi_connection.cursor()
     try:
         cursor.execute("PRAGMA busy_timeout=120000")
+        # mmap on the large plant file turns a voltage write into
+        # "disk I/O error" on the next read, including the users table.
+        cursor.execute("PRAGMA mmap_size=0")
+        cursor.execute("PRAGMA temp_store=MEMORY")
     finally:
         cursor.close()
 
@@ -76,30 +80,45 @@ def commit_db(session: Session, *, attempts: int = 8) -> bool:
     return False
 
 
-def _try_enable_wal() -> None:
-    """WAL lets voltage sync wait as a second writer instead of failing immediately.
+def is_sqlite_io(exc: BaseException) -> bool:
+    return "disk i/o" in str(exc).lower()
 
-    Some Windows plant files abort PRAGMA journal_mode with a malformed schema;
-    on those files we keep rollback journal and only rely on busy_timeout.
-    The plant server database is one of those files: turning WAL on there
-    makes later reads fail with "disk I/O error".
-    """
-    if os.environ.get("PVC_ENV", "").lower() == "production":
-        return
-    path = _sqlite_file()
-    if path is None or not path.is_file():
-        return
+
+def _probe_rw(path: Path) -> str | None:
+    """Open for write so a valid journal can roll forward. None means the file is usable."""
     try:
-        conn = sqlite3.connect(str(path), timeout=30)
+        conn = sqlite3.connect(str(path), timeout=20)
         try:
-            mode = conn.execute("PRAGMA journal_mode=WAL").fetchone()
-            conn.execute("PRAGMA synchronous=NORMAL")
-            conn.execute("PRAGMA busy_timeout=120000")
-            _log.info("SQLite journal_mode=%s", (mode or ["?"])[0])
+            conn.execute("PRAGMA mmap_size=0")
+            conn.execute("PRAGMA busy_timeout=20000")
+            row = conn.execute(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            ).fetchone()
+            if not row or int(row[0]) <= 0:
+                return "no tables"
         finally:
             conn.close()
+        return None
     except sqlite3.Error as exc:
-        _log.warning("SQLite WAL not enabled (%s)", exc)
+        return str(exc)
+
+
+def _park_sidecars(path: Path) -> list[str]:
+    """Move a half-written journal aside so the main file can open again."""
+    moved: list[str] = []
+    for suffix in ("-journal", "-wal", "-shm"):
+        side = Path(str(path) + suffix)
+        if not side.is_file():
+            continue
+        aside = Path(str(side) + ".aside")
+        try:
+            if aside.exists():
+                aside.unlink()
+            side.replace(aside)
+            moved.append(side.name)
+        except OSError as exc:
+            _log.warning("Could not move %s aside: %s", side, exc)
+    return moved
 
 
 # Plant tables. A broken entry with one of these names is reported, not deleted.
@@ -129,7 +148,71 @@ def _sqlite_file() -> Path | None:
     return Path(rest)
 
 
-_try_enable_wal()
+def _prefer_rollback_journal(path: Path) -> None:
+    """This plant file must stay in rollback mode.
+
+    PRAGMA journal_mode=WAL re-reads the old Access schema and the next query
+    then fails with "disk I/O error" for every table.
+    """
+    try:
+        conn = sqlite3.connect(str(path), timeout=30)
+        try:
+            conn.execute("PRAGMA mmap_size=0")
+            mode = conn.execute("PRAGMA journal_mode").fetchone()
+            current = str(mode[0]).lower() if mode else ""
+            if current == "wal":
+                conn.execute("PRAGMA journal_mode=DELETE")
+                _log.warning("Switched SQLite journal from WAL back to DELETE")
+        finally:
+            conn.close()
+    except sqlite3.Error as exc:
+        _log.warning("Could not confirm rollback journal: %s", exc)
+
+
+def recover_sqlite_io() -> bool:
+    """Reopen the plant database after a sudden disk I/O error.
+
+    Closes pooled connections first. If the file itself still will not open,
+    a half-written -journal/-wal/-shm is moved aside. Plant rows stay in the
+    main file.
+    """
+    import time
+
+    global _last_io_recover
+    now = time.time()
+    if now - _last_io_recover < 15:
+        return False
+    with _io_recover_lock:
+        if time.time() - _last_io_recover < 15:
+            return False
+        _last_io_recover = time.time()
+        path = _sqlite_file()
+        try:
+            engine.dispose()
+        except Exception as exc:  # noqa: BLE001
+            _log.warning("Could not reset the SQLite pool: %s", exc)
+        if path is None or not path.is_file():
+            return False
+        error = _probe_rw(path)
+        if error is None:
+            _log.warning("SQLite disk I/O cleared by reopening the database")
+            return True
+        if "disk i/o" not in error.lower():
+            _log.warning("SQLite still failing after reopen: %s", error)
+            return False
+        moved = _park_sidecars(path)
+        if moved and _probe_rw(path) is None:
+            _log.warning("SQLite opened after moving %s aside", ", ".join(moved))
+            return True
+        _log.error("SQLite file is still unreadable after disk I/O recovery: %s", path)
+        return False
+
+
+_io_recover_lock = __import__("threading").Lock()
+_last_io_recover = 0.0
+_live = _sqlite_file()
+if _live is not None and _live.is_file():
+    _prefer_rollback_journal(_live)
 
 
 def _schema_object_name(exc: BaseException) -> str | None:
@@ -412,6 +495,17 @@ def repair_malformed_schema() -> None:
         return
     if _sqlite_readable(path):
         return
+    error = _probe_rw(path) or ""
+    if error == "":
+        return
+    if "locked" in error.lower() or "busy" in error.lower():
+        _log.warning("SQLite is in use by another process; leaving the file untouched")
+        return
+    if "disk i/o" in error.lower() or "malformed" in error.lower() or "readonly" in error.lower():
+        moved = _park_sidecars(path)
+        if moved and _probe_rw(path) is None:
+            _log.warning("SQLite opened after moving %s aside", ", ".join(moved))
+            return
     last_exc = _probe_schema_error(path)
     broken = _schema_object_name(last_exc) if last_exc else None
     if broken and broken not in _CORE_SCHEMA:
