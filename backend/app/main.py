@@ -12,7 +12,7 @@ from .cell_component_names import persist_industrial_names
 from .inspection_reason_names import persist_industrial_reasons
 from .config import settings
 from .database import Base, SessionLocal, engine
-from .paths import data_root, seed_db_path, static_dir
+from .paths import static_dir
 from .routers import (
     activity as activity_router_module,
     activity_reports as activity_reports_router_module,
@@ -368,38 +368,6 @@ def _ensure_shutdown_trip_columns() -> None:
 
 
 _ensure_shutdown_trip_columns()
-
-
-def _sync_shutdown_tables_from_seed() -> None:
-    """On the plant server, copy committed shutdown rows into the live database."""
-    import os
-    import sqlite3
-
-    live = data_root() / "pvc_arvand.db"
-    seed = seed_db_path()
-    if not live.is_file() or seed is None:
-        return
-    if os.environ.get("PVC_ENV", "").lower() != "production":
-        try:
-            probe = sqlite3.connect(str(live))
-            n = probe.execute("SELECT COUNT(*) FROM shutdowns").fetchone()[0]
-            probe.close()
-        except sqlite3.Error:
-            n = 0
-        if n:
-            return
-    try:
-        from .shutdown_seed import apply_shutdown_tables
-
-        engine.dispose()
-        apply_shutdown_tables(str(live), str(seed))
-    except Exception as exc:  # noqa: BLE001
-        import logging
-
-        logging.getLogger("uvicorn.error").warning("Could not load shutdown seed: %s", exc)
-
-
-_sync_shutdown_tables_from_seed()
 
 
 def _ensure_coating_warranty_columns() -> None:

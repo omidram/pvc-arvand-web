@@ -47,18 +47,6 @@ load_shutdown_host() {
   fi
 }
 
-load_shutdown_docker() {
-  local seed_in="/tmp/pvc_arvand_plant_seed.db"
-  if [[ -f "$SEED" ]]; then
-    echo "Copying shutdown seed into the container ..."
-    docker compose cp "$SEED" "pvc-arvand:${seed_in}"
-  else
-    seed_in="/app/seed/pvc_arvand.db"
-  fi
-  echo "Loading committed shutdown tables into /data/pvc_arvand.db ..."
-  docker compose exec -T pvc-arvand python -c "from app.shutdown_seed import apply_shutdown_tables; apply_shutdown_tables('/data/pvc_arvand.db', '${seed_in}')"
-}
-
 restore_snapshot() {
   if [[ -f "$SNAPSHOT" ]] && sqlite3 "$SNAPSHOT" "SELECT count(*) FROM sqlite_master WHERE type='table';" >/dev/null 2>&1; then
     echo "Update failed — restoring $SNAPSHOT"
@@ -75,35 +63,37 @@ health_ok() {
 }
 
 if docker compose ps --status running --services 2>/dev/null | grep -qx 'pvc-arvand'; then
-  SNAPSHOT_IN="/data/backups/pre_update_${STAMP}.db"
-  echo "Creating pre-update DB snapshot inside Docker ..."
-  docker compose exec -T pvc-arvand python - <<PY || echo "Warning: could not snapshot DB before update."
-from pathlib import Path
-import shutil
-src = Path("/data/pvc_arvand.db")
-dst = Path("${SNAPSHOT_IN}")
-dst.parent.mkdir(parents=True, exist_ok=True)
-if src.is_file() and src.stat().st_size > 0:
-    shutil.copy2(src, dst)
-    print(f"wrote {dst}")
-else:
-    print("no live database to snapshot")
-PY
-  docker compose cp "pvc-arvand:${SNAPSHOT_IN}" "$BACKUP_DIR/" 2>/dev/null \
-    && echo "Host copy: $BACKUP_DIR/pre_update_${STAMP}.db" \
-    || echo "Snapshot kept inside container volume only."
+  # Copy to the host disk. A second copy inside /data fills the Docker volume
+  # and every query then fails with "disk I/O error".
+  echo "Copying live DB to the host disk ..."
+  docker compose cp "pvc-arvand:/data/pvc_arvand.db" "$SNAPSHOT" \
+    && echo "Host snapshot: $SNAPSHOT" \
+    || echo "Warning: could not copy the live database to the host."
   docker compose up -d --build
-  load_shutdown_docker
-  docker compose restart pvc-arvand
+  echo "Stopping the API before replacing shutdown tables ..."
+  docker compose stop pvc-arvand
+  cid="$(docker ps -aq --filter name='^pvc-arvand$' | head -n 1)"
+  image="$(docker inspect -f '{{.Config.Image}}' "$cid")"
+  echo "Loading committed shutdown tables into /data/pvc_arvand.db ..."
+  set +e
+  docker run --rm --volumes-from "$cid" --entrypoint python "$image" \
+    -c "from app.shutdown_seed import apply_shutdown_tables; apply_shutdown_tables('/data/pvc_arvand.db', '/app/seed/pvc_arvand.db')"
+  load_status=$?
+  set -e
+  docker start "$cid"
   docker compose ps
-  echo "Update finished. Shutdown tables were loaded from docs/plant-data into the server database."
+  if [[ "$load_status" -ne 0 ]]; then
+    echo "Shutdown load failed. The API was started again."
+    echo "If pages still show disk I/O error, run: bash deploy/repair-db-io.sh"
+    exit 1
+  fi
+  echo "Update finished. Shutdown tables were loaded while the API was stopped."
   echo "Never run: docker compose down -v"
   exit 0
 fi
 
 if [[ -x "$ROOT/backend/venv/bin/pip" ]]; then
   load_shutdown_host
-  rm -f "${DB}-wal" "${DB}-shm"
   echo "Updating Python venv ..."
   "$ROOT/backend/venv/bin/pip" install -q -r "$ROOT/backend/requirements.txt"
   if [[ -d "$ROOT/frontend" && -f "$ROOT/frontend/package.json" ]]; then

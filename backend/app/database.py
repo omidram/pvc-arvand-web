@@ -81,7 +81,11 @@ def _try_enable_wal() -> None:
 
     Some Windows plant files abort PRAGMA journal_mode with a malformed schema;
     on those files we keep rollback journal and only rely on busy_timeout.
+    The plant server database is one of those files: turning WAL on there
+    makes later reads fail with "disk I/O error".
     """
+    if os.environ.get("PVC_ENV", "").lower() == "production":
+        return
     path = _sqlite_file()
     if path is None or not path.is_file():
         return
