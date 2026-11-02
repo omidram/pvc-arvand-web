@@ -3,7 +3,7 @@ import re
 from datetime import date, datetime
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
-from sqlalchemy import func, or_
+from sqlalchemy import Integer, cast, func, or_
 from sqlalchemy.orm import Session
 
 from .. import models, schemas
@@ -75,14 +75,15 @@ _POSITION_RE = re.compile(r"^\d{1,3}$")
 
 
 def _next_element_nr(db: Session) -> str:
-    """Last created numeric Element Nr + 1, skipping numbers that already exist."""
+    """Highest numeric element number already in the plant, plus one."""
     latest = 0
-    for (value,) in db.query(models.Element.element_nr).order_by(models.Element.id.desc()).all():
+    existing: set[str] = set()
+    for (value,) in db.query(models.Element.element_nr).all():
         text = str(value or "").strip()
+        if text:
+            existing.add(text)
         if text.isdigit():
-            latest = int(text)
-            break
-    existing = {str(value or "").strip() for (value,) in db.query(models.Element.element_nr).all()}
+            latest = max(latest, int(text))
     n = latest + 1
     while str(n) in existing:
         n += 1
@@ -235,7 +236,12 @@ def list_elements(
         query = query.filter(models.Element.group_nr == group_nr)
     if active_only:
         query = query.filter(models.Element.disassembly_date.is_(None))
-    items = query.order_by(models.Element.id.desc()).offset(skip).limit(limit).all()
+    items = (
+        query.order_by(cast(models.Element.element_nr, Integer).desc(), models.Element.id.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
     windows = load_shutdown_windows(db)
     return [_enrich(i, shutdowns=_dol_shutdowns(db, i, windows)) for i in items]
 

@@ -62,18 +62,26 @@ export function AssemblyDataForm() {
   );
   const sheetRecords = useMemo(() => {
     const all = listQuery.data;
-    if (!stage) return all;
+    const rank = (value: string | null | undefined) => {
+      const text = String(value ?? "").trim();
+      return /^\d+$/.test(text) ? Number(text) : -1;
+    };
+    const byLatest = (rows: typeof all) =>
+      rows ? [...rows].sort((a, b) => rank(b.element_nr) - rank(a.element_nr) || (b.id || 0) - (a.id || 0)) : rows;
+    if (!stage) return byLatest(all);
     const items = stageQuery.data?.items;
     if (!items) return [];
     const ids = new Set(items.map((item) => item.row_id).filter((id): id is number => id != null));
     const keys = new Set(
       items.filter((item) => item.row_id == null).map((item) => String(item.element_nr || "").replace(/[\s\-_/.]/g, "").toUpperCase())
     );
-    return (all || []).filter((row) => {
-      if (ids.has(row.id)) return true;
-      if (!keys.size) return false;
-      return keys.has(String(row.element_nr || "").replace(/[\s\-_/.]/g, "").toUpperCase());
-    });
+    return byLatest(
+      (all || []).filter((row) => {
+        if (ids.has(row.id)) return true;
+        if (!keys.size) return false;
+        return keys.has(String(row.element_nr || "").replace(/[\s\-_/.]/g, "").toUpperCase());
+      })
+    );
   }, [listQuery.data, stage, stageQuery.data]);
   const stageTone = !stage ? "" : stage === "assembled" ? "ink" : STAGE_TONE[stage];
   const nextNrQuery = useQuery({
@@ -237,6 +245,14 @@ export function AssemblyDataForm() {
   return (
     <>
       <AssemblyLifecycleStrip picked={stage} onPick={setStage} />
+      {nextNrQuery.data?.element_nr ? (
+        <p className="asm-latest-nr">
+          {Number(nextNrQuery.data.element_nr) > 1 ? (
+            <strong>{t("elements.latestNr", { nr: String(Number(nextNrQuery.data.element_nr) - 1) })}</strong>
+          ) : null}{" "}
+          <span>{t("elements.nextNr", { nr: nextNrQuery.data.element_nr })}</span>
+        </p>
+      ) : null}
       <div className={stageTone ? `asm-filtered is-${stageTone}` : undefined}>
       <AccessWorkspace<Element>
         key={jump}
