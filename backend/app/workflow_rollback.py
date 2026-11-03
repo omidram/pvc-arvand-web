@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from . import element_dashboard as svc
@@ -27,6 +28,17 @@ from .workflow_models import (
     WfCellRequest,
     WfWorkOrder,
 )
+
+def _safe_delete(db: Session, row: Any) -> None:
+    """Drop one row without aborting the whole cancel when a link still points at it."""
+    if row is None:
+        return
+    try:
+        with db.begin_nested():
+            db.delete(row)
+    except SQLAlchemyError:
+        return
+
 
 CLOSED = ("completed", "cancelled")
 _ELEMENT_FIELDS = (
@@ -293,7 +305,7 @@ def rollback_assemble(db: Session, r: WfAssembleRequest) -> None:
     if el is not None and created_here and not _element_in_other_flow(db, el.id, r.id):
         _drop_shop_notes(db, el.element_nr, r.code, r.created_at)
         restore_shop(db, el.element_nr, None)
-        db.delete(el)
+        _safe_delete(db, el)
     elif el is not None and origin.get("element"):
         restore_element(db, origin["element"])
         restore_shop(db, el.element_nr, origin.get("shop"))
@@ -302,7 +314,7 @@ def rollback_assemble(db: Session, r: WfAssembleRequest) -> None:
         restore_shop(db, el.element_nr, None)
         _drop_shop_notes(db, el.element_nr, r.code, r.created_at)
         if (el.remarks or "").startswith(f"Assembled by {r.code}") and not el.commissioning_date:
-            db.delete(el)
+            _safe_delete(db, el)
     r.element_id = None
     r.electrolyzer = None
     r.position = None
@@ -372,9 +384,9 @@ def rollback_coating(db: Session, b: WfCoatingBatch) -> None:
         else:
             upsert_state(db, it.element_kind, it.serial, lifecycle_status="in_plant", company_id=None)
         for row in list(_workflow_recoating_rows(db, it.element_kind, it.serial, codes)):
-            db.delete(row)
+            _safe_delete(db, row)
         for row in list(_workflow_coating_checks(db, it.element_kind, it.serial, codes)):
-            db.delete(row)
+            _safe_delete(db, row)
     _drop_lifecycle(db, "wf_coating", b.id)
     for ev in db.query(WfEvent).filter_by(flow="inspection", action="created").all():
         data = ev.data if isinstance(ev.data, dict) else {}
@@ -410,11 +422,11 @@ def rollback_purchase(db: Session, p: WfPurchase) -> None:
         q = db.query(model)
         row = (q.filter(match).first() if match is not None else q.filter(field == it.serial).first())
         if row is not None and (getattr(row, "batch", None) or "") == (p.code or ""):
-            db.delete(row)
+            _safe_delete(db, row)
         state = get_state(db, it.element_kind, it.serial)
         if state is not None:
-            db.delete(state)
-        db.delete(it)
+            _safe_delete(db, state)
+        _safe_delete(db, it)
     _drop_lifecycle(db, "wf_purchase", p.id)
 
 
@@ -424,12 +436,12 @@ def rollback_inspection(db: Session, r: WfInspectionRequest) -> None:
         for row in db.query(models.ElectrodeSegregation).all():
             blob = f"{row.remarks or ''}\n{row.inspection_form_serial or ''}"
             if marker in blob or (r.code and r.code == (row.inspection_form_serial or "")):
-                db.delete(row)
+                _safe_delete(db, row)
     for kind, serial in (("anode", r.anode_nr), ("cathode", r.cathode_nr)):
         if not serial:
             continue
         for row in list(_workflow_coating_checks(db, kind, serial, {r.code or ""})):
-            db.delete(row)
+            _safe_delete(db, row)
     origin = recall(db, "inspection", r.id)
     if origin.get("report_id") is None:
         r.report_id = None

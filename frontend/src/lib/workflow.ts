@@ -633,7 +633,8 @@ export interface MembraneUsed {
 
 export const membraneStockApi = {
   overview: async (): Promise<MembraneStockOverview> => (await apiClient.get("/membrane-stock")).data,
-  types: async (): Promise<{ type: string; in_stock: number; tracked: boolean }[]> => (await apiClient.get("/membrane-stock/types")).data,
+  types: async (stocked = false): Promise<{ type: string; in_stock: number; tracked: boolean }[]> =>
+    (await apiClient.get("/membrane-stock/types", { params: stocked ? { stocked: true } : {} })).data,
   used: async (type?: string): Promise<MembraneUsed> => (await apiClient.get("/membrane-stock/used", { params: { type } })).data,
   add: async (body: { type: string; serial?: string; quantity?: number; purchase_date?: string; note?: string }) =>
     (await apiClient.post("/membrane-stock/add", body)).data,

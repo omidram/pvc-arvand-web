@@ -11,6 +11,7 @@ import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import type { WhCompany } from "@/lib/endpoints";
 import { useAuth } from "@/lib/auth/context";
+import { appConfirm } from "@/lib/dialog";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { defaultDateRange } from "@/lib/date-range";
@@ -1404,11 +1405,15 @@ function StepActions({ d, companies, t }: { d: WfDetail; companies: WhCompany[];
           <button
             type="button"
             className="wf-btn is-bad"
-            disabled={run.isPending || (mustReason && !note.trim())}
-            title={mustReason ? t("wf.cancelReason") : undefined}
+            disabled={run.isPending}
             onClick={() => {
-              if (mustReason && !note.trim()) return;
-              if (window.confirm(t("wf.confirmDelete"))) go("cancel");
+              if (mustReason && !note.trim()) {
+                setInfo(t("wf.cancelReason"));
+                return;
+              }
+              void appConfirm(t("wf.confirmDelete")).then((ok) => {
+                if (ok) go("cancel");
+              });
             }}
           >
             <Ban size={14} /> {t("wf.action.delete")}

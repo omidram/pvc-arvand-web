@@ -903,13 +903,13 @@ function CausesTable() {
   const [drafts, setDrafts] = useState<Record<number, Partial<ShutdownCause>>>({});
   const [fresh, setFresh] = useState<Partial<ShutdownCause>>({});
   const [error, setError] = useState<string | null>(null);
-  const { listQuery, createMutation, updateMutation } = useCrudResource<ShutdownCause>("shutdown-causes", shutdownCausesApi, { limit: 500 });
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<ShutdownCause>("shutdown-causes", shutdownCausesApi, { limit: 500 });
   const categoriesQuery = useQuery({
     queryKey: ["shutdown-categories", "combo"],
     queryFn: () => shutdownCategoriesApi.list({ limit: 200 }),
   });
   const rows = useMemo(
-    () => [...(listQuery.data || [])].filter((r) => (r.code || "").trim() || (r.cause || "").trim()).sort((a, b) => (a.language_id ?? 0) - (b.language_id ?? 0) || (a.code || "").localeCompare(b.code || "")),
+    () => [...(listQuery.data || [])].sort((a, b) => (a.language_id ?? 0) - (b.language_id ?? 0) || (a.code || "").localeCompare(b.code || "")),
     [listQuery.data]
   );
   const causeSort = useSort(rows, CAUSE_SORT);
@@ -922,9 +922,25 @@ function CausesTable() {
     setDrafts((d) => ({ ...d, [id]: { ...d[id], ...change } }));
   }
 
+  function dropRow(row: ShutdownCause) {
+    setError(null);
+    void appConfirm(t("common.confirmDeleteGeneric")).then((ok) => {
+      if (!ok) return;
+      removeMutation.mutate(row.id, {
+        onSuccess: () => setDrafts((d) => Object.fromEntries(Object.entries(d).filter(([k]) => Number(k) !== row.id))),
+        onError: (e) => setError(errText(e)),
+      });
+    });
+  }
+
   function saveRow(row: ShutdownCause) {
     const draft = drafts[row.id];
     if (!draft) return;
+    const next = { ...row, ...draft };
+    if (!(next.code || "").trim() && !(next.cause || "").trim()) {
+      dropRow(row);
+      return;
+    }
     setError(null);
     updateMutation.mutate(
       { id: row.id, payload: { ...row, ...draft } },
@@ -986,6 +1002,9 @@ function CausesTable() {
                         {t("common.save")}
                       </button>
                     ) : null}
+                    <button type="button" className="access-btn text-[11px]" disabled={removeMutation.isPending} onClick={() => dropRow(row)}>
+                      {t("common.delete")}
+                    </button>
                   </td>
                 ) : null}
               </tr>

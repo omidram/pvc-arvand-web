@@ -248,7 +248,23 @@ def overview(db: Session = Depends(get_db), user: models.User = Depends(get_curr
 
 
 @router.get("/types")
-def list_types(db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+def list_types(
+    stocked: bool = False,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    if stocked:
+        rows = (
+            db.query(MembraneStock.membrane_type, func.sum(MembraneStock.quantity))
+            .filter(MembraneStock.quantity > 0)
+            .group_by(MembraneStock.membrane_type)
+            .all()
+        )
+        return [
+            {"type": (name or "").strip(), "in_stock": int(qty or 0), "tracked": True}
+            for name, qty in rows
+            if (name or "").strip() and int(qty or 0) > 0
+        ]
     out = []
     for name in all_types(db):
         out.append({"type": name, "in_stock": available(db, name), "tracked": tracked(db, name)})

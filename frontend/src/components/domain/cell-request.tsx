@@ -13,6 +13,7 @@ import { MultiReason } from "@/components/ui/access-fields";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { useAuth } from "@/lib/auth/context";
+import { appConfirm } from "@/lib/dialog";
 import { relationsApi } from "@/lib/endpoints";
 import { useFieldOptions } from "@/lib/use-field-options";
 import { useI18n } from "@/lib/i18n/context";
@@ -535,6 +536,7 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
   const [electrolyzer, setElectrolyzer] = useState("");
   const [position, setPosition] = useState("");
   const [relocating, setRelocating] = useState(false);
+  const [deleteHint, setDeleteHint] = useState("");
 
   const run = useMutation({
     mutationFn: ({ action, body }: { action: string; body: Record<string, unknown> }) => workflowApi.cellStep(d.id, action, body),
@@ -553,6 +555,17 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
     },
   });
   const go = (action: string, body: Record<string, unknown> = {}) => run.mutate({ action, body: { note: note.trim() || undefined, ...body } });
+  const needsReason = isAdmin || acts.includes("edit");
+  function askDelete() {
+    if (needsReason && !note.trim()) {
+      setDeleteHint(t("wf.cancelReason"));
+      return;
+    }
+    setDeleteHint("");
+    void appConfirm(t("wf.confirmDelete")).then((ok) => {
+      if (ok) go("cancel");
+    });
+  }
 
   const stepActs = acts.filter((a) => a === "shutdown" || a === "receive" || a === "decide" || a === "review" || a === "dismantle" || a === "install");
   const error = run.error || attach.error;
@@ -674,9 +687,26 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
             </div>
           ) : null}
           <label className="ed-filters">
-            <span className="text-xs font-bold">{(isAdmin || acts.includes("edit")) && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.note")}</span>
-            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={(isAdmin || acts.includes("edit")) && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.noteHint")} />
+            <span className="text-xs font-bold">{needsReason && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.note")}</span>
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={needsReason && acts.includes("cancel") ? t("wf.cancelReason") : t("elDash.noteHint")} />
           </label>
+          {acts.includes("cancel") ? (
+            <button type="button" className="wf-btn is-bad" disabled={run.isPending} onClick={askDelete}>
+              <Ban size={14} /> {t("wf.action.delete")}
+            </button>
+          ) : null}
+          {deleteHint ? <p className="asm-note is-danger">{deleteHint}</p> : null}
+        </section>
+      ) : acts.includes("cancel") ? (
+        <section className="wf-actions">
+          <label className="ed-filters">
+            <span className="text-xs font-bold">{t("wf.cancelReason")}</span>
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("wf.cancelReason")} />
+          </label>
+          <button type="button" className="wf-btn is-bad" disabled={run.isPending} onClick={askDelete}>
+            <Ban size={14} /> {t("wf.action.delete")}
+          </button>
+          {deleteHint ? <p className="asm-note is-danger">{deleteHint}</p> : null}
         </section>
       ) : d.status !== "completed" && d.status !== "cancelled" ? (
         <div className="wf-wait">{t("cellReq.noRight", { group: d.groups.map((g: WfGroup) => t(`wf.group.${g}`)).join(" / ") })}</div>
@@ -699,20 +729,6 @@ function CellActions({ d, t }: { d: CellRequestDetail; t: T }) {
                   <Paperclip size={14} /> {t("wf.action.attach")}
                 </button>
               </>
-            ) : null}
-            {acts.includes("cancel") ? (
-              <button
-                type="button"
-                className="wf-btn is-bad"
-                disabled={run.isPending || ((isAdmin || acts.includes("edit")) && !note.trim())}
-                title={(isAdmin || acts.includes("edit")) ? t("wf.cancelReason") : undefined}
-                onClick={() => {
-                  if ((isAdmin || acts.includes("edit")) && !note.trim()) return;
-                  if (window.confirm(t("wf.confirmDelete"))) go("cancel");
-                }}
-              >
-                <Ban size={14} /> {t("wf.action.delete")}
-              </button>
             ) : null}
           </div>
         </section>

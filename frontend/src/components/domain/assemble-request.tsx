@@ -12,6 +12,7 @@ import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { PositionCombo } from "@/components/ui/position-combo";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
+import { appConfirm } from "@/lib/dialog";
 import { elementsApi, relationsApi } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
@@ -117,14 +118,19 @@ export function AssembleStartForm({
     staleTime: 60_000,
   });
   const stock = [...(pool.data?.reusable ?? []), ...(pool.data?.purchased ?? []), ...(pool.data?.recoated ?? [])];
-  const memTypes = useQuery({
-    queryKey: ["membrane-stock", "types"],
-    queryFn: membraneStockApi.types,
-    enabled: can,
-    staleTime: 5_000,
-  });
-  const memStock = useQuery({ queryKey: ["membrane-stock", "overview"], queryFn: membraneStockApi.overview, enabled: can, staleTime: 5_000 });
   const [form, setForm] = useState({ anode_nr: "", cathode_nr: "", membrane_type: "", membrane_nr: "", element_nr: "", note: "" });
+  const memTypes = useQuery({
+    queryKey: ["membrane-stock", "types", "stocked"],
+    queryFn: () => membraneStockApi.types(true),
+    enabled: can,
+    staleTime: 20_000,
+  });
+  const memStock = useQuery({
+    queryKey: ["membrane-stock", "overview", form.membrane_type],
+    queryFn: membraneStockApi.overview,
+    enabled: can && !!form.membrane_type,
+    staleTime: 20_000,
+  });
   const pickedType = (memTypes.data ?? []).find((row) => row.type === form.membrane_type);
   const serialChoices = Array.from(
     new Set([
@@ -171,10 +177,9 @@ export function AssembleStartForm({
             required
           >
             <option value="">—</option>
-            {(memTypes.data ?? []).map((row) => (
+            {(memTypes.data ?? []).filter((row) => row.in_stock > 0).map((row) => (
               <option key={row.type} value={row.type}>
-                {row.type}
-                {row.tracked ? ` (${row.in_stock})` : ""}
+                {row.type} ({row.in_stock})
               </option>
             ))}
           </select>
@@ -342,6 +347,7 @@ function SignRejectBox({
 function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
   const qc = useQueryClient();
   const [note, setNote] = useState("");
+  const [deleteHint, setDeleteHint] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [day, setDay] = useState(todayIso());
   const [electrolyzer, setElectrolyzer] = useState(d.electrolyzer || "");
@@ -520,14 +526,22 @@ function AssembleBody({ d, t }: { d: AssembleRequestDetail; t: T }) {
               <button
                 type="button"
                 className="wf-btn is-bad"
-                disabled={run.isPending || !note.trim()}
+                disabled={run.isPending}
                 onClick={() => {
-                  if (window.confirm(t("wf.confirmDelete"))) go("cancel");
+                  if (!note.trim()) {
+                    setDeleteHint(t("wf.cancelReason"));
+                    return;
+                  }
+                  setDeleteHint("");
+                  void appConfirm(t("wf.confirmDelete")).then((ok) => {
+                    if (ok) go("cancel");
+                  });
                 }}
               >
-                <Ban size={14} /> {t("wf.action.cancel")}
+                <Ban size={14} /> {t("wf.action.delete")}
               </button>
             ) : null}
+            {deleteHint ? <div className="wf-alert">{deleteHint}</div> : null}
           </div>
           {acts.includes("attach") ? (
             <div className="wh-form-inline">

@@ -1,6 +1,6 @@
 "use client";
 
-import { MutationCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { I18nProvider } from "@/lib/i18n/context";
 import { AuthProvider } from "@/lib/auth/context";
@@ -14,14 +14,9 @@ import { DialogProvider } from "@/lib/dialog";
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => {
     const qc: QueryClient = new QueryClient({
-        mutationCache: new MutationCache({
-          onSuccess: () => {
-            qc.invalidateQueries();
-          },
-        }),
         defaultOptions: {
           queries: {
-            staleTime: 10_000,
+            staleTime: 30_000,
             refetchOnWindowFocus: false,
             retry: 1,
           },

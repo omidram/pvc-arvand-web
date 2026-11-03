@@ -10,6 +10,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { electrodeSegregationsApi } from "@/lib/endpoints";
+import { appConfirm } from "@/lib/dialog";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import {
@@ -417,6 +418,7 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
   const qc = useQueryClient();
   const [note, setNote] = useState("");
+  const [deleteHint, setDeleteHint] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const acts = d.actions;
   const done = (next: InspectionRequestDetail) => {
@@ -573,9 +575,16 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
               <button
                 type="button"
                 className="wf-btn is-bad"
-                disabled={run.isPending || !note.trim()}
+                disabled={run.isPending}
                 onClick={() => {
-                  if (window.confirm(t("wf.confirmDelete"))) go("cancel");
+                  if (!note.trim()) {
+                    setDeleteHint(t("wf.cancelReason"));
+                    return;
+                  }
+                  setDeleteHint("");
+                  void appConfirm(t("wf.confirmDelete")).then((ok) => {
+                    if (ok) go("cancel");
+                  });
                 }}
               >
                 <Ban size={14} /> {t("wf.action.delete")}
@@ -593,6 +602,7 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
               </button>
             </div>
           ) : null}
+          {deleteHint ? <div className="wf-alert">{deleteHint}</div> : null}
           {error ? <div className="wf-alert">{error.message}</div> : null}
         </section>
       ) : null}
