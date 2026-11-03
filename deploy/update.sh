@@ -160,13 +160,23 @@ snapshot_db() {
 
 git_sync() {
   say "گرفتن آخرین نسخه از گیت‌هاب"
-  mkdir -p "$ROOT/.git/info"
+  mkdir -p "$ROOT/.git/info" "$INSTANCE/backups/sidecar-keep"
   grep -qxF 'backend/instance/' "$ROOT/.git/info/exclude" 2>/dev/null || echo 'backend/instance/' >> "$ROOT/.git/info/exclude"
-  git ls-files 'backend/instance/*' | while read -r tracked; do
-    git update-index --skip-worktree "$tracked" || true
+  # The live journal must not block the pull, and git must not write its old copy back.
+  local base
+  for base in pvc_arvand.db-wal pvc_arvand.db-shm; do
+    if [[ -f "$INSTANCE/$base" ]]; then
+      cp -a "$INSTANCE/$base" "$INSTANCE/backups/sidecar-keep/$base"
+      rm -f "$INSTANCE/$base"
+    fi
+    if git ls-files --error-unmatch "backend/instance/$base" >/dev/null 2>&1; then
+      git update-index --no-skip-worktree "backend/instance/$base" 2>/dev/null || true
+      git checkout -- "backend/instance/$base" 2>/dev/null || true
+    fi
   done
   git fetch origin
   git pull --ff-only origin main
+  rm -f "$INSTANCE/pvc_arvand.db-wal" "$INSTANCE/pvc_arvand.db-shm"
 }
 
 install_backend() {
