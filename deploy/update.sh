@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Plant server update. No Docker.
 # Stops the program, pulls GitHub main, repairs SQLite, then starts the
-# API (port 8010), the website (port 8080), and checks both plus the database.
+# API (port 8010, only on the server), the website (port 3000), and checks both plus the database.
+# Operators open http://192.168.25.20:3000/
 #
 #   bash deploy/update.sh
 set -euo pipefail
@@ -14,7 +15,7 @@ INSTANCE="$ROOT/backend/instance"
 LOG_DIR="$INSTANCE/logs"
 DB="$INSTANCE/pvc_arvand.db"
 BACK_PORT="${APP_API_PORT:-8010}"
-FRONT_PORT="${APP_PUBLISH_PORT:-8080}"
+FRONT_PORT="${APP_PUBLISH_PORT:-3000}"
 mkdir -p "$LOG_DIR" "$INSTANCE/backups"
 
 if [[ ! -d "$ROOT/.git" ]]; then
@@ -71,7 +72,7 @@ stop_app() {
   if [[ -f "$INSTANCE/frontend.pid" ]]; then pids+=("$(cat "$INSTANCE/frontend.pid")"); fi
   while read -r pid; do
     [[ -n "$pid" ]] && pids+=("$pid")
-  done < <(port_pids "$BACK_PORT"; port_pids "$FRONT_PORT"; pgrep -f "$ROOT/(backend|frontend)" || true)
+  done < <(port_pids "$BACK_PORT"; port_pids "$FRONT_PORT"; port_pids 8080; pgrep -f "$ROOT/(backend|frontend)" || true)
   local seen=" "
   if ((${#pids[@]})); then
     for pid in "${pids[@]}"; do
@@ -273,7 +274,7 @@ check_all() {
     exit 1
   }
   echo "بک‌اند سالم است: http://127.0.0.1:${BACK_PORT}/health"
-  echo "سایت سالم است: http://127.0.0.1:${FRONT_PORT}/"
+  echo "سایت سالم است: http://192.168.25.20:${FRONT_PORT}/"
   echo "پایگاه خوانده شد و درخواست ورود به آن پاسخ داد."
 }
 
