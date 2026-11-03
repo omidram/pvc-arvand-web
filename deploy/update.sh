@@ -2,7 +2,7 @@
 # Plant server update. No Docker.
 # Stops the program, pulls GitHub main, repairs SQLite, then starts the
 # API (port 8010, only on the server), the website (port 3000), and checks both plus the database.
-# Operators open http://192.168.25.20:3000/
+# Operators open http://192.168.20.25:3000/
 #
 #   bash deploy/update.sh
 set -euo pipefail
@@ -274,7 +274,7 @@ check_all() {
     exit 1
   }
   echo "بک‌اند سالم است: http://127.0.0.1:${BACK_PORT}/health"
-  echo "سایت سالم است: http://192.168.25.20:${FRONT_PORT}/"
+  echo "سایت سالم است: http://192.168.20.25:${FRONT_PORT}/"
   echo "پایگاه خوانده شد و درخواست ورود به آن پاسخ داد."
 }
 
