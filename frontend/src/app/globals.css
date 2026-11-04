@@ -8086,3 +8086,198 @@ html {
   .access-main-logos { flex-direction: column; align-items: flex-start; }
   .access-label { width: auto; }
 }
+
+/* Dark theme: modern tables were light text on a white sheet, and the Access
+   chrome stayed silver while the page text flipped to a light color. */
+html[data-theme="dark"][data-ui="modern"] .ui-table-wrap,
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-cont-table,
+html[data-theme="dark"][data-ui="modern"] .ui-table tbody tr,
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-cont-table tbody tr {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+html[data-theme="dark"][data-ui="modern"] .ui-table td,
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-cont-table td {
+  color: #e2e8f0 !important;
+  border-top-color: #334155 !important;
+  background: transparent;
+}
+html[data-theme="dark"][data-ui="modern"] .ui-table tbody tr:nth-child(even),
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-cont-table tbody tr:nth-child(even) {
+  background: #1e293b !important;
+}
+html[data-theme="dark"][data-ui="modern"] .ui-table tbody tr:hover,
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-cont-table tbody tr:hover {
+  background: #1e3a8a !important;
+  color: #f8fafc !important;
+}
+html[data-theme="dark"][data-ui="modern"] .ui-table tbody tr:hover td,
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-cont-table tbody tr:hover td {
+  color: #f8fafc !important;
+}
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-cont-table input,
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-cont-table select,
+html[data-theme="dark"][data-ui="modern"] .ui-field,
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-inset-field {
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #475569 !important;
+}
+html[data-theme="dark"][data-ui="modern"] .ui-button[data-variant="ghost"] {
+  color: #93c5fd !important;
+}
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-plant-bar > span {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-radio:hover {
+  background: #1e293b;
+}
+html[data-theme="dark"][data-ui="modern"] .modern-content .access-selector {
+  color: #93c5fd;
+}
+html[data-theme="dark"][data-ui="modern"] .modern-content .cell-sheet,
+html[data-theme="dark"][data-ui="modern"] .modern-content .cell-sheet-bar {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+html[data-theme="dark"][data-ui="modern"] .modern-content .cell-sheet .access-cont-table td {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: #334155 !important;
+}
+html[data-theme="dark"][data-ui="modern"] .modern-content .cell-sheet .access-cont-table tbody tr:nth-child(even) td {
+  background: #1e293b !important;
+}
+html[data-theme="dark"][data-ui="modern"] .modern-content .cell-sheet .access-cont-table tbody tr td.is-calc,
+html[data-theme="dark"][data-ui="modern"] .modern-content .cell-sheet .access-cont-table tbody tr:nth-child(even) td.is-calc,
+html[data-theme="dark"][data-ui="modern"] .modern-content .cell-sheet .access-cont-table tbody tr.is-active td.is-calc {
+  background: #14532d !important;
+  color: #bbf7d0 !important;
+}
+html[data-theme="dark"][data-ui="modern"] .modern-content .cell-sheet .access-cont-table tbody tr.is-active td {
+  background: #1e3a8a !important;
+  color: #dbeafe !important;
+}
+html[data-theme="dark"][data-ui="modern"] .ui-modal-body,
+html[data-theme="dark"][data-ui="modern"] .help-guide {
+  background: #0f172a;
+  color: #f8fafc;
+}
+html[data-theme="dark"][data-ui="modern"] .help-guide h4 {
+  color: #93c5fd;
+  border-color: #334155;
+}
+
+html[data-theme="dark"]:not([data-ui="modern"]) .access-eap,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-hub,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-import-dialog {
+  background: var(--win-face);
+  color: var(--win-text);
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .access-header-sunken,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-hub-title,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-period-bar,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-plant-bar > span,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-group,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-group legend,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-col,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-sunken,
+html[data-theme="dark"]:not([data-ui="modern"]) .stats-access-panel,
+html[data-theme="dark"]:not([data-ui="modern"]) .stats-hier-table,
+html[data-theme="dark"]:not([data-ui="modern"]) .stats-hier-table thead th {
+  background: var(--win-face);
+  color: var(--win-text);
+  border-color: var(--win-border-light) var(--win-border-shadow) var(--win-border-dark) var(--win-border-light);
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .access-hub-title.is-blue,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-link,
+html[data-theme="dark"]:not([data-ui="modern"]) .cell-sheet-bar label span {
+  color: #9ec1f5;
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .access-menu-btn {
+  background: linear-gradient(180deg, var(--win-face-hi) 0%, var(--win-face) 100%);
+  color: var(--win-text);
+  border-color: var(--win-border-light) var(--win-border-shadow) var(--win-border-dark) var(--win-border-light);
+  box-shadow: 1px 1px 0 #000;
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .access-menu-btn:hover:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--win-navy);
+  color: #fff;
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .access-menu-btn:disabled,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-menu-btn[aria-disabled="true"] {
+  background: var(--win-face-dark);
+  color: var(--win-muted);
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .access-field-box,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-inset-field,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-cont-table input,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-cont-table select,
+html[data-theme="dark"]:not([data-ui="modern"]) .stats-hier-table tbody td {
+  background: var(--win-input);
+  color: var(--win-text);
+  border-color: var(--win-border-shadow);
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .access-cont-table td {
+  border-top-color: var(--win-border-shadow);
+  color: var(--win-text);
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .stats-hier-table tfoot td,
+html[data-theme="dark"]:not([data-ui="modern"]) .shutdown-list-scroll,
+html[data-theme="dark"]:not([data-ui="modern"]) .shutdown-summary-chip,
+html[data-theme="dark"]:not([data-ui="modern"]) .shutdown-plant-bar > span {
+  background: var(--win-panel);
+  color: var(--win-text);
+  border-color: var(--win-border-shadow);
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .shutdown-list-table tbody tr.is-active-row td,
+html[data-theme="dark"]:not([data-ui="modern"]) .cell-sheet .access-cont-table tbody tr.is-active td {
+  background: #1e3a5f;
+  color: #e8f1ff;
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .cell-sheet,
+html[data-theme="dark"]:not([data-ui="modern"]) .cell-sheet .access-cont-table td,
+html[data-theme="dark"]:not([data-ui="modern"]) .cell-sheet-bar {
+  background: var(--win-input);
+  color: var(--win-text);
+  border-color: var(--win-border-shadow);
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .cell-sheet .access-cont-table tbody tr:nth-child(even) td {
+  background: var(--win-panel);
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .cell-sheet .access-cont-table tbody tr td.is-calc,
+html[data-theme="dark"]:not([data-ui="modern"]) .cell-sheet .access-cont-table tbody tr:nth-child(even) td.is-calc {
+  background: #14532d;
+  color: #bbf7d0;
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .access-import-note,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-import-progress-label,
+html[data-theme="dark"]:not([data-ui="modern"]) .access-selector {
+  color: var(--win-text);
+}
+html[data-theme="dark"]:not([data-ui="modern"]) .text-black {
+  color: var(--win-text) !important;
+}
+
+html[data-theme="dark"] .bg-white {
+  background-color: var(--win-input) !important;
+  color: var(--win-text);
+}
+html[data-theme="dark"] .text-black {
+  color: var(--win-text) !important;
+}
+html[data-theme="dark"] :is(.bg-\[\#ffff00\], .bg-\[\#fff59d\], .bg-neutral-200) {
+  color: #1c1917 !important;
+}
+html[data-theme="dark"] .recharts-cartesian-axis-tick text,
+html[data-theme="dark"] .recharts-legend-item-text,
+html[data-theme="dark"] .recharts-label {
+  fill: #e2e8f0;
+  color: #e2e8f0;
+}
+html[data-theme="dark"] .recharts-cartesian-grid line {
+  stroke: #334155;
+}
