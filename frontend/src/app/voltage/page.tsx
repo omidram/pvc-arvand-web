@@ -17,6 +17,7 @@ import {
 import { useCrudResource } from "@/lib/use-resource";
 import type { ElectrolyzerNormalization, VoltageReading, CurrentEfficiencyEntry } from "@/lib/types";
 import { AccessFormWindow } from "@/components/layout/access-form";
+import { HelpButton } from "@/components/ui/help-button";
 import { AccessBtn, AccessPeriod } from "@/components/layout/access-hub";
 import {
   ReportColumn,
@@ -1069,7 +1070,10 @@ function StandardizedVoltageBoard() {
     <div className="access-hub" dir="ltr">
       <div className="access-hub-head">
         <div className="access-hub-title is-blue">{t("mainMenu.standardizedVoltage")}</div>
-        <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
+        <div className="flex flex-wrap items-center gap-2">
+          <HelpButton helpKey="voltage" />
+          <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
+        </div>
       </div>
 
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">

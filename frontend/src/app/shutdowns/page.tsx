@@ -117,7 +117,7 @@ function PlantBar() {
 function ShutdownMenu() {
   const { t } = useI18n();
   return (
-    <AccessHub title={t("mainMenu.shutDown")} titleBlue>
+    <AccessHub helpKey="shutdowns" title={t("mainMenu.shutDown")} titleBlue>
       <ShutdownTripBoard />
       <div className="flex flex-wrap items-start gap-8 pt-4">
         <div>
@@ -391,7 +391,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   }
 
   return (
-    <AccessHub
+    <AccessHub helpKey="shutdowns"
       title={showPeriodFilter ? t("shutdowns.periodTitle") : t("menus.shutdownList")}
       titleBlue
       backHref="/shutdowns"
@@ -1039,7 +1039,7 @@ function CausesTable() {
 function ReasonsForm() {
   const { t } = useI18n();
   return (
-    <AccessHub
+    <AccessHub helpKey="shutdowns"
       title={t("shutdowns.reasonsTitle")}
       titleBlue
       backHref="/shutdowns"
@@ -1054,7 +1054,7 @@ function ReasonsForm() {
 function TripCausesForm() {
   const { t } = useI18n();
   return (
-    <AccessHub
+    <AccessHub helpKey="shutdowns"
       title={t("menus.tripCause")}
       titleBlue
       backHref="/shutdowns"
@@ -1115,7 +1115,7 @@ function CategoriesForm() {
   }
 
   return (
-    <AccessHub
+    <AccessHub helpKey="shutdowns"
       title={t("menus.shutdownCategories")}
       titleBlue
       backHref="/shutdowns"
@@ -1181,7 +1181,7 @@ function CategoriesForm() {
 function SummaryForm({ groupBy, title }: { groupBy: ShutdownGroupBy; title: string }) {
   const { t } = useI18n();
   return (
-    <AccessHub title={title} titleBlue backHref="/shutdowns" backLabel={t("mainMenu.shutDown")}>
+    <AccessHub helpKey="shutdowns" title={title} titleBlue backHref="/shutdowns" backLabel={t("mainMenu.shutDown")}>
       <PlantBar />
       <ShutdownAnalysis initialGroupBy={groupBy} />
     </AccessHub>

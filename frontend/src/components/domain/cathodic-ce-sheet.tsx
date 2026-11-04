@@ -219,7 +219,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
       : [];
 
   return (
-    <AccessHub title={`${t("cathodicCe.title")} ${train}`} backHref="/current-efficiency">
+    <AccessHub title={`${t("cathodicCe.title")} ${train}`} helpKey="cathodicCe" backHref="/current-efficiency">
     <div className="ce-sheet">
       <div className="mb-3 flex flex-wrap items-end gap-2">
         <label className="text-[12px] font-bold">

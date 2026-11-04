@@ -2,6 +2,7 @@
 // "fields.*" holds shared field/column labels reused across many pages so that most
 // forms and tables get translated coverage without duplicating strings everywhere.
 
+import { helpEn, helpFa } from "./help-guides";
 import { deepMerge, extraEn, extraFa, type Tree } from "./translations-extra";
 
 const en = {
@@ -6131,7 +6132,7 @@ const fa: DeepPartialStrings<typeof en> = {
 };
 
 export const translations = {
-  en: deepMerge(en as unknown as Tree, extraEn),
-  fa: deepMerge(fa as unknown as Tree, extraFa),
+  en: deepMerge(deepMerge(en as unknown as Tree, extraEn), { help: helpEn }),
+  fa: deepMerge(deepMerge(fa as unknown as Tree, extraFa), { help: helpFa }),
 } as const;
 export type Locale = keyof typeof translations;

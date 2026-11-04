@@ -66,6 +66,7 @@ export default function TestRunResultsPage() {
 
   return (
     <AccessHub
+      helpKey="testRunResults"
       title={t("menus.performanceTests")}
       titleBlue
       extraButtons={<ExportButtons prefix="/performance-tests" filenameBase="performance-tests" />}

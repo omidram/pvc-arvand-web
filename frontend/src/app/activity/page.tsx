@@ -1144,6 +1144,7 @@ export default function ActivityPage() {
   return (
     <AccessFormWindow
       caption={t("activity.title")}
+      helpKey="activity"
       commands={
         <Button type="button" variant="secondary" onClick={() => queryClient.invalidateQueries({ queryKey: ["activity"] })}>
           <RefreshCw size={14} /> {t("common.refresh")}

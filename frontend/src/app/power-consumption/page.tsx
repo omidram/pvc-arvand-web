@@ -112,7 +112,7 @@ export default function PowerConsumptionPage() {
   }
 
   return (
-    <AccessHub title={t("mainMenu.powerConsumption")}>
+    <AccessHub title={t("mainMenu.powerConsumption")} helpKey="powerConsumption">
       <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
 
       <div className="pc-access-grid">

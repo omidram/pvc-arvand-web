@@ -35,7 +35,7 @@ export function HelpButton({ helpKey }: { helpKey: string }) {
 
   const title = t(`help.${helpKey}.title`);
   const body = t(`help.${helpKey}.body`);
-  const lines = body.split("\n").filter(Boolean);
+  const lines = body.split("\n");
 
   return (
     <>
@@ -48,12 +48,21 @@ export function HelpButton({ helpKey }: { helpKey: string }) {
       >
         <HelpCircle size={15} />
       </button>
-      <Modal open={open} onClose={() => setOpen(false)} title={`${t("common.help")} — ${title}`}>
-        <ul className="list-disc space-y-2 ps-5 text-sm leading-relaxed text-[var(--win-text)]">
-          {lines.map((line, i) => (
-            <li key={i}>{line}</li>
-          ))}
-        </ul>
+      <Modal open={open} onClose={() => setOpen(false)} title={`${t("common.help")} — ${title}`} wide>
+        <article className="help-guide space-y-1 text-[15px] leading-7 text-[var(--win-text)]" dir="auto">
+          {lines.map((line, i) => {
+            const text = line.trimEnd();
+            if (!text.trim()) return <div key={i} className="h-2" />;
+            if (text.startsWith("# ")) {
+              return (
+                <h4 key={i} className="mt-4 border-b border-[var(--win-border)] pb-1 text-base font-bold text-[var(--win-navy)] first:mt-0">
+                  {text.slice(2)}
+                </h4>
+              );
+            }
+            return <p key={i}>{text}</p>;
+          })}
+        </article>
       </Modal>
     </>
   );

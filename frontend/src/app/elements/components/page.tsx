@@ -78,6 +78,7 @@ export default function CellComponentsPage() {
 
   return (
     <AccessHub
+      helpKey="cellComponents"
       title={t("cellComponents.title")}
       backHref="/elements"
       backLabel={t("elements.title")}

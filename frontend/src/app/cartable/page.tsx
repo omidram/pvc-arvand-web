@@ -24,7 +24,7 @@ export default function CartablePage() {
   }
 
   return (
-    <AccessFormWindow caption={t("wf.cartableTitle")} helpKey="storage">
+    <AccessFormWindow caption={t("wf.cartableTitle")} helpKey="cartable">
       <Suspense fallback={<LoadingState />}>
         <WarehouseLifecycleHub page="cartable" />
       </Suspense>

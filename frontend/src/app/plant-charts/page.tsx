@@ -209,7 +209,7 @@ export default function PlantChartsPage() {
   );
 
   return (
-    <AccessHub title={t("mainMenu.plantCharts")}>
+    <AccessHub title={t("mainMenu.plantCharts")} helpKey="plantCharts">
       <p className="mb-3 text-[11px] text-[var(--win-muted)]">{t("plantCharts.hint")}</p>
 
       <div className="mb-3 flex flex-wrap items-center gap-1">

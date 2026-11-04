@@ -8,6 +8,7 @@ import { analysesApi, type ImportProgress } from "@/lib/endpoints";
 import { ImportProgressBar } from "@/components/domain/import-progress";
 import { AnalysisEntry } from "@/components/domain/analysis-entry";
 import { AccessBtn } from "@/components/layout/access-hub";
+import { HelpButton } from "@/components/ui/help-button";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 
@@ -102,6 +103,7 @@ function AnalysisMenu() {
       <div className="access-hub-head">
         <div className="access-hub-title">{t("analyses.title")}</div>
         <div className="flex flex-wrap items-start gap-2">
+          <HelpButton helpKey="analyses" />
           <AccessBtn className="!w-auto px-3" href="/current-efficiency">
             {t("mainMenu.currentEfficiency")}
           </AccessBtn>

@@ -60,7 +60,7 @@ export default function AssemblyStockPage() {
   ];
 
   return (
-    <AccessHub title={t("assemblyStock.title")} backHref="/elements" backLabel={t("elements.title")}>
+    <AccessHub title={t("assemblyStock.title")} helpKey="assemblyStock" backHref="/elements" backLabel={t("elements.title")}>
       <p className="mb-3 text-sm text-[var(--win-muted)]">{t("assemblyStock.hint")}</p>
       {query.isLoading ? <LoadingState /> : null}
       {query.isError ? <ErrorState message={(query.error as Error).message} /> : null}

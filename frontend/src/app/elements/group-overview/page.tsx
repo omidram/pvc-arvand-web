@@ -14,7 +14,7 @@ function GroupOverviewPage() {
   const group = useSearchParams().get("group") || "";
   if (!canView("elements")) return null;
   return (
-    <AccessFormWindow caption={t("groups.overview")} helpKey="elements" backHref="/elements" backLabel={t("elements.title")}>
+    <AccessFormWindow caption={t("groups.overview")} helpKey="groupOverview" backHref="/elements" backLabel={t("elements.title")}>
       <GroupOverviewPanel initialGroup={group} />
     </AccessFormWindow>
   );

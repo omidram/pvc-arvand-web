@@ -218,7 +218,7 @@ export function MaintenanceReportPanel({ kind }: { kind: MaintenanceReportKind }
   const data = historyQuery.data;
 
   return (
-    <AccessHub title={t(TITLE_KEY[kind])} titleBlue backHref="/elements" backLabel={t("elements.title")}>
+    <AccessHub title={t(TITLE_KEY[kind])} helpKey="maintenanceReports" titleBlue backHref="/elements" backLabel={t("elements.title")}>
       <p className="mb-3 text-xs text-[var(--win-muted)]">{t("maintenanceReports.hint")}</p>
       <div className="mb-3 max-w-sm">
         <Label>{t("maintenanceReports.number")}</Label>

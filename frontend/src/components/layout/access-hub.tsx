@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { HelpButton } from "@/components/ui/help-button";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { DateInput } from "@/components/ui/date-input";
@@ -12,6 +13,7 @@ export function AccessHub({
   titleBlue,
   backHref = "/",
   backLabel,
+  helpKey,
   extraButtons,
   children,
 }: {
@@ -19,6 +21,7 @@ export function AccessHub({
   titleBlue?: boolean;
   backHref?: string;
   backLabel?: string;
+  helpKey?: string;
   extraButtons?: ReactNode;
   children: ReactNode;
 }) {
@@ -40,6 +43,7 @@ export function AccessHub({
       <div className="access-hub-head">
         <div className={`access-hub-title ${titleBlue ? "is-blue" : ""}`}>{title}</div>
         <div className="flex flex-wrap items-start gap-2">
+          {helpKey ? <HelpButton helpKey={helpKey} /> : null}
           {extraButtons}
           <Link href={backHref} className="access-menu-btn access-hub-menu-btn">
             {menuLabel}

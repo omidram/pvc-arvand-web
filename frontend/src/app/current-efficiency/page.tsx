@@ -93,7 +93,7 @@ function CeBoard() {
   );
 
   return (
-    <AccessHub title={t("mainMenu.currentEfficiency")}>
+    <AccessHub title={t("mainMenu.currentEfficiency")} helpKey="currentEfficiency">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div className="access-sunken px-3 py-2">
           <div className="text-[12px] font-bold">{t("menus.dataInput")}</div>

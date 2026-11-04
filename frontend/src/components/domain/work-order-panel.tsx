@@ -23,6 +23,7 @@ import {
 } from "@/lib/endpoints";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
+import { HelpButton } from "@/components/ui/help-button";
 import { refreshWarehouseData } from "@/lib/workflow";
 import { ActualRows, JobRows, deriveJobs, emptyActual, emptyJob } from "./work-order-labor";
 
@@ -472,6 +473,7 @@ export function WorkOrderPanel() {
           <h2>{t("wo.title")}</h2>
           <p>{t("wo.subtitle")}</p>
         </div>
+        <HelpButton helpKey="workOrders" />
         {canWrite ? (
           <Button
             type="button"

@@ -7,6 +7,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDateTime } from "@/lib/utils";
+import { HelpButton } from "@/components/ui/help-button";
 import { workflowApi, workflowHref, type ProcessLogRow, type WfFlow } from "@/lib/workflow";
 
 const FLOWS: WfFlow[] = ["coating", "purchase", "cell", "inspection", "assemble", "workorder"];
@@ -43,6 +44,7 @@ export function ProcessHistoryPanel() {
           <h2>{t("wf.plog.title")}</h2>
           <p>{t("wf.plog.hint")}</p>
         </div>
+        <HelpButton helpKey="processHistory" />
       </header>
       <div className="wo-toolbar">
         <Input value={q} placeholder={t("wf.plog.search")} onChange={(event) => setQ(event.target.value)} />

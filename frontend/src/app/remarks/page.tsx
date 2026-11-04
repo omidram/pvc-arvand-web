@@ -36,6 +36,7 @@ export default function RemarksPage() {
 
   return (
     <AccessHub
+      helpKey="remarks"
       title={t("remarks.title")}
       titleBlue
       extraButtons={<ExportButtons prefix="/remarks" filenameBase="remarks" />}

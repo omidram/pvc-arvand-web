@@ -86,7 +86,7 @@ export default function UnCePage() {
     setShown({ scope, calc, el: elSel, unTable, ceBasis });
 
   return (
-    <AccessHub title={t("mainMenu.unCe")} titleBlue>
+    <AccessHub title={t("mainMenu.unCe")} titleBlue helpKey="unCe">
       <AccessPeriod from={from} till={till} onFrom={setFrom} onTill={setTill} />
       <UnCeSettingsPanel />
       {/* Single stacked column - matches the real Access "Un / CE" form: an Electrolyzer picker + Graph

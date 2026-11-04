@@ -187,7 +187,7 @@ export default function SearchPage() {
   }
 
   return (
-    <AccessHub title={t("search.title")}>
+    <AccessHub title={t("search.title")} helpKey="search">
       <GlobalSearchPanel />
 
       <div className="search-menu grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-7">

@@ -11,6 +11,7 @@ import { ElementReportPanel } from "@/components/domain/element-report-panel";
 import { useI18n } from "@/lib/i18n/context";
 import { useCalendar } from "@/lib/calendar/context";
 import { APP_VERSION } from "@/lib/app-version";
+import { HelpButton } from "@/components/ui/help-button";
 
 function MenuButton({
   href,
@@ -69,8 +70,9 @@ export function MainMenu() {
         <section className="flex min-w-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-1">
           <div className="access-header-sunken mb-3 px-4 pb-3 pt-2">
             <div className="mb-2 flex items-center justify-between gap-4">
-              <h1 className="min-w-0 flex-1 text-start text-[20px] font-bold leading-tight text-black">
+              <h1 className="flex min-w-0 flex-1 items-center gap-2 text-start text-[20px] font-bold leading-tight text-black">
                 {t("mainMenu.programTitle")}
+                <HelpButton helpKey="dashboard" />
               </h1>
               <div className="access-main-logos" aria-label="Brand logos">
                 {/* eslint-disable-next-line @next/next/no-img-element */}

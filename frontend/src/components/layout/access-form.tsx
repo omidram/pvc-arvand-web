@@ -36,12 +36,8 @@ export function AccessFormWindow({
         titleBlue={titleBlue}
         backHref={backHref}
         backLabel={backLabel}
-        extraButtons={
-          <>
-            {helpKey ? <HelpButton helpKey={helpKey} /> : null}
-            {commands}
-          </>
-        }
+        helpKey={helpKey}
+        extraButtons={commands}
       >
         {nav ? <div className="access-form-nav access-form-nav-top">{nav}</div> : null}
         {children}

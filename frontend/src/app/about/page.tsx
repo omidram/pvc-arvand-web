@@ -22,7 +22,7 @@ export default function AboutPage() {
   const trustPoints = ["auth", "rbac", "localData", "noExternalAi", "auditability"] as const;
 
   return (
-    <AccessFormWindow caption={t("about.title")}>
+    <AccessFormWindow caption={t("about.title")} helpKey="about">
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-1">

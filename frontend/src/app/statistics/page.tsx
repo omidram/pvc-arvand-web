@@ -64,7 +64,7 @@ function StatisticsMenu() {
   }, [names, elNr]);
 
   return (
-    <AccessHub title={t("statistics.title")}>
+    <AccessHub helpKey="statistics" title={t("statistics.title")}>
       <div className="stats-access-grid">
         <div className="stats-access-panel">
           <h3>{t("menus.singleElementVoltages")}</h3>
@@ -115,7 +115,7 @@ function MembraneDolForm() {
   const rows = dolQuery.data || [];
 
   return (
-    <AccessHub
+    <AccessHub helpKey="statistics"
       title={t("menus.membraneStatistics")}
       titleBlue
       backHref="/statistics"
@@ -215,7 +215,7 @@ function AveragePowerForm() {
   const plant = powerQuery.data?.plant_total;
 
   return (
-    <AccessHub
+    <AccessHub helpKey="statistics"
       title={t("statistics.averagePowerTitle")}
       titleBlue
       backHref="/statistics"
@@ -349,7 +349,7 @@ function GroupsForm() {
   const rows = query.data?.rows || [];
 
   return (
-    <AccessHub title={title} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
+    <AccessHub helpKey="statistics" title={title} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-[#808080] bg-[#d4d0c8] px-3 py-2 text-[12px]">
         <label className="inline-flex items-center gap-2 font-bold">
           <span>{t("fields.date")}</span>
@@ -491,7 +491,7 @@ function UnDistributionForm() {
   }
 
   return (
-    <AccessHub title={t("menus.distributionUn")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
+    <AccessHub helpKey="statistics" title={t("menus.distributionUn")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
       {/* Access frmStatistikVerteilungUN filter strip */}
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-[#808080] bg-[#d4d0c8] px-3 py-2 text-[12px]">
         <label className="inline-flex items-center gap-2 font-bold">
@@ -677,7 +677,7 @@ function HighVoltagesForm() {
   const data = highQuery.data;
 
   return (
-    <AccessHub title={t("menus.highVoltages")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
+    <AccessHub helpKey="statistics" title={t("menus.highVoltages")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
       {/* Access frmStatistikAbweichungUn filter strip */}
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-[#808080] bg-[#d4d0c8] px-3 py-2 text-[12px]">
         <label className="inline-flex items-center gap-2 font-bold">
@@ -842,7 +842,7 @@ function VoltageForms({ form }: { form: string }) {
   }, [elementRows]);
 
   return (
-    <AccessHub title={t("menus.elementVoltages")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
+    <AccessHub helpKey="statistics" title={t("menus.elementVoltages")} titleBlue backHref="/statistics" backLabel={t("statistics.title")}>
       <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 border border-[#808080] bg-[#d4d0c8] px-3 py-2 text-[12px]">
         <label className="inline-flex items-center gap-2 font-bold">
           <span>{t("menus.electrolyzer")}</span>
@@ -951,7 +951,7 @@ function StatisticsDetails() {
   if (form === "high") return <HighVoltagesForm />;
   if (form === "voltages") return <VoltageForms form={form} />;
   return (
-    <AccessFormWindow caption="Statistics" backHref="/statistics">
+    <AccessFormWindow caption="Statistics" helpKey="statistics" backHref="/statistics">
       <StatisticsMenu />
     </AccessFormWindow>
   );

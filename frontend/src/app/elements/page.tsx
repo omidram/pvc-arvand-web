@@ -11,7 +11,7 @@ export default function ElementAdministrationMenu() {
   if (!ok) return null;
 
   return (
-    <AccessHub title={t("elements.title")}>
+    <AccessHub title={t("elements.title")} helpKey="elementsMenu">
       {/*
         Exact replica of the real Access frmZellenverwaltung (Element Administration)
         menu: 5 content columns + 1 reserved column on the right (used only by the
