@@ -290,8 +290,15 @@ check_all() {
 
 if [[ "$PHASE" != "--run" ]]; then
   exec 9>"$INSTANCE/update.lock"
-  if command -v flock >/dev/null 2>&1; then
-    flock -n 9 || { echo "یک آپدیت دیگر در حال اجراست." >&2; exit 1; }
+  if command -v flock >/dev/null 2>&1 && ! flock -n 9; then
+    # The previous update left this lock open inside the running server.
+    # Stopping the app closes that handle. A real second update.sh still owns it.
+    echo "قفل آپدیت از اجرای قبلی مانده. برنامه متوقف می‌شود و آپدیت ادامه پیدا می‌کند."
+    stop_app
+    if ! flock -n 9; then
+      echo "یک آپدیت دیگر در حال اجراست. صبر کنید تا تمام شود، بعد دوباره bash deploy/update.sh را بزنید." >&2
+      exit 1
+    fi
   fi
   stop_app
   if ! repair_db; then
@@ -303,6 +310,14 @@ if [[ "$PHASE" != "--run" ]]; then
     echo "گیت به‌روز نشد. همان نسخه قبلی دوباره اجرا می‌شود." >&2
   fi
   exec bash "$ROOT/deploy/update.sh" --run
+fi
+
+# The lock must stay with this script only. Backend and frontend used to inherit
+# it, so every later update thought another update was still running.
+if { true >&9; } 2>/dev/null; then
+  py="$(python_bin)"
+  [[ -n "$py" ]] || py="python3"
+  "$py" -c 'import fcntl; fcntl.fcntl(9, fcntl.F_SETFD, fcntl.FD_CLOEXEC)' 2>/dev/null || true
 fi
 
 install_backend
