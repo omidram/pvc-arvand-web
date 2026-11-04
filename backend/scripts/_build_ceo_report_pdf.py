@@ -1,6 +1,6 @@
 """Professional Persian CEO work-report PDF — phase-centric, Shamsi dates, fixed BiDi.
 
-Target length: ~15 A4 pages. Lead credit: Omid Ramshini / Vefaq Sharif.
+Target length: ~15 A4 pages. Lead credit: Omid Ramshini / Imen Sazan Aseman Omid (I.S.A.O).
 """
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ WHITE = colors.white
 
 LEAD_NAME = "امید رامشینی"
 LEAD_NAME_EN = "Omid Ramshini"
-VENDOR = "شرکت وفاق شریف"
+VENDOR = "شرکت ایمن‌سازان آسمان امید (I.S.A.O)"
 SUPPORT_PHONE = "09398637969"
 
 _LATIN = re.compile(

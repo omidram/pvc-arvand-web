@@ -1784,7 +1784,7 @@ const en = {
   auth: {
     loginTitle: "Sign in",
     loginCreditIt: "Arvand Petrochemical IT",
-    loginCreditVendor: "Vefaq Sharif Co.",
+    loginCreditVendor: "Imen Sazan Aseman Omid Co. (I.S.A.O)",
     loginCreditLead: "Lead Designer & Developer: Omid Ramshini",
     loginCreditSupport: "Technical Support: 09398637969",
     loginCopyright: "© All rights reserved",
@@ -2538,9 +2538,9 @@ const en = {
     version: "Version {version}",
     company: "Arvand Petrochemical Company",
     developerTitle: "Developed by",
-    developerCompany: "Vefaq Sharif Co.",
+    developerCompany: "Imen Sazan Aseman Omid Co. (I.S.A.O)",
     developerBlurb:
-      "Vefaq Sharif designs and builds industrial software for process plants — from legacy Access migration to modern web systems for electrolyzer and element administration.",
+      "Imen Sazan Aseman Omid (I.S.A.O) designs and builds industrial software for process plants — from legacy Access migration to modern web systems for electrolyzer and element administration.",
     leadRole: "Lead Designer & Lead Developer",
     leadName: "Omid Ramshini",
     supportRole: "Technical Support",
@@ -4847,7 +4847,7 @@ const fa: DeepPartialStrings<typeof en> = {
   auth: {
     loginTitle: "ورود به سیستم",
     loginCreditIt: "فناوری و اطلاعات پتروشیمی اروند",
-    loginCreditVendor: "شرکت وفاق شریف",
+    loginCreditVendor: "شرکت ایمن‌سازان آسمان امید (I.S.A.O)",
     loginCreditLead: "طراح و توسعه‌دهنده اصلی: امید رامشینی",
     loginCreditSupport: "پشتیبانی فنی: ۰۹۳۹۸۶۳۷۹۶۹",
     loginCopyright: "© تمام حقوق محفوظ است",
@@ -5601,9 +5601,9 @@ const fa: DeepPartialStrings<typeof en> = {
     version: "نسخه {version}",
     company: "شرکت پتروشیمی اروند",
     developerTitle: "توسعه‌یافته توسط",
-    developerCompany: "شرکت وفاق شریف",
+    developerCompany: "شرکت ایمن‌سازان آسمان امید (I.S.A.O)",
     developerBlurb:
-      "شرکت وفاق شریف طراح و سازنده نرم‌افزارهای صنعتی برای واحدهای فرآیندی است — از مهاجرت پایگاه‌های Access قدیمی تا سامانه‌های وب مدرن برای مدیریت الکترولایزر و المان.",
+      "شرکت ایمن‌سازان آسمان امید (I.S.A.O) طراح و سازنده نرم‌افزارهای صنعتی برای واحدهای فرآیندی است — از مهاجرت پایگاه‌های Access قدیمی تا سامانه‌های وب مدرن برای مدیریت الکترولایزر و المان.",
     leadRole: "طراح اصلی و توسعه‌دهنده اصلی",
     leadName: "امید رامشینی",
     supportRole: "پشتیبانی فنی",

@@ -628,7 +628,7 @@ Voltage viewers can open the overview. Editing rules needs the matching edit acc
   about: guide(
     "About",
     `# The card
-Program name, the plant, and the version. The version must match what the administrator last installed. If the menu shows an older version than you were told, the server has not been updated.
+Program name, the plant, and the version. The version must match what the administrator last installed. If the menu shows an older version than you were told, the server has not been updated. The developer named on this page is Imen Sazan Aseman Omid (I.S.A.O).
 # Trust
 Sign-in is required. Each person sees only the menus of their role. The database stays on the plant server. The program does not send your rows to an outside service. Saves are written to the audit log.
 # The documents
@@ -1292,7 +1292,7 @@ DOL روزهای در سرویس به تفکیک نوع ممبران است: ه�
   about: guide(
     "درباره",
     `# کارت
-نام برنامه، واحد، و نسخه. نسخه باید با چیزی که مدیر آخرین بار نصب کرده یکی باشد. اگر منو نسخهٔ قدیمی‌تر از چیزی نشان می‌دهد که به شما گفته‌اند، سرور هنوز به‌روز نشده.
+نام برنامه، واحد، و نسخه. نسخه باید با چیزی که مدیر آخرین بار نصب کرده یکی باشد. اگر منو نسخهٔ قدیمی‌تر از چیزی نشان می‌دهد که به شما گفته‌اند، سرور هنوز به‌روز نشده. نام شرکت سازنده روی این صفحه شرکت ایمن‌سازان آسمان امید (I.S.A.O) است.
 # اعتماد
 ورود لازم است. هر کس فقط منوهای نقش خودش را می‌بیند. پایگاه داده روی سرور واحد می‌ماند. برنامه ردیف‌های شما را به سرویس بیرون نمی‌فرستد. ذخیره‌ها در گزارش ممیزی نوشته می‌شود.
 # سندها

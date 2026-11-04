@@ -595,7 +595,7 @@ const en = {
   auth: {
     loginTitle: "Sign in",
     loginCreditIt: "Arvand Petrochemical IT",
-    loginCreditVendor: "Vefaq Sharif Co.",
+    loginCreditVendor: "Imen Sazan Aseman Omid Co. (I.S.A.O)",
     loginCopyright: "© All rights reserved",
     username: "Username",
     password: "Password",
@@ -1691,7 +1691,7 @@ const fa: DeepPartialStrings<typeof en> = {
   auth: {
     loginTitle: "ورود به سیستم",
     loginCreditIt: "فناوری و اطلاعات پتروشیمی اروند",
-    loginCreditVendor: "شرکت وفاق شریف",
+    loginCreditVendor: "شرکت ایمن‌سازان آسمان امید (I.S.A.O)",
     loginCopyright: "© تمام حقوق محفوظ است",
     username: "نام کاربری",
     password: "رمز عبور",
