@@ -288,17 +288,6 @@ check_all() {
   echo "پایگاه خوانده شد و درخواست ورود به آن پاسخ داد."
 }
 
-load_shutdowns() {
-  local seed="$ROOT/docs/plant-data/pvc_arvand_plant_seed.db" py
-  [[ -f "$seed" && -f "$DB" ]] || return 0
-  py="$(python_bin)"
-  [[ -n "$py" ]] || return 0
-  say "به‌روزرسانی جدول‌های خاموشی"
-  if ! "$py" "$ROOT/deploy/apply_shutdown_tables.py" "$DB" "$seed"; then
-    echo "جدول خاموشی جایگزین نشد. برنامه با داده فعلی بالا می‌آید." >&2
-  fi
-}
-
 if [[ "$PHASE" != "--run" ]]; then
   exec 9>"$INSTANCE/update.lock"
   if command -v flock >/dev/null 2>&1; then
@@ -317,7 +306,6 @@ if [[ "$PHASE" != "--run" ]]; then
 fi
 
 install_backend
-load_shutdowns
 if ! build_frontend; then
   echo "ساخت فرانت‌اند ناموفق بود." >&2
   if [[ ! -d "$ROOT/frontend/.next" ]]; then
