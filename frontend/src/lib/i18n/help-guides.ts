@@ -314,10 +314,11 @@ Mark it completed when the work is done, or cancel it with a reason if it should
     "Plant shut down",
     `# The menu
 The top of the menu shows the trips of the current month and the three causes that repeated most. Click a month in the year strip to see why that month stopped.
-Input (left): Shutdown list, Reasons, Categories, Trip causes.
-Results (right): a time period, then totals by reason and by category.
+Input (left): Shutdown list, Shutdown Type, Categories, Trip causes.
+Results (right): a time period, then totals by reason and by category. The time period shows the same columns as the list, including Shutdown Type.
 # Shutdown list — one row
-Part of plant (electrolyzer or the whole plant), shutdown time, start-up time, code, reason, category, kA before the trip, remarks.
+Part of plant (electrolyzer or the whole plant), shutdown time, start-up time, Shutdown Type, code, reason, category, kA before the trip, remarks.
+Shutdown Type is Trip, Planned, Emergency, Process, or a name you added on the Shutdown Type page.
 Duration is calculated from the two times. You do not type it. If start-up is earlier than shutdown, duration stays zero until you fix the clock.
 Chlorine lost and caustic lost are calculated from kA × duration. They are read-only.
 A mark on the row means shutdown and start-up fall in calendar months that are one month apart, so the hours cross a month boundary.
@@ -327,7 +328,9 @@ New row. Pick the part of plant. Set both times. Pick a code; the reason and the
 Change the cell and leave it, or press Save on that row. Export downloads the filtered list.
 # Period
 The period form asks for a from-date and a to-date and shows only trips inside that window. The plain list opens on all months.
-# Reasons and trip causes
+# Shutdown Type
+This list is how the stop is classified. It starts with Trip, Planned, Emergency and Process. Type a new name on the blank row and press Save to add one. Change a name and press Save to rename it; trips that already use that name are renamed with it. Delete removes a name you no longer want. The column on the shutdown list and on Time Period uses this list.
+# Trip causes
 These are the lookup rows behind the code dropdown. Code, the text of the cause, and the category.
 To fix a bad row: change the text and press Save.
 To remove an empty row: press Delete and confirm. If you clear both the code and the cause and press Save, that is the same as delete. Leaving the page no longer brings a deleted row back.
@@ -978,10 +981,11 @@ Un / CE ولتاژ استاندارد و راندمان همان روز را ر�
     "خاموشی واحد",
     `# منو
 بالای منو تریپ‌های ماه جاری و سه علتی را نشان می‌دهد که بیشتر تکرار شده‌اند. در نوار سال روی یک ماه بزنید تا ببینید آن ماه چرا خوابیده.
-ورود اطلاعات (چپ): فهرست خاموشی، علت‌ها، دسته‌ها، علت تریپ.
-نتایج (راست): یک بازهٔ زمانی، بعد جمع بر اساس علت و بر اساس دسته.
+ورود اطلاعات (چپ): فهرست خاموشی، نوع خاموشی، دسته‌ها، علت تریپ.
+نتایج (راست): یک بازهٔ زمانی، بعد جمع بر اساس علت و بر اساس دسته. بازهٔ زمانی همان ستون‌های فهرست را دارد، از جمله نوع خاموشی.
 # فهرست خاموشی — یک ردیف
-بخش واحد (یک الکترولایزر یا کل واحد)، ساعت خاموشی، ساعت راه‌اندازی، کد، علت، دسته، کیلوآمپر قبل از تریپ، توضیحات.
+بخش واحد (یک الکترولایزر یا کل واحد)، ساعت خاموشی، ساعت راه‌اندازی، نوع خاموشی، کد، علت، دسته، کیلوآمپر قبل از تریپ، توضیحات.
+نوع خاموشی یکی از این‌هاست: Trip، Planned، Emergency، Process، یا نامی که در صفحهٔ نوع خاموشی اضافه کرده‌اید.
 مدت از دو ساعت حساب می‌شود. آن را تایپ نمی‌کنید. اگر راه‌اندازی زودتر از خاموشی باشد، مدت تا وقتی ساعت را درست کنید صفر می‌ماند.
 کلر از دست‌رفته و سود از دست‌رفته از کیلوآمپر ضربدر مدت حساب می‌شود و فقط‌خواندنی است.
 علامت روی ردیف یعنی خاموشی و راه‌اندازی در دو ماه تقویمی با فاصلهٔ یک ماه افتاده‌اند و ساعت‌ها از مرز ماه رد شده.
@@ -991,7 +995,9 @@ Un / CE ولتاژ استاندارد و راندمان همان روز را ر�
 خانه را عوض کنید و از آن بیرون بیایید، یا ذخیرهٔ همان ردیف را بزنید. خروجی، فهرست فیلترشده را می‌دهد.
 # بازه
 فرم بازه از شما تاریخ شروع و پایان می‌خواهد و فقط تریپ‌های داخل آن پنجره را نشان می‌دهد. فهرست ساده روی همهٔ ماه‌ها باز می‌شود.
-# علت‌ها و علت تریپ
+# نوع خاموشی
+این فهرست، نوع توقف را مشخص می‌کند. از اول این چهار نام را دارد: Trip، Planned، Emergency، Process. در ردیف خالی یک نام بنویسید و ذخیره کنید تا اضافه شود. نام را عوض کنید و ذخیره را بزنید تا اصلاح شود؛ تریپ‌هایی که همان نام را دارند هم عوض می‌شوند. حذف، نامی را که دیگر لازم نیست برمی‌دارد. ستون نوع خاموشی در فهرست خاموشی و در بازهٔ زمانی از همین فهرست پر می‌شود.
+# علت تریپ
 این‌ها ردیف‌های پشت فهرست کد هستند. کد، متن علت، و دسته.
 برای درست کردن ردیف بد: متن را عوض کنید و ذخیره را بزنید.
 برای برداشتن ردیف خالی: حذف را بزنید و تأیید کنید. اگر هم کد و هم علت را پاک کنید و ذخیره را بزنید، همان حذف است. با برگشتن به صفحه، ردیف حذف‌شده برنمی‌گردد.

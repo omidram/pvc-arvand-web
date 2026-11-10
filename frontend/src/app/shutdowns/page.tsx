@@ -7,10 +7,11 @@ import {
   shutdownsApi,
   shutdownCategoriesApi,
   shutdownCausesApi,
+  shutdownTypesApi,
   settingsApi,
 } from "@/lib/endpoints";
 import { useCrudResource } from "@/lib/use-resource";
-import type { Shutdown, ShutdownCategory, ShutdownCause } from "@/lib/types";
+import type { Shutdown, ShutdownCategory, ShutdownCause, ShutdownType } from "@/lib/types";
 import { ExportButtons } from "@/components/domain/export-buttons";
 import { AccessBtn, AccessHub } from "@/components/layout/access-hub";
 import { useI18n } from "@/lib/i18n/context";
@@ -236,6 +237,10 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     queryKey: ["shutdown-categories", "combo"],
     queryFn: () => shutdownCategoriesApi.list({ limit: 200 }),
   });
+  const typesQuery = useQuery({
+    queryKey: ["shutdown-types", "combo"],
+    queryFn: () => shutdownTypesApi.list({ limit: 200 }),
+  });
 
   // Keep No. in order even if the API order changes; newest stays at the bottom next to the new-row line.
   const rows = useMemo(() => [...(listQuery.data || [])].sort((a, b) => a.nr - b.nr), [listQuery.data]);
@@ -253,12 +258,17 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     () => Array.from(new Set(causes.map((c) => c.cause || "").filter(Boolean))).sort(),
     [causes]
   );
+  const typeOptions = useMemo(() => {
+    const named = (typesQuery.data || []).map((row) => row.name || "").filter(Boolean);
+    const used = rows.map((row) => row.shutdown_type || "").filter(Boolean);
+    return Array.from(new Set([...named, ...used]));
+  }, [typesQuery.data, rows]);
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
     return rows.filter((r) =>
-      [r.nr, r.plant_part, r.code, r.cause, r.category, r.remarks, r.shutdown_time, r.startup_time, r.ka_before_trip]
+      [r.nr, r.plant_part, r.code, r.cause, r.category, r.shutdown_type, r.remarks, r.shutdown_time, r.startup_time, r.ka_before_trip]
         .join(" ")
         .toLowerCase()
         .includes(q)
@@ -271,6 +281,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       { key: "shutdown_time" },
       { key: "startup_time" },
       { key: "duration", filterText: (r: Shutdown) => durationHm(r) },
+      { key: "shutdown_type", filterText: (r: Shutdown) => r.shutdown_type || "" },
       { key: "code", filterText: (r: Shutdown) => r.code || "" },
       { key: "cause", filterText: (r: Shutdown) => r.cause || "" },
       { key: "ka_before_trip", filterText: (r: Shutdown) => (r.ka_before_trip == null ? "" : String(r.ka_before_trip)) },
@@ -306,6 +317,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         remarks: row.remarks,
         code: row.code,
         category: row.category,
+        shutdown_type: row.shutdown_type,
         cause: row.cause,
         ka_before_trip: row.ka_before_trip,
         ka_after_trip: row.ka_after_trip,
@@ -372,6 +384,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
         remarks: draft.remarks || null,
         code: draft.code || null,
         category: draft.category || null,
+        shutdown_type: draft.shutdown_type || null,
         cause: draft.cause || null,
         ka_before_trip: draft.ka_before_trip ?? null,
         ka_after_trip: draft.ka_after_trip ?? null,
@@ -466,6 +479,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               {fieldVisible("shutdown_time") ? <SortTh k="shutdown_time" sorter={mainSort} className="w-40">{t("fields.shutdownTime")}</SortTh> : null}
               {fieldVisible("startup_time") ? <SortTh k="startup_time" sorter={mainSort} className="w-40">{t("fields.startupTime")}</SortTh> : null}
               <SortTh k="duration" sorter={mainSort} className="w-24">{t("fields.durationHm")}</SortTh>
+              <SortTh k="shutdown_type" sorter={mainSort} className="w-32">{t("menus.shutdownReasons")}</SortTh>
               {fieldVisible("code") ? <SortTh k="code" sorter={mainSort} className="w-16">{t("fields.code")}</SortTh> : null}
               {fieldVisible("cause") ? <SortTh k="cause" sorter={mainSort} className="w-44">{t("fields.cause")}</SortTh> : null}
               {fieldVisible("ka_before_trip") ? <SortTh k="ka_before_trip" sorter={mainSort} className="w-24">{t("fields.kaBeforeTrip")}</SortTh> : null}
@@ -499,6 +513,9 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               ) : null}
               <th>
                 <FilterHeadCell columnKey="duration" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
+              </th>
+              <th>
+                <FilterHeadCell columnKey="shutdown_type" filters={sheet.filters} valueFilters={sheet.valueFilters} onFilter={sheet.onFilter} onValueFilter={sheet.onValueFilter} getFilterOptions={sheet.getFilterOptions} />
               </th>
               {fieldVisible("code") ? (
                 <th>
@@ -604,6 +621,15 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 <td>
                   <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(src)} readOnly tabIndex={-1} />
+                </td>
+                <td onClick={(e) => e.stopPropagation()}>
+                  <ComboInput
+                    listId={`sd-type-${row.nr}`}
+                    options={typeOptions}
+                    value={src.shutdown_type || ""}
+                    disabled={!open}
+                    onChange={(v) => setEditDraft((d) => ({ ...d, shutdown_type: v || null }))}
+                  />
                 </td>
                 {fieldVisible("code") ? (
                   <td onClick={(e) => e.stopPropagation()}>
@@ -784,6 +810,14 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 <td>
                   <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(draft)} readOnly tabIndex={-1} />
+                </td>
+                <td>
+                  <ComboInput
+                    listId="sd-type-new"
+                    options={typeOptions}
+                    value={draft.shutdown_type || ""}
+                    onChange={(v) => setDraft((d) => ({ ...d, shutdown_type: v || null }))}
+                  />
                 </td>
                 {fieldVisible("code") ? (
                   <td>
@@ -1038,15 +1072,120 @@ function CausesTable() {
 
 function ReasonsForm() {
   const { t } = useI18n();
+  const { canEdit } = useAuth();
+  const editable = canEdit("shutdowns");
+  const [active, setActive] = useState<number | "new" | null>(null);
+  const [drafts, setDrafts] = useState<Record<number, string>>({});
+  const [fresh, setFresh] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<ShutdownType>(
+    "shutdown-types",
+    shutdownTypesApi,
+    { limit: 200 }
+  );
+  const rows = listQuery.data || [];
+  const typeSort = useSort(rows, TYPE_SORT);
+
+  function saveRow(row: ShutdownType) {
+    const value = (drafts[row.id] ?? row.name ?? "").trim();
+    if (!value) {
+      setError(t("shutdowns.typeRequired"));
+      return;
+    }
+    setError(null);
+    updateMutation.mutate(
+      { id: row.id, payload: { name: value } },
+      {
+        onSuccess: () => setDrafts((d) => Object.fromEntries(Object.entries(d).filter(([k]) => Number(k) !== row.id))),
+        onError: (e) => setError(errText(e)),
+      }
+    );
+  }
+
+  function addRow() {
+    const value = fresh.trim();
+    if (!value) {
+      setError(t("shutdowns.typeRequired"));
+      return;
+    }
+    setError(null);
+    createMutation.mutate({ name: value } as never, {
+      onSuccess: () => {
+        setFresh("");
+        setActive(null);
+      },
+      onError: (e) => setError(errText(e)),
+    });
+  }
+
+  async function deleteRow(row: ShutdownType) {
+    if (!(await appConfirm(t("common.confirmDeleteGeneric")))) return;
+    removeMutation.mutate(row.id, { onError: (e) => setError(errText(e)) });
+  }
+
   return (
     <AccessHub helpKey="shutdowns"
       title={t("shutdowns.reasonsTitle")}
       titleBlue
       backHref="/shutdowns"
       backLabel={t("mainMenu.shutDown")}
-      extraButtons={<ExportButtons prefix="/shutdown-causes" filenameBase="shutdown-causes" />}
+      extraButtons={<ExportButtons prefix="/shutdown-types" filenameBase="shutdown-types" />}
     >
-      <CausesTable />
+      <table className="access-cont-table max-w-md">
+        <thead>
+          <tr>
+            <th className="w-4" />
+            <SortTh k="id" sorter={typeSort} className="w-16">{t("menus.number")}</SortTh>
+            <SortTh k="name" sorter={typeSort}>{t("menus.shutdownReasons")}</SortTh>
+            {editable ? <th className="w-36" /> : null}
+          </tr>
+        </thead>
+        <tbody>
+          {typeSort.sorted.map((row) => (
+            <tr key={row.id} onClick={() => setActive(row.id)}>
+              <td className="access-selector">{active === row.id ? "►" : ""}</td>
+              <td>
+                <input className="w-14" value={row.id} readOnly />
+              </td>
+              <td>
+                <input
+                  className="w-full"
+                  value={drafts[row.id] ?? row.name ?? ""}
+                  onChange={(e) => setDrafts((d) => ({ ...d, [row.id]: e.target.value }))}
+                  disabled={!editable}
+                />
+              </td>
+              {editable ? (
+                <td onClick={(e) => e.stopPropagation()}>
+                  {drafts[row.id] !== undefined ? (
+                    <button type="button" className="access-btn text-[11px]" disabled={updateMutation.isPending} onClick={() => saveRow(row)}>
+                      {t("common.save")}
+                    </button>
+                  ) : null}
+                  <button type="button" className="access-btn text-[11px]" disabled={removeMutation.isPending} onClick={() => void deleteRow(row)}>
+                    {t("common.delete")}
+                  </button>
+                </td>
+              ) : null}
+            </tr>
+          ))}
+          {editable ? (
+            <tr onClick={() => setActive("new")}>
+              <td className="access-selector">*</td>
+              <td />
+              <td>
+                <input className="w-full" value={fresh} onChange={(e) => setFresh(e.target.value)} />
+              </td>
+              <td>
+                <button type="button" className="access-btn text-[11px]" disabled={createMutation.isPending} onClick={addRow}>
+                  {t("common.save")}
+                </button>
+              </td>
+            </tr>
+          ) : null}
+        </tbody>
+      </table>
+      {error ? <div className="mt-2 text-[12px] font-bold text-red-800">{error}</div> : null}
     </AccessHub>
   );
 }
@@ -1268,6 +1407,7 @@ const SHUTDOWN_SORT: Record<string, (r: Shutdown) => SortValue> = {
   lost_production: (r) => r.lost_production,
   mtbf_days: (r) => r.mtbf_days,
   category: (r) => r.category,
+  shutdown_type: (r) => r.shutdown_type,
   remarks: (r) => r.remarks,
 };
 const CAUSE_SORT: Record<string, (r: ShutdownCause) => SortValue> = {
@@ -1278,4 +1418,8 @@ const CAUSE_SORT: Record<string, (r: ShutdownCause) => SortValue> = {
 const CAT_SORT: Record<string, (r: { id: number; category?: string | null }) => SortValue> = {
   id: (r) => r.id,
   category: (r) => r.category,
+};
+const TYPE_SORT: Record<string, (r: ShutdownType) => SortValue> = {
+  id: (r) => r.id,
+  name: (r) => r.name,
 };

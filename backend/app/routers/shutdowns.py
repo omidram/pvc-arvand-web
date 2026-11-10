@@ -200,6 +200,16 @@ def _sync_lookups(db: Session, obj: models.Shutdown) -> None:
             db.add(models.ShutdownCategory(category=cat))
         else:
             obj.category = hit.category
+    kind = (obj.shutdown_type or "").strip()
+    if kind:
+        typed = next(
+            (c for c in db.query(models.ShutdownType).all() if (c.name or "").strip().casefold() == kind.casefold()),
+            None,
+        )
+        if typed is None:
+            db.add(models.ShutdownType(name=kind))
+        else:
+            obj.shutdown_type = typed.name
     cause = (obj.cause or "").strip()
     if cause:
         hit = next(
@@ -257,6 +267,24 @@ def _old(obj, attr: str):
     return hist.deleted[0] if hist.deleted else getattr(obj, attr)
 
 
+def _type_saved(db: Session, row: models.ShutdownType) -> None:
+    """Renaming a shutdown type rewrites the trips that already use that name."""
+    new = (row.name or "").strip()
+    old = (_old(row, "name") or "").strip()
+    row.name = new or None
+    if not new:
+        return
+    for other in db.query(models.ShutdownType).all():
+        if other is row:
+            continue
+        if (other.name or "").strip().casefold() == new.casefold():
+            raise HTTPException(status_code=409, detail="This shutdown type already exists.")
+    if old and new != old:
+        db.query(models.Shutdown).filter(models.Shutdown.shutdown_type == old).update(
+            {"shutdown_type": new}, synchronize_session=False
+        )
+
+
 def _category_saved(db: Session, cat: models.ShutdownCategory) -> None:
     """Access keeps category as text in the reasons and trips: renaming it in the list renames it everywhere."""
     new = (cat.category or "").strip()
@@ -303,6 +331,16 @@ def _cause_saved_inner(db: Session, cause: models.ShutdownCause) -> None:
             q = q.filter(models.Shutdown.code == old_code)
         q.update({"code": cause.code, "cause": cause.cause, "category": cause.category}, synchronize_session=False)
 
+
+types_router = build_crud_router(
+    model=models.ShutdownType,
+    read_schema=schemas.ShutdownTypeRead,
+    write_schema=schemas.ShutdownTypeBase,
+    prefix="/shutdown-types",
+    tags=["shutdowns"],
+    required_fields=["name"],
+    after_save=_type_saved,
+)
 
 categories_router = build_crud_router(
     model=models.ShutdownCategory,

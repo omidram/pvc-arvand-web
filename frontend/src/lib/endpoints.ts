@@ -321,6 +321,7 @@ export const inspectionGridsApi = {
 // ---------------------------------------------------------------- Shutdowns
 export const shutdownsApi = resource<T.Shutdown>("/shutdowns"); // pk is `nr`, same /prefix/{id} shape
 export const shutdownCategoriesApi = resource<T.ShutdownCategory>("/shutdown-categories");
+export const shutdownTypesApi = resource<T.ShutdownType>("/shutdown-types");
 export const shutdownCausesApi = resource<T.ShutdownCause>("/shutdown-causes");
 
 export const shutdownSummaryApi = {

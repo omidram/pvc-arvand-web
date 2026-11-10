@@ -365,6 +365,21 @@ def _ensure_shutdown_trip_columns() -> None:
         with engine.begin() as conn:
             conn.execute(text(f"ALTER TABLE shutdowns ADD COLUMN {name} FLOAT"))
         present.add(name)
+    if "shutdown_type" not in present:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE shutdowns ADD COLUMN shutdown_type VARCHAR(100)"))
+    defaults = ("Trip", "Planned", "Emergency", "Process")
+    db = SessionLocal()
+    try:
+        have = {(row.name or "").strip().casefold() for row in db.query(models.ShutdownType).all()}
+        for name in defaults:
+            if name.casefold() not in have:
+                db.add(models.ShutdownType(name=name))
+        db.commit()
+    except Exception:
+        db.rollback()
+    finally:
+        db.close()
 
 
 _ensure_shutdown_trip_columns()
@@ -732,6 +747,7 @@ _api(
 # --- Shutdowns ---
 _api(shutdowns.router, dependencies=_perm("shutdowns"))
 _api(shutdowns.categories_router, dependencies=_perm("shutdowns"))
+_api(shutdowns.types_router, dependencies=_perm("shutdowns"))
 _api(shutdowns.causes_router, dependencies=_perm("shutdowns"))
 _api(shutdowns.summary_router, dependencies=_perm("shutdowns"))
 

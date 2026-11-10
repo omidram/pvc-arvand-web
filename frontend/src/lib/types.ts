@@ -470,6 +470,11 @@ export interface ShutdownCategory {
   category: string | null;
 }
 
+export interface ShutdownType {
+  id: number;
+  name: string | null;
+}
+
 export interface ShutdownCause {
   id: number;
   language_id: number | null;
@@ -486,6 +491,7 @@ export interface Shutdown {
   remarks: string | null;
   code: string | null;
   category: string | null;
+  shutdown_type: string | null;
   cause: string | null;
   ka_before_trip: number | null;
   ka_after_trip: number | null;

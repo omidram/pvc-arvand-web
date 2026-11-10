@@ -794,6 +794,13 @@ class ShutdownCategory(Base):
     category: Mapped[str | None] = mapped_column(String(100))
 
 
+class ShutdownType(Base):
+    """How the stop was classified: Trip, Planned, Emergency, Process, or a name added later."""
+    __tablename__ = "shutdown_types"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str | None] = mapped_column(String(100))
+
+
 class ShutdownCause(Base):
     __tablename__ = "shutdown_causes"  # was: tblAbschaltungsursachen
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -812,6 +819,7 @@ class Shutdown(Base):
     remarks: Mapped[str | None] = mapped_column(Text)
     code: Mapped[str | None] = mapped_column(String(10))
     category: Mapped[str | None] = mapped_column(String(50))
+    shutdown_type: Mapped[str | None] = mapped_column(String(100))
     cause: Mapped[str | None] = mapped_column(String(200))  # Trip Cause (IDC / lookup)
     # Trip report extras (plant note 2026-10): KA before trip, lost load/production, MTBF
     ka_before_trip: Mapped[float | None] = mapped_column(Float)

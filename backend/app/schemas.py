@@ -912,6 +912,14 @@ class ShutdownCategoryRead(ShutdownCategoryBase):
     id: int
 
 
+class ShutdownTypeBase(ORMModel):
+    name: str | None = None
+
+
+class ShutdownTypeRead(ShutdownTypeBase):
+    id: int
+
+
 class ShutdownCauseBase(ORMModel):
     language_id: int | None = None
     code: str | None = None
@@ -930,6 +938,7 @@ class ShutdownBase(ORMModel):
     remarks: str | None = None
     code: str | None = None
     category: str | None = None
+    shutdown_type: str | None = None
     cause: str | None = None  # Trip Cause
     ka_before_trip: float | None = None
     ka_after_trip: float | None = None
