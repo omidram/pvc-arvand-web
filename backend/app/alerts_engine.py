@@ -471,7 +471,7 @@ def _live_voltage_rows(db: Session) -> list[models.VoltageReading]:
 
 def voltage_live_stats(db: Session) -> dict[str, Any]:
     """Live plant kA / kWh and same-day cell gauges for the main dashboard."""
-    from .energy import live_cell_map, period_sample_power, samples_on_day, tehran_today
+    from .energy import cell_stacks_on_day, live_cell_map, period_sample_power, samples_on_day, tehran_today
     from .plant_topology import all_electrolyzers, format_electrolyzer_name
 
     ensure_default_rules(db)
@@ -517,19 +517,21 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
             unit_peak[el] = (v, pos)
 
     day_loads = samples_on_day(db, service_day) if service_day is not None else {}
+    stacks_by_time = cell_stacks_on_day(db, service_day) if service_day is not None else {}
     avg_kw_7d, kwh_7d = period_sample_power(db, 7)
     avg_kw_30d, kwh_30d = period_sample_power(db, 30)
     plant_ka = 0.0
     plant_kwh = 0.0
     plant_kw = 0.0
     unit_power: dict[str, float] = {}
-    for el, vals in by_el.items():
+    for el, _vals in by_el.items():
         load = day_loads.get(el) or {}
         ka = float(load.get("current_ka") or 0)
-        stack = sum(vals)
+        clock = str(load.get("time") or "")
+        same_time = float((stacks_by_time.get(el) or {}).get(clock) or 0)
         logged = float(load.get("voltage") or 0)
-        # Cell-voltage sum is the stack. The logsheet total is the fallback when cells are incomplete.
-        use_v = stack if stack > 50 else logged
+        # Power uses the cell-voltage sum at the same clock as the kA sample.
+        use_v = same_time if same_time > 50 else logged
         if ka >= 0.5 and use_v > 0:
             power = use_v * ka
             unit_power[el] = power

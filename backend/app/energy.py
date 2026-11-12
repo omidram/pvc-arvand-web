@@ -21,6 +21,7 @@ except Exception:
 # AriaORMS Excel often lands a day after the logsheet clock. Older than that is off.
 LIVE_LAG_DAYS = 1
 
+from sqlalchemy import String, and_, cast
 from sqlalchemy.orm import Session
 
 from . import models
@@ -31,6 +32,16 @@ _TIME_RE = re.compile(r"^(\d{1,2}):(\d{2})$")
 
 def tehran_today() -> date:
     return datetime.now(_TEHRAN).date()
+
+
+def _stored_on_days(column, start_day: date, end_day_exclusive: date):
+    """Match a calendar day whether SQLite stored 'YYYY-MM-DD HH:MM:SS' or with microseconds.
+
+    Binding a DateTime adds '.000000'. That text is greater than the stored
+    midnight stamp, so a filter of date >= that day drops the whole day.
+    """
+    as_text = cast(column, String)
+    return and_(as_text >= start_day.isoformat(), as_text < end_day_exclusive.isoformat())
 
 
 def tehran_now() -> datetime:
@@ -77,16 +88,15 @@ def live_cell_map(db: Session) -> tuple[date | None, dict[str, list[Any]]]:
     (kA) alone is not a substitute, and no voltage is invented.
     """
     today = tehran_today()
-    start = datetime(today.year, today.month, today.day) - timedelta(days=LIVE_LAG_DAYS)
-    end = datetime(today.year, today.month, today.day) + timedelta(days=1)
+    start_day = today - timedelta(days=LIVE_LAG_DAYS)
+    end_day = today + timedelta(days=1)
     known = set(all_electrolyzers())
     rows = (
         db.query(models.VoltageReading)
         .filter(
             models.VoltageReading.voltage.isnot(None),
             models.VoltageReading.date.isnot(None),
-            models.VoltageReading.date >= start,
-            models.VoltageReading.date < end,
+            _stored_on_days(models.VoltageReading.date, start_day, end_day),
             models.VoltageReading.position.isnot(None),
             models.VoltageReading.position != "",
         )
@@ -117,16 +127,52 @@ def live_cell_map(db: Session) -> tuple[date | None, dict[str, list[Any]]]:
     return service, {name: list(positions.values()) for name, positions in by_pos.items()}
 
 
+def cell_stacks_on_day(db: Session, day: date) -> dict[str, dict[str, float]]:
+    """Sum of cell voltages for each electrolyzer at each clock time that day."""
+    known = set(all_electrolyzers())
+    rows = (
+        db.query(
+            models.VoltageReading.electrolyzer,
+            models.VoltageReading.position,
+            models.VoltageReading.time,
+            models.VoltageReading.voltage,
+            models.VoltageReading.id,
+        )
+        .filter(
+            models.VoltageReading.voltage.isnot(None),
+            _stored_on_days(models.VoltageReading.date, day, day + timedelta(days=1)),
+            models.VoltageReading.position.isnot(None),
+            models.VoltageReading.position != "",
+        )
+        .all()
+    )
+    best: dict[tuple[str, str, str], tuple[int, float]] = {}
+    for el, pos, tlabel, voltage, row_id in rows:
+        name = format_electrolyzer_name(el)
+        position = norm_pos(pos)
+        clock = (tlabel or "").strip()
+        if name not in known or not position or not clock or voltage is None:
+            continue
+        value = float(voltage)
+        if value > 20:
+            continue
+        key = (name, clock, position)
+        prev = best.get(key)
+        if prev is None or (row_id or 0) >= prev[0]:
+            best[key] = (row_id or 0, value)
+    stacks: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
+    for (name, clock, _pos), (_row_id, value) in best.items():
+        stacks[name][clock] += value
+    return {name: dict(times) for name, times in stacks.items()}
+
+
 def samples_on_day(db: Session, day: date) -> dict[str, dict[str, Any]]:
     """Latest AriaORMS load sample that day, including kA even when stack voltage is blank."""
-    start = datetime(day.year, day.month, day.day)
-    end = start + timedelta(days=1)
     known = set(all_electrolyzers())
     rows = (
         db.query(models.ElectrolyzerNormalization)
         .filter(
-            models.ElectrolyzerNormalization.date >= start,
-            models.ElectrolyzerNormalization.date < end,
+            _stored_on_days(models.ElectrolyzerNormalization.date, day, day + timedelta(days=1)),
             models.ElectrolyzerNormalization.total_current.isnot(None),
             models.ElectrolyzerNormalization.total_current >= 0.5,
         )
@@ -142,7 +188,7 @@ def samples_on_day(db: Session, day: date) -> dict[str, dict[str, Any]]:
             best[name] = row
     out: dict[str, dict[str, Any]] = {}
     for name, row in best.items():
-        stamp = _slot_dt(row.date, row.time) or start
+        stamp = _slot_dt(row.date, row.time) or datetime(day.year, day.month, day.day)
         volts = float(row.total_voltage) if row.total_voltage and row.total_voltage > 50 else None
         ka = float(row.total_current or 0)
         out[name] = {
@@ -163,14 +209,13 @@ def period_sample_power(db: Session, days: int) -> tuple[float | None, float | N
     consumption is kW × 24 h. Days without a kA sample are left out, not averaged as zero.
     """
     today = tehran_today()
-    start = datetime(today.year, today.month, today.day) - timedelta(days=max(days, 1) - 1)
-    end = datetime(today.year, today.month, today.day) + timedelta(days=1)
+    start_day = today - timedelta(days=max(days, 1) - 1)
+    end_day = today + timedelta(days=1)
     known = set(all_electrolyzers())
     rows = (
         db.query(models.ElectrolyzerNormalization)
         .filter(
-            models.ElectrolyzerNormalization.date >= start,
-            models.ElectrolyzerNormalization.date < end,
+            _stored_on_days(models.ElectrolyzerNormalization.date, start_day, end_day),
             models.ElectrolyzerNormalization.total_current.isnot(None),
             models.ElectrolyzerNormalization.total_current > 1,
             models.ElectrolyzerNormalization.total_voltage.isnot(None),
@@ -259,11 +304,10 @@ def _load_slots(db: Session, *, since: datetime | None = None, until: datetime |
         models.ElectrolyzerNormalization.total_voltage > 50,
         models.ElectrolyzerNormalization.total_current > 1,
     )
-    if since is not None:
-        day = datetime(since.year, since.month, since.day)
-        query = query.filter(models.ElectrolyzerNormalization.date >= day)
-    if until is not None:
-        query = query.filter(models.ElectrolyzerNormalization.date <= until)
+    if since is not None or until is not None:
+        start_day = since.date() if since is not None else date.min
+        end_day = (until.date() + timedelta(days=1)) if until is not None else date.max
+        query = query.filter(_stored_on_days(models.ElectrolyzerNormalization.date, start_day, end_day))
     rows = query.order_by(
         models.ElectrolyzerNormalization.electrolyzer.asc(),
         models.ElectrolyzerNormalization.date.asc(),
