@@ -160,7 +160,7 @@ class VoltageSyncSettingsBase(ORMModel):
     source_url: str | None = "http://192.168.20.12:8080/LogSheetsReports.aspx"
     username: str | None = None
     daily_time: str = "00:00"
-    lookback_days: int = Field(default=7, ge=1, le=90)
+    lookback_days: int = Field(default=7, ge=1, le=400)
 
 
 class VoltageSyncSettingsUpdate(VoltageSyncSettingsBase):

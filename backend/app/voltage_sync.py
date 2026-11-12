@@ -22,7 +22,7 @@ from sqlalchemy.orm import Session
 from . import models
 from .database import commit_db
 from .config import DATA_DIR
-from .plant_import import parse_voltage_excel
+from .plant_import import _time_label, parse_voltage_excel
 
 logger = logging.getLogger("pvc_arvand.voltage_sync")
 _voltage_indexes_ready = False
@@ -203,13 +203,17 @@ def apply_parsed_voltage(
         pos = str(item.get("position") or "").strip()
         tlabel = item.get("time")
         voltage = item.get("voltage")
-        if not pos or not tlabel or voltage is None or not item.get("date"):
+        tlabel = _time_label(tlabel)
+        if not pos or not tlabel or voltage is None:
             continue
         voltage_f = float(voltage)
-        # A cell voltage without a real operating reading is not stored.
-        if voltage_f < 1.5 or voltage_f > 8:
+        # Stack totals belong on the load row. Every other numeric cell reading is kept.
+        if voltage_f > 20:
             continue
-        stamp = _as_midnight(item.get("date"), date_val)
+        row_day = item.get("date")
+        if not row_day and len(parsed.get("dates") or []) > 1:
+            continue
+        stamp = _as_midnight(row_day, date_val)
         if _out_of_service(item_el, stamp):
             continue
         row_payload.append(
@@ -235,6 +239,7 @@ def apply_parsed_voltage(
     norm_rows: list[dict[str, Any]] = []
     for slot in slots:
         tlabel = slot.get("time")
+        tlabel = _time_label(tlabel)
         if not tlabel:
             continue
         total_v = slot.get("total")
@@ -242,9 +247,13 @@ def apply_parsed_voltage(
             total_v = float(slot["rack_a"]) + float(slot["rack_b"])
         if total_v is None and slot.get("anolyte_temp") is None and slot.get("load") is None and slot.get("rack_a_avg") is None:
             continue
-        if not slot.get("date") or _out_of_service(el, str(slot.get("date"))):
+        slot_day = slot.get("date")
+        if not slot_day and len(parsed.get("dates") or []) > 1:
             continue
-        stamp = _as_midnight(slot.get("date"), date_val)
+        slot_day = slot_day or date_val.date().isoformat()
+        if _out_of_service(el, str(slot_day)):
+            continue
+        stamp = _as_midnight(slot_day, date_val)
         if _out_of_service(el, stamp):
             continue
         times_in_file.add(tlabel)
@@ -272,20 +281,6 @@ def apply_parsed_voltage(
                 "catholyte_conc": slot.get("catholyte_conc"),
             }
         )
-    # A day is kept only when AriaORMS sent both a real cell voltage and a kA for that same time.
-    def _load_ka(value: object) -> float:
-        try:
-            return float(value)  # type: ignore[arg-type]
-        except (TypeError, ValueError):
-            return 0.0
-
-    measured = {
-        (row["date"], row["time"])
-        for row in norm_rows
-        if _load_ka(row.get("total_current")) > 1
-    }
-    row_payload = [row for row in row_payload if (row["date"], row["time"]) in measured]
-    norm_rows = [row for row in norm_rows if (row["date"], row["time"]) in measured]
     counts = {}
     for row in row_payload:
         counts[(row["date"], row["time"])] = counts.get((row["date"], row["time"]), 0) + 1
@@ -663,11 +658,17 @@ def pull_from_ariaorms(
             + "). Sync ran successfully — source had no data in this range."
         )
     else:
+        missed = [
+            str(item.get("electrolyzer"))
+            for item in details
+            if item.get("status") != "applied" or not item.get("rows_upserted")
+        ]
         message = (
             f"AriaORMS {start_day.isoformat()}..{end_day.isoformat()}: "
             f"electrolyzers {files_applied}/{total}, upserted {rows_total} rows"
             + (f", empty {empty_count}" if empty_count else "")
             + (f", errors {errors}" if errors else "")
+            + (f" | no rows: {', '.join(missed)}" if missed else "")
         )
     # Always stamp last successful attempt time — even when 0 rows were returned.
     row.last_run_at = datetime.utcnow()

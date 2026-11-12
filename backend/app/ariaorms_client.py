@@ -18,6 +18,7 @@ from urllib.parse import urlparse
 from .plant_import import format_jalali_aria
 
 logger = logging.getLogger("pvc_arvand.ariaorms")
+_UA = "Mozilla/5.0 (compatible; PVC-Arvand-VoltageSync/2.21)"
 
 DEFAULT_BASE = "http://192.168.20.12:8080"
 
@@ -44,7 +45,11 @@ def login(opener: urllib.request.OpenerDirector, base: str, username: str, passw
     data = urllib.parse.urlencode(
         {"username": username, "password": password, "captcha": ""}
     ).encode()
-    req = urllib.request.Request(f"{base}/ajax/logindebug.aspx", data=data)
+    req = urllib.request.Request(
+        f"{base}/ajax/logindebug.aspx",
+        data=data,
+        headers={"User-Agent": _UA},
+    )
     result = opener.open(req, timeout=40).read().decode("utf-8", "replace").strip()
     if result.lower() != "true":
         raise RuntimeError(f"AriaORMS login failed: {result[:120]}")
@@ -76,7 +81,8 @@ def download_logsheet(
     last_error: Exception | None = None
     for attempt in range(3):
         try:
-            body = opener.open(url, timeout=90).read()
+            req = urllib.request.Request(url, headers={"User-Agent": _UA})
+            body = opener.open(req, timeout=180).read()
             if body[:2] != b"PK":
                 raise RuntimeError(f"not an xlsx ({len(body)} bytes)")
             return body

@@ -111,14 +111,14 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
           <Input
             type="number"
             min={1}
-            max={90}
+            max={400}
             value={lookbackDays}
-            onChange={(e) => setLookbackDays(Math.min(90, Math.max(1, Number(e.target.value) || 7)))}
+            onChange={(e) => setLookbackDays(Math.min(400, Math.max(1, Number(e.target.value) || 7)))}
             className="max-w-[160px]"
           />
           <p className="mt-1 text-xs text-[var(--win-text-dim)]">{t("voltageSync.lookbackDaysHelp")}</p>
           <div className="mt-2 flex flex-wrap gap-1">
-            {[1, 3, 7, 14, 30].map((n) => (
+            {[1, 7, 14, 30, 90, 150].map((n) => (
               <Button
                 key={n}
                 type="button"

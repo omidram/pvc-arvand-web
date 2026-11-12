@@ -390,6 +390,8 @@ def _drop_offline_electrolyzer_samples() -> None:
     statements = (
         "DELETE FROM voltage_readings WHERE electrolyzer IN ('E1', 'H2') AND date >= '2026-11-08'",
         "DELETE FROM electrolyzer_normalizations WHERE electrolyzer IN ('E1', 'H2') AND date >= '2026-11-08'",
+        "DELETE FROM voltage_readings WHERE time LIKE '1899-%' OR time LIKE '1900-%'",
+        "DELETE FROM electrolyzer_normalizations WHERE time LIKE '1899-%' OR time LIKE '1900-%'",
     )
     try:
         with engine.begin() as conn:

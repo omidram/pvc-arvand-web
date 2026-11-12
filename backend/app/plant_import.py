@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from io import BytesIO
 from pathlib import Path
 from typing import Any
@@ -95,7 +95,8 @@ def parse_plant_date(value: Any) -> date | None:
         return value.date()
     if isinstance(value, date):
         return value
-    text = re.sub(r"\.{2,}", ".", str(value).strip().strip("."))
+    text = str(value).translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789"))
+    text = re.sub(r"\.{2,}", ".", text.strip().strip("."))
     if not text or text in {"*", "―", "-", "—"}:
         return None
     # Excel serial number
@@ -222,17 +223,83 @@ _EL_VOLTAGE_RE = re.compile(r"electrolyzer\s+voltage\s+(?P<el>[A-Za-z]+\d*)", re
 _EL_IN_TEXT_RE = re.compile(r"(?:ELECTROLYZER|EL)\s*(?P<el>[A-Za-z]+\d*)", re.I)
 
 
+_CELL_SEARCH_RE = re.compile(r"(?P<el>[A-Ha-hJ-Mj-m]\d)-(?P<pos>\d{1,3})\b")
+
+
+def _norm_tag(text: str) -> str:
+    return (
+        str(text)
+        .replace("–", "-")
+        .replace("—", "-")
+        .replace("−", "-")
+        .replace("\u200c", "")
+        .strip()
+    )
+
+
 def _match_cell_tag(*texts: str):
     """Match cell tags like K2-001 or BlueStar 1-002[L2-001]."""
     for text in texts:
         if not text:
             continue
-        m = _CELL_BRACKET_RE.search(text)
+        cleaned = _norm_tag(text)
+        m = _CELL_BRACKET_RE.search(cleaned)
         if m:
             return m
-        m = _CELL_RE.match(text)
+        m = _CELL_RE.match(cleaned)
         if m:
             return m
+        m = _CELL_SEARCH_RE.search(cleaned)
+        if m:
+            return m
+    return None
+
+
+def _time_label(value: Any) -> str | None:
+    """AriaORMS time headers: 06:00 text, Excel time, or a 1899-12-30 time serial."""
+    if isinstance(value, datetime):
+        if value.year >= 1990 and value.hour == 0 and value.minute == 0 and value.second == 0:
+            return None
+        return f"{value.hour:02d}:{value.minute:02d}"
+    if isinstance(value, time):
+        return f"{value.hour:02d}:{value.minute:02d}"
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        number = float(value)
+        if 0 <= number < 1:
+            minutes = int(round(number * 24 * 60))
+            return f"{(minutes // 60) % 24:02d}:{minutes % 60:02d}"
+        return None
+    text = _norm_tag(value)
+    m = re.match(r"^(\d{1,2}):(\d{2})(?::\d{2})?$", text)
+    if not m:
+        return None
+    hour, minute = int(m.group(1)), int(m.group(2))
+    if hour > 23 or minute > 59:
+        return None
+    return f"{hour:02d}:{minute:02d}"
+
+
+def _banner_date(row: list[Any] | None) -> date | None:
+    """A day-separator row: a plant date and no cell tag or measurement numbers."""
+    found: date | None = None
+    numbers = 0
+    for cell in row or []:
+        if cell is None or str(cell).strip() == "":
+            continue
+        if isinstance(cell, datetime) and cell.year < 1990:
+            continue
+        if isinstance(cell, time):
+            continue
+        if _match_cell_tag(str(cell)):
+            return None
+        parsed = parse_plant_date(cell)
+        if parsed and parsed.year >= 2000:
+            found = parsed
+            continue
+        if isinstance(cell, (int, float)) and not isinstance(cell, bool):
+            numbers += 1
+    if found and numbers == 0:
+        return found
     return None
 
 
@@ -276,19 +343,21 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
     Rows: "Electrolyzer voltage A2" (total) + "A2-001" … element cells.
     """
     wb = load_workbook(BytesIO(content), data_only=True, read_only=True)
-    # Prefer clean numeric sheet over SiteMan annotated sheet
-    preferred = None
-    for name in wb.sheetnames:
-        lower = name.lower()
-        if "siteman" in lower or "whit" in lower:
-            continue
-        preferred = name
-        break
-    if preferred is None:
-        preferred = wb.sheetnames[0]
+    parsed_sheets: list[dict[str, Any]] = []
+    try:
+        for name in wb.sheetnames:
+            lower = name.lower()
+            if "siteman" in lower or "whit" in lower:
+                continue
+            one = _parse_voltage_rows(_sheet_rows(wb, name))
+            one["sheet"] = name
+            parsed_sheets.append(one)
+    finally:
+        wb.close()
+    return _merge_voltage_parses(parsed_sheets)
 
-    rows = _sheet_rows(wb, preferred)
-    wb.close()
+
+def _parse_voltage_rows(rows: list[list[Any]]) -> dict[str, Any]:
 
     reading_date: date | None = None
     for row in rows[:12]:
@@ -322,9 +391,10 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
         if param_col is None and tag_col is None and len(vals) > 1:
             param_col = 1
             equip_col = equip_col if equip_col is not None else 0
-        for j, v in enumerate(vals):
-            if re.match(r"^\d{1,2}:\d{2}$", v):
-                time_cols[j] = v
+        for j, cell in enumerate(row):
+            label = _time_label(cell)
+            if label:
+                time_cols[j] = label
         if time_cols and (param_col is not None or tag_col is not None):
             header_idx = i
             break
@@ -338,28 +408,21 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
     total_slots: dict[tuple[str, str], dict[str, Any]] = {}
     operators: set[str] = set()
     out_of_range: list[dict[str, Any]] = []
-    _date_row = _DATE_ROW_RE
 
     for row in rows[header_idx + 1 :]:
         if not row or all(c is None or str(c).strip() == "" for c in row):
             continue
 
-        # ARIAORMS stacks one day per block: a date row, then the same header, then values.
-        first_cell = next((cell for cell in row[:3] if cell is not None and str(cell).strip()), None)
-        if isinstance(first_cell, datetime):
-            reading_date = first_cell.date()
-            continue
-        if isinstance(first_cell, date) and not isinstance(first_cell, datetime):
-            reading_date = first_cell
-            continue
-        first_text = str(first_cell).strip() if first_cell is not None else ""
-        if _date_row.match(first_text):
-            parsed_day = parse_plant_date(first_text)
-            if parsed_day:
-                reading_date = parsed_day
-            continue
+        # Each day is its own block. The date may sit in any column, including on the repeated header.
         header_vals = [str(c).strip().lower() if c is not None else "" for c in row]
-        if "parameter" in header_vals and any(re.match(r"^\d{1,2}:\d{2}$", v) for v in header_vals):
+        if "parameter" in header_vals and any(_time_label(c) for c in row):
+            banner = _banner_date(row)
+            if banner:
+                reading_date = banner
+            continue
+        banner = _banner_date(row)
+        if banner:
+            reading_date = banner
             continue
 
         def _cell(idx: int | None) -> str:
@@ -456,7 +519,7 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
 
     slot_dates = {s.get("date") for s in total_slots.values() if s.get("date")}
     return {
-        "sheet": preferred,
+        "sheet": None,
         "electrolyzer": electrolyzer,
         "reading_date": reading_date.isoformat() if reading_date else None,
         "operators": sorted(operators),
@@ -467,6 +530,46 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
         "imported_cells": len(readings),
         "times": sorted(set(time_cols.values())),
         "dates": sorted({r["date"] for r in readings if r.get("date")} | slot_dates),
+    }
+
+
+def _merge_voltage_parses(parts: list[dict[str, Any]]) -> dict[str, Any]:
+    """Keep every sheet. L2/M2 workbooks often hide the full history behind the first tab."""
+    useful = [part for part in parts if part.get("readings") or part.get("total_slots")]
+    if not useful:
+        if parts:
+            return parts[0]
+        return {"error": "Header row with Parameter/Tag / time columns not found", "readings": [], "totals": {}}
+    readings: dict[tuple, dict[str, Any]] = {}
+    for part in useful:
+        for row in part.get("readings") or []:
+            key = (row.get("electrolyzer"), row.get("position"), row.get("date"), row.get("time"))
+            readings[key] = row
+    slots: dict[tuple, dict[str, Any]] = {}
+    for part in useful:
+        for slot in part.get("total_slots") or []:
+            key = (slot.get("date"), slot.get("time"))
+            current = slots.get(key, {"date": slot.get("date"), "time": slot.get("time")})
+            for field, value in slot.items():
+                if value is not None:
+                    current[field] = value
+            slots[key] = current
+    dates = sorted(
+        {row["date"] for row in readings.values() if row.get("date")}
+        | {slot.get("date") for slot in slots.values() if slot.get("date")}
+    )
+    return {
+        "sheet": ", ".join(part.get("sheet") or "" for part in useful),
+        "electrolyzer": next((part.get("electrolyzer") for part in useful if part.get("electrolyzer")), None),
+        "reading_date": dates[-1] if dates else useful[-1].get("reading_date"),
+        "operators": sorted({op for part in useful for op in (part.get("operators") or [])}),
+        "readings": list(readings.values()),
+        "totals": {},
+        "total_slots": list(slots.values()),
+        "out_of_range": [item for part in useful for item in (part.get("out_of_range") or [])],
+        "imported_cells": len(readings),
+        "times": sorted({row.get("time") for row in readings.values() if row.get("time")}),
+        "dates": dates,
     }
 
 
