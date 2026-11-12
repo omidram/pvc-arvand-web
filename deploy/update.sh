@@ -193,19 +193,45 @@ install_backend() {
   fi
 }
 
+frontend_build_ok() {
+  [[ -s "$ROOT/frontend/.next/BUILD_ID" ]]
+}
+
 build_frontend() {
   say "ساخت فرانت‌اند"
   if ! command -v npm >/dev/null 2>&1; then
     echo "npm نصب نیست. روی سرور: sudo apt-get install -y nodejs npm" >&2
     return 1
   fi
+  local prev="$ROOT/frontend/.next.previous" log="$LOG_DIR/frontend-build.log" code
+  rm -rf "$prev"
+  if frontend_build_ok; then
+    mv "$ROOT/frontend/.next" "$prev"
+  fi
+  set +e
   (
     cd "$ROOT/frontend"
     npm install --silent
+    NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=2048}" \
     NEXT_PUBLIC_SAME_ORIGIN=1 \
     PVC_BACKEND_URL="http://127.0.0.1:${BACK_PORT}" \
       npm run build
-  )
+  ) >"$log" 2>&1
+  code=$?
+  set -e
+  if [[ "$code" -eq 0 ]] && frontend_build_ok; then
+    rm -rf "$prev"
+    return 0
+  fi
+  echo "ساخت فرانت‌اند ناموفق بود. آخر لاگ ساخت:" >&2
+  tail -n 60 "$log" >&2 || true
+  if [[ -s "$prev/BUILD_ID" ]]; then
+    rm -rf "$ROOT/frontend/.next"
+    mv "$prev" "$ROOT/frontend/.next"
+    echo "همان نسخه قبلی فرانت‌اند اجرا می‌شود."
+    return 0
+  fi
+  return 1
 }
 
 start_backend() {
@@ -223,6 +249,10 @@ start_backend() {
 
 start_frontend() {
   say "اجرای فرانت‌اند روی پورت ${FRONT_PORT}"
+  if ! frontend_build_ok; then
+    echo "بیلد فرانت‌اند وجود ندارد. next start بدون .next/BUILD_ID اجرا نمی‌شود." >&2
+    exit 1
+  fi
   cd "$ROOT/frontend"
   local next_bin="$ROOT/frontend/node_modules/next/dist/bin/next"
   if [[ ! -f "$next_bin" ]]; then
@@ -322,13 +352,15 @@ fi
 
 install_backend
 if ! build_frontend; then
-  echo "ساخت فرانت‌اند ناموفق بود." >&2
-  if [[ ! -d "$ROOT/frontend/.next" ]]; then
-    exit 1
-  fi
-  echo "همان نسخه قبلی فرانت‌اند اجرا می‌شود."
+  echo "ساخت فرانت‌اند ناموفق بود و نسخه قبلی سالمی هم نمانده. برنامه اجرا نشد." >&2
+  exit 1
 fi
 start_backend
+wait_http "http://127.0.0.1:${BACK_PORT}/health" || {
+  echo "بک‌اند قبل از فرانت‌اند بالا نیامد. آخر لاگ:" >&2
+  tail -n 40 "$LOG_DIR/backend.log" >&2 || true
+  exit 1
+}
 start_frontend
 check_all
 say "آپدیت تمام شد. از این به بعد فقط همین دستور را اجرا کنید: bash deploy/update.sh"

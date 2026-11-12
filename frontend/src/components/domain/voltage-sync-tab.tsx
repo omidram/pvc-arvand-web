@@ -69,7 +69,7 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
       if (!alive || !job.running || !job.job_id) return;
       setProgress({ percent: job.percent, processed: job.processed, total: job.total });
       try {
-        const data = await followImport({ job_id: job.job_id }, (next) => {
+        const data = await followImport<VoltageSyncRunResult>({ job_id: job.job_id }, (next) => {
           if (alive) setProgress(next);
         });
         if (!alive) return;
