@@ -137,7 +137,7 @@ export function VoltageReportPanel({
   const fa = locale === "fa";
   const U = { mw: fa ? "مگاوات" : "Megawatt", mwh: fa ? "مگاوات‌ساعت" : "Megawatt-hour", v: fa ? "ولت" : "Volt", ka: fa ? "کیلوآمپر" : "Kiloampere" };
   const uid = useId().replace(/:/g, "");
-  const [span, setSpan] = useState<"day" | "week" | "month">("week");
+  const [span, setSpan] = useState<"day" | "week" | "month">("day");
   const priceQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get, staleTime: 15_000 });
   const price = priceQuery.data?.electricity_price_per_kw;
   const spanPick = () => (

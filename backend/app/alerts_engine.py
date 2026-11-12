@@ -527,8 +527,11 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         load = day_loads.get(el) or {}
         ka = float(load.get("current_ka") or 0)
         stack = sum(vals)
-        if ka > 1 and stack > 0:
-            power = stack * ka
+        logged = float(load.get("voltage") or 0)
+        # Cell-voltage sum is the stack. The logsheet total is the fallback when cells are incomplete.
+        use_v = stack if stack > 50 else logged
+        if ka >= 0.5 and use_v > 0:
+            power = use_v * ka
             unit_power[el] = power
             plant_kw += power
             plant_ka += ka

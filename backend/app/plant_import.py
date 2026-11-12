@@ -324,15 +324,26 @@ def _detect_electrolyzer(*texts: str) -> str | None:
 
 
 def _is_ka_row(key: str, unit: str) -> bool:
-    """LogSheets load row: the electrolyzer current in kA, not a temperature or voltage."""
-    if any(word in key for word in ("temperature", "concentration", "voltage", "volt")):
+    """LogSheets load row: electrolyzer current in kA, not temperature, voltage, or density."""
+    if any(word in key for word in ("temperature", "concentration", "voltage", "volt", "density", "conc")):
         return False
-    if unit.replace(" ", "") in {"ka", "kamp"}:
+    compact_unit = re.sub(r"[^a-z]", "", (unit or "").lower())
+    if compact_unit in {"ka", "kamp", "kiloampere", "kiloamp"}:
         return True
-    compact = key.replace(" ", "")
-    if key.startswith("load") or compact.startswith("load") or " load" in f" {key}":
+    compact = re.sub(r"[\s\-]+", "", key)
+    if "load" in key or compact.startswith("load"):
         return True
-    return "current" in key and "ka" in key
+    if any(word in key for word in ("current", "strom", "جریان", "آمپر")):
+        return True
+    return "itotal" in compact or "igesamt" in compact
+
+
+def _ka_value(value: float, unit: str) -> float:
+    """Ampere readings above 100 are the same current expressed in A, not kA."""
+    compact_unit = re.sub(r"[^a-z]", "", (unit or "").lower())
+    if compact_unit in {"a", "amp", "ampere"} and value > 100:
+        return value / 1000.0
+    return value
 
 
 def parse_voltage_excel(content: bytes) -> dict[str, Any]:
@@ -448,7 +459,15 @@ def _parse_voltage_rows(rows: list[list[Any]]) -> dict[str, Any]:
                 if op:
                     operators.add(op)
 
-        cell_m = _match_cell_tag(label, tag, parameter)
+        key = label.lower()
+        unit_text = _cell(unit_col).lower()
+        # Load / total-voltage rows must not be stored as a cell, even if the tag looks like A1-001.
+        if _is_ka_row(key, unit_text) or any(
+            phrase in key for phrase in ("electrolyzer voltage", "total voltage", "totale voltage")
+        ):
+            cell_m = None
+        else:
+            cell_m = _match_cell_tag(label, tag, parameter)
         if cell_m:
             pos_raw = cell_m.group("pos")
             el = cell_m.group("el").upper()
@@ -483,7 +502,6 @@ def _parse_voltage_rows(rows: list[list[Any]]) -> dict[str, Any]:
             continue
 
         # Aggregate / plant rows (total voltage, temps, load)
-        key = label.lower()
         el_from_label = _detect_electrolyzer(label, tag, parameter, equipment)
         if el_from_label:
             electrolyzer = electrolyzer or el_from_label
@@ -514,8 +532,8 @@ def _parse_voltage_rows(rows: list[list[Any]]) -> dict[str, Any]:
                 slot["catholyte_temp"] = voltage
             elif "catholyte concentration" in key:
                 slot["catholyte_conc"] = voltage
-            elif _is_ka_row(key, _cell(unit_col).lower()):
-                slot["load"] = voltage
+            elif _is_ka_row(key, unit_text):
+                slot["load"] = _ka_value(voltage, unit_text)
 
     slot_dates = {s.get("date") for s in total_slots.values() if s.get("date")}
     return {

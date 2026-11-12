@@ -128,7 +128,7 @@ def samples_on_day(db: Session, day: date) -> dict[str, dict[str, Any]]:
             models.ElectrolyzerNormalization.date >= start,
             models.ElectrolyzerNormalization.date < end,
             models.ElectrolyzerNormalization.total_current.isnot(None),
-            models.ElectrolyzerNormalization.total_current > 1,
+            models.ElectrolyzerNormalization.total_current >= 0.5,
         )
         .all()
     )
