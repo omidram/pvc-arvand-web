@@ -76,13 +76,16 @@ def download_logsheet(
     last_error: Exception | None = None
     for attempt in range(3):
         try:
-            body = opener.open(url, timeout=300).read()
+            body = opener.open(url, timeout=90).read()
             if body[:2] != b"PK":
                 raise RuntimeError(f"not an xlsx ({len(body)} bytes)")
             return body
         except Exception as exc:  # noqa: BLE001
             last_error = exc
-            time.sleep(2 + attempt * 3)
+            message = str(exc)
+            if "not an xlsx" in message:
+                raise RuntimeError(message) from exc
+            time.sleep(1 + attempt)
             if username and password:
                 try:
                     login(opener, base, username, password)

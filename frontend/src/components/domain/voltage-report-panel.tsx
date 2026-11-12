@@ -202,22 +202,10 @@ export function VoltageReportPanel({
   ];
   const okPct = Math.round((live.ok_count / healthTotal) * 100);
   const trains = (["1", "2"] as const).map((train) => trainLine(live, train));
-  const spanKwh = span === "month" ? live.plant_energy_kwh_30d : live.plant_energy_kwh_7d;
-  const spanHours = span === "month" ? 720 : 168;
-  // AriaORMS delivers one load sample a day, so Daily is that sample's power, not energy divided by 24.
-  const dayKw = live.plant_power_kw ?? null;
-  const avgMw = span === "day" ? (dayKw != null ? dayKw / 1000 : null) : spanKwh != null ? spanKwh / spanHours / 1000 : null;
-  // Daily cost is that same kW × the tariff, so it stays put until the next day's file.
-  const periodCost =
-    price != null && price > 0
-      ? span === "day"
-        ? dayKw != null
-          ? dayKw * price
-          : null
-        : spanKwh != null
-          ? spanKwh * price
-          : null
-      : null;
+  // Daily kW is that day's cell voltage × AriaORMS kA. Week and month are the mean of those daily samples.
+  const spanKw = span === "day" ? live.plant_power_kw : span === "month" ? live.plant_power_kw_30d : live.plant_power_kw_7d;
+  const avgMw = spanKw != null ? spanKw / 1000 : null;
+  const periodCost = price != null && price > 0 && spanKw != null ? spanKw * price : null;
 
   return (
     <section className={`dash-voltage-report dv ${compact ? "is-compact" : ""}`}>

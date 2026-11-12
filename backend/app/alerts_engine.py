@@ -471,7 +471,7 @@ def _live_voltage_rows(db: Session) -> list[models.VoltageReading]:
 
 def voltage_live_stats(db: Session) -> dict[str, Any]:
     """Live plant kA / kWh and same-day cell gauges for the main dashboard."""
-    from .energy import as_date, energy_since, latest_by_electrolyzer, live_cell_map, tehran_now, tehran_today
+    from .energy import live_cell_map, period_sample_power, samples_on_day, tehran_today
     from .plant_topology import all_electrolyzers, format_electrolyzer_name
 
     ensure_default_rules(db)
@@ -515,35 +515,23 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
             max_el = el
             max_pos = (row.position or "").strip() or None
 
-    raw_loads = latest_by_electrolyzer(db)
-    live_loads: dict[str, dict[str, Any]] = {}
-    for raw_name, item in raw_loads.items():
-        name = format_electrolyzer_name(raw_name)
-        if name not in by_el:
-            continue
-        if service_day is None or as_date(item.get("stamp")) != service_day:
-            continue
-        prev = live_loads.get(name)
-        if prev is None or item.get("stamp") > prev.get("stamp"):
-            live_loads[name] = item
-    now = tehran_now()
-    e24 = energy_since(db, now - timedelta(hours=24)) if by_el else {}
-    e24_by_name: dict[str, float] = {}
-    for key, bucket in e24.items():
-        name = format_electrolyzer_name(key)
-        e24_by_name[name] = e24_by_name.get(name, 0.0) + float((bucket or {}).get("energy_kwh") or 0)
-    e7 = energy_since(db, now - timedelta(days=7))
-    e30 = energy_since(db, now - timedelta(days=30))
+    day_loads = samples_on_day(db, service_day) if service_day is not None else {}
+    avg_kw_7d, kwh_7d = period_sample_power(db, 7)
+    avg_kw_30d, kwh_30d = period_sample_power(db, 30)
     plant_ka = 0.0
     plant_kwh = 0.0
-    plant_kwh_7d = sum(float((bucket or {}).get("energy_kwh") or 0) for bucket in e7.values())
-    plant_kwh_30d = sum(float((bucket or {}).get("energy_kwh") or 0) for bucket in e30.values())
     plant_kw = 0.0
-    for el, item in live_loads.items():
-        plant_ka += float(item.get("current_ka") or 0)
-        plant_kwh += e24_by_name.get(el, 0.0)
-        # Same MW as one electrolyzer: stack voltage (V) × current (kA) = kW. Sum only units with cell voltages that day.
-        plant_kw += float(item.get("power_kw") or 0)
+    unit_power: dict[str, float] = {}
+    for el, vals in by_el.items():
+        load = day_loads.get(el) or {}
+        ka = float(load.get("current_ka") or 0)
+        stack = sum(vals)
+        if ka > 1 and stack > 0:
+            power = stack * ka
+            unit_power[el] = power
+            plant_kw += power
+            plant_ka += ka
+            plant_kwh += power * 24.0
 
     names = sorted(by_el)
     electrolyzers = []
@@ -552,7 +540,8 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         vals = by_el.get(el, [])
         total = sum(vals)
         plant_total += total
-        load = live_loads.get(el)
+        load = day_loads.get(el)
+        power = unit_power.get(el)
         sev = by_sev.get(el, {})
         electrolyzers.append(
             {
@@ -562,7 +551,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
                 "avg_voltage": round(total / len(vals), 4) if vals else None,
                 "max_voltage": round(max(vals), 4) if vals else None,
                 "current_ka": round(float(load["current_ka"]), 3) if load and load.get("current_ka") else None,
-                "energy_kwh_24h": round(e24_by_name.get(el, 0.0), 1) if load else None,
+                "energy_kwh_24h": round(power * 24.0, 1) if power else None,
                 "online": len(vals) > 0,
                 "danger_count": sev.get("danger", 0),
                 "warning_count": sev.get("warning", 0),
@@ -582,9 +571,11 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         "plant_total_voltage": round(plant_total, 2) if plant_total else None,
         "plant_total_ka": round(plant_ka, 3) if plant_ka else None,
         "plant_power_kw": round(plant_kw, 1) if plant_kw else None,
+        "plant_power_kw_7d": round(avg_kw_7d, 1) if avg_kw_7d else None,
+        "plant_power_kw_30d": round(avg_kw_30d, 1) if avg_kw_30d else None,
         "plant_energy_kwh_24h": round(plant_kwh, 1) if plant_kwh else None,
-        "plant_energy_kwh_7d": round(plant_kwh_7d, 1) if plant_kwh_7d else None,
-        "plant_energy_kwh_30d": round(plant_kwh_30d, 1) if plant_kwh_30d else None,
+        "plant_energy_kwh_7d": round(kwh_7d, 1) if kwh_7d else None,
+        "plant_energy_kwh_30d": round(kwh_30d, 1) if kwh_30d else None,
         "report_date": (service_day or today).isoformat(),
         "online_count": len(names),
         "cell_count": cell_count,

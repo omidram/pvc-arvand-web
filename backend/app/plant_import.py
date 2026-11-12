@@ -256,6 +256,18 @@ def _detect_electrolyzer(*texts: str) -> str | None:
     return None
 
 
+def _is_ka_row(key: str, unit: str) -> bool:
+    """LogSheets load row: the electrolyzer current in kA, not a temperature or voltage."""
+    if any(word in key for word in ("temperature", "concentration", "voltage", "volt")):
+        return False
+    if unit.replace(" ", "") in {"ka", "kamp"}:
+        return True
+    compact = key.replace(" ", "")
+    if key.startswith("load") or compact.startswith("load") or " load" in f" {key}":
+        return True
+    return "current" in key and "ka" in key
+
+
 def parse_voltage_excel(content: bytes) -> dict[str, Any]:
     """Parse SiteMan / F2 / ARIAORMS LogSheetsReports Excel exports.
 
@@ -295,6 +307,7 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
     tag_col: int | None = None
     param_col: int | None = None
     equip_col: int | None = None
+    unit_col: int | None = None
     for i, row in enumerate(rows):
         vals = [str(c).strip() if c is not None else "" for c in row]
         vals_lower = [v.lower() for v in vals]
@@ -303,6 +316,8 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
         tag_col = _col_index(vals_lower, "tag")
         param_col = _col_index(vals_lower, "parameter")
         equip_col = _col_index(vals_lower, "equipment")
+        unit_hits = [j for j, v in enumerate(vals_lower) if v == "unit"]
+        unit_col = unit_hits[-1] if unit_hits else None
         # SiteMan legacy: Parameter often in column 1 without named Tag
         if param_col is None and tag_col is None and len(vals) > 1:
             param_col = 1
@@ -436,7 +451,7 @@ def parse_voltage_excel(content: bytes) -> dict[str, Any]:
                 slot["catholyte_temp"] = voltage
             elif "catholyte concentration" in key:
                 slot["catholyte_conc"] = voltage
-            elif key.startswith("load ") or key.startswith("load["):
+            elif _is_ka_row(key, _cell(unit_col).lower()):
                 slot["load"] = voltage
 
     slot_dates = {s.get("date") for s in total_slots.values() if s.get("date")}

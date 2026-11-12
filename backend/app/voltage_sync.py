@@ -11,6 +11,7 @@ import hashlib
 import json
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -70,42 +71,18 @@ def _save_state(db: Session, row: models.VoltageSyncSettings, state: dict[str, A
 
 
 def ensure_voltage_indexes(db: Session) -> None:
-    """One row per electrolyzer + position + day + time, so history imports can upsert."""
+    """Create upsert indexes. Existing AriaORMS rows are never deleted."""
     conn = db.connection()
-    conn.execute(
-        text(
-            """
-            DELETE FROM voltage_readings
-            WHERE id NOT IN (
-                SELECT MAX(id) FROM voltage_readings
-                GROUP BY electrolyzer, position, date, time
-            )
-            """
-        )
-    )
-    conn.execute(
-        text(
-            "CREATE UNIQUE INDEX IF NOT EXISTS uq_voltage_slot "
-            "ON voltage_readings (electrolyzer, position, date, time)"
-        )
-    )
-    conn.execute(
-        text(
-            """
-            DELETE FROM electrolyzer_normalizations
-            WHERE id NOT IN (
-                SELECT MAX(id) FROM electrolyzer_normalizations
-                GROUP BY electrolyzer, date, time
-            )
-            """
-        )
-    )
-    conn.execute(
-        text(
-            "CREATE UNIQUE INDEX IF NOT EXISTS uq_norm_slot "
-            "ON electrolyzer_normalizations (electrolyzer, date, time)"
-        )
-    )
+    for sql in (
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_voltage_slot ON voltage_readings (electrolyzer, position, date, time)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_norm_slot ON electrolyzer_normalizations (electrolyzer, date, time)",
+    ):
+        try:
+            conn.execute(text(sql))
+        except Exception:
+            logger.exception("Voltage index was not created; stored AriaORMS rows were left untouched")
+            db.rollback()
+            return
     commit_db(db)
 
 
@@ -512,22 +489,67 @@ def pull_from_ariaorms(
     if progress:
         progress(0, total)
 
-    for index, (name, log_id) in enumerate(electrolyzers, start=1):
+    def _fetch(name: str, log_id: int) -> tuple[str, dict[str, Any] | None, str | None]:
+        worker = ariaorms_client.new_opener(base, username, password)
+        content = ariaorms_client.download_logsheet(
+            worker,
+            base,
+            log_id,
+            start_day,
+            end_day,
+            username=username,
+            password=password,
+        )
+        return name, parse_voltage_excel(content), None
+
+    fetched: dict[str, tuple[dict[str, Any] | None, str | None]] = {}
+    workers = min(6, total) or 1
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(_fetch, name, log_id): name for name, log_id in electrolyzers}
+        done = 0
+        for future in as_completed(futures):
+            name = futures[future]
+            done += 1
+            try:
+                _name, parsed, error = future.result()
+                fetched[name] = (parsed, error)
+            except Exception as exc:  # noqa: BLE001
+                fetched[name] = (None, str(exc))
+            if progress:
+                progress(done, total)
+
+    for name, _log_id in electrolyzers:
+        parsed, error = fetched.get(name, (None, "not fetched"))
+        if error or parsed is None:
+            message = error or "empty"
+            if "Header row with Parameter" in message or "not an xlsx" in message:
+                details.append(
+                    {
+                        "electrolyzer": name,
+                        "status": "empty",
+                        "start": start_day.isoformat(),
+                        "end": end_day.isoformat(),
+                        "message": "empty sheet",
+                    }
+                )
+            else:
+                errors += 1
+                logger.error("AriaORMS pull failed for %s: %s", name, message)
+                details.append(
+                    {
+                        "electrolyzer": name,
+                        "status": "error",
+                        "start": start_day.isoformat(),
+                        "end": end_day.isoformat(),
+                        "message": message[:300],
+                    }
+                )
+            continue
         try:
-            content = ariaorms_client.download_logsheet(
-                opener,
-                base,
-                log_id,
-                start_day,
-                end_day,
-                username=username,
-                password=password,
-            )
-            info = apply_excel_bytes(
+            info = apply_parsed_voltage(
                 db,
-                content,
+                parsed,
                 electrolyzer=name,
-                hint_from_name=name,
                 evaluate_alerts=False,
             )
             commit_db(db)
@@ -566,7 +588,7 @@ def pull_from_ariaorms(
                 )
             else:
                 errors += 1
-                logger.exception("AriaORMS pull failed for %s", name)
+                logger.exception("AriaORMS save failed for %s", name)
                 details.append(
                     {
                         "electrolyzer": name,
@@ -576,8 +598,6 @@ def pull_from_ariaorms(
                         "message": message[:300],
                     }
                 )
-        if progress:
-            progress(index, total)
 
     try:
         from . import alerts_engine

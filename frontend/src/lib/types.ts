@@ -621,6 +621,8 @@ export interface DashboardVoltageStats {
   plant_total_voltage: number | null;
   plant_total_ka: number | null;
   plant_power_kw?: number | null;
+  plant_power_kw_7d?: number | null;
+  plant_power_kw_30d?: number | null;
   plant_energy_kwh_24h: number | null;
   plant_energy_kwh_7d?: number | null;
   plant_energy_kwh_30d?: number | null;

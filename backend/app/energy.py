@@ -117,6 +117,87 @@ def live_cell_map(db: Session) -> tuple[date | None, dict[str, list[Any]]]:
     return service, {name: list(positions.values()) for name, positions in by_pos.items()}
 
 
+def samples_on_day(db: Session, day: date) -> dict[str, dict[str, Any]]:
+    """Latest AriaORMS load sample that day, including kA even when stack voltage is blank."""
+    start = datetime(day.year, day.month, day.day)
+    end = start + timedelta(days=1)
+    known = set(all_electrolyzers())
+    rows = (
+        db.query(models.ElectrolyzerNormalization)
+        .filter(
+            models.ElectrolyzerNormalization.date >= start,
+            models.ElectrolyzerNormalization.date < end,
+            models.ElectrolyzerNormalization.total_current.isnot(None),
+            models.ElectrolyzerNormalization.total_current > 1,
+        )
+        .all()
+    )
+    best: dict[str, models.ElectrolyzerNormalization] = {}
+    for row in rows:
+        name = format_electrolyzer_name(row.electrolyzer)
+        if name not in known:
+            continue
+        prev = best.get(name)
+        if prev is None or _reading_is_newer(row, prev):
+            best[name] = row
+    out: dict[str, dict[str, Any]] = {}
+    for name, row in best.items():
+        stamp = _slot_dt(row.date, row.time) or start
+        volts = float(row.total_voltage) if row.total_voltage and row.total_voltage > 50 else None
+        ka = float(row.total_current or 0)
+        out[name] = {
+            "electrolyzer": name,
+            "stamp": stamp,
+            "time": row.time,
+            "current_ka": ka,
+            "voltage": volts,
+            "power_kw": (volts * ka) if volts else None,
+        }
+    return out
+
+
+def period_sample_power(db: Session, days: int) -> tuple[float | None, float | None]:
+    """Mean daily plant kW and the sum of daily consumption.
+
+    Each AriaORMS day is one sample: kW = stack voltage × kA, and that day's
+    consumption is kW × 24 h. Days without a kA sample are left out, not averaged as zero.
+    """
+    today = tehran_today()
+    start = datetime(today.year, today.month, today.day) - timedelta(days=max(days, 1) - 1)
+    end = datetime(today.year, today.month, today.day) + timedelta(days=1)
+    known = set(all_electrolyzers())
+    rows = (
+        db.query(models.ElectrolyzerNormalization)
+        .filter(
+            models.ElectrolyzerNormalization.date >= start,
+            models.ElectrolyzerNormalization.date < end,
+            models.ElectrolyzerNormalization.total_current.isnot(None),
+            models.ElectrolyzerNormalization.total_current > 1,
+            models.ElectrolyzerNormalization.total_voltage.isnot(None),
+            models.ElectrolyzerNormalization.total_voltage > 50,
+        )
+        .all()
+    )
+    best: dict[tuple[str, date], models.ElectrolyzerNormalization] = {}
+    for row in rows:
+        name = format_electrolyzer_name(row.electrolyzer)
+        sample_day = as_date(row.date)
+        if name not in known or sample_day is None:
+            continue
+        key = (name, sample_day)
+        prev = best.get(key)
+        if prev is None or _reading_is_newer(row, prev):
+            best[key] = row
+    by_day: dict[date, float] = defaultdict(float)
+    for (_name, sample_day), row in best.items():
+        by_day[sample_day] += float(row.total_voltage or 0) * float(row.total_current or 0)
+    if not by_day:
+        return None, None
+    average_kw = sum(by_day.values()) / len(by_day)
+    consumed_kwh = sum(power * 24.0 for power in by_day.values())
+    return average_kw, consumed_kwh
+
+
 def _time_hours(label: str | None) -> float | None:
     match = _TIME_RE.match((label or "").strip())
     if not match:
@@ -334,9 +415,10 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]], *, service_day
     plant_ka = 0.0
     plant_kwh_24h = 0.0
     plant_kwh_30d = 0.0
+    day_samples = samples_on_day(db, service_day) if service_day is not None else {}
     for block in blocks:
         el = format_electrolyzer_name(block.get("electrolyzer"))
-        live = latest.get(el) or {}
+        live = day_samples.get(el) or latest.get(el) or {}
         cells = block.get("cells") or []
         live_cells = [cell for cell in cells if cell.get("live") and cell.get("voltage") is not None]
         # Online means this electrolyzer has AriaORMS cell voltages on the service day.
@@ -372,11 +454,12 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]], *, service_day
                     "total_voltage": round(rack_v, 3) if rack_v else None,
                     "avg_voltage": round(rack_v / len(rack_cells), 4) if rack_cells and rack_v else None,
                     "power_kw": round(rack_kw, 2) if rack_kw is not None else None,
-                    "energy_kwh_24h": round((energy_24h.get(el) or {}).get(energy_key) or 0.0, 1) if online and live else None,
+                    "energy_kwh_24h": round(rack_kw * 24.0, 1) if rack_kw else None,
                     "energy_kwh_30d": round((energy_30d.get(el) or {}).get(energy_key) or 0.0, 1) if online and live else None,
                 }
             )
-        kwh_24h = ((energy_24h.get(el) or {}).get("energy_kwh") or 0.0) if live else 0.0
+        # One daily AriaORMS sample (voltage × kA) is that day's consumption, not a partial-hour integral.
+        kwh_24h = (power * 24.0) if power else 0.0
         kwh_30d = ((energy_30d.get(el) or {}).get("energy_kwh") or 0.0) if live else 0.0
         block["online"] = online
         block["current_ka"] = round(current, 3) if current else None
