@@ -24,7 +24,7 @@ LIVE_LAG_DAYS = 1
 from sqlalchemy.orm import Session
 
 from . import models
-from .plant_topology import RACKS, all_electrolyzers, rack_of, train_of
+from .plant_topology import RACKS, all_electrolyzers, format_electrolyzer_name, norm_pos, rack_of, train_of
 
 _TIME_RE = re.compile(r"^(\d{1,2}):(\d{2})$")
 
@@ -55,6 +55,66 @@ def is_live_day(value, today: date | None = None) -> bool:
         return False
     delta = (today - day).days
     return 0 <= delta <= LIVE_LAG_DAYS
+
+
+def _reading_is_newer(row, prev) -> bool:
+    """True when row is a later sample than prev on the same day."""
+    left = _time_hours(getattr(row, "time", None))
+    right = _time_hours(getattr(prev, "time", None))
+    if left is not None and right is not None and left != right:
+        return left > right
+    if (getattr(row, "time", None) or "") != (getattr(prev, "time", None) or ""):
+        return (row.time or "") > (prev.time or "")
+    return (getattr(row, "id", 0) or 0) > (getattr(prev, "id", 0) or 0)
+
+
+def live_cell_map(db: Session) -> tuple[date | None, dict[str, list[Any]]]:
+    """Cell voltages that decide which electrolyzers are online.
+
+    The service day is the newest of today and yesterday that actually has cell
+    voltages. Every cell-room electrolyzer is judged on that same day: it is
+    online only when AriaORMS stored at least one cell voltage for it. Load
+    (kA) alone is not a substitute, and no voltage is invented.
+    """
+    today = tehran_today()
+    start = datetime(today.year, today.month, today.day) - timedelta(days=LIVE_LAG_DAYS)
+    end = datetime(today.year, today.month, today.day) + timedelta(days=1)
+    known = set(all_electrolyzers())
+    rows = (
+        db.query(models.VoltageReading)
+        .filter(
+            models.VoltageReading.voltage.isnot(None),
+            models.VoltageReading.date.isnot(None),
+            models.VoltageReading.date >= start,
+            models.VoltageReading.date < end,
+            models.VoltageReading.position.isnot(None),
+            models.VoltageReading.position != "",
+        )
+        .all()
+    )
+    kept: list[tuple[str, date, Any]] = []
+    for row in rows:
+        name = format_electrolyzer_name(row.electrolyzer)
+        day = as_date(row.date)
+        if name not in known or day is None:
+            continue
+        if not is_live_day(day, today):
+            continue
+        kept.append((name, day, row))
+    if not kept:
+        return None, {}
+    service = max(day for _, day, _ in kept)
+    by_pos: dict[str, dict[str, Any]] = defaultdict(dict)
+    for name, day, row in kept:
+        if day != service:
+            continue
+        pos = norm_pos(row.position)
+        if not pos:
+            continue
+        prev = by_pos[name].get(pos)
+        if prev is None or _reading_is_newer(row, prev):
+            by_pos[name][pos] = row
+    return service, {name: list(positions.values()) for name, positions in by_pos.items()}
 
 
 def _time_hours(label: str | None) -> float | None:
@@ -212,14 +272,17 @@ def energy_since(db: Session, since: datetime, until: datetime | None = None) ->
     return totals
 
 
-def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]]) -> dict[str, Any]:
+def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]], *, service_day: date | None = None) -> dict[str, Any]:
     slots = _load_slots(db, since=datetime.utcnow() - timedelta(days=120))
+    known = set(all_electrolyzers())
     latest: dict[str, dict[str, Any]] = {}
     for item in slots:
-        prev = latest.get(item["electrolyzer"])
+        name = format_electrolyzer_name(item["electrolyzer"])
+        if name not in known:
+            continue
+        prev = latest.get(name)
         if prev is None or item["stamp"] > prev["stamp"]:
-            latest[item["electrolyzer"]] = item
-    today = tehran_today()
+            latest[name] = item
     plant_now = tehran_now()
     t24 = plant_now - timedelta(hours=24)
     t30 = plant_now - timedelta(days=30)
@@ -230,21 +293,24 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]]) -> dict[str, A
         lambda: {"energy_kwh": 0.0, "rack_a_kwh": 0.0, "rack_b_kwh": 0.0}
     )
     for item in slots:
+        name = format_electrolyzer_name(item["electrolyzer"])
+        if name not in known:
+            continue
         h24 = _overlap_hours(item["stamp"], item["hours"], t24, plant_now)
         h30 = _overlap_hours(item["stamp"], item["hours"], t30, plant_now)
         if h30 > 0 and item["hours"]:
             scale = h30 / item["hours"]
-            bucket = energy_30d[item["electrolyzer"]]
+            bucket = energy_30d[name]
             bucket["energy_kwh"] += item["power_kw"] * h30
             bucket["rack_a_kwh"] += item["rack_a_kwh"] * scale
             bucket["rack_b_kwh"] += item["rack_b_kwh"] * scale
         if h24 > 0 and item["hours"]:
             scale = h24 / item["hours"]
-            bucket = energy_24h[item["electrolyzer"]]
+            bucket = energy_24h[name]
             bucket["energy_kwh"] += item["power_kw"] * h24
             bucket["rack_a_kwh"] += item["rack_a_kwh"] * scale
             bucket["rack_b_kwh"] += item["rack_b_kwh"] * scale
-    have = {(block.get("electrolyzer") or "").strip().upper() for block in blocks}
+    have = {format_electrolyzer_name(block.get("electrolyzer")) for block in blocks}
     for name in all_electrolyzers():
         if name in have:
             continue
@@ -269,21 +335,24 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]]) -> dict[str, A
     plant_kwh_24h = 0.0
     plant_kwh_30d = 0.0
     for block in blocks:
-        el = (block.get("electrolyzer") or "").strip().upper()
+        el = format_electrolyzer_name(block.get("electrolyzer"))
         live = latest.get(el) or {}
         cells = block.get("cells") or []
-        live_cells = [cell for cell in cells if cell.get("live")]
-        if live and not is_live_day(live.get("stamp"), today):
+        live_cells = [cell for cell in cells if cell.get("live") and cell.get("voltage") is not None]
+        # Online means this electrolyzer has AriaORMS cell voltages on the service day.
+        # A load reading without those voltages is not in service, and an older load is not reused.
+        online = bool(live_cells)
+        stamp_day = as_date(live.get("stamp")) if live else None
+        if not online or service_day is None or stamp_day != service_day:
             live = {}
         current = live.get("current_ka")
-        cell_v = block.get("total_voltage")
+        cell_v = block.get("total_voltage") if online else None
         logsheet_v = live.get("voltage")
         total_v = cell_v or logsheet_v
         if live.get("stamp") and not block.get("reading_date"):
             block["reading_date"] = live["stamp"]
             block["reading_time"] = live.get("time")
         power = (total_v * current) if total_v and current else None
-        online = bool(live_cells) or bool(live)
         racks = []
         for rack in RACKS:
             rack_cells = [
@@ -303,8 +372,8 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]]) -> dict[str, A
                     "total_voltage": round(rack_v, 3) if rack_v else None,
                     "avg_voltage": round(rack_v / len(rack_cells), 4) if rack_cells and rack_v else None,
                     "power_kw": round(rack_kw, 2) if rack_kw is not None else None,
-                    "energy_kwh_24h": round((energy_24h.get(el) or {}).get(energy_key) or 0.0, 1) if live else None,
-                    "energy_kwh_30d": round((energy_30d.get(el) or {}).get(energy_key) or 0.0, 1) if live else None,
+                    "energy_kwh_24h": round((energy_24h.get(el) or {}).get(energy_key) or 0.0, 1) if online and live else None,
+                    "energy_kwh_30d": round((energy_30d.get(el) or {}).get(energy_key) or 0.0, 1) if online and live else None,
                 }
             )
         kwh_24h = ((energy_24h.get(el) or {}).get("energy_kwh") or 0.0) if live else 0.0

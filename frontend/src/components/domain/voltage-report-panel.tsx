@@ -55,15 +55,16 @@ function hasLiveTotals(voltage?: DashboardVoltageStats | null): boolean {
 function trainLine(live: DashboardVoltageStats, train: TrainId) {
   const names = new Set(TRAIN_LETTERS.map((letter) => electrolyzerName(train, letter)));
   const present = live.electrolyzers.filter((row) => names.has(formatElectrolyzer(row.electrolyzer)));
-  const online = present.filter((row) => row.online !== false && ((row.cell_count || 0) > 0 || Boolean(row.current_ka))).length;
+  const serving = (row: (typeof present)[number]) => row.online !== false && (row.cell_count || 0) > 0;
+  const online = present.filter(serving).length;
   return {
     train,
     online,
     total: names.size,
-    ka: present.reduce((sum, row) => sum + (row.online !== false ? row.current_ka || 0 : 0), 0),
-    kwh: present.reduce((sum, row) => sum + (row.energy_kwh_24h || 0), 0),
-    danger: present.reduce((sum, row) => sum + (row.danger_count || 0), 0),
-    warning: present.reduce((sum, row) => sum + (row.warning_count || 0), 0),
+    ka: present.reduce((sum, row) => sum + (serving(row) ? row.current_ka || 0 : 0), 0),
+    kwh: present.reduce((sum, row) => sum + (serving(row) ? row.energy_kwh_24h || 0 : 0), 0),
+    danger: present.reduce((sum, row) => sum + (serving(row) ? row.danger_count || 0 : 0), 0),
+    warning: present.reduce((sum, row) => sum + (serving(row) ? row.warning_count || 0 : 0), 0),
   };
 }
 

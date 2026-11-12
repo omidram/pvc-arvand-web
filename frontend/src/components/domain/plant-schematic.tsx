@@ -18,15 +18,15 @@ type View =
   | { level: "train"; train: TrainId }
   | { level: "electrolyzer"; train: TrainId; name: string };
 
+function inService(block?: MonitoringElectrolyzerBlock): boolean {
+  return Boolean(block && block.online !== false && block.cell_count > 0);
+}
+
 function healthOf(block?: MonitoringElectrolyzerBlock): "ok" | "warning" | "danger" | "offline" {
-  if (block?.online === false) return "offline";
-  if (block?.cell_count) {
-    if (block.danger_count > 0) return "danger";
-    if (block.warning_count > 0) return "warning";
-    return "ok";
-  }
-  if (block?.online || block?.current_ka || block?.power_kw) return "ok";
-  return "offline";
+  if (!inService(block) || !block) return "offline";
+  if (block.danger_count > 0) return "danger";
+  if (block.warning_count > 0) return "warning";
+  return "ok";
 }
 
 function fmtFixed(value: number | null | undefined, digits: number): string {
@@ -271,15 +271,13 @@ export function PlantSchematic({
     const present = names.map((name) => byName.get(name)).filter(Boolean) as MonitoringElectrolyzerBlock[];
     return {
       names,
-      danger: present.reduce((sum, block) => sum + block.danger_count, 0),
-      warning: present.reduce((sum, block) => sum + block.warning_count, 0),
-      cells: present.reduce((sum, block) => sum + block.cell_count, 0),
-      online: present.filter(
-        (block) => block.online !== false && (block.cell_count > 0 || Boolean(block.current_ka) || Boolean(block.power_kw)),
-      ).length,
-      load: present.reduce((sum, block) => sum + (block.online === false ? 0 : block.current_ka || 0), 0),
-      power: present.reduce((sum, block) => sum + (block.online === false ? 0 : block.power_kw || 0), 0),
-      energy: present.reduce((sum, block) => sum + (block.online === false ? 0 : block.energy_kwh_24h || 0), 0),
+      danger: present.reduce((sum, block) => sum + (inService(block) ? block.danger_count : 0), 0),
+      warning: present.reduce((sum, block) => sum + (inService(block) ? block.warning_count : 0), 0),
+      cells: present.reduce((sum, block) => sum + (inService(block) ? block.cell_count : 0), 0),
+      online: present.filter((block) => inService(block)).length,
+      load: present.reduce((sum, block) => sum + (inService(block) ? block.current_ka || 0 : 0), 0),
+      power: present.reduce((sum, block) => sum + (inService(block) ? block.power_kw || 0 : 0), 0),
+      energy: present.reduce((sum, block) => sum + (inService(block) ? block.energy_kwh_24h || 0 : 0), 0),
     };
   };
 
