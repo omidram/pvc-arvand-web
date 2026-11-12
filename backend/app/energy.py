@@ -421,13 +421,25 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]], *, service_day
         live = day_samples.get(el) or latest.get(el) or {}
         cells = block.get("cells") or []
         live_cells = [cell for cell in cells if cell.get("live") and cell.get("voltage") is not None]
-        # Online means this electrolyzer has AriaORMS cell voltages on the service day.
-        # A load reading without those voltages is not in service, and an older load is not reused.
-        online = bool(live_cells)
+        # In service only when this day has both AriaORMS cell voltages and a kA. An older sample is not reused.
         stamp_day = as_date(live.get("stamp")) if live else None
-        if not online or service_day is None or stamp_day != service_day:
+        if service_day is None or stamp_day != service_day:
             live = {}
         current = live.get("current_ka")
+        try:
+            current_value = float(current) if current is not None else None
+        except (TypeError, ValueError):
+            current_value = None
+        online = bool(live_cells) and current_value is not None and current_value > 1
+        if not online:
+            live = {}
+            current = None
+            live_cells = []
+            block["cells"] = []
+            block["cell_count"] = 0
+            block["total_voltage"] = None
+            block["avg_voltage"] = None
+            block["max_voltage"] = None
         cell_v = block.get("total_voltage") if online else None
         logsheet_v = live.get("voltage")
         total_v = cell_v or logsheet_v

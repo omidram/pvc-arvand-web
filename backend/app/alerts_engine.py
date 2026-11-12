@@ -483,6 +483,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
 
     by_el: dict[str, list[float]] = {}
     by_sev: dict[str, dict[str, int]] = {}
+    unit_peak: dict[str, tuple[float, str | None]] = {}
     ok = warn = danger = 0
     max_v: float | None = None
     max_el: str | None = None
@@ -510,10 +511,10 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         elif sev == "ok":
             ok += 1
             bucket["ok"] += 1
-        if max_v is None or v > max_v:
-            max_v = v
-            max_el = el
-            max_pos = (row.position or "").strip() or None
+        pos = (row.position or "").strip() or None
+        peak = unit_peak.get(el)
+        if peak is None or v > peak[0]:
+            unit_peak[el] = (v, pos)
 
     day_loads = samples_on_day(db, service_day) if service_day is not None else {}
     avg_kw_7d, kwh_7d = period_sample_power(db, 7)
@@ -533,16 +534,43 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
             plant_ka += ka
             plant_kwh += power * 24.0
 
-    names = sorted(by_el)
+    ok = warn = danger = 0
+    max_v = None
+    max_el = None
+    max_pos = None
     electrolyzers = []
     plant_total = 0.0
-    for el in names:
+    for el in sorted(known):
+        power = unit_power.get(el)
+        if power is None:
+            electrolyzers.append(
+                {
+                    "electrolyzer": el,
+                    "cell_count": 0,
+                    "total_voltage": None,
+                    "avg_voltage": None,
+                    "max_voltage": None,
+                    "current_ka": None,
+                    "energy_kwh_24h": None,
+                    "online": False,
+                    "danger_count": 0,
+                    "warning_count": 0,
+                }
+            )
+            continue
+        peak, pos = unit_peak.get(el, (None, None))
+        if peak is not None and (max_v is None or peak > max_v):
+            max_v = peak
+            max_el = el
+            max_pos = pos
+        sev = by_sev.get(el, {})
+        ok += sev.get("ok", 0)
+        warn += sev.get("warning", 0)
+        danger += sev.get("danger", 0)
         vals = by_el.get(el, [])
         total = sum(vals)
         plant_total += total
         load = day_loads.get(el)
-        power = unit_power.get(el)
-        sev = by_sev.get(el, {})
         electrolyzers.append(
             {
                 "electrolyzer": el,
@@ -551,8 +579,8 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
                 "avg_voltage": round(total / len(vals), 4) if vals else None,
                 "max_voltage": round(max(vals), 4) if vals else None,
                 "current_ka": round(float(load["current_ka"]), 3) if load and load.get("current_ka") else None,
-                "energy_kwh_24h": round(power * 24.0, 1) if power else None,
-                "online": len(vals) > 0,
+                "energy_kwh_24h": round(power * 24.0, 1),
+                "online": True,
                 "danger_count": sev.get("danger", 0),
                 "warning_count": sev.get("warning", 0),
             }
@@ -577,7 +605,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         "plant_energy_kwh_7d": round(kwh_7d, 1) if kwh_7d else None,
         "plant_energy_kwh_30d": round(kwh_30d, 1) if kwh_30d else None,
         "report_date": (service_day or today).isoformat(),
-        "online_count": len(names),
+        "online_count": len(unit_power),
         "cell_count": cell_count,
         "ok_count": ok,
         "warning_count": warn,

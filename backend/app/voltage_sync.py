@@ -27,6 +27,12 @@ from .plant_import import parse_voltage_excel
 logger = logging.getLogger("pvc_arvand.voltage_sync")
 _voltage_indexes_ready = False
 
+# 17 Aban 1405. These two left service that day; later sheet rows are not operating data.
+OUT_OF_SERVICE_FROM = {
+    "E1": datetime(2026, 11, 8),
+    "H2": datetime(2026, 11, 8),
+}
+
 DEFAULT_WATCH_SUBDIR = "ariaorms_exports"
 _EXCEL_SUFFIXES = {".xlsx", ".xls", ".xlsm"}
 _EL_FROM_NAME = re.compile(r"(?:ELECTROLYZER|EL)[_\s\-]*(?P<el>[A-Za-z]+\d*)", re.I)
@@ -84,6 +90,17 @@ def ensure_voltage_indexes(db: Session) -> None:
             db.rollback()
             return
     commit_db(db)
+
+
+def _out_of_service(name: str, stamp: str) -> bool:
+    cutoff = OUT_OF_SERVICE_FROM.get((name or "").strip().upper())
+    if cutoff is None or not stamp:
+        return False
+    try:
+        day = datetime.strptime(stamp[:10], "%Y-%m-%d")
+    except ValueError:
+        return False
+    return day >= cutoff
 
 
 def _as_midnight(value: str | datetime | None, fallback: datetime) -> str:
@@ -186,9 +203,15 @@ def apply_parsed_voltage(
         pos = str(item.get("position") or "").strip()
         tlabel = item.get("time")
         voltage = item.get("voltage")
-        if not pos or not tlabel or voltage is None:
+        if not pos or not tlabel or voltage is None or not item.get("date"):
+            continue
+        voltage_f = float(voltage)
+        # A cell voltage without a real operating reading is not stored.
+        if voltage_f < 1.5 or voltage_f > 8:
             continue
         stamp = _as_midnight(item.get("date"), date_val)
+        if _out_of_service(item_el, stamp):
+            continue
         row_payload.append(
             {
                 "electrolyzer": item_el,
@@ -196,7 +219,7 @@ def apply_parsed_voltage(
                 "element_nr": item.get("element_nr"),
                 "date": stamp,
                 "time": tlabel,
-                "voltage": float(voltage),
+                "voltage": voltage_f,
             }
         )
         counts[(stamp, tlabel)] = counts.get((stamp, tlabel), 0) + 1
@@ -204,8 +227,6 @@ def apply_parsed_voltage(
         dates_in_file.add(stamp[:10])
         if progress and (done == total or done % 400 == 0):
             progress(done, total)
-
-    upserted = _bulk_upsert_readings(db, row_payload)
 
     slots = parsed.get("total_slots") or []
     if not slots:
@@ -221,7 +242,11 @@ def apply_parsed_voltage(
             total_v = float(slot["rack_a"]) + float(slot["rack_b"])
         if total_v is None and slot.get("anolyte_temp") is None and slot.get("load") is None and slot.get("rack_a_avg") is None:
             continue
+        if not slot.get("date") or _out_of_service(el, str(slot.get("date"))):
+            continue
         stamp = _as_midnight(slot.get("date"), date_val)
+        if _out_of_service(el, stamp):
+            continue
         times_in_file.add(tlabel)
         dates_in_file.add(stamp[:10])
         norm_rows.append(
@@ -247,6 +272,26 @@ def apply_parsed_voltage(
                 "catholyte_conc": slot.get("catholyte_conc"),
             }
         )
+    # A day is kept only when AriaORMS sent both a real cell voltage and a kA for that same time.
+    def _load_ka(value: object) -> float:
+        try:
+            return float(value)  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return 0.0
+
+    measured = {
+        (row["date"], row["time"])
+        for row in norm_rows
+        if _load_ka(row.get("total_current")) > 1
+    }
+    row_payload = [row for row in row_payload if (row["date"], row["time"]) in measured]
+    norm_rows = [row for row in norm_rows if (row["date"], row["time"]) in measured]
+    counts = {}
+    for row in row_payload:
+        counts[(row["date"], row["time"])] = counts.get((row["date"], row["time"]), 0) + 1
+    for row in norm_rows:
+        row["element_count"] = counts.get((row["date"], row["time"]))
+    upserted = _bulk_upsert_readings(db, row_payload)
     _bulk_upsert_totals(db, norm_rows)
     db.flush()
 

@@ -385,6 +385,24 @@ def _ensure_shutdown_trip_columns() -> None:
 _ensure_shutdown_trip_columns()
 
 
+def _drop_offline_electrolyzer_samples() -> None:
+    """E1 and H2 left service on 17 Aban 1405. Drop voltage and kA stored from that day on."""
+    statements = (
+        "DELETE FROM voltage_readings WHERE electrolyzer IN ('E1', 'H2') AND date >= '2026-11-08'",
+        "DELETE FROM electrolyzer_normalizations WHERE electrolyzer IN ('E1', 'H2') AND date >= '2026-11-08'",
+    )
+    try:
+        with engine.begin() as conn:
+            removed = [conn.execute(text(sql)).rowcount or 0 for sql in statements]
+        if any(removed):
+            print(f"Removed E1/H2 samples from 17 Aban 1405 onward: {removed[0]} voltages, {removed[1]} loads")
+    except Exception as exc:
+        print(f"Could not remove E1/H2 samples after 17 Aban 1405: {exc}")
+
+
+_drop_offline_electrolyzer_samples()
+
+
 def _ensure_coating_warranty_columns() -> None:
     for table, cols in (
         (
