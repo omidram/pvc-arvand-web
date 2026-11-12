@@ -541,8 +541,9 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     electrolyzers = []
     plant_total = 0.0
     for el in sorted(known):
+        vals = by_el.get(el, [])
         power = unit_power.get(el)
-        if power is None:
+        if not vals:
             electrolyzers.append(
                 {
                     "electrolyzer": el,
@@ -567,7 +568,6 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         ok += sev.get("ok", 0)
         warn += sev.get("warning", 0)
         danger += sev.get("danger", 0)
-        vals = by_el.get(el, [])
         total = sum(vals)
         plant_total += total
         load = day_loads.get(el)
@@ -579,7 +579,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
                 "avg_voltage": round(total / len(vals), 4) if vals else None,
                 "max_voltage": round(max(vals), 4) if vals else None,
                 "current_ka": round(float(load["current_ka"]), 3) if load and load.get("current_ka") else None,
-                "energy_kwh_24h": round(power * 24.0, 1),
+                "energy_kwh_24h": round(power * 24.0, 1) if power else None,
                 "online": True,
                 "danger_count": sev.get("danger", 0),
                 "warning_count": sev.get("warning", 0),
@@ -605,7 +605,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         "plant_energy_kwh_7d": round(kwh_7d, 1) if kwh_7d else None,
         "plant_energy_kwh_30d": round(kwh_30d, 1) if kwh_30d else None,
         "report_date": (service_day or today).isoformat(),
-        "online_count": len(unit_power),
+        "online_count": sum(1 for row in electrolyzers if row.get("online")),
         "cell_count": cell_count,
         "ok_count": ok,
         "warning_count": warn,

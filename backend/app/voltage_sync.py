@@ -11,6 +11,7 @@ import hashlib
 import json
 import logging
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
@@ -36,6 +37,9 @@ OUT_OF_SERVICE_FROM = {
 DEFAULT_WATCH_SUBDIR = "ariaorms_exports"
 _EXCEL_SUFFIXES = {".xlsx", ".xls", ".xlsm"}
 _EL_FROM_NAME = re.compile(r"(?:ELECTROLYZER|EL)[_\s\-]*(?P<el>[A-Za-z]+\d*)", re.I)
+_pull_guard = threading.Lock()
+_active_pull_job: str | None = None
+_pull_busy = False
 
 
 def default_watch_dir() -> Path:
@@ -433,9 +437,8 @@ def scan_and_apply(
     else:
         message = f"Folder scan: {scanned} file(s), applied {files_applied}, upserted {rows_total} row(s)"
         ok = True
-    # Only stamp last successful/failed run when this scan is the primary action,
-    # or when it actually applied files / hit a real error.
-    if record_run or files_applied > 0 or has_errors:
+    # An empty folder is not an AriaORMS sync. Never replace a real pull with "0 rows".
+    if row.last_run_status != "running" and (files_applied > 0 or has_errors):
         row.last_run_at = datetime.utcnow()
         row.last_run_status = "error" if not ok else "success"
         row.last_run_message = message[:500]
@@ -461,6 +464,35 @@ def count_watched_files(configured: str | None) -> int:
 
 
 def pull_from_ariaorms(
+    db: Session,
+    row: models.VoltageSyncSettings | None = None,
+    *,
+    include_today: bool = False,
+    progress=None,
+) -> dict[str, Any]:
+    """One AriaORMS pull at a time. A second caller is told the first is still running."""
+    global _pull_busy
+    with _pull_guard:
+        if _pull_busy:
+            return {
+                "ok": True,
+                "mode": "ariaorms",
+                "files_scanned": 0,
+                "files_applied": 0,
+                "rows_upserted": 0,
+                "message": "AriaORMS pull already running",
+                "details": [],
+                "already_running": True,
+            }
+        _pull_busy = True
+    try:
+        return _pull_from_ariaorms(db, row, include_today=include_today, progress=progress)
+    finally:
+        with _pull_guard:
+            _pull_busy = False
+
+
+def _pull_from_ariaorms(
     db: Session,
     row: models.VoltageSyncSettings | None = None,
     *,
@@ -495,6 +527,11 @@ def pull_from_ariaorms(
             "message": msg,
             "details": [],
         }
+
+    row.last_run_at = datetime.utcnow()
+    row.last_run_status = "running"
+    row.last_run_message = "Pulling every electrolyzer from AriaORMS. Leaving Settings does not stop this."
+    commit_db(db)
 
     base = ariaorms_client.normalize_base_url(row.source_url)
     start_day, end_day = ariaorms_client.date_window(
@@ -685,3 +722,36 @@ def pull_from_ariaorms(
         "message": message,
         "details": details,
     }
+
+
+def active_pull_job() -> str | None:
+    with _pull_guard:
+        return _active_pull_job
+
+
+def launch_pull(*, include_today: bool = True) -> dict[str, Any]:
+    """Start an AriaORMS pull on a server thread. A second call joins the same job."""
+    global _active_pull_job
+    from .import_jobs import get_job, spawn_import
+
+    with _pull_guard:
+        if _active_pull_job:
+            existing = get_job(_active_pull_job)
+            if existing and not existing.get("done"):
+                return {"job_id": _active_pull_job, "already_running": True}
+
+        def work(session: Session, progress):
+            row = session.query(models.VoltageSyncSettings).first()
+            result = pull_from_ariaorms(session, row, include_today=include_today, progress=progress)
+            try:
+                folder = scan_and_apply(session, session.query(models.VoltageSyncSettings).first(), record_run=False)
+                if folder.get("files_applied"):
+                    result["rows_upserted"] = int(result.get("rows_upserted") or 0) + int(folder.get("rows_upserted") or 0)
+                    result["message"] = f"{result.get('message')}; folder: {folder.get('message')}"
+            except Exception:  # noqa: BLE001
+                logger.exception("Folder scan after AriaORMS pull failed")
+            return result
+
+        spawned = spawn_import(work, daemon=False)
+        _active_pull_job = spawned["job_id"]
+        return spawned

@@ -63,8 +63,12 @@ def tick(progress: Progress | None, processed: int, total: int) -> None:
         progress(processed, total)
 
 
-def spawn_import(work: Callable[..., dict]) -> dict[str, str]:
-    """Run work(db, progress) on a new session and return a job id immediately."""
+def spawn_import(work: Callable[..., dict], *, daemon: bool = True) -> dict[str, str]:
+    """Run work(db, progress) on a new session and return a job id immediately.
+
+    The thread is not tied to the HTTP request. daemon=False keeps a plant pull
+    alive for as long as the server process is up, including after the browser leaves.
+    """
     job_id = create_job()
 
     def run() -> None:
@@ -82,5 +86,5 @@ def spawn_import(work: Callable[..., dict]) -> dict[str, str]:
         finally:
             db.close()
 
-    threading.Thread(target=run, daemon=True).start()
+    threading.Thread(target=run, name=f"import-{job_id[:8]}", daemon=daemon).start()
     return {"job_id": job_id}

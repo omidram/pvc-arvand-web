@@ -56,43 +56,30 @@ def update_voltage_sync_settings(
     return _to_read(obj)
 
 
+@router.get("/active")
+def voltage_sync_active():
+    """Job started from Settings. It keeps running after the browser leaves the page."""
+    from ..import_jobs import get_job
+
+    job_id = voltage_sync.active_pull_job()
+    job = get_job(job_id) if job_id else None
+    running = bool(job and not job.get("done"))
+    return {
+        "running": running,
+        "job_id": job_id,
+        "percent": int((job or {}).get("percent") or 0),
+        "processed": int((job or {}).get("processed") or 0),
+        "total": int((job or {}).get("total") or 0),
+        "done": bool((job or {}).get("done")),
+        "error": (job or {}).get("error"),
+    }
+
+
 @router.post("/run")
 def run_voltage_sync_now(db: Session = Depends(get_db)):
-    """Pull complete AriaORMS log sheets for all electrolyzers (includes today)."""
+    """Pull today's AriaORMS log sheets on the server. Navigation does not cancel it."""
     _get_or_create(db)
-
-    def work(session: Session, progress):
-        row = session.query(models.VoltageSyncSettings).first()
-        result = voltage_sync.pull_from_ariaorms(
-            session,
-            row,
-            include_today=True,
-            progress=progress,
-        )
-        try:
-            # Do not overwrite AriaORMS last_run_* when the watch folder is empty.
-            folder = voltage_sync.scan_and_apply(
-                session,
-                session.query(models.VoltageSyncSettings).first(),
-                record_run=False,
-            )
-            if folder.get("files_applied"):
-                result["files_applied"] = int(result.get("files_applied") or 0) + int(
-                    folder.get("files_applied") or 0
-                )
-                result["rows_upserted"] = int(result.get("rows_upserted") or 0) + int(
-                    folder.get("rows_upserted") or 0
-                )
-                result["message"] = f"{result.get('message')}; folder: {folder.get('message')}"
-                # Folder actually contributed data — refresh the stamp from AriaORMS row.
-                row2 = session.query(models.VoltageSyncSettings).first()
-                if row2:
-                    result["last_run_at"] = row2.last_run_at.isoformat() if row2.last_run_at else None
-        except Exception:  # noqa: BLE001
-            pass
-        return result
-
-    return spawn_import(work)
+    return voltage_sync.launch_pull(include_today=True)
 
 
 @router.post("/import-file")

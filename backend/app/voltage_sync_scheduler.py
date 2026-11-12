@@ -47,7 +47,7 @@ def _run_daily_pull() -> None:
         row = db.query(models.VoltageSyncSettings).first()
         if not row or not row.enabled:
             return
-        result = voltage_sync.pull_from_ariaorms(db, row, include_today=False)
+        result = voltage_sync.pull_from_ariaorms(db, row, include_today=True)
         logger.info("AriaORMS daily pull: %s", result.get("message"))
     except OperationalError as exc:
         if is_sqlite_lock(exc):
@@ -67,7 +67,7 @@ def _run_watch_cycle() -> None:
         if not row or not row.enabled:
             return
         # Watch folder remains a secondary path when Excel files are dropped manually.
-        result = voltage_sync.scan_and_apply(db, row)
+        result = voltage_sync.scan_and_apply(db, row, record_run=False)
         if result.get("files_applied"):
             logger.info("Voltage watch sync: %s", result.get("message"))
     except OperationalError as exc:
@@ -119,6 +119,7 @@ def apply_schedule(row: "models.VoltageSyncSettings") -> None:
 
 def init_scheduler_from_db() -> None:
     db = SessionLocal()
+    start_pull = False
     try:
         row = db.query(models.VoltageSyncSettings).first()
         if row is None:
@@ -148,8 +149,11 @@ def init_scheduler_from_db() -> None:
                 db.refresh(row)
             voltage_sync.resolve_watch_dir(row.watch_dir)
         apply_schedule(row)
+        start_pull = bool(row.enabled)
     finally:
         db.close()
+    if start_pull:
+        voltage_sync.launch_pull(include_today=True)
 
 
 def get_next_run_at() -> str | None:

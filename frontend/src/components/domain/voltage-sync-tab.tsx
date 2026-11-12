@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Save, Play, Upload, RefreshCw } from "lucide-react";
-import { voltageSyncApi, type ImportProgress } from "@/lib/endpoints";
+import { followImport, voltageSyncApi, type ImportProgress } from "@/lib/endpoints";
 import { ImportProgressBar } from "@/components/domain/import-progress";
 import type { VoltageSyncRunResult, VoltageSyncSettings } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +62,28 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
     },
     onError: () => setProgress(null),
   });
+
+  useEffect(() => {
+    let alive = true;
+    voltageSyncApi.active().then(async (job) => {
+      if (!alive || !job.running || !job.job_id) return;
+      setProgress({ percent: job.percent, processed: job.processed, total: job.total });
+      try {
+        const data = await followImport({ job_id: job.job_id }, (next) => {
+          if (alive) setProgress(next);
+        });
+        if (!alive) return;
+        setLastResult(data);
+        setProgress(null);
+        queryClient.invalidateQueries({ queryKey: ["voltage-sync-settings"] });
+      } catch {
+        if (alive) setProgress(null);
+      }
+    }).catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [queryClient]);
 
   const uploadMutation = useMutation({
     mutationFn: (file: File) => {
@@ -193,10 +215,11 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
         </div>
       </div>
 
+      <p className="text-sm text-[var(--win-text-dim)]">{t("voltageSync.backgroundNote")}</p>
       <div className="flex flex-wrap gap-2">
-        <Button type="button" onClick={() => runMutation.mutate()} disabled={runMutation.isPending}>
-          {runMutation.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-          {runMutation.isPending ? t("voltageSync.running") : t("voltageSync.runNow")}
+        <Button type="button" onClick={() => runMutation.mutate()} disabled={runMutation.isPending || progress != null}>
+          {runMutation.isPending || progress != null ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
+          {runMutation.isPending || progress != null ? t("voltageSync.running") : t("voltageSync.runNow")}
         </Button>
         <Button type="button" variant="secondary" onClick={() => fileRef.current?.click()} disabled={uploadMutation.isPending}>
           <Upload className="h-4 w-4" />
@@ -214,7 +237,7 @@ function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
         />
       </div>
 
-      {progress && (runMutation.isPending || uploadMutation.isPending) ? <ImportProgressBar progress={progress} wide /> : null}
+      {progress ? <ImportProgressBar progress={progress} wide /> : null}
       {runMutation.isError ? (
         <div className="text-sm text-red-700">{(runMutation.error as Error)?.message}</div>
       ) : null}

@@ -1448,6 +1448,15 @@ export const voltageSyncApi = {
       lookback_days: number;
     }>
   ): Promise<T.VoltageSyncSettings> => (await apiClient.put("/voltage-sync/settings", payload)).data,
+  active: async (): Promise<{
+    running: boolean;
+    job_id: string | null;
+    percent: number;
+    processed: number;
+    total: number;
+    done: boolean;
+    error: string | null;
+  }> => (await apiClient.get("/voltage-sync/active")).data,
   runNow: async (onProgress?: (progress: ImportProgress) => void): Promise<T.VoltageSyncRunResult> => {
     const { data } = await apiClient.post("/voltage-sync/run");
     return followImport(data, onProgress);
