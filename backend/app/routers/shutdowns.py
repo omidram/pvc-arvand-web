@@ -75,7 +75,7 @@ def list_shutdowns(
     date_from: datetime | None = Query(default=None),
     date_to: datetime | None = Query(default=None),
     skip: int = 0,
-    limit: int = Query(default=500, le=5000),
+    limit: int = Query(default=5000, le=20000),
     db: Session = Depends(get_db),
 ):
     query = db.query(models.Shutdown)
@@ -138,8 +138,18 @@ async def import_shutdowns(_admin=Depends(require_admin), file: UploadFile = Fil
     content = await read_xlsx(file)
     filename = file.filename
     who = _admin.username
-    return spawn_import(
-        lambda db, progress: import_excel_bytes(
+
+    def work(db, progress):
+        from ..shutdown_monthly_import import import_train_shutdown_workbook, is_train_shutdown_workbook
+
+        if is_train_shutdown_workbook(content):
+            if progress:
+                progress(0, 1)
+            result = import_train_shutdown_workbook(db, content)
+            if progress:
+                progress(1, 1)
+            return result
+        return import_excel_bytes(
             db,
             models.Shutdown,
             schemas.ShutdownBase,
@@ -150,7 +160,8 @@ async def import_shutdowns(_admin=Depends(require_admin), file: UploadFile = Fil
             file_name=filename,
             uploaded_by=who,
         )
-    )
+
+    return spawn_import(work)
 
 
 @router.get("/{nr}", response_model=schemas.ShutdownRead)

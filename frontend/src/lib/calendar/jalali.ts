@@ -123,7 +123,7 @@ export function parseIsoDateParts(value: string | null | undefined): Ymd | null 
 
 export function parseIsoTime(value: string | null | undefined): string {
   if (!value) return "";
-  const m = String(value).match(/T(\d{2}:\d{2})/);
+  const m = String(value).match(/(?:T|\s)(\d{2}:\d{2})/);
   return m ? m[1] : "";
 }
 

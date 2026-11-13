@@ -405,6 +405,28 @@ def _drop_offline_electrolyzer_samples() -> None:
 _drop_offline_electrolyzer_samples()
 
 
+def _repair_shutdown_history() -> None:
+    """Drop Excel epoch dates (shown as 1278) and load the two-train shutdown log with its minutes."""
+    from pathlib import Path
+
+    from .shutdown_monthly_import import import_train_shutdown_workbook, repair_shutdown_dates
+
+    db = SessionLocal()
+    try:
+        repair_shutdown_dates(db)
+        workbook = Path(__file__).resolve().parent / "data" / "train_shutdowns.xlsx"
+        if workbook.is_file():
+            import_train_shutdown_workbook(db, workbook)
+    except Exception as exc:
+        db.rollback()
+        print(f"Could not repair shutdown dates: {exc}")
+    finally:
+        db.close()
+
+
+_repair_shutdown_history()
+
+
 def _ensure_coating_warranty_columns() -> None:
     for table, cols in (
         (

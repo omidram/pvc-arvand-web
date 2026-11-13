@@ -219,7 +219,7 @@ export function DateInput({
         <input
           type="time"
           disabled={disabled || !iso}
-          className="access-inset-field w-[92px]"
+          className="access-inset-field w-[104px] min-w-[104px] shrink-0"
           value={time}
           onChange={(e) => {
             const dateIso = parseIsoDateParts(iso) ? iso.slice(0, 10) : "";

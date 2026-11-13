@@ -1011,6 +1011,16 @@ html:not([data-theme="dark"]) .dt-value-filter-foot {
   background: #dce8f8;
 }
 
+.shutdown-list-table td.sd-stamp {
+  min-width: 270px;
+  white-space: nowrap;
+}
+
+.shutdown-list-table td.sd-stamp input[type="time"] {
+  width: 104px;
+  min-width: 104px;
+}
+
 .sd-month-mark {
   display: inline-block;
   margin-inline-start: 2px;

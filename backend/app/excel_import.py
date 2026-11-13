@@ -286,6 +286,9 @@ def _as_datetime(value: Any) -> datetime | None:
     if value is None or value == "":
         return None
     if isinstance(value, datetime):
+        # A time-only Excel cell is 1899-12-30 plus the clock. That is not a plant date.
+        if value.year < 1905:
+            return None
         return value
     if isinstance(value, date):
         return datetime(value.year, value.month, value.day)
@@ -294,7 +297,10 @@ def _as_datetime(value: Any) -> datetime | None:
     if isinstance(value, (int, float)) and not isinstance(value, bool):
         serial = float(value)
         if 1 <= serial < 80000:
-            return datetime(1899, 12, 30) + timedelta(days=serial)
+            parsed = datetime(1899, 12, 30) + timedelta(days=serial)
+            if parsed.year < 1905:
+                return None
+            return parsed
         return None
     text = str(value).strip()
     if not text:

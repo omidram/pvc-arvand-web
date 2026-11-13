@@ -218,7 +218,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   const monthKey = months.find((month) => month.from === from && month.to === to)?.key || "";
 
   const listParams = useMemo(() => {
-    const params: Record<string, unknown> = { limit: 2000 };
+    const params: Record<string, unknown> = { limit: 10000 };
     if (from) params.date_from = `${from}T00:00:00`;
     if (to) params.date_to = `${to}T23:59:59`;
     return params;
@@ -296,7 +296,10 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   );
   const sheet = useSheetFilters(sheetCols, shown);
   const mainSort = useSort(sheet.shown, SHUTDOWN_SORT);
-  const listed = mainSort.sorted;
+  const listed = useMemo(() => {
+    if (mainSort.sort || (!from && !to)) return mainSort.sorted;
+    return [...mainSort.sorted].sort((a, b) => (a.shutdown_time || "").localeCompare(b.shutdown_time || ""));
+  }, [mainSort.sorted, mainSort.sort, from, to]);
   const totalMins = listed.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
   const totalHm = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, "0")}`;
 
@@ -476,8 +479,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               <th className="w-4" />
               <SortTh k="nr" sorter={mainSort} className="w-12">{t("menus.number")}</SortTh>
               {fieldVisible("plant_part") ? <SortTh k="plant_part" sorter={mainSort} className="w-28">{t("menus.partOfPlant")}</SortTh> : null}
-              {fieldVisible("shutdown_time") ? <SortTh k="shutdown_time" sorter={mainSort} className="w-40">{t("fields.shutdownTime")}</SortTh> : null}
-              {fieldVisible("startup_time") ? <SortTh k="startup_time" sorter={mainSort} className="w-40">{t("fields.startupTime")}</SortTh> : null}
+              {fieldVisible("shutdown_time") ? <SortTh k="shutdown_time" sorter={mainSort} className="min-w-[270px]">{t("fields.shutdownTime")}</SortTh> : null}
+              {fieldVisible("startup_time") ? <SortTh k="startup_time" sorter={mainSort} className="min-w-[270px]">{t("fields.startupTime")}</SortTh> : null}
               <SortTh k="duration" sorter={mainSort} className="w-24">{t("fields.durationHm")}</SortTh>
               <SortTh k="shutdown_type" sorter={mainSort} className="w-32">{t("menus.shutdownReasons")}</SortTh>
               {fieldVisible("code") ? <SortTh k="code" sorter={mainSort} className="w-16">{t("fields.code")}</SortTh> : null}
@@ -598,7 +601,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   </td>
                 ) : null}
                 {fieldVisible("shutdown_time") ? (
-                  <td onClick={(e) => e.stopPropagation()}>
+                  <td className="sd-stamp" onClick={(e) => e.stopPropagation()}>
                     <DateInput
                       type="datetime-local"
                       className="w-full min-w-[108px] tabular-nums"
@@ -609,7 +612,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   </td>
                 ) : null}
                 {fieldVisible("startup_time") ? (
-                  <td onClick={(e) => e.stopPropagation()}>
+                  <td className="sd-stamp" onClick={(e) => e.stopPropagation()}>
                     <DateInput
                       type="datetime-local"
                       className="w-full min-w-[108px] tabular-nums"
@@ -789,7 +792,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   </td>
                 ) : null}
                 {fieldVisible("shutdown_time") ? (
-                  <td>
+                  <td className="sd-stamp">
                     <DateInput
                       type="datetime-local"
                       className="w-full min-w-[108px] tabular-nums"
@@ -799,7 +802,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                   </td>
                 ) : null}
                 {fieldVisible("startup_time") ? (
-                  <td>
+                  <td className="sd-stamp">
                     <DateInput
                       type="datetime-local"
                       className="w-full min-w-[108px] tabular-nums"
