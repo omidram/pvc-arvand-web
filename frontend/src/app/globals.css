@@ -1,4 +1,5 @@
-@import "tailwindcss";
+/* Only scan src. deploy/update.sh parks the last build in frontend/.next.previous, and Turbopack's cache is not valid class input. */
+@import "tailwindcss" source("..");
 
 /* Classic Windows / MS Access 97-2003 "silver" form theme, with a dark variant. */
 :root {
