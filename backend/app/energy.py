@@ -236,6 +236,10 @@ def period_sample_power(db: Session, days: int) -> tuple[float | None, float | N
     by_day: dict[date, float] = defaultdict(float)
     for (_name, sample_day), row in best.items():
         by_day[sample_day] += float(row.total_voltage or 0) * float(row.total_current or 0)
+    from .shift_report import shift_power_by_day
+
+    for sample_day, shift_kw in shift_power_by_day(db, start_day, end_day).items():
+        by_day[sample_day] = shift_kw
     if not by_day:
         return None, None
     average_kw = sum(by_day.values()) / len(by_day)
@@ -460,12 +464,15 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]], *, service_day
     plant_kwh_24h = 0.0
     plant_kwh_30d = 0.0
     day_samples = samples_on_day(db, service_day) if service_day is not None else {}
+    from .shift_report import day_shift
+
+    shift = day_shift(db, service_day) if service_day is not None else None
     for block in blocks:
         el = format_electrolyzer_name(block.get("electrolyzer"))
         live = day_samples.get(el) or latest.get(el) or {}
         cells = block.get("cells") or []
         live_cells = [cell for cell in cells if cell.get("live") and cell.get("voltage") is not None]
-        # Online when this service day has AriaORMS cell voltages. kA from another day is not reused.
+        # Shift report sets in-service and kA. Without one, cell voltages for this day decide who is online.
         stamp_day = as_date(live.get("stamp")) if live else None
         if service_day is None or stamp_day != service_day:
             live = {}
@@ -477,6 +484,11 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]], *, service_day
         if current_value is None or current_value <= 1:
             current = None
         online = bool(live_cells)
+        if shift is not None:
+            unit = shift["units"].get(el) or {}
+            online = bool(unit.get("online"))
+            load_ka = unit.get("load_ka")
+            current = float(load_ka) if online and load_ka is not None and float(load_ka) > 0 else None
         if not online:
             live = {}
             current = None

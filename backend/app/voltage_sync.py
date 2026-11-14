@@ -676,6 +676,29 @@ def _pull_from_ariaorms(
                     }
                 )
 
+    shift_note = ""
+    try:
+        from .shift_report import save_shift_reports
+
+        shift_opener = ariaorms_client.new_opener(base, username, password)
+        reports = ariaorms_client.fetch_cellroom_shifts(
+            shift_opener,
+            base,
+            start_day,
+            end_day,
+            username=username,
+            password=password,
+        )
+        saved = save_shift_reports(db, reports)
+        commit_db(db)
+        days = len({item.get("report_date") for item in reports})
+        shift_note = f" Shift report: {saved} electrolyzer rows on {days} day(s)."
+        logger.info("AriaORMS shift report saved %s rows across %s days", saved, days)
+    except Exception as exc:  # noqa: BLE001
+        db.rollback()
+        shift_note = f" Shift report was not saved: {exc}."
+        logger.exception("AriaORMS shift report pull failed")
+
     try:
         from . import alerts_engine
 
@@ -707,6 +730,7 @@ def _pull_from_ariaorms(
             + (f", errors {errors}" if errors else "")
             + (f" | no rows: {', '.join(missed)}" if missed else "")
         )
+    message = (message + shift_note)[:500]
     # Always stamp last successful attempt time — even when 0 rows were returned.
     row.last_run_at = datetime.utcnow()
     row.last_run_status = "success" if ok else "error"

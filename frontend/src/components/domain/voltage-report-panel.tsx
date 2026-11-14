@@ -55,7 +55,7 @@ function hasLiveTotals(voltage?: DashboardVoltageStats | null): boolean {
 function trainLine(live: DashboardVoltageStats, train: TrainId) {
   const names = new Set(TRAIN_LETTERS.map((letter) => electrolyzerName(train, letter)));
   const present = live.electrolyzers.filter((row) => names.has(formatElectrolyzer(row.electrolyzer)));
-  const serving = (row: (typeof present)[number]) => row.online !== false && (row.cell_count || 0) > 0;
+  const serving = (row: (typeof present)[number]) => row.online === true;
   const online = present.filter(serving).length;
   return {
     train,
@@ -218,6 +218,8 @@ export function VoltageReportPanel({
           <p className="dash-voltage-sub">
             {t("dashboard.voltageReportSub")}
             {live.report_date ? ` · ${formatDate(live.report_date)}` : ""}
+            {live.shift_rotation ? ` · ${live.shift_rotation}` : ""}
+            {live.shift_supervisor ? ` · ${live.shift_supervisor}` : ""}
           </p>
         </div>
         <Link href="/monitoring" className="dash-voltage-link">

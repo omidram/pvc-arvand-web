@@ -857,6 +857,33 @@ class ElectrolyzerNormalization(Base):
     delta_p: Mapped[float | None] = mapped_column(Float)
 
 
+class CellroomShiftLoad(Base):
+    """One electrolyzer on an AriaORMS shift report (گزارش کارکردی سلول‌ها).
+
+    In-service and kiloamperes on the live voltage report come from this table
+    when a shift for that day has been pulled. The log sheet still supplies cell voltage.
+    """
+
+    __tablename__ = "cellroom_shift_loads"
+    __table_args__ = (
+        UniqueConstraint("report_date", "rotation", "electrolyzer", name="uq_cellroom_shift_load"),
+    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    report_date: Mapped[date] = mapped_column(Date, index=True)
+    rotation: Mapped[str] = mapped_column(String(80), default="")
+    shift_index: Mapped[int] = mapped_column(Integer, default=0)
+    supervisor: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    shift_persons: Mapped[str | None] = mapped_column(Text, nullable=True)
+    electrolyzer: Mapped[str] = mapped_column(String(10), index=True)
+    in_service: Mapped[bool] = mapped_column(Boolean, default=False)
+    load_ka: Mapped[float | None] = mapped_column(Float, nullable=True)
+    train: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    train_on: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    train_ka: Mapped[float | None] = mapped_column(Float, nullable=True)
+    train_in_service: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    shutdown_note: Mapped[str | None] = mapped_column(String(200), nullable=True)
+
+
 class VoltageReading(Base):
     """Per-element voltage reading tied to a normalization batch."""
     __tablename__ = "voltage_readings"  # was: Spannungen
