@@ -680,6 +680,12 @@ def _pull_from_ariaorms(
     try:
         from .shift_report import save_shift_reports
 
+        # Finish the voltage transaction before the shift-report download.
+        # Holding SQLite across those HTTP calls made the rest of the site wait and return 504.
+        try:
+            db.commit()
+        except Exception:  # noqa: BLE001
+            db.rollback()
         shift_opener = ariaorms_client.new_opener(base, username, password)
         reports = ariaorms_client.fetch_cellroom_shifts(
             shift_opener,

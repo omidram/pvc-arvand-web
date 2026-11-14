@@ -623,7 +623,7 @@ def free_positions(
     db: Session = Depends(get_db),
 ):
     """Empty cells (001–168) on one electrolyzer. The current row can be excluded while editing."""
-    from ..assembly_integrity import cell_key, is_open
+    from ..assembly_integrity import cell_key, elements_on_electrolyzer, is_open
     from ..plant_topology import format_electrolyzer_name
 
     name = format_electrolyzer_name((electrolyzer or "").strip())
@@ -632,7 +632,7 @@ def free_positions(
         probe_elz = models.Element(electrolyzer=name, position="001")
         want = cell_key(probe_elz)
         want_elz = want[0] if want else None
-        for el in db.query(models.Element).filter(models.Element.electrolyzer.isnot(None)).all():
+        for el in elements_on_electrolyzer(db, name):
             if exclude_id is not None and el.id == exclude_id:
                 continue
             if not is_open(el):

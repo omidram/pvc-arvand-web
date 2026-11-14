@@ -63,7 +63,8 @@ export function ElementReportPanel({ compact = false }: { compact?: boolean }) {
     queryKey: ["element-dashboard", "overview"],
     queryFn: () => elementDashboardApi.overview(false),
     enabled: allowed,
-    refetchInterval: 60_000,
+    staleTime: 90_000,
+    refetchInterval: 180_000,
   });
   if (!allowed) return null;
 

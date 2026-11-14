@@ -284,39 +284,78 @@ def last_assembly_date(lives) -> object:
     return max(dates) if dates else None
 
 
+class ShutdownWindows(list):
+    """One shutdown list for this request, indexed once so every cell does not rescan it."""
+
+    shutdown_index: tuple | None = None
+
+
+def _window_parts(item) -> tuple:
+    if isinstance(item, (tuple, list)):
+        part = item[0] if len(item) > 0 else None
+        down = item[1] if len(item) > 1 else None
+        up = item[2] if len(item) > 2 else None
+    else:
+        part = getattr(item, "plant_part", None)
+        down = getattr(item, "shutdown_time", None)
+        up = getattr(item, "startup_time", None)
+    return part, down, up
+
+
+def _index_shutdowns(windows) -> tuple[list, dict, dict]:
+    """Plant-wide, per electrolyzer, and per train. Same matches as the old scan."""
+    from collections import defaultdict
+
+    from .plant_topology import LETTERS, format_electrolyzer_name
+
+    plant: list[tuple] = []
+    by_el: dict[str, list] = defaultdict(list)
+    by_train: dict[str, list] = defaultdict(list)
+    for item in windows:
+        part, down, up = _window_parts(item)
+        if not down:
+            continue
+        raw = (part or "").strip()
+        key = raw.lower().replace(" ", "")
+        pair = (down, up)
+        if raw.lower() in _PLANT_WIDE_SHUTDOWN or key in {"catotalplant", "totalplant"}:
+            plant.append(pair)
+            continue
+        # Only A1 / 1A style names are an electrolyzer. "Train 1" stays a train row.
+        name = format_electrolyzer_name(raw)
+        if len(name) == 2 and name[0] in LETTERS and name[1] in {"1", "2"}:
+            by_el[name].append(pair)
+            continue
+        if key in {"train1", "1"}:
+            by_train["1"].append(pair)
+        elif key in {"train2", "2"}:
+            by_train["2"].append(pair)
+    return plant, by_el, by_train
+
+
 def shutdowns_affecting(windows, electrolyzer: str | None) -> list[tuple]:
     """Shutdown (down, up) pairs that apply to this electrolyzer.
 
     Matches the cell name (A1), its train (Train1), and plant-wide rows.
+    The index is built once per loaded list; days-on-line used to rescan every row.
     """
     from .plant_topology import format_electrolyzer_name, train_of
 
     if not windows:
         return []
+    index = getattr(windows, "shutdown_index", None)
+    if index is None:
+        index = _index_shutdowns(windows)
+        if isinstance(windows, ShutdownWindows):
+            windows.shutdown_index = index
+    plant, by_el, by_train = index
     elo = format_electrolyzer_name(electrolyzer) if electrolyzer else ""
     train = train_of(elo) if elo else None
-    matched: list[tuple] = []
-    for item in windows:
-        if isinstance(item, (tuple, list)):
-            part = item[0] if len(item) > 0 else None
-            down = item[1] if len(item) > 1 else None
-            up = item[2] if len(item) > 2 else None
-        else:
-            part = getattr(item, "plant_part", None)
-            down = getattr(item, "shutdown_time", None)
-            up = getattr(item, "startup_time", None)
-        if not down:
-            continue
-        raw = (part or "").strip()
-        key = raw.lower().replace(" ", "")
-        if raw.lower() in _PLANT_WIDE_SHUTDOWN or key in {"catotalplant", "totalplant"}:
-            matched.append((down, up))
-            continue
-        if elo and format_electrolyzer_name(raw) == elo:
-            matched.append((down, up))
-            continue
-        if train and key in {f"train{train}", train}:
-            matched.append((down, up))
+    matched = list(plant)
+    if elo:
+        matched.extend(by_el.get(elo, ()))
+    if train:
+        matched.extend(by_train.get(train, ()))
     return matched
 
 

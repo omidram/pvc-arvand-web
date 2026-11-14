@@ -68,18 +68,45 @@ def is_open(row: models.Element) -> bool:
     return _day(row.disassembly_date) is None and _day(row.decommissioning_date) is None
 
 
+def electrolyzer_aliases(name: str | None) -> set[str]:
+    """A1 and 1A are the same cell room. Used so occupancy does not scan every installation."""
+    raw = _text(name)
+    if not raw:
+        return set()
+    aliases = {raw}
+    if len(raw) >= 2 and raw[0].isalpha() and raw[-1] in {"1", "2"}:
+        aliases.add(raw[-1] + raw[0])
+    if len(raw) >= 2 and raw[0] in {"1", "2"} and raw[1].isalpha():
+        aliases.add(raw[1] + raw[0])
+    return aliases
+
+
+def elements_on_electrolyzer(db: Session, electrolyzer: str | None) -> list[models.Element]:
+    aliases = electrolyzer_aliases(electrolyzer)
+    if not aliases:
+        return []
+    return (
+        db.query(models.Element)
+        .filter(func.upper(models.Element.electrolyzer).in_(aliases))
+        .all()
+    )
+
+
 def occupant_of_cell(
     db: Session,
     electrolyzer: str | None,
     position: str | None,
     exclude_id: int | None = None,
 ) -> models.Element | None:
-    """The open installation sitting on this electrolyzer/position, if any."""
+    """The open installation sitting on this electrolyzer/position, if any.
+
+    Switched-off cells (a decommissioning date, including store-in-shop) do not occupy the position.
+    """
     probe = models.Element(electrolyzer=electrolyzer, position=None if position is None else str(position).strip())
     target = cell_key(probe)
     if target is None:
         return None
-    for row in db.query(models.Element).filter(models.Element.electrolyzer.isnot(None)).all():
+    for row in elements_on_electrolyzer(db, target[0]):
         if exclude_id is not None and row.id == exclude_id:
             continue
         if is_open(row) and cell_key(row) == target:

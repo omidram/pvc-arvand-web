@@ -861,7 +861,7 @@ def electrolyzer_properties(electrolyzer: str, db: Session = Depends(get_db)):
         .filter(func.upper(models.Element.electrolyzer) == el)
         .all()
     )
-    active = [row for row in elements if row.disassembly_date is None]
+    active = [row for row in elements if row.disassembly_date is None and row.decommissioning_date is None]
     dismantled = [row for row in elements if row.disassembly_date is not None]
     occupied = {
         alerts_engine._norm_pos(row.position)
@@ -872,14 +872,22 @@ def electrolyzer_properties(electrolyzer: str, db: Session = Depends(get_db)):
     dol_values = [value for value in dol_values if value is not None]
     membrane_types = (
         db.query(models.Element.membrane_type, func.count())
-        .filter(func.upper(models.Element.electrolyzer) == el, models.Element.disassembly_date.is_(None))
+        .filter(
+            func.upper(models.Element.electrolyzer) == el,
+            models.Element.disassembly_date.is_(None),
+            models.Element.decommissioning_date.is_(None),
+        )
         .group_by(models.Element.membrane_type)
         .order_by(func.count().desc())
         .all()
     )
     coatings = (
         db.query(models.Element.anode_coating, func.count())
-        .filter(func.upper(models.Element.electrolyzer) == el, models.Element.disassembly_date.is_(None))
+        .filter(
+            func.upper(models.Element.electrolyzer) == el,
+            models.Element.disassembly_date.is_(None),
+            models.Element.decommissioning_date.is_(None),
+        )
         .group_by(models.Element.anode_coating)
         .order_by(func.count().desc())
         .limit(8)

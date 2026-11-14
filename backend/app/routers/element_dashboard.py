@@ -289,16 +289,25 @@ def relocate_shop(body: ShopRelocate, db: Session = Depends(get_db), user: model
 
 def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict[str, Any]:
     """Write the new installation row and close the old one; the caller commits."""
-    from .elements import _ensure_group, _normalize_position, _reject_same_installation, _sync_saved_element
+    from .elements import _normalize_position, _reject_same_installation, _sync_saved_element
     from ..assembly_integrity import occupant_of_cell
     from ..plant_topology import all_electrolyzers, format_electrolyzer_name
+    from ..warehouse import compact_eq
 
-    key = compact_nr(body.element_nr)
-    item = next((i for i in svc.build_pipeline(db) if i["key"] == key), None)
-    if item is None or item["base_state"] != "decommissioned":
+    expr = compact_eq(models.Element.element_nr, body.element_nr)
+    rows = db.query(models.Element).filter(expr).all() if expr is not None else []
+    if not rows:
         raise HTTPException(status_code=400, detail=f"Element {body.element_nr} is not a switched-off, healthy cell")
-    rows = [el for el in db.query(models.Element).all() if compact_nr(el.element_nr) == key]
     old = max(rows, key=svc._life_key)
+    if old.disassembly_date or not old.decommissioning_date:
+        raise HTTPException(status_code=400, detail=f"Element {body.element_nr} is not a switched-off, healthy cell")
+    shop = (
+        db.query(models.ElementShopState).filter(compact_eq(models.ElementShopState.element_nr, body.element_nr)).all()
+        if expr is not None
+        else []
+    )
+    if any(row.stage == "awaiting_disassembly" for row in shop):
+        raise HTTPException(status_code=400, detail=f"Element {body.element_nr} is waiting to be dismantled")
     electrolyzer = format_electrolyzer_name(body.electrolyzer.strip())
     if not electrolyzer or electrolyzer not in {format_electrolyzer_name(n) for n in all_electrolyzers()}:
         raise HTTPException(status_code=400, detail=f"'{body.electrolyzer}' is not an electrolyzer of this plant")
@@ -312,8 +321,9 @@ def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict
     if busy is not None:
         raise HTTPException(status_code=409, detail=f"Cell {electrolyzer}-{position} is occupied by element {busy.element_nr}")
 
+    # Installing a cell that is already built does not re-check Group Definition.
+    # An old group such as "Z" is not in that table and must not block the move.
     group_nr = (body.group_nr or old.group_nr or "").strip() or None
-    _ensure_group(db, group_nr)
     # Healthy means the element was not taken apart. The old life ends at decommission;
     # the new position starts at commissioning. Assembly date stays the original build.
     if old.decommissioning_date is None:
@@ -348,14 +358,13 @@ def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict
     db.add(new)
     _sync_saved_element(db, new)
     db.flush()
-    for state in db.query(models.ElementShopState).all():
-        if compact_nr(state.element_nr) == key:
-            db.delete(state)
+    for state in shop:
+        db.delete(state)
     from datetime import datetime
 
     db.add(
         models.ElementShopEvent(
-            element_nr=str(old.element_nr)[:50], from_stage=item["state"], to_stage="relocated", note=f"{electrolyzer}-{position}" + (f": {body.note.strip()}" if (body.note or "").strip() else ""),
+            element_nr=str(old.element_nr)[:50], from_stage="decommissioned", to_stage="relocated", note=f"{electrolyzer}-{position}" + (f": {body.note.strip()}" if (body.note or "").strip() else ""),
             user=user.full_name or user.username, created_at=datetime.now(),
         )
     )

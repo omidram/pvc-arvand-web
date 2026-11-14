@@ -44,6 +44,7 @@ def arrangement_board(
     for the selected electrolyzer, list positions (from arrangement start..end)
     and fill with active Montage/element data when present.
     """
+    from ..assembly_integrity import elements_on_electrolyzer, is_open
     from ..plant_topology import all_electrolyzers, format_electrolyzer_name, is_valid_electrolyzer_name
 
     # Distinct electrolyzer names from arrangement definitions (and elements as fallback).
@@ -83,17 +84,9 @@ def arrangement_board(
             start, end = end, start
         ranges.append((start, end, block))
 
-    # Active elements on this electrolyzer (Demontage Datum IS NULL)
-    active = (
-        db.query(models.Element)
-        .filter(
-            models.Element.electrolyzer == selected,
-            models.Element.disassembly_date.is_(None),
-        )
-        .all()
-        if selected
-        else []
-    )
+    # Mounted cells only. A switched-off element (store in shop) keeps its old position
+    # on the installation row, but that position is free for the next element.
+    active = [el for el in elements_on_electrolyzer(db, selected) if is_open(el)] if selected else []
     by_pos: dict[int, models.Element] = {}
     for el in active:
         p = _pos_int(el.position)

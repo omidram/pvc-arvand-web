@@ -18,7 +18,7 @@ from . import models
 from .calculations import element_dol, serial_dol, shutdowns_affecting
 from .plant_topology import all_electrolyzers, format_electrolyzer_name, is_valid_electrolyzer_name, norm_pos
 from .relations_sync import is_junk_serial
-from .warehouse import BUCKETS, _as_date, _grouped, _iso, _life_key, build_board, compact_eq, compact_nr, load_shutdown_windows
+from .warehouse import BUCKETS, _as_date, _grouped, _iso, _life_key, build_board, compact_eq, compact_nr, load_shutdown_windows, rows_of
 
 CACHE_SECONDS = 30  # the heavy per-part computations are reused for a short time; "Refresh" clears them
 _CACHE: dict[Any, tuple[float, Any]] = {}
@@ -29,6 +29,12 @@ def clear_cache() -> None:
     from . import element_flow  # imported late: element_flow builds on this module
 
     element_flow.clear_cache()
+    try:
+        from .routers.workflow import clear_pool_cache
+
+        clear_pool_cache()
+    except Exception:  # noqa: BLE001 — workflow router is not loaded during early imports
+        pass
 
 
 def _freeze(value: Any) -> Any:
@@ -194,7 +200,7 @@ def _report_signal(report: models.AssemblyInspectionReport) -> tuple[str, dateti
 @_memo
 def build_pipeline(db: Session) -> list[dict[str, Any]]:
     """One row per element number with its current stage."""
-    rows = db.query(models.Element).all()
+    rows = rows_of(db, models.Element)
     latest: dict[str, models.Element] = {}
     lives_by_nr: dict[str, list] = defaultdict(list)
     for el in rows:
@@ -206,14 +212,14 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
             latest[key] = el
 
     windows = load_shutdown_windows(db)
-    manual = {compact_nr(s.element_nr): s for s in db.query(models.ElementShopState).all()}
+    manual = {compact_nr(s.element_nr): s for s in rows_of(db, models.ElementShopState)}
     reports: dict[str, list[models.AssemblyInspectionReport]] = defaultdict(list)
-    for rep in db.query(models.AssemblyInspectionReport).all():
+    for rep in rows_of(db, models.AssemblyInspectionReport):
         key = compact_nr(rep.element_nr)
         if key:
             reports[key].append(rep)
     shop_events: dict[str, list[models.ElementShopEvent]] = defaultdict(list)
-    for ev in db.query(models.ElementShopEvent).all():
+    for ev in rows_of(db, models.ElementShopEvent):
         key = compact_nr(ev.element_nr)
         if key:
             shop_events[key].append(ev)
@@ -436,7 +442,8 @@ def advance_stage(db: Session, element_nr: str, note: str | None, user: str | No
         return {**result, "from": item["state"]}
 
     day = day or date.today()
-    rows = [el for el in db.query(models.Element).all() if compact_nr(el.element_nr) == key]
+    expr = compact_eq(models.Element.element_nr, item["element_nr"])
+    rows = db.query(models.Element).filter(expr).all() if expr is not None else []
     if not rows:
         raise ValueError(f"Element {item['element_nr']} has no Assembly Data row")
     el = max(rows, key=_life_key)
@@ -461,7 +468,7 @@ def _coating_jobs(db: Session, kind: str) -> list[dict[str, Any]]:
     rec_model, field = (models.AnodeRecoating, "anode_nr") if kind == "anode" else (models.CathodeRecoating, "cathode_nr")
     jobs: list[dict[str, Any]] = []
     seen: set[tuple[str, date | None]] = set()
-    for rec in db.query(rec_model).all():
+    for rec in rows_of(db, rec_model):
         key = compact_nr(getattr(rec, field))
         if not key or not (rec.dispatch_date or rec.return_date):
             continue
@@ -521,8 +528,8 @@ def electrode_rows(db: Session, kind: str, settings: dict[str, Any] | None = Non
     check_model = models.AnodeCoatingCheck if kind == "anode" else models.CathodeCoatingCheck
 
     board = build_board(db, kind, limit=10**9)
-    elements = _grouped(db.query(models.Element).all(), field)
-    checks = _grouped(db.query(check_model).all(), field)
+    elements = _grouped(rows_of(db, models.Element), field)
+    checks = _grouped(rows_of(db, check_model), field)
     jobs_by_key: dict[str, list[dict]] = defaultdict(list)
     for job in _coating_jobs(db, kind):
         jobs_by_key[job["key"]].append(job)
@@ -624,9 +631,9 @@ def electrode_rows(db: Session, kind: str, settings: dict[str, Any] | None = Non
 def membrane_rows(db: Session, settings: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     cfg = settings or settings_dict(get_settings(db))
     limit, warn = cfg["membrane_life_days"], cfg["warn_percent"]
-    elements = _grouped(db.query(models.Element).all(), "membrane_nr")
-    masters = {compact_nr(m.membrane_nr): m for m in db.query(models.Membrane).all() if compact_nr(m.membrane_nr)}
-    maintenance = _grouped(db.query(models.MembraneMaintenance).all(), "membrane_nr")
+    elements = _grouped(rows_of(db, models.Element), "membrane_nr")
+    masters = {compact_nr(m.membrane_nr): m for m in rows_of(db, models.Membrane) if compact_nr(m.membrane_nr)}
+    maintenance = _grouped(rows_of(db, models.MembraneMaintenance), "membrane_nr")
     windows = load_shutdown_windows(db)
     rows: list[dict[str, Any]] = []
     for key in set(elements) | set(masters):
@@ -1044,7 +1051,7 @@ def cells_overview(db: Session) -> dict[str, Any]:
     on line / installed, ``stale`` when the extra one is only switched off but never dismantled).
     The same element number open in two different cells is listed under ``multi_cell``.
     """
-    rows = db.query(models.Element).all()
+    rows = rows_of(db, models.Element)
     latest: dict[str, models.Element] = {}
     for el in rows:
         key = compact_nr(el.element_nr)
@@ -1400,7 +1407,7 @@ def _monthly_flow(db: Session, months: int = 36) -> list[dict[str, Any]]:
         ("decommissioning_date", "decommissioned"),
         ("disassembly_date", "disassembled"),
     )
-    for el in db.query(models.Element).all():
+    for el in rows_of(db, models.Element):
         for field, name in fields:
             day = _as_date(getattr(el, field))
             if day and (tag := day.strftime("%Y-%m")) in flow:
@@ -1678,7 +1685,8 @@ def life_log(db: Session, element_nr: str) -> list[dict[str, Any]]:
         stamp = at.isoformat(timespec="seconds") if isinstance(at, datetime) else f"{at.isoformat()}T00:00:00"
         items.append({"at": stamp, "kind": kind, "title": title, "detail": (detail or "").strip() or None, "actor": (actor or "").strip() or None})
 
-    lives = [el for el in db.query(models.Element).all() if compact_nr(el.element_nr) == key]
+    expr = compact_eq(models.Element.element_nr, element_nr)
+    lives = db.query(models.Element).filter(expr).all() if expr is not None else []
     lives.sort(key=lambda el: (_as_date(el.assembly_date) or date.min, el.id or 0))
     for el in lives:
         cell = "-".join(part for part in (el.electrolyzer, el.position) if part) or None
@@ -1689,9 +1697,9 @@ def life_log(db: Session, element_nr: str) -> list[dict[str, Any]]:
         add(_as_date(el.decommissioning_date), "life", "decommissioned", detail=cell or el.decommission_reason)
         add(_as_date(el.disassembly_date), "life", "disassembled", detail=cell)
 
-    for ev in db.query(models.ElementShopEvent).all():
-        if compact_nr(ev.element_nr) != key:
-            continue
+    event_expr = compact_eq(models.ElementShopEvent.element_nr, element_nr)
+    events = db.query(models.ElementShopEvent).filter(event_expr).all() if event_expr is not None else []
+    for ev in events:
         add(ev.created_at, "shop", ev.to_stage or "shop", detail=ev.note or ev.from_stage, actor=ev.user)
 
     from .workflow_models import WfAssembleRequest, WfCellRequest, WfEvent, WfInspectionRequest

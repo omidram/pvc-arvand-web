@@ -16,7 +16,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from . import models
-from .calculations import element_dol, serial_dol, shutdowns_affecting
+from .calculations import ShutdownWindows, element_dol, serial_dol, shutdowns_affecting
 
 BUCKETS = ("on_rack", "out_repair", "pending", "ok", "not_ok")
 
@@ -50,8 +50,22 @@ def _iso(value) -> str | None:
 
 
 def load_shutdown_windows(db: Session) -> list[tuple]:
-    rows = db.query(models.Shutdown).all()
-    return [(row.plant_part, row.shutdown_time, row.startup_time) for row in rows if row.shutdown_time]
+    """Shutdown rows for this request. Reused so days-on-line does not read the table again."""
+    hit = db.info.get("pvc_shutdowns")
+    if hit is None:
+        rows = db.query(models.Shutdown).all()
+        hit = ShutdownWindows((row.plant_part, row.shutdown_time, row.startup_time) for row in rows if row.shutdown_time)
+        db.info["pvc_shutdowns"] = hit
+    return hit
+
+
+def rows_of(db: Session, model) -> list:
+    """Full table for this request. Overview used to read Element several times in one page."""
+    box = db.info.setdefault("pvc_rows", {})
+    name = model.__tablename__
+    if name not in box:
+        box[name] = db.query(model).all()
+    return box[name]
 
 
 def dol_for_element(el, windows=None) -> int | None:
@@ -346,13 +360,13 @@ def build_board(db: Session, kind: str, bucket: str | None = None, q: str | None
     spec = _KIND[kind]
     field = spec["field"]
     wf_open = open_coating_requests(db, kind)
-    elements = _grouped(db.query(models.Element).all(), field)
-    catalogs = {compact_nr(getattr(row, field)): row for row in db.query(spec["catalog"]).all() if compact_nr(getattr(row, field))}
-    maintenance = _grouped(db.query(spec["maintenance"]).all(), field)
-    recoating = _grouped(db.query(spec["recoating"]).all(), field)
-    checks = _grouped(db.query(spec["check"]).all(), field)
+    elements = _grouped(rows_of(db, models.Element), field)
+    catalogs = {compact_nr(getattr(row, field)): row for row in rows_of(db, spec["catalog"]) if compact_nr(getattr(row, field))}
+    maintenance = _grouped(rows_of(db, spec["maintenance"]), field)
+    recoating = _grouped(rows_of(db, spec["recoating"]), field)
+    checks = _grouped(rows_of(db, spec["check"]), field)
     segs: dict[str, list] = defaultdict(list)
-    for row in db.query(models.ElectrodeSegregation).all():
+    for row in rows_of(db, models.ElectrodeSegregation):
         if row.electrode_kind and row.electrode_kind not in {kind, "unknown"}:
             continue
         key = compact_nr(row.serial_nr)

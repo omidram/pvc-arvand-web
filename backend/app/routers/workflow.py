@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import io
 import json
+import time
 import uuid
 import zipfile
 from datetime import date, datetime, timedelta
@@ -30,7 +31,7 @@ from ..plant_topology import all_electrolyzers, format_electrolyzer_name
 from ..relations_sync import link_serial
 from ..segregation_enrich import disassembly_monitoring, enrich_segregation_fields, format_service_life
 from ..segregation_flow import classify_row
-from ..warehouse import compact_eq, compact_nr, ensure_indexed, load_compact_index
+from ..warehouse import _life_key, compact_eq, compact_nr, ensure_indexed, load_compact_index, rows_of
 from ..electrode_lifecycle import (
     coating_check_on_inspect,
     maintenance_from_inspection,
@@ -552,8 +553,26 @@ def put_settings(body: SlaIn, db: Session = Depends(get_db), user: models.User =
     return {**sla_config(db), "defaults": DEFAULT_SLA}
 
 
+_RESUME_AT = 0.0
+_POOL_CACHE: tuple[float, dict] | None = None
+
+
+def clear_pool_cache() -> None:
+    global _POOL_CACHE
+    _POOL_CACHE = None
+
+
 def _resume_parked_cell_requests(db: Session) -> None:
-    """A dismantle or a keep that was closed too early still has work: put it back in the cartable."""
+    """A dismantle or a keep that was closed too early still has work: put it back in the cartable.
+
+    This used to rebuild the whole element pipeline on every cartable poll, which is what made
+    ordinary pages wait long enough for a 504.
+    """
+    global _RESUME_AT
+    now = time.monotonic()
+    if now - _RESUME_AT < 30:
+        return
+    _RESUME_AT = now
     rows = (
         db.query(WfCellRequest)
         .filter(WfCellRequest.status == "completed", WfCellRequest.decision.in_(("disassemble", "keep")))
@@ -561,18 +580,36 @@ def _resume_parked_cell_requests(db: Session) -> None:
     )
     if not rows:
         return
-    pipeline = {item["key"]: item for item in svc.build_pipeline(db)}
+    wanted = {compact_nr(r.element_nr) for r in rows if compact_nr(r.element_nr)}
+    latest: dict[str, models.Element] = {}
+    for el in rows_of(db, models.Element):
+        key = compact_nr(el.element_nr)
+        if key not in wanted:
+            continue
+        if key not in latest or _life_key(el) >= _life_key(latest[key]):
+            latest[key] = el
+    manual = {
+        compact_nr(st.element_nr): st
+        for st in db.query(models.ElementShopState).all()
+        if compact_nr(st.element_nr) in wanted
+    }
     changed = False
     for r in rows:
-        item = pipeline.get(compact_nr(r.element_nr))
-        if item is None:
+        key = compact_nr(r.element_nr)
+        el = latest.get(key)
+        if el is None:
             continue
-        if r.decision == "disassemble" and item["state"] == "awaiting_disassembly":
+        base = svc._base_state(el)
+        stage = base
+        st = manual.get(key)
+        if st is not None and st.stage in svc.ALLOWED_BY_BASE.get(base, ()):
+            stage = st.stage
+        if r.decision == "disassemble" and stage == "awaiting_disassembly":
             r.status = "await_disassembly"
             r.completed_at = None
             r.updated_at = _now()
             changed = True
-        elif r.decision == "keep" and item["state"] == "ready" and item["base_state"] == "decommissioned":
+        elif r.decision == "keep" and stage == "ready" and base == "decommissioned":
             r.status = "await_reinstall"
             r.completed_at = None
             r.updated_at = _now()
@@ -5066,6 +5103,16 @@ def assembly_pool(db: Session = Depends(get_db)):
     purchased — registered on a purchase and never mounted
     recoated — back from a coating company and not assembled since that return
     """
+    global _POOL_CACHE
+    now = time.monotonic()
+    if _POOL_CACHE is not None and now - _POOL_CACHE[0] < 30:
+        return _POOL_CACHE[1]
+    payload = _assembly_pool(db)
+    _POOL_CACHE = (now, payload)
+    return payload
+
+
+def _assembly_pool(db: Session) -> dict:
     anode_index = load_compact_index(db, models.Anode, "anode_nr")
     cathode_index = load_compact_index(db, models.Cathode, "cathode_nr")
     indexes = {"anode": anode_index, "cathode": cathode_index}
