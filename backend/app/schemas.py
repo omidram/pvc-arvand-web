@@ -472,6 +472,7 @@ class PlantSettingsBase(ORMModel):
     date: datetime | None = None
     session_idle_minutes: int = Field(default=30, ge=0, le=24 * 60)
     electricity_price_per_kw: float | None = Field(default=None, ge=0)
+    show_cell_health: bool = False
 
 
 class PlantSettingsRead(PlantSettingsBase):

@@ -56,8 +56,10 @@ export interface PlantSettings {
   date: string | null;
   /** Minutes without input before auto-logout. 0 = disabled. */
   session_idle_minutes: number;
-  /** Approved price of one kilowatt. Live cost = current kW × this price. */
+  /** Approved price of one kilowatt-hour, in toman. */
   electricity_price_per_kw?: number | null;
+  /** Cell-health score is hidden until this is on. */
+  show_cell_health?: boolean;
 }
 
 export interface CorrectionFactor {

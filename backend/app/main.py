@@ -287,6 +287,20 @@ def _ensure_plant_settings_electricity_price() -> None:
 _ensure_plant_settings_electricity_price()
 
 
+def _ensure_plant_settings_show_cell_health() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("plant_settings")}
+    except Exception:
+        return
+    if "show_cell_health" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE plant_settings ADD COLUMN show_cell_health BOOLEAN DEFAULT 0"))
+
+
+_ensure_plant_settings_show_cell_health()
+
+
 def _ensure_user_last_seen() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("users")}

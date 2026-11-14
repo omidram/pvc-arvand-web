@@ -29,6 +29,7 @@ import { PlantSchematic } from "@/components/domain/plant-schematic";
 import { CellHealthBoardPanel } from "@/components/domain/cell-health-board";
 import { MonitoringExport } from "@/components/domain/export-buttons";
 import { trainOf, type TrainId } from "@/lib/plant-topology";
+import { useShowCellHealth } from "@/lib/use-show-cell-health";
 
 function MonitoringLoad({ label }: { label: string }) {
   return (
@@ -604,6 +605,7 @@ function InboxTab() {
 
 export default function MonitoringPage() {
   const { t } = useI18n();
+  const showHealth = useShowCellHealth();
   const [tab, setTab] = useState("overview");
   const snapshotQuery = useQuery({
     queryKey: ["monitoring", "snapshot"],
@@ -615,13 +617,10 @@ export default function MonitoringPage() {
     [snapshotQuery.data]
   );
 
-  return (
-    <AccessFormWindow caption={t("monitoring.title")} helpKey="monitoring">
-      <Tabs
-        activeKey={tab}
-        onChange={setTab}
-        tabs={[
-          { key: "overview", label: t("monitoring.tabOverview"), content: <OverviewTab onOpenAlerts={() => setTab("alerts")} /> },
+  const tabs = [
+    { key: "overview", label: t("monitoring.tabOverview"), content: <OverviewTab onOpenAlerts={() => setTab("alerts")} /> },
+    ...(showHealth
+      ? [
           {
             key: "health",
             label: t("monitoring.tabHealth"),
@@ -631,10 +630,15 @@ export default function MonitoringPage() {
               />
             ),
           },
-          { key: "alerts", label: t("monitoring.tabAlerts"), content: <InboxTab /> },
-          { key: "rules", label: t("monitoring.tabRules"), content: <RulesPanel /> },
-        ]}
-      />
+        ]
+      : []),
+    { key: "alerts", label: t("monitoring.tabAlerts"), content: <InboxTab /> },
+    { key: "rules", label: t("monitoring.tabRules"), content: <RulesPanel /> },
+  ];
+
+  return (
+    <AccessFormWindow caption={t("monitoring.title")} helpKey="monitoring">
+      <Tabs activeKey={!showHealth && tab === "health" ? "overview" : tab} onChange={setTab} tabs={tabs} />
     </AccessFormWindow>
   );
 }

@@ -107,6 +107,7 @@ function PlantInfoTab() {
       step: "1",
       placeholder: t("settings.electricityPriceHint"),
     },
+    { name: "show_cell_health", label: t("settings.showCellHealth"), type: "checkbox" },
     { name: "date", label: t("settings.recordDate"), type: "date" },
     {
       name: "session_idle_minutes",
@@ -138,11 +139,13 @@ function PlantInfoTab() {
           readOnly={!editable}
           onSubmit={async (values) => {
             const idle = Number(values.session_idle_minutes);
-            const price = Number(values.electricity_price_per_kw);
+            const rawPrice = values.electricity_price_per_kw;
+            const price = rawPrice === "" || rawPrice == null ? null : Number(rawPrice);
             await updateMutation.mutateAsync({
               ...values,
               session_idle_minutes: Number.isFinite(idle) ? Math.max(0, Math.min(24 * 60, Math.round(idle))) : 30,
-              electricity_price_per_kw: Number.isFinite(price) && price >= 0 ? price : null,
+              electricity_price_per_kw: price != null && Number.isFinite(price) && price >= 0 ? price : null,
+              show_cell_health: values.show_cell_health === true,
             } as Partial<PlantSettings>);
             setSaved(true);
             settingsQuery.refetch();
@@ -151,6 +154,7 @@ function PlantInfoTab() {
           }}
         />
         <p className="mt-2 text-[11px] text-[var(--win-muted)]">{t("settings.electricityPriceHint")}</p>
+        <p className="mt-1 text-[11px] text-[var(--win-muted)]">{t("settings.showCellHealthHint")}</p>
         <p className="mt-1 text-[11px] text-[var(--win-muted)]">{t("settings.sessionIdleHint")}</p>
         {saved && <div className="mt-3 text-sm font-semibold text-[#0d5c0d]">{t("common.saved")}</div>}
       </CardContent>

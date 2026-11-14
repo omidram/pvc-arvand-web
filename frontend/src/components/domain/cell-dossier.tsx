@@ -8,6 +8,7 @@ import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate } from "@/lib/utils";
 import { CellHealthCard } from "@/components/domain/cell-health-chip";
+import { useShowCellHealth } from "@/lib/use-show-cell-health";
 
 type Part = { kind: "anode" | "cathode" | "membrane"; nr: string };
 
@@ -283,6 +284,7 @@ function Reports({ rows }: { rows: ComponentDossier["reports"] }) {
 
 export function CellPropertiesPanel({ electrolyzer, position }: { electrolyzer: string; position: string }) {
   const { t } = useI18n();
+  const showHealth = useShowCellHealth();
   const [part, setPart] = useState<Part | null>(null);
   const query = useQuery({
     queryKey: ["monitoring", "cell", electrolyzer, position],
@@ -291,12 +293,13 @@ export function CellPropertiesPanel({ electrolyzer, position }: { electrolyzer: 
   const healthQuery = useQuery({
     queryKey: ["monitoring", "cell-health", electrolyzer, position],
     queryFn: () => monitoringApi.cellHealth({ electrolyzer, position }),
+    enabled: showHealth,
   });
   const current = query.data?.current;
   if (query.isLoading) return <LoadingState />;
   if (query.isError) return <ErrorState message={(query.error as Error).message} />;
   const data = query.data;
-  const health = healthQuery.data?.cell;
+  const health = showHealth ? healthQuery.data?.cell : null;
   return (
     <div className="psm-props">
       <div className="psm-props-head">

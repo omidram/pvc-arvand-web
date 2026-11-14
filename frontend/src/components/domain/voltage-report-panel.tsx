@@ -205,7 +205,9 @@ export function VoltageReportPanel({
   // Daily kW is that day's cell voltage × AriaORMS kA. Week and month are the mean of those daily samples.
   const spanKw = span === "day" ? live.plant_power_kw : span === "month" ? live.plant_power_kw_30d : live.plant_power_kw_7d;
   const avgMw = spanKw != null ? spanKw / 1000 : null;
-  const periodCost = price != null && price > 0 && spanKw != null ? spanKw * price : null;
+  // ((MW × 1.02 + 4.16 MW auxiliary) × hours) × 1000 = kWh. Hours: day 24, week 168, month 720.
+  const hours = span === "day" ? 24 : span === "week" ? 24 * 7 : 24 * 30;
+  const periodCost = price != null && price > 0 && avgMw != null ? (avgMw * 1.02 + 4.16) * hours * 1000 * price : null;
 
   return (
     <section className={`dash-voltage-report dv ${compact ? "is-compact" : ""}`}>
@@ -259,7 +261,7 @@ export function VoltageReportPanel({
           value={periodCost != null ? formatNumber(periodCost, periodCost >= 1 ? 0 : 2) : "—"}
           unit={periodCost != null ? t("dashboard.toman") : undefined}
           extra={spanPick()}
-          meta={price != null && price > 0 ? t("dashboard.plantPowerCostHint", { price: formatNumber(price, price >= 1 ? 0 : 2) }) : undefined}
+          meta={price != null && price > 0 ? t("dashboard.plantPowerCostHint", { price: formatNumber(price, price >= 1 ? 0 : 2), hours }) : undefined}
         />
       </div>
 

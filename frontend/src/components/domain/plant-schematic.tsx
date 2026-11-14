@@ -10,6 +10,7 @@ import { formatNumber } from "@/lib/utils";
 import { MonitoringExport } from "@/components/domain/export-buttons";
 import { ElectrolyzerPropertiesPanel } from "@/components/domain/electrolyzer-properties";
 import { CellHealthMini } from "@/components/domain/cell-health-chip";
+import { useShowCellHealth } from "@/lib/use-show-cell-health";
 import { secMatch } from "@/lib/sec-formula";
 
 type Focus = "danger" | "warning" | "ok" | null;
@@ -426,12 +427,14 @@ function ElectrolyzerMimic({
 }) {
   const { t, locale } = useI18n();
   const fa = locale === "fa";
+  const showHealth = useShowCellHealth();
   const cells = cellMap(block);
   const train = trainOf(name);
   const last = lastVoltages(block);
   const healthQuery = useQuery({
     queryKey: ["monitoring", "cell-health-board", name],
     queryFn: () => monitoringApi.cellHealthBoard({ electrolyzer: name }),
+    enabled: showHealth,
     staleTime: 60_000,
   });
   const healthByPos = useMemo(() => {
@@ -501,7 +504,7 @@ function ElectrolyzerMimic({
                 {Array.from({ length: rack.end - rack.start + 1 }, (_, index) => {
                   const position = rack.start + index;
                   const cell = cells.get(position);
-                  const health = healthByPos.get(position);
+                  const health = showHealth ? healthByPos.get(position) : undefined;
                   const stale = Boolean(cell && cell.live === false);
                   const dim = Boolean(focus && cell && cell.severity !== focus);
                   const healthTitle = health
@@ -560,7 +563,7 @@ function ElectrolyzerMimic({
         <span className="psm-count is-danger">{block?.danger_count ?? 0}</span>
         <span className="psm-count is-warning">{block?.warning_count ?? 0}</span>
         <span className="psm-count is-ok">{block?.ok_count ?? 0}</span>
-        {healthSummary ? (
+        {showHealth && healthSummary ? (
           <span className="psm-elo-health-legend" title={t("monitoring.healthTitle")}>
             <span className="ch-count-pill is-ok" title={t("monitoring.healthOk")}>
               {healthSummary.ok}

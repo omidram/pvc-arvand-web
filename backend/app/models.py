@@ -318,8 +318,11 @@ class PlantSettings(Base):
     date: Mapped[datetime | None] = mapped_column(DateTime)
     # Auto-logout after this many minutes without user input. 0 = disabled.
     session_idle_minutes: Mapped[int] = mapped_column(Integer, default=30)
-    # Approved price of one kilowatt. Live electricity cost = current plant kW × this price.
+    # Approved price of one kilowatt-hour, in toman.
+    # Cost = ((MW × 1.02 + 4.16) × hours) × 1000 × this price.
     electricity_price_per_kw: Mapped[float | None] = mapped_column(Float)
+    # The cell-health score is hidden until this is turned on. It can read 100% on a bad cell.
+    show_cell_health: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class UnCeSettings(Base):
