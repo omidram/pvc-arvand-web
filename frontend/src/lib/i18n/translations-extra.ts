@@ -12,6 +12,12 @@ export function deepMerge<T extends Tree>(base: T, extra: Tree): T {
 }
 
 export const extraEn: Tree = {
+  searchSelect: {
+    placeholder: "Type a serial, company, or quality",
+    empty: "No match",
+    more: "{n} more — keep typing",
+    clear: "Clear",
+  },
   appearance: {
     defaultView: "Default view of forms",
     defaultViewDesc: "How a data form (analyses, elements, inspections …) opens. A link to one specific record always opens that record's form.",
@@ -1235,6 +1241,12 @@ export const extraEn: Tree = {
 };
 
 export const extraFa: Tree = {
+  searchSelect: {
+    placeholder: "شماره، شرکت یا کیفیت را بنویسید",
+    empty: "موردی پیدا نشد",
+    more: "{n} مورد دیگر — ادامه تایپ",
+    clear: "پاک کردن",
+  },
   appearance: {
     defaultView: "نمای پیش‌فرض فرم‌ها",
     defaultViewDesc: "فرم‌های ورود داده (آنالیزها، المان‌ها، بازرسی‌ها و …) با کدام نما باز شوند. لینکی که به یک رکورد مشخص اشاره می‌کند همیشه فرم همان رکورد را باز می‌کند.",

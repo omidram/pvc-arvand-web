@@ -10,6 +10,7 @@ import { DataTable, type Column } from "@/components/ui/data-table";
 import { DateInput } from "@/components/ui/date-input";
 import { ElectrolyzerCombo } from "@/components/ui/electrolyzer-combo";
 import { PositionCombo } from "@/components/ui/position-combo";
+import { SearchSelect, type SearchOption } from "@/components/ui/search-select";
 import { Modal } from "@/components/ui/modal";
 import { ErrorState, LoadingState } from "@/components/ui/spinner";
 import { appConfirm } from "@/lib/dialog";
@@ -66,30 +67,28 @@ function PoolSelect({
   t: T;
   onChange: (v: string) => void;
 }) {
-  const groups = useMemo(() => {
+  const options = useMemo<SearchOption[]>(() => {
     const by: Record<string, AssemblyPoolRow[]> = { reusable: [], purchased: [], recoated: [] };
-    for (const row of rows.filter((r) => r.kind === kind)) by[row.source]?.push(row);
-    return by;
-  }, [rows, kind]);
+    for (const row of rows) {
+      if (row.kind === kind) by[row.source]?.push(row);
+    }
+    const out: SearchOption[] = [];
+    for (const source of ["reusable", "purchased", "recoated"] as const) {
+      const group = t(`wf.asm.source.${source}`);
+      for (const row of by[source]) {
+        out.push({
+          value: row.serial,
+          group,
+          label: [row.serial, row.company, row.quality].filter(Boolean).join(" · "),
+        });
+      }
+    }
+    return out;
+  }, [rows, kind, t]);
   return (
     <label>
       {t(`wf.kind.${kind}`)}
-      <select value={value} onChange={(e) => onChange(e.target.value)} required>
-        <option value="">—</option>
-        {(["reusable", "purchased", "recoated"] as const).map((source) =>
-          groups[source].length ? (
-            <optgroup key={source} label={t(`wf.asm.source.${source}`)}>
-              {groups[source].map((row) => (
-                <option key={`${row.source}-${row.serial}`} value={row.serial}>
-                  {row.serial}
-                  {row.company ? ` · ${row.company}` : ""}
-                  {row.quality ? ` · ${row.quality}` : ""}
-                </option>
-              ))}
-            </optgroup>
-          ) : null,
-        )}
-      </select>
+      <SearchSelect value={value} options={options} onChange={onChange} />
     </label>
   );
 }

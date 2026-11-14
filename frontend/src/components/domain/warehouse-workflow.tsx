@@ -14,7 +14,7 @@ import { useAuth } from "@/lib/auth/context";
 import { appConfirm } from "@/lib/dialog";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatDateTime } from "@/lib/utils";
-import { defaultDateRange } from "@/lib/date-range";
+import { defaultDateRange, todayIsoLocal } from "@/lib/date-range";
 import {
   CARTABLE_MS,
   assemblePath,
@@ -130,6 +130,13 @@ function PieceSpecCard({
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/** Empty cell-request expected date used to look like 1405/01/01 (the date placeholder). Default it to today. */
+function initialExpected(d: { flow: string; expected_date?: string | null; planned_date?: string | null }) {
+  const stored = (d.expected_date || d.planned_date || "").slice(0, 10);
+  if (stored) return stored;
+  return d.flow === "cell" ? todayIsoLocal() : "";
 }
 
 function daysBetween(from: string | null | undefined, to: string | null | undefined): number | null {
@@ -303,14 +310,14 @@ export function RequestEditForm({
   const [problem, setProblem] = useState(d.problem || "");
   const [indent, setIndent] = useState(d.indent_no || "");
   const [approval, setApproval] = useState(d.approval_ref || "");
-  const [expected, setExpected] = useState((d.expected_date || d.planned_date || "").slice(0, 10));
+  const [expected, setExpected] = useState(() => initialExpected(d));
   useEffect(() => {
     setRemarks(d.remarks || "");
     setReason(d.reason || "");
     setProblem(d.problem || "");
     setIndent(d.indent_no || "");
     setApproval(d.approval_ref || "");
-    setExpected((d.expected_date || d.planned_date || "").slice(0, 10));
+    setExpected(initialExpected(d));
   }, [d.id, d.flow, d.remarks, d.reason, d.problem, d.indent_no, d.approval_ref, d.expected_date, d.planned_date]);
   const save = useMutation({
     mutationFn: () => {

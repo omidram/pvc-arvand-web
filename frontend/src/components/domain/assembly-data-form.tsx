@@ -156,13 +156,13 @@ export function AssemblyDataForm() {
     {
       name: "anode_nr",
       label: t("fields.anodeNr"),
-      type: "select",
+      type: "search",
       options: stockOptions("anode"),
     },
     {
       name: "cathode_nr",
       label: t("fields.cathodeNr"),
-      type: "select",
+      type: "search",
       options: stockOptions("cathode"),
     },
     {

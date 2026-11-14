@@ -11,6 +11,7 @@ import { AccessFormWindow, AccessNav } from "@/components/layout/access-form";
 import { useI18n } from "@/lib/i18n/context";
 import { ExportButtons } from "@/components/domain/export-buttons";
 import { DateInput } from "@/components/ui/date-input";
+import { SearchSelect } from "@/components/ui/search-select";
 import { formatDate, humanizeKey, sameNr } from "@/lib/utils";
 import { appAlert, appConfirm } from "@/lib/dialog";
 import { useDefaultView, type RecordView } from "@/lib/default-view";
@@ -38,6 +39,18 @@ function SheetEdit({
         onMouseDown={stop}
         onChange={(event) => onChange(field.name, event.target.checked)}
       />
+    );
+  }
+  if (field.type === "search") {
+    return (
+      <span className="sheet-date" onClick={stop} onDoubleClick={stop} onMouseDown={stop}>
+        <SearchSelect
+          compact
+          value={String(value ?? "")}
+          options={field.options || []}
+          onChange={(next) => onChange(field.name, next)}
+        />
+      </span>
     );
   }
   if (field.type === "select") {
@@ -100,7 +113,7 @@ function SheetEdit({
 function fieldPlain(field: FieldDef, row: object, yes: string, no: string): string {
   const raw = (row as Record<string, unknown>)[field.name];
   if (raw == null || raw === "") return "";
-  if (field.type === "select") return field.options?.find((option) => option.value === String(raw))?.label ?? String(raw);
+  if (field.type === "select" || field.type === "search") return field.options?.find((option) => option.value === String(raw))?.label ?? String(raw);
   if (field.type === "checkbox") return raw ? yes : no;
   if (field.type === "date" || field.type === "datetime-local") return formatDate(String(raw));
   return String(raw);

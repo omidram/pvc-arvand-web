@@ -185,7 +185,7 @@ export function DateInput({
         data-form-type="other"
         className={cn("access-inset-field w-[108px]", className)}
         value={text}
-        placeholder={isShamsi ? "1405/01/01" : "M/D/YYYY"}
+        placeholder={isShamsi ? "----/--/--" : "M/D/YYYY"}
         onChange={(e) => setText(e.target.value)}
         onFocus={openPopup}
         onBlur={() => {

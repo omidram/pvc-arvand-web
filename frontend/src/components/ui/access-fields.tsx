@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { PositionCombo } from "@/components/ui/position-combo";
+import { SearchSelect } from "@/components/ui/search-select";
 import type { FieldDef } from "@/components/ui/resource-form";
 import { cn } from "@/lib/utils";
 
@@ -161,6 +162,19 @@ export function AccessFields({
                     onBlur={(e) => onCommit?.(f.name, e.target.value)}
                     disabled={locked}
                     className="py-0.5 text-[11px]"
+                  />
+                ) : f.type === "search" ? (
+                  <SearchSelect
+                    compact
+                    name={`field_${f.name}`}
+                    value={String(values[f.name] ?? "")}
+                    options={f.options || []}
+                    disabled={locked}
+                    placeholder={f.placeholder}
+                    onChange={(value) => {
+                      onChange(f.name, value);
+                      onCommit?.(f.name, value);
+                    }}
                   />
                 ) : f.type === "select" ? (
                   <Select
