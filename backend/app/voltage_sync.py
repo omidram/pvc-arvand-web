@@ -468,6 +468,7 @@ def pull_from_ariaorms(
     row: models.VoltageSyncSettings | None = None,
     *,
     include_today: bool = False,
+    scheduled: bool = False,
     progress=None,
 ) -> dict[str, Any]:
     """One AriaORMS pull at a time. A second caller is told the first is still running."""
@@ -486,7 +487,7 @@ def pull_from_ariaorms(
             }
         _pull_busy = True
     try:
-        return _pull_from_ariaorms(db, row, include_today=include_today, progress=progress)
+        return _pull_from_ariaorms(db, row, include_today=include_today, scheduled=scheduled, progress=progress)
     finally:
         with _pull_guard:
             _pull_busy = False
@@ -497,6 +498,7 @@ def _pull_from_ariaorms(
     row: models.VoltageSyncSettings | None = None,
     *,
     include_today: bool = False,
+    scheduled: bool = False,
     progress=None,
 ) -> dict[str, Any]:
     """Login to AriaORMS and upsert full log sheets for every electrolyzer."""
@@ -534,9 +536,10 @@ def _pull_from_ariaorms(
     commit_db(db)
 
     base = ariaorms_client.normalize_base_url(row.source_url)
+    # The daily clock downloads yesterday once. The typed day-count is only for Pull now.
     start_day, end_day = ariaorms_client.date_window(
-        lookback_days=int(row.lookback_days or 1),
-        include_today=include_today,
+        lookback_days=1 if scheduled else int(row.lookback_days or 1),
+        include_today=False if scheduled else include_today,
     )
     electrolyzers = ariaorms_client.iter_electrolyzers()
     details: list[dict[str, Any]] = []
@@ -786,15 +789,25 @@ def launch_pull(*, include_today: bool = True) -> dict[str, Any]:
         _active_pull_job = spawned["job_id"]
         return spawned
 
-def pull_shift_report(db: Session, row: models.VoltageSyncSettings | None = None, *, days_back: int = 1) -> dict[str, Any]:
-    """Download the one AriaORMS shift that is due at this clock.
+def pull_shift_report(
+    db: Session,
+    row: models.VoltageSyncSettings | None = None,
+    *,
+    days_back: int = 1,
+    kind: str | None = None,
+) -> dict[str, Any]:
+    """Download one AriaORMS shift.
 
-    19:00 asks for today's 12 صبح. 07:00 asks for yesterday's 12 شب. ``days_back`` is unused;
-    an unwritten report is skipped and the dashboard keeps the previous shift that has kA.
+    The morning clock (``kind='night'``) asks for yesterday's 12 شب.
+    The evening clock (``kind='morning'``) asks for today's 12 صبح.
+    A manual pull follows the same rule from the current clock. ``days_back`` is unused.
     """
     del days_back
+    from datetime import timedelta
+
     from . import ariaorms_client
-    from .shift_report import due_shift, save_shift_reports
+    from .energy import tehran_now
+    from .shift_report import MORNING, NIGHT, due_shift, save_shift_reports
 
     row = row or db.query(models.VoltageSyncSettings).first()
     if row is None:
@@ -809,8 +822,14 @@ def pull_shift_report(db: Session, row: models.VoltageSyncSettings | None = None
         if not username or not password:
             raise RuntimeError("AriaORMS username/password are not configured in Settings -> Data Sync")
         base = ariaorms_client.normalize_base_url(url)
-        # 19:00 pulls today's 12 صبح. 07:00 pulls yesterday's 12 شب. Nothing else is requested.
-        shift_day, shift_kind = due_shift()
+        # Morning clock: yesterday's 12 شب. Evening clock: today's 12 صبح. Nothing else is requested.
+        now = tehran_now()
+        if kind == NIGHT:
+            shift_day, shift_kind = now.date() - timedelta(days=1), NIGHT
+        elif kind == MORNING:
+            shift_day, shift_kind = now.date(), MORNING
+        else:
+            shift_day, shift_kind = due_shift(now, row.shift_report_times)
         end_day = shift_day
         start_day = shift_day
         # Close the settings transaction first: the HTTP calls below can take a while.

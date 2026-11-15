@@ -62,8 +62,8 @@ export function ShiftReportSettings({ initial }: { initial: VoltageSyncSettings 
         <div className="space-y-4">
           <p className="text-sm text-[var(--win-text-dim)]">
             {fa
-              ? "هر روز در دو ساعت زیر، گزارش نوبتکاری سل روم از این لینک خوانده می‌شود. از آن، فهرست الکترولایزرهای در سرویس، کیلوآمپر هر کدام و نام سرپرست شیفت در نرم‌افزار استفاده می‌شود. نام کاربری و رمز همان تنظیمات بالاست."
-              : "Twice a day the cell-room shift report is read from this link. Its in-service electrolyzers, each electrolyzer's kA and the shift supervisor are used across the software. The login is the one saved above."}
+              ? "ساعت صبح، شیفت ۱۲ شبِ روز قبل را می‌گیرد. ساعت عصر، شیفت ۱۲ صبحِ همان روز را می‌گیرد. کیلوآمپر قطار، تعداد در سرویس و نام سرپرست مبنای داشبورد هستند. نام کاربری و رمز همان تنظیمات بالاست."
+              : "The morning time pulls the previous day's 12 شب shift. The evening time pulls the same day's 12 صبح shift. Train kiloamperes, the in-service count and the supervisor are what the dashboard uses. The login is the one saved above."}
           </p>
           <label className="flex items-center gap-2 text-sm font-semibold text-[var(--win-text)]">
             <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
@@ -75,11 +75,11 @@ export function ShiftReportSettings({ initial }: { initial: VoltageSyncSettings 
               <Input value={url} onChange={(e) => setUrl(e.target.value)} dir="ltr" />
             </div>
             <div>
-              <Label>{fa ? "ساعت اول (صبح)" : "First time (morning)"}</Label>
+              <Label>{fa ? "صبح — شیفت ۱۲ شب روز قبل" : "Morning — previous day's 12 شب"}</Label>
               <Input type="time" value={first} onChange={(e) => setFirst(e.target.value)} className="max-w-[160px]" />
             </div>
             <div>
-              <Label>{fa ? "ساعت دوم (عصر)" : "Second time (evening)"}</Label>
+              <Label>{fa ? "عصر — شیفت ۱۲ صبح همان روز" : "Evening — same day's 12 صبح"}</Label>
               <Input type="time" value={second} onChange={(e) => setSecond(e.target.value)} className="max-w-[160px]" />
             </div>
           </div>

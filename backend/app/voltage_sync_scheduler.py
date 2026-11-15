@@ -1,5 +1,6 @@
 """Scheduler for ARIAORMS daily pull + optional Excel watch-folder poll."""
 import logging
+from functools import partial
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -47,13 +48,31 @@ def _default_settings() -> models.VoltageSyncSettings:
     )
 
 
+def _already_pulled_today(row: models.VoltageSyncSettings) -> bool:
+    """The automatic log-sheet pull runs once per plant day. A restart must not start it again."""
+    if row.last_run_status != "success" or row.last_run_at is None:
+        return False
+    from datetime import timezone
+
+    from .energy import _TEHRAN, tehran_today
+
+    stamp = row.last_run_at
+    if stamp.tzinfo is None:
+        stamp = stamp.replace(tzinfo=timezone.utc)
+    return stamp.astimezone(_TEHRAN).date() == tehran_today()
+
+
 def _run_daily_pull() -> None:
     db = SessionLocal()
     try:
         row = db.query(models.VoltageSyncSettings).first()
         if not row or not row.enabled:
             return
-        result = voltage_sync.pull_from_ariaorms(db, row, include_today=True)
+        if _already_pulled_today(row):
+            logger.info("AriaORMS daily pull skipped: already completed today")
+            return
+        # One day only. The long lookback is reserved for the manual Pull now button.
+        result = voltage_sync.pull_from_ariaorms(db, row, include_today=False, scheduled=True)
         logger.info("AriaORMS daily pull: %s", result.get("message"))
     except OperationalError as exc:
         if is_sqlite_lock(exc):
@@ -66,15 +85,15 @@ def _run_daily_pull() -> None:
         db.close()
 
 
-def _run_shift_pull() -> None:
-    """07:00 / 19:00: read the AriaORMS shift report and store in-service electrolyzers and kA."""
+def _run_shift_pull(kind: str) -> None:
+    """Morning clock pulls yesterday's 12 شب. Evening clock pulls today's 12 صبح."""
     db = SessionLocal()
     try:
         row = db.query(models.VoltageSyncSettings).first()
         if not row or not row.shift_report_enabled:
             return
-        result = voltage_sync.pull_shift_report(db, row, days_back=1)
-        logger.info("AriaORMS shift report pull: %s", result.get("message"))
+        result = voltage_sync.pull_shift_report(db, row, kind=kind)
+        logger.info("AriaORMS shift report pull (%s): %s", kind, result.get("message"))
     except OperationalError as exc:
         if is_sqlite_lock(exc):
             logger.warning("Shift report pull deferred: database is busy")
@@ -135,9 +154,12 @@ def apply_schedule(row: "models.VoltageSyncSettings") -> None:
 
     # The shift report has its own switch: it does not depend on the log-sheet pull being enabled.
     if row and row.shift_report_enabled:
-        for hour, minute in shift_times(row.shift_report_times):
+        slots = shift_times(row.shift_report_times)
+        # First clock (07:00) is the night shift of the previous day. Second clock (19:00) is today's morning shift.
+        kinds = ("night", "morning")
+        for index, (hour, minute) in enumerate(slots[:2]):
             scheduler.add_job(
-                _run_shift_pull,
+                partial(_run_shift_pull, kinds[index]),
                 CronTrigger(hour=hour, minute=minute),
                 id=f"{SHIFT_JOB_PREFIX}{hour:02d}{minute:02d}",
                 replace_existing=True,
@@ -167,7 +189,6 @@ def apply_schedule(row: "models.VoltageSyncSettings") -> None:
 
 def init_scheduler_from_db() -> None:
     db = SessionLocal()
-    start_pull = False
     try:
         row = db.query(models.VoltageSyncSettings).first()
         if row is None:
@@ -206,11 +227,12 @@ def init_scheduler_from_db() -> None:
                 db.refresh(row)
             voltage_sync.resolve_watch_dir(row.watch_dir)
         apply_schedule(row)
-        start_pull = bool(row.enabled)
+        if row.last_run_status == "running":
+            row.last_run_status = "interrupted"
+            row.last_run_message = "The pull stopped when the server restarted. It runs once a day at the set time."
+            db.commit()
     finally:
         db.close()
-    if start_pull:
-        voltage_sync.launch_pull(include_today=True)
 
 
 def get_next_shift_run_at() -> str | None:

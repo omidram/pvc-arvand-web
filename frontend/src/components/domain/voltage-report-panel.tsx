@@ -46,7 +46,9 @@ function hasLiveTotals(voltage?: DashboardVoltageStats | null): boolean {
     voltage.cell_count > 0 ||
     (voltage.plant_total_ka != null && voltage.plant_total_ka > 0) ||
     (voltage.plant_energy_kwh_24h != null && voltage.plant_energy_kwh_24h > 0) ||
-    (voltage.online_count != null && voltage.online_count > 0)
+    (voltage.online_count != null && voltage.online_count > 0) ||
+    Boolean(voltage.shift_rotation) ||
+    Boolean(voltage.trains && voltage.trains.some((row) => (row.ka ?? 0) > 0 || (row.in_service ?? 0) > 0))
   );
 }
 

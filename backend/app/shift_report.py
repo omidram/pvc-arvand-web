@@ -439,22 +439,41 @@ def rotation_kind(text: str) -> str | None:
     return None
 
 
-def due_shift(now: datetime | None = None) -> tuple[date, str]:
+def _clock_pair(times: str | None) -> tuple[int, int]:
+    """Minutes past midnight of the morning pull and the evening pull."""
+    slots: list[int] = []
+    for part in (times or "07:00,19:00").replace(";", ",").split(","):
+        part = part.strip()
+        if ":" not in part:
+            continue
+        hour_s, minute_s = part.split(":", 1)
+        try:
+            slots.append(int(hour_s) * 60 + int(minute_s))
+        except ValueError:
+            continue
+    morning = slots[0] if slots else 7 * 60
+    evening = slots[1] if len(slots) > 1 else 19 * 60
+    return morning, evening
+
+
+def due_shift(now: datetime | None = None, times: str | None = None) -> tuple[date, str]:
     """Which written report the dashboard should show.
 
-    At and after 19:00 the day shift of that date (12 صبح) has been filed.
-    At and after 07:00 the night shift of the previous date (12 شب) has been filed.
-    Before 07:00 the night report is not written yet, so yesterday's 12 صبح stays.
+    From the evening clock onward: today's 12 صبح.
+    From the morning clock until the evening clock: yesterday's 12 شب.
+    Before the morning clock the night report is not written yet, so yesterday's 12 صبح stays.
     """
     if now is None:
         from .energy import tehran_now
 
         now = tehran_now()
-    if now.hour >= 19:
+    morning, evening = _clock_pair(times)
+    minutes = now.hour * 60 + now.minute
+    if minutes >= evening:
         return now.date(), MORNING
-    if now.hour < 7:
-        return now.date() - timedelta(days=1), MORNING
-    return now.date() - timedelta(days=1), NIGHT
+    if minutes >= morning:
+        return now.date() - timedelta(days=1), NIGHT
+    return now.date() - timedelta(days=1), MORNING
 
 
 def pick_rotations(rotations: list[tuple[str, str]], kind: str) -> list[tuple[str, str]]:
@@ -501,7 +520,8 @@ def _pack_kind(rows: list[models.CellroomShiftLoad], kind: str) -> dict[str, Any
 
 def current_shift(db: Session, now: datetime | None = None) -> dict[str, Any] | None:
     """The shift the live dashboard is based on. Never a blank one while an older report still has kA."""
-    day, kind = due_shift(now)
+    settings = db.query(models.VoltageSyncSettings).first()
+    day, kind = due_shift(now, settings.shift_report_times if settings is not None else None)
     window = _rows_between(db, day - timedelta(days=4), day + timedelta(days=1))
     primary = _pack_kind([row for row in window if row.report_date == day], kind)
     if _has_load(primary):
