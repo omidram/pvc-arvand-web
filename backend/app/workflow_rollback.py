@@ -278,19 +278,66 @@ def _delete_air_for_assemble(db: Session, r: WfAssembleRequest) -> None:
         db.delete(row)
 
 
-def _cancel_open_work_orders(db: Session, element_nr: str | None, since: datetime | None) -> None:
+_WO_STAGE_FIELD = {
+    "generation": "generation_date",
+    "install": "install_date",
+    "pickup": "pickup_date",
+    "store": "store_date",
+    "disassemble": "disassemble_date",
+}
+
+
+def _cancel_open_work_orders(db: Session, element_nr: str | None, since: datetime | None, reason: str | None = None) -> None:
+    """Drop work-order dates this request wrote.
+
+    A form opened for the request is cancelled. A form that already existed
+    (the element's install history) only loses the stages written after the
+    request was opened, so a cancelled switch-off does not keep a pickup date.
+    """
     key = compact_nr(element_nr)
     if not key:
         return
+    why = (reason or "Cancelled with the workflow request")[:500]
     for wo in db.query(WfWorkOrder).filter(WfWorkOrder.status == "open").all():
         if compact_nr(wo.element_nr) != key:
             continue
-        if since and wo.created_at and wo.created_at < since:
+        events = db.query(WfEvent).filter_by(flow="workorder", record_id=wo.id).all()
+        late: list[str] = []
+        early_stages: set[str] = set()
+        earlier = False
+        for ev in events:
+            if ev.action not in ("process", "auto_created"):
+                continue
+            data = ev.data if isinstance(ev.data, dict) else {}
+            stage = data.get("stage") if isinstance(data.get("stage"), str) else None
+            if since and ev.created_at and ev.created_at < since:
+                earlier = True
+                if stage:
+                    early_stages.add(stage)
+                continue
+            if stage:
+                late.append(stage)
+        born_here = bool(since and wo.created_at and wo.created_at >= since and not earlier)
+        if born_here or (since is None):
+            wo.status = "cancelled"
+            wo.completed_at = _now()
+            wo.updated_at = _now()
+            wo.last_note = why
             continue
-        wo.status = "cancelled"
-        wo.completed_at = _now()
-        wo.updated_at = _now()
-        wo.last_note = "Cancelled with the assemble request"
+        changed = False
+        for stage in late:
+            if stage in early_stages:
+                continue
+            field = _WO_STAGE_FIELD.get(stage)
+            if field and getattr(wo, field, None) is not None:
+                setattr(wo, field, None)
+                changed = True
+            if stage == "install":
+                wo.install_cell = None
+                changed = True
+        if changed:
+            wo.updated_at = _now()
+            wo.last_note = why
 
 
 def rollback_assemble(db: Session, r: WfAssembleRequest) -> None:
@@ -300,7 +347,12 @@ def rollback_assemble(db: Session, r: WfAssembleRequest) -> None:
     release_for_request(db, r.code)
     _delete_air_for_assemble(db, r)
     el = db.get(models.Element, r.element_id) if r.element_id else None
-    _cancel_open_work_orders(db, r.element_nr or (el.element_nr if el is not None else None), r.created_at)
+    _cancel_open_work_orders(
+        db,
+        r.element_nr or (el.element_nr if el is not None else None),
+        r.created_at,
+        "Cancelled with the assemble request",
+    )
     created_here = el is not None and origin.get("element") is None
     if el is not None and created_here and not _element_in_other_flow(db, el.id, r.id):
         _drop_shop_notes(db, el.element_nr, r.code, r.created_at)
@@ -339,6 +391,7 @@ def rollback_cell(db: Session, r: WfCellRequest) -> None:
                 el.decommission_reason = None
     restore_shop(db, r.element_nr, origin.get("shop"))
     _drop_shop_notes(db, r.element_nr, r.code, r.created_at)
+    _cancel_open_work_orders(db, r.element_nr, r.created_at, "Cancelled with the cell request")
     svc.clear_cache()
 
 
@@ -430,6 +483,19 @@ def rollback_purchase(db: Session, p: WfPurchase) -> None:
     _drop_lifecycle(db, "wf_purchase", p.id)
 
 
+def _drop_inspection_maintenance(db: Session, kind: str, serial: str, code: str | None) -> None:
+    marker = f"WF {code}" if code else ""
+    if not marker:
+        return
+    model = models.AnodeMaintenance if kind == "anode" else models.CathodeMaintenance
+    field = "anode_nr" if kind == "anode" else "cathode_nr"
+    for row in db.query(model).all():
+        if compact_nr(getattr(row, field)) != compact_nr(serial):
+            continue
+        if marker in (row.action or ""):
+            _safe_delete(db, row)
+
+
 def rollback_inspection(db: Session, r: WfInspectionRequest) -> None:
     marker = f"WF {r.code}" if r.code else ""
     if marker:
@@ -442,6 +508,7 @@ def rollback_inspection(db: Session, r: WfInspectionRequest) -> None:
             continue
         for row in list(_workflow_coating_checks(db, kind, serial, {r.code or ""})):
             _safe_delete(db, row)
+        _drop_inspection_maintenance(db, kind, serial, r.code)
     origin = recall(db, "inspection", r.id)
     if origin.get("report_id") is None:
         r.report_id = None

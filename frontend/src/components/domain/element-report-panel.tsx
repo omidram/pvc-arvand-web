@@ -570,17 +570,12 @@ function ManagementBoard({ board }: { board: ElementBoard }) {
         ) : (
           <ul className="er-board-list">
             {board.membranes.items.map((item, index) => (
-              <li key={`${item.serial}-${index}`}>
+              <li key={`${item.type}-${index}`}>
                 <span className="er-kind is-membrane">M</span>
-                {item.serial ? <Link href={membraneHref(item.serial)}>{item.serial}</Link> : <span>—</span>}
-                <span className="er-board-meta">{item.type}</span>
+                <Link href="/membranes">{item.type}</Link>
+                <span className="er-board-meta">{formatNumber(item.count, 0)}</span>
               </li>
             ))}
-            {board.membranes.stock > board.membranes.items.length ? (
-              <li className="er-board-more">
-                <Link href="/membranes">{t("elDash.report.more", { n: board.membranes.stock - board.membranes.items.length })}</Link>
-              </li>
-            ) : null}
           </ul>
         )}
       </BoardCard>

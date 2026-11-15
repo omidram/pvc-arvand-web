@@ -75,7 +75,8 @@ ALLOWED_BY_BASE = {
     # broken goes to C90 (awaiting_disassembly). "ready" remains only so an older "kept" mark still loads.
     "decommissioned": {"awaiting_disassembly", "ready"},
     "disassembled": set(),
-    "new": {"awaiting_assembly", "assembling", "awaiting_qc", "ready"},
+    # awaiting_disassembly: a new element that failed its assembly test, before it is taken apart
+    "new": {"awaiting_assembly", "assembling", "awaiting_qc", "ready", "awaiting_disassembly"},
 }
 ALL_STATES = (
     "in_service",
@@ -213,6 +214,28 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
 
     windows = load_shutdown_windows(db)
     manual = {compact_nr(s.element_nr): s for s in rows_of(db, models.ElementShopState)}
+    # An open assemble request is the shop stage. A saved inspector signature must not
+    # show the element as ready while process has not signed, and a rejection must not
+    # leave it sitting in QC.
+    from .workflow_models import WfAssembleRequest
+
+    _asm_shop = {
+        "await_assembly": "awaiting_assembly",
+        "await_air": "assembling",
+        "await_insp_sign": "awaiting_qc",
+        "await_proc_sign": "awaiting_qc",
+        "await_position": "ready",
+        "await_disassembly": "awaiting_disassembly",
+    }
+    asm_stage: dict[str, str] = {}
+    for element_nr, status in (
+        db.query(WfAssembleRequest.element_nr, WfAssembleRequest.status)
+        .filter(WfAssembleRequest.status.notin_(("completed", "cancelled")))
+        .all()
+    ):
+        akey = compact_nr(element_nr)
+        if akey and status in _asm_shop:
+            asm_stage[akey] = _asm_shop[status]
     reports: dict[str, list[models.AssemblyInspectionReport]] = defaultdict(list)
     for rep in rows_of(db, models.AssemblyInspectionReport):
         key = compact_nr(rep.element_nr)
@@ -257,6 +280,11 @@ def build_pipeline(db: Session) -> list[dict[str, Any]]:
             since = stamp.date()
             if source == "manual" and st is not None:
                 note, updated_by = st.note, st.updated_by
+
+        forced = asm_stage.get(key)
+        if forced and (base == "new" or (forced == "awaiting_disassembly" and base == "decommissioned")):
+            stage = forced
+            source = "workflow"
 
         dol = None
         if el is not None and base in ("in_service", "installed", "decommissioned"):
@@ -422,6 +450,11 @@ def advance_stage(db: Session, element_nr: str, note: str | None, user: str | No
     item = next((i for i in build_pipeline(db) if i["key"] == key), None)
     if item is None:
         raise ValueError(f"Element {element_nr} was not found")
+    from .routers.workflow import shop_change_blocked
+
+    blocked = shop_change_blocked(db, item["element_nr"], kind="advance")
+    if blocked:
+        raise ValueError(blocked)
     target = NEXT_STAGE.get(item["state"])
     if target is None:
         raise ValueError(f"Element {item['element_nr']} is '{item['state']}'; there is no next cell-shop step (installing is entered in Assembly Data)")
@@ -1384,8 +1417,15 @@ def management_board(
         "membranes": {
             "stock": len(stock),
             "installed": sum(1 for r in membranes if r["installed"]),
-            "shown": min(len(stock), _BOARD_CAP),
-            "items": [{"serial": r.get("serial"), "type": (r.get("membrane_type") or "").strip() or "—"} for r in stock[:_BOARD_CAP]],
+            # Membranes in stock are known by type only. A serial is written when a new element is made.
+            "items": [
+                {"type": name, "count": n}
+                for name, n in sorted(
+                    __import__("collections").Counter((r.get("membrane_type") or "").strip() or "—" for r in stock).items(),
+                    key=lambda kv: (-kv[1], kv[0]),
+                )
+            ],
+            "shown": len({(r.get("membrane_type") or "").strip() or "—" for r in stock}),
         },
         "pallets": _packing_pallets(db),
     }

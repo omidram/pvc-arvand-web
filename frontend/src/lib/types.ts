@@ -1528,7 +1528,7 @@ export interface ElementBoard {
   rate_off: BoardList;
   awaiting_check: BoardList;
   at_coater: BoardList;
-  membranes: { stock: number; installed: number; shown: number; items: { serial?: string | null; type: string }[] };
+  membranes: { stock: number; installed: number; shown: number; items: { type: string; count: number }[] };
   pallets: BoardPallet[];
 }
 

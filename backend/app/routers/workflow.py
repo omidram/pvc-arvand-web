@@ -2666,14 +2666,19 @@ def cell_install(request_id: int, body: CellInstallIn, db: Session = Depends(get
 
     r = _load_cell(db, request_id)
     if "install" not in _cell_actions(db, r, user):
-        raise HTTPException(403, "Operation or the cell shop returns this cell to a position")
+        raise HTTPException(403, "C-90 puts this cell back in a position")
     note = (body.note or "").strip() or None
     svc.clear_cache()
     moved = relocate_element(
         db, ShopRelocate(element_nr=r.element_nr, electrolyzer=body.electrolyzer, position=body.position, date=body.date, note=note), user
     )
     cell = f"{moved['electrolyzer']}-{moved['position']}"
-    r.decision = "relocated"
+    # The shop decision stays "kept healthy". Overwriting it with "relocated" hid the return-to-cell step.
+    r.decision = "keep"
+    r.electrolyzer = moved.get("electrolyzer") or r.electrolyzer
+    r.position = moved.get("position") or r.position
+    if moved.get("id"):
+        r.element_id = moved["id"]
     from .work_orders import ensure_work_order_process
 
     ensure_work_order_process(db, r.element_nr, "install", user, day=body.date or date.today(), cell=cell, note=note)
@@ -3421,7 +3426,7 @@ def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
                 kind=kind,
                 serial=spelled or serial,
                 finding=str(chosen.get("result") or "mechanical problem"),
-                action="\n".join(notes) or None,
+                action=("\n".join(notes + [marker])).strip(),
                 day=date_type.today(),
             )
 
@@ -3992,11 +3997,8 @@ def _need_groups_for_process(flow: str, status: str) -> set[str]:
 def _ensure_assemble_from_shop(db: Session, item: dict, user: models.User, target: str, note: str | None) -> tuple[WfAssembleRequest, bool]:
     existing = _open_assemble_by_element(db, item["element_nr"])
     if existing:
-        if _ASM_RANK.get(target, 0) > _ASM_RANK.get(existing.status, 0) and existing.status not in CLOSED:
-            existing.status = target
-            existing.updated_at = _now()
-            if note:
-                existing.last_note = note
+        # The request keeps its real step. A shop click must not skip the report,
+        # the inspector, or process.
         return existing, False
     anode = (item.get("anode_nr") or "").strip()
     cathode = (item.get("cathode_nr") or "").strip()
@@ -4036,13 +4038,8 @@ def _ensure_assemble_from_shop(db: Session, item: dict, user: models.User, targe
 def _ensure_cell_from_shop(db: Session, item: dict, user: models.User, target: str, note: str | None, reason: str | None) -> tuple[WfCellRequest, bool]:
     existing = _open_cell_requests(db, item["element_nr"])
     if existing:
-        r = existing[0]
-        if _CELL_RANK.get(target, 0) > _CELL_RANK.get(r.status, 0) and r.status not in CLOSED:
-            r.status = target
-            r.updated_at = _now()
-            if note:
-                r.last_note = note
-        return r, False
+        # Do not skip switch-off, arrival, or the shop decision.
+        return existing[0], False
     why = (reason or note or item.get("decommission_reason") or f"Started from cell shop ({item['state']})").strip()
     if not why:
         raise ValueError("Enter the reason for the cell request")
@@ -4093,6 +4090,27 @@ def _ensure_insp_from_shop(db: Session, item: dict, user: models.User, note: str
     _event(db, "inspection", r, "created", user, None, note, {"from_shop": item["state"]})
     _notify(db, "inspection", r, user)
     return r, True
+
+
+def shop_change_blocked(db: Session, element_nr: str, *, kind: str) -> str | None:
+    """The cartable owns an open request. The shop board must not jump past it."""
+    asm = _open_assemble_by_element(db, element_nr)
+    if asm is not None:
+        return (
+            f"Element {asm.element_nr} is on assemble request {asm.code}. "
+            "Sign, reject, or cancel that request. The shop board cannot skip inspection or process."
+        )
+    if kind != "advance":
+        return None
+    for r in _open_cell_requests(db, element_nr):
+        if (getattr(r, "request_kind", None) or "removal") == "numbering":
+            continue
+        if r.status == "await_disassembly":
+            return (
+                f"Element {r.element_nr} is on cell request {r.code}. "
+                "C-90 confirms dismantling on that request so the inspection and the work order are opened."
+            )
+    return None
 
 
 def start_shop_process(db: Session, element_nr: str, user: models.User, note: str | None = None, reason: str | None = None) -> dict:
@@ -4267,7 +4285,7 @@ def assemble_stamp(request_id: int, body: AssembleStampIn, db: Session = Depends
     r.cathode_nr = el.cathode_nr or r.cathode_nr
     r.membrane_nr = el.membrane_nr
     r.assembly_date = day
-    _try_shop(db, el.element_nr, "awaiting_qc", user, body.note)
+    _try_shop(db, el.element_nr, "assembling", user, body.note)
     from .work_orders import ensure_work_order_process
 
     ensure_work_order_process(db, el.element_nr, "generation", user, day=day, note=body.note)
@@ -4288,8 +4306,10 @@ def assemble_submit_air(request_id: int, body: NoteIn, db: Session = Depends(get
     if not _air_filled(report):
         raise HTTPException(400, "Fill and save the Assembly Inspection Report first")
     _pin_air(r, report)
+    _try_shop(db, r.element_nr, "awaiting_qc", user, body.note)
     _move(db, "assemble", r, "await_insp_sign", "submit_air", user, body.note, {"air_id": report.id})
     db.commit()
+    svc.clear_cache()
     return _assemble_detail(db, r, user)
 
 
@@ -4300,8 +4320,10 @@ def assemble_sign_insp(request_id: int, body: NoteIn, db: Session = Depends(get_
     report = _air_for(db, r)
     if not _air_signed(report, "insp"):
         raise HTTPException(400, "Inspection must sign the Assembly Inspection Report first")
+    _try_shop(db, r.element_nr, "awaiting_qc", user, body.note)
     _move(db, "assemble", r, "await_proc_sign", "sign_insp", user, body.note, {"air_id": report.id if report else None})
     db.commit()
+    svc.clear_cache()
     return _assemble_detail(db, r, user)
 
 
@@ -4312,8 +4334,11 @@ def assemble_reject_insp(request_id: int, body: NoteIn, db: Session = Depends(ge
     if not (body.note or "").strip():
         raise HTTPException(400, "Write why the Assembly Inspection Report is not accepted")
     _clear_air_sign(_air_for(db, r), "insp", "proc")
+    # Back to C-90. The element stays reserved, but it is not waiting for QC anymore.
+    _try_shop(db, r.element_nr, "assembling", user, body.note)
     _move(db, "assemble", r, "await_air", "reject_insp", user, body.note, notify_creator=True)
     db.commit()
+    svc.clear_cache()
     return _assemble_detail(db, r, user)
 
 
@@ -4337,8 +4362,10 @@ def assemble_reject_proc(request_id: int, body: NoteIn, db: Session = Depends(ge
     if not (body.note or "").strip():
         raise HTTPException(400, "Write why the Assembly Inspection Report is not accepted")
     _clear_air_sign(_air_for(db, r), "insp", "proc")
+    _try_shop(db, r.element_nr, "awaiting_qc", user, body.note)
     _move(db, "assemble", r, "await_insp_sign", "reject_proc", user, body.note, notify_creator=True)
     db.commit()
+    svc.clear_cache()
     return _assemble_detail(db, r, user)
 
 

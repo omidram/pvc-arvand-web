@@ -140,8 +140,13 @@ def move_shop(body: ShopMove, db: Session = Depends(get_db), user: models.User =
     errors: list[dict[str, str]] = []
     items = {i["key"]: i for i in svc.build_pipeline(db)}
     choice = {stage: c for c, stage in svc.DECOMMISSION_CHOICES.items()}.get(body.stage)
+    from .workflow import shop_change_blocked
+
     for nr in dict.fromkeys(n.strip() for n in body.element_nrs if n and n.strip()):
         try:  # every check runs before anything is written, so a refused element leaves no half-change
+            held = shop_change_blocked(db, nr, kind="move")
+            if held:
+                raise ValueError(held)
             svc.set_shop_stage(db, nr, body.stage, (body.note or "").strip() or None, user.full_name or user.username, items)
             moved.append(nr)
         except ValueError as exc:
