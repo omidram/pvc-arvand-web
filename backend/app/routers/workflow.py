@@ -4092,6 +4092,19 @@ def _ensure_insp_from_shop(db: Session, item: dict, user: models.User, note: str
     return r, True
 
 
+def element_delete_blocked(db: Session, element_nr: str | None) -> str | None:
+    """An installation row that an open request is working on must not disappear from under it."""
+    asm = _open_assemble_by_element(db, element_nr)
+    if asm is not None:
+        return f"Element {asm.element_nr} is on assemble request {asm.code}. Cancel or finish that request first."
+    for r in _open_cell_requests(db, element_nr or ""):
+        return f"Element {r.element_nr} is on cell request {r.code}. Cancel or finish that request first."
+    insp = _open_insp_for(db, element_nr, None, None)
+    if insp is not None:
+        return f"Element {insp.element_nr} is on inspection request {insp.code}. Cancel or finish that request first."
+    return None
+
+
 def shop_change_blocked(db: Session, element_nr: str, *, kind: str) -> str | None:
     """The cartable owns an open request. The shop board must not jump past it."""
     asm = _open_assemble_by_element(db, element_nr)

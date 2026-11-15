@@ -825,6 +825,11 @@ def delete_element(item_id: int, db: Session = Depends(get_db)):
     obj = db.query(models.Element).filter(models.Element.id == item_id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
+    from .workflow import element_delete_blocked
+
+    held = element_delete_blocked(db, obj.element_nr)
+    if held:
+        raise HTTPException(status_code=409, detail=held)
     db.delete(obj)
     db.commit()
     return None
