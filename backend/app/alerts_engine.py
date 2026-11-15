@@ -483,11 +483,12 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
 
     by_el: dict[str, list[float]] = {}
     by_sev: dict[str, dict[str, int]] = {}
-    unit_peak: dict[str, tuple[float, str | None]] = {}
+    unit_peak: dict[str, tuple[float, str | None, str | None]] = {}
     ok = warn = danger = 0
     max_v: float | None = None
     max_el: str | None = None
     max_pos: str | None = None
+    max_element: str | None = None
     known = set(all_electrolyzers())
     for row in readings:
         el = format_electrolyzer_name(row.electrolyzer)
@@ -514,7 +515,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         pos = (row.position or "").strip() or None
         peak = unit_peak.get(el)
         if peak is None or v > peak[0]:
-            unit_peak[el] = (v, pos)
+            unit_peak[el] = (v, pos, (row.element_nr or "").strip() or None)
 
     from .shift_report import day_shift
 
@@ -563,6 +564,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     max_v = None
     max_el = None
     max_pos = None
+    max_element = None
     electrolyzers = []
     plant_total = 0.0
     for el in sorted(known):
@@ -587,11 +589,12 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
                 }
             )
             continue
-        peak, pos = unit_peak.get(el, (None, None))
+        peak, pos, peak_element = unit_peak.get(el, (None, None, None))
         if peak is not None and (max_v is None or peak > max_v):
             max_v = peak
             max_el = el
             max_pos = pos
+            max_element = peak_element
         sev = by_sev.get(el, {})
         ok += sev.get("ok", 0)
         warn += sev.get("warning", 0)
@@ -648,6 +651,8 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         "max_voltage": round(max_v, 4) if max_v is not None else None,
         "max_electrolyzer": max_el,
         "max_position": max_pos,
+        "max_element_nr": max_element,
+        "max_electrolyzer_ka": round(unit_ka[max_el], 3) if max_el in unit_ka else None,
         "avg_voltage": round(plant_total / cell_count, 4) if cell_count else None,
         "danger_limit": danger_limit,
         "cell_gauge_max": cell_gauge_max,

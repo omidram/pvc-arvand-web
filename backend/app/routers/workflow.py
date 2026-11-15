@@ -5206,6 +5206,9 @@ def _assembly_pool(db: Session) -> dict:
         sides_ok = _line_reusable(_side_line(row.remarks, "Inspection")) and _line_reusable(_side_line(row.remarks, "Process"))
         if not (decision_ok or sides_ok):
             continue
+        if not (row.coating_quality or "").strip():
+            # TAFKIK must grade the coating; "not graded" is not allowed for reuse.
+            continue
         if (kind, key) in busy or used_since(kind, key, _pool_day(row.inspection_date)):
             continue
         reusable.append(

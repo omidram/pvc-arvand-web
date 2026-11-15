@@ -16,6 +16,7 @@ import { ElementReportGuideButton } from "./element-report-guide";
 import { MembraneUsedModal } from "./membrane-stock-panel";
 import { STAGE_FLOW, STAGE_TONE } from "./element-dashboard-ui";
 
+const REPORT_STAGES: ElementStage[] = ["decommissioned", "awaiting_disassembly", "awaiting_qc", "ready"];
 const FLOW_KINDS = ["assembled", "commissioned", "decommissioned", "disassembled"] as const;
 type FlowGrain = "day" | "week" | "month" | "year";
 type FlowHit = { date: string; kind: string; element_nr: string; reason: string | null };
@@ -138,7 +139,6 @@ function AssemblyStockSummary({ board }: { board?: ElementBoard }) {
   const rows: { key: string; label: string; anode: number; cathode: number }[] = [
     { key: "good", label: t("elDash.report.stockGood"), anode: board?.stock_good?.anode ?? countSide(data?.reusable || [], "anode", "good"), cathode: board?.stock_good?.cathode ?? countSide(data?.reusable || [], "cathode", "good") },
     { key: "medium", label: t("elDash.report.stockMedium"), anode: board?.stock_medium?.anode ?? countSide(data?.reusable || [], "anode", "medium"), cathode: board?.stock_medium?.cathode ?? countSide(data?.reusable || [], "cathode", "medium") },
-    { key: "open", label: t("elDash.report.stockOpen"), anode: board?.stock_open?.anode ?? countSide(data?.reusable || [], "anode", "open"), cathode: board?.stock_open?.cathode ?? countSide(data?.reusable || [], "cathode", "open") },
     { key: "purchased", label: t("assemblyStock.purchased"), anode: countSide(data?.purchased || [], "anode"), cathode: countSide(data?.purchased || [], "cathode") },
     { key: "recoated", label: t("assemblyStock.recoated"), anode: countSide(data?.recoated || [], "anode"), cathode: countSide(data?.recoated || [], "cathode") },
   ].filter((row) => row.key === "purchased" || row.key === "recoated" || row.anode + row.cathode > 0);
@@ -513,10 +513,56 @@ function BoardCard({ title, sub, hrefTo, tone, children }: { title: string; sub:
   );
 }
 
+function PoolPieceList({ rows, moreHref }: { rows: AssemblyPoolRow[]; moreHref: string }) {
+  const { t } = useI18n();
+  const shown = rows.slice(0, 12);
+  if (!shown.length) return <p className="er-board-empty">{t("elDash.report.none")}</p>;
+  return (
+    <ul className="er-board-list">
+      {shown.map((row) => (
+        <li key={`${row.source}-${row.kind}-${row.serial}`}>
+          <span className={`er-kind is-${row.kind}`}>{row.kind === "cathode" ? "C" : "A"}</span>
+          <Link href={pieceHref(row.serial)}>{row.serial}</Link>
+        </li>
+      ))}
+      {rows.length > shown.length ? (
+        <li className="er-board-more">
+          <Link href={moreHref}>{t("elDash.report.more", { n: rows.length - shown.length })}</Link>
+        </li>
+      ) : null}
+    </ul>
+  );
+}
+
 function ManagementBoard({ board }: { board: ElementBoard }) {
   const { t } = useI18n();
+  const pool = useQuery({
+    queryKey: ["workflow", "assembly-pool"],
+    queryFn: () => workflowApi.assemblyPool(),
+    staleTime: 30_000,
+  });
+  const recoated = pool.data?.recoated ?? [];
+  const purchased = pool.data?.purchased ?? [];
+  const packedAnode = board.pallets.reduce((sum, pallet) => sum + pallet.anode_count, 0);
+  const packedCathode = board.pallets.reduce((sum, pallet) => sum + pallet.cathode_count, 0);
+  const stockHref = "/elements/assembly-stock";
+  const emptyList = { anode: 0, cathode: 0, total: 0, shown: 0, items: [] };
   return (
     <div className="er-board">
+      <BoardCard title={t("elDash.report.disassembledTitle")} sub={t("elDash.report.disassembledSub")} hrefTo={href("shop", { stage: "disassembled" })} tone="apart">
+        <CountPair anode={board.disassembled.anode} cathode={board.disassembled.cathode} hrefTo={href("shop", { stage: "disassembled" })} />
+        <PieceList list={board.disassembled} moreHref={href("shop", { stage: "disassembled" })} />
+      </BoardCard>
+      <BoardCard title={t("elDash.report.stockCardTitle")} sub={t("elDash.report.stockCardSub")} hrefTo="/segregation" tone="stock">
+        <GroupedCounts
+          hrefTo="/segregation"
+          groups={[
+            { key: "good", label: t("elDash.report.stockGood"), list: board.stock_good },
+            { key: "medium", label: t("elDash.report.stockMedium"), list: board.stock_medium },
+          ]}
+        />
+        <PieceList list={board.stock || emptyList} moreHref="/segregation" />
+      </BoardCard>
       <BoardCard title={t("elDash.report.readySendTitle")} sub={t("elDash.report.readySendSub")} hrefTo="/segregation" tone="send">
         <GroupedCounts
           hrefTo="/segregation"
@@ -527,24 +573,27 @@ function ManagementBoard({ board }: { board: ElementBoard }) {
         />
         <PieceList list={board.ready_send} moreHref="/segregation" />
       </BoardCard>
-      <BoardCard title={t("elDash.report.stockCardTitle")} sub={t("elDash.report.stockCardSub")} hrefTo="/segregation" tone="stock">
-        <GroupedCounts
-          hrefTo="/segregation"
-          groups={[
-            { key: "good", label: t("elDash.report.stockGood"), list: board.stock_good },
-            { key: "medium", label: t("elDash.report.stockMedium"), list: board.stock_medium },
-            { key: "open", label: t("elDash.report.stockOpen"), list: board.stock_open },
-          ]}
-        />
-        <PieceList list={board.stock || { anode: 0, cathode: 0, total: 0, shown: 0, items: [] }} moreHref="/segregation" />
-      </BoardCard>
-      <BoardCard title={t("elDash.report.disassembledTitle")} sub={t("elDash.report.disassembledSub")} hrefTo={href("shop", { stage: "disassembled" })} tone="apart">
-        <CountPair anode={board.disassembled.anode} cathode={board.disassembled.cathode} hrefTo={href("shop", { stage: "disassembled" })} />
-        <PieceList list={board.disassembled} moreHref={href("shop", { stage: "disassembled" })} />
-      </BoardCard>
       <BoardCard title={t("elDash.report.rateOffTitle")} sub={t("elDash.report.rateOffSub")} hrefTo="/segregation" tone="off">
         <CountPair anode={board.rate_off.anode} cathode={board.rate_off.cathode} hrefTo="/segregation" />
         <PieceList list={board.rate_off} moreHref="/segregation" />
+      </BoardCard>
+      <BoardCard title={t("elDash.report.packedTitle")} sub={t("elDash.report.packedSub")} hrefTo="/cartable" tone="send">
+        <CountPair anode={packedAnode} cathode={packedCathode} hrefTo="/cartable" />
+        {board.pallets.length === 0 ? (
+          <p className="er-board-empty">{t("elDash.report.palletEmpty")}</p>
+        ) : (
+          <ul className="er-board-list">
+            {board.pallets.map((pallet) => (
+              <li key={`${pallet.code}-${pallet.pallet_no}`}>
+                <Link href={palletHref(pallet)}>{pallet.code}</Link>
+                <span className="er-board-meta">{t("elDash.report.palletNo", { no: pallet.pallet_no })}</span>
+                <span className="er-board-meta">
+                  {formatNumber(pallet.anode_count, 0)} / {formatNumber(pallet.cathode_count, 0)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </BoardCard>
       <BoardCard title={t("elDash.report.atCoaterTitle")} sub={t("elDash.report.atCoaterSub")} hrefTo="/cartable" tone="coat">
         <CountPair anode={board.at_coater.anode} cathode={board.at_coater.cathode} hrefTo="/cartable" />
@@ -554,28 +603,34 @@ function ManagementBoard({ board }: { board: ElementBoard }) {
         <CountPair anode={board.awaiting_check.anode} cathode={board.awaiting_check.cathode} hrefTo="/storage" />
         <PieceList list={board.awaiting_check} moreHref="/storage" />
       </BoardCard>
-      <BoardCard title={t("elDash.report.membraneCard")} sub={t("elDash.report.membraneCardSub")} hrefTo="/membranes" tone="mem">
+      <BoardCard title={t("elDash.report.recoatedTitle")} sub={t("elDash.report.recoatedSub")} hrefTo={stockHref} tone="stock">
+        <CountPair anode={countSide(recoated, "anode")} cathode={countSide(recoated, "cathode")} hrefTo={stockHref} />
+        <PoolPieceList rows={recoated} moreHref={stockHref} />
+      </BoardCard>
+      <BoardCard title={t("elDash.report.purchasedTitle")} sub={t("elDash.report.purchasedSub")} hrefTo={stockHref} tone="stock">
+        <CountPair anode={countSide(purchased, "anode")} cathode={countSide(purchased, "cathode")} hrefTo={stockHref} />
+        <PoolPieceList rows={purchased} moreHref={stockHref} />
+      </BoardCard>
+      <BoardCard title={t("elDash.report.membraneStockTitle")} sub={t("elDash.report.membraneCardSub")} hrefTo="/membranes" tone="mem">
         <Link href="/membranes" className="er-board-nums">
           <div>
             <strong>{formatNumber(board.membranes.stock, 0)}</strong>
             <span>{t("elDash.report.membraneTotal")}</span>
           </div>
-          <div>
-            <strong>{formatNumber(board.membranes.installed, 0)}</strong>
-            <span>{t("elDash.report.membraneOnCells")}</span>
-          </div>
         </Link>
-        {board.membranes.items.length === 0 ? (
+        {board.membranes.items.filter((item) => item.count > 0).length === 0 ? (
           <p className="er-board-empty">{t("elDash.report.none")}</p>
         ) : (
           <ul className="er-board-list">
-            {board.membranes.items.map((item, index) => (
-              <li key={`${item.type}-${index}`}>
-                <span className="er-kind is-membrane">M</span>
-                <Link href="/membranes">{item.type}</Link>
-                <span className="er-board-meta">{formatNumber(item.count, 0)}</span>
-              </li>
-            ))}
+            {board.membranes.items
+              .filter((item) => item.count > 0)
+              .map((item, index) => (
+                <li key={`${item.type}-${index}`}>
+                  <span className="er-kind is-membrane">M</span>
+                  <Link href="/membranes">{item.type}</Link>
+                  <span className="er-board-meta">{formatNumber(item.count, 0)}</span>
+                </li>
+              ))}
           </ul>
         )}
       </BoardCard>
@@ -799,7 +854,7 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
   const { t } = useI18n();
   const { counts, parts } = data;
   const kinds = ["anode", "cathode", "membrane"] as const;
-  const stages = STAGE_FLOW.filter((stage) => stage !== "awaiting_assembly");
+  const stages = STAGE_FLOW.filter((stage) => REPORT_STAGES.includes(stage));
 
   return (
     <section className={cls}>
@@ -814,7 +869,7 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
             className={`er-stage ed-tone-${STAGE_TONE[stage]}`}
           >
             <span className="er-stage-value">{formatNumber(counts[stage], 0)}</span>
-            <span className="er-stage-label">{t(`elDash.stage.${stage}`)}</span>
+            <span className="er-stage-label">{stage === "decommissioned" ? t("elDash.report.stageDecommissioned") : t(`elDash.stage.${stage}`)}</span>
           </Link>
         ))}
       </div>

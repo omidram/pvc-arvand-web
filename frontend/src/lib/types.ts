@@ -641,6 +641,8 @@ export interface DashboardVoltageStats {
   max_voltage: number | null;
   max_electrolyzer?: string | null;
   max_position?: string | null;
+  max_element_nr?: string | null;
+  max_electrolyzer_ka?: number | null;
   avg_voltage: number | null;
   danger_limit: number;
   cell_gauge_max: number;

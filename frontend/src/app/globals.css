@@ -8455,12 +8455,11 @@ html[data-theme="dark"] .dv-prod-foot { color: #94a3b8; }
 /* avg + max cell voltage gauges side by side, a little smaller */
 .dv-gauge-pair { display: flex; gap: 0.6rem; align-items: stretch; }
 .dv-gauge-pair .vg-gauge { flex: 1 1 0; min-width: 0; padding: 0.6rem 0.4rem 0.7rem; }
-.dv-gauge-pair .vg-ring { max-width: 132px; }
+.dv-gauge-pair .vg-ring { max-width: 170px; }
 .dv-gauge-pair .vg-ring .vg-value { font-size: 1.3rem; }
 .dv-gauge-pair .vg-ring .vg-unit { font-size: 0.6rem; }
 .dv-gauge-pair .vg-label { font-size: 0.72rem; }
 .vg-sub { margin-top: 0.1rem; font-size: 0.66rem; font-weight: 700; color: #64748b; text-align: center; }
-@media (min-width: 760px) { .dv-gauge-pair { grid-column: span 2; } }
 .dv-reporter { display: inline-flex; align-items: center; gap: 0.35rem; margin: 0.25rem 0 0; font-size: 0.78rem; color: #475569; }
 .dv-reporter b { color: #0f172a; font-weight: 800; }
 html[data-theme="dark"] .dv-reporter { color: #cbd5e1; }

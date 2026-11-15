@@ -27,6 +27,9 @@ import {
   YAxis,
 } from "recharts";
 
+/** 24 electrolyzers x 14.85 kA. */
+const DESIGN_CAPACITY_KA = 356.4;
+
 const TOOLTIP_STYLE = {
   background: "rgba(15, 23, 42, 0.92)",
   border: "none",
@@ -195,6 +198,18 @@ export function VoltageReportPanel({
     { key: "danger", name: t("monitoring.legendDanger"), value: live.danger_count, color: "#ef4444" },
   ];
   const okPct = Math.round((live.ok_count / healthTotal) * 100);
+  // Where the highest cell is: electrolyzer, position, element number and the kA that electrolyzer carries.
+  const maxCellSub =
+    [
+      live.max_electrolyzer ? formatElectrolyzer(live.max_electrolyzer) : null,
+      live.max_position,
+      live.max_element_nr ? t("dashboard.maxCellElement", { nr: live.max_element_nr }) : null,
+      live.max_electrolyzer_ka != null ? ` ${U.ka}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ") || undefined;
+  // Design capacity of the cell room: 24 electrolyzers x 14.85 kA = 356.4 kA.
+  const capacityPct = live.plant_total_ka != null && live.plant_total_ka > 0 ? (live.plant_total_ka / DESIGN_CAPACITY_KA) * 100 : null;
   const trains = (["1", "2"] as const).map((train) => trainLine(live, train));
   // Daily kW is that day's cell voltage × AriaORMS kA. Week and month are the mean of those daily samples.
   const spanKw = span === "day" ? live.plant_power_kw : span === "month" ? live.plant_power_kw_30d : live.plant_power_kw_7d;
@@ -237,6 +252,7 @@ export function VoltageReportPanel({
           label={t("dashboard.plantTotalLoad")}
           value={live.plant_total_ka != null ? formatNumber(live.plant_total_ka, 1) : "—"}
           unit={U.ka}
+          meta={capacityPct != null ? t("dashboard.capacityHint", { pct: formatNumber(capacityPct, 1), total: formatNumber(DESIGN_CAPACITY_KA, 1) }) : undefined}
           spark={spark}
         />
         <Kpi
@@ -340,22 +356,10 @@ export function VoltageReportPanel({
         <ProductionCard plantKa={live.plant_total_ka} trains={trains.map((line) => ({ train: line.train, ka: line.ka }))} />
         <div className="dv-gauge-pair">
           <VoltageGauge
-            value={live.avg_voltage}
-            max={live.cell_gauge_max}
-            label={t("dashboard.avgCellGauge")}
-            unit={U.v}
-            tone="info"
-            digits={3}
-          />
-          <VoltageGauge
             value={live.max_voltage}
             max={live.cell_gauge_max}
             label={t("dashboard.maxCellGauge")}
-            sub={
-              live.max_electrolyzer
-                ? [formatElectrolyzer(live.max_electrolyzer), live.max_position].filter(Boolean).join(" · ")
-                : undefined
-            }
+            sub={maxCellSub}
             unit={U.v}
             tone={live.max_voltage != null && live.danger_limit > 0 && live.max_voltage >= live.danger_limit ? "danger" : "warning"}
             digits={3}

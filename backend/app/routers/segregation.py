@@ -384,6 +384,21 @@ def _link_master(db: Session, obj: models.ElectrodeSegregation) -> None:
             return
 
 
+def _require_grade(obj: models.ElectrodeSegregation) -> None:
+    """A reusable electrode must carry a coating grade (good or medium). "Not graded" is not allowed for reuse."""
+    from ..segregation_flow import classify
+
+    info = classify(
+        obj.decision,
+        obj.warranty,
+        obj.coating_quality,
+        " ".join(part for part in (obj.segregation, obj.problems) if part),
+        obj.company,
+    )
+    if info.get("outcome") == "reusable" and info.get("quality") not in ("good", "medium"):
+        raise HTTPException(status_code=400, detail="Choose the coating quality (good or medium) - a reusable electrode must be graded")
+
+
 @router.post("", response_model=schemas.ElectrodeSegregationRead, status_code=201)
 def create_segregation(payload: schemas.ElectrodeSegregationBase, db: Session = Depends(get_db)):
     data = payload.model_dump()
@@ -401,6 +416,7 @@ def create_segregation(payload: schemas.ElectrodeSegregationBase, db: Session = 
     if not data.get("service_life") and fields.get("service_life"):
         pass  # keep calculated
     obj = models.ElectrodeSegregation(**_row_kwargs(fields))
+    _require_grade(obj)
     _link_master(db, obj)
     db.add(obj)
     from ..electrode_lifecycle import warn_failed_under_warranty
@@ -417,8 +433,11 @@ def update_segregation(item_id: int, payload: schemas.ElectrodeSegregationBase, 
     obj = db.query(models.ElectrodeSegregation).filter(models.ElectrodeSegregation.id == item_id).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Not found")
-    for key, value in payload.model_dump(exclude_unset=True).items():
+    changes = payload.model_dump(exclude_unset=True)
+    for key, value in changes.items():
         setattr(obj, key, value)
+    if {"decision", "coating_quality", "segregation", "warranty"} & set(changes):
+        _require_grade(obj)
     _link_master(db, obj)
     from ..electrode_lifecycle import warn_failed_under_warranty
 

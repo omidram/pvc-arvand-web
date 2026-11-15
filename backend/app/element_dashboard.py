@@ -1347,6 +1347,7 @@ def tafkik_spare_lists(
         "stock_good": [],
         "stock_medium": [],
         "stock_open": [],
+        "needs_grade": [],
     }
     for (kind, key), row in latest.items():
         if (kind, key) in occupied:
@@ -1380,7 +1381,12 @@ def tafkik_spare_lists(
         elif outcome == "reusable":
             quality = info.get("quality") or "open"
             piece["reason"] = quality
-            groups[{"good": "stock_good", "medium": "stock_medium"}.get(quality, "stock_open")].append(piece)
+            if quality in ("good", "medium"):
+                groups["stock_good" if quality == "good" else "stock_medium"].append(piece)
+            else:
+                # TAFKIK must grade the coating (good / medium). A piece without a grade is not reusable yet.
+                piece["reason"] = "needs_grade"
+                groups["needs_grade"].append(piece)
     for name, rows in groups.items():
         rows.sort(key=lambda item: (item.get("kind") or "", item.get("serial") or ""))
     return groups
@@ -1399,7 +1405,7 @@ def management_board(
     groups = tafkik if tafkik is not None else tafkik_spare_lists(db, anode_rows, cathode_rows)
     taken_apart = [r for r in spare if r.get("disassembly_date") and r.get("bucket") != "not_ok"]
     taken_apart.sort(key=lambda r: (r.get("disassembly_date") or "", r.get("serial") or ""), reverse=True)
-    waiting = [r for r in spare if r.get("bucket") == "pending"]
+    waiting = [r for r in spare if r.get("bucket") == "pending"] + list(groups.get("needs_grade", []))
     waiting.sort(key=lambda r: (r.get("kind") or "", r.get("serial") or ""))
     away = [r for r in pieces if r.get("at_coater")]
     away.sort(key=lambda r: (r.get("days_away") or 0), reverse=True)
