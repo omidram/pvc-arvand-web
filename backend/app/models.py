@@ -331,6 +331,8 @@ class PlantSettings(Base):
     # Approved price of one kilowatt-hour, in toman.
     # Cost = ((MW × 1.02 + 4.16) × hours) × 1000 × this price.
     electricity_price_per_kw: Mapped[float | None] = mapped_column(Float)
+    # Company plan for the unit capacity, as a percent of the 356.4 kA design capacity (e.g. 90).
+    capacity_target_pct: Mapped[float | None] = mapped_column(Float)
     # The cell-health score is hidden until this is turned on. It can read 100% on a bad cell.
     show_cell_health: Mapped[bool] = mapped_column(Boolean, default=False)
 

@@ -58,6 +58,8 @@ export interface PlantSettings {
   session_idle_minutes: number;
   /** Approved price of one kilowatt-hour, in toman. */
   electricity_price_per_kw?: number | null;
+  /** Company plan for unit capacity as a percent of 356.4 kA. */
+  capacity_target_pct?: number | null;
   /** Cell-health score is hidden until this is on. */
   show_cell_health?: boolean;
 }

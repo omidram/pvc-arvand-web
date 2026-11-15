@@ -287,6 +287,20 @@ def _ensure_plant_settings_electricity_price() -> None:
 _ensure_plant_settings_electricity_price()
 
 
+def _ensure_plant_settings_capacity_target() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("plant_settings")}
+    except Exception:
+        return
+    if "capacity_target_pct" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE plant_settings ADD COLUMN capacity_target_pct FLOAT"))
+
+
+_ensure_plant_settings_capacity_target()
+
+
 def _ensure_plant_settings_show_cell_health() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("plant_settings")}

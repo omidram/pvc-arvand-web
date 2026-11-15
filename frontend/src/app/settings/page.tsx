@@ -107,6 +107,13 @@ function PlantInfoTab() {
       step: "1",
       placeholder: t("settings.electricityPriceHint"),
     },
+    {
+      name: "capacity_target_pct",
+      label: t("settings.capacityTarget"),
+      type: "number",
+      step: "0.1",
+      placeholder: t("settings.capacityTargetHint"),
+    },
     { name: "show_cell_health", label: t("settings.showCellHealth"), type: "checkbox" },
     { name: "date", label: t("settings.recordDate"), type: "date" },
     {
@@ -141,8 +148,11 @@ function PlantInfoTab() {
             const idle = Number(values.session_idle_minutes);
             const rawPrice = values.electricity_price_per_kw;
             const price = rawPrice === "" || rawPrice == null ? null : Number(rawPrice);
+            const rawTarget = values.capacity_target_pct;
+            const target = rawTarget === "" || rawTarget == null ? null : Number(rawTarget);
             await updateMutation.mutateAsync({
               ...values,
+              capacity_target_pct: target != null && Number.isFinite(target) && target >= 0 ? Math.min(150, target) : null,
               session_idle_minutes: Number.isFinite(idle) ? Math.max(0, Math.min(24 * 60, Math.round(idle))) : 30,
               electricity_price_per_kw: price != null && Number.isFinite(price) && price >= 0 ? price : null,
               show_cell_health: values.show_cell_health === true,
@@ -154,6 +164,7 @@ function PlantInfoTab() {
           }}
         />
         <p className="mt-2 text-[11px] text-[var(--win-muted)]">{t("settings.electricityPriceHint")}</p>
+        <p className="mt-1 text-[11px] text-[var(--win-muted)]">{t("settings.capacityTargetHint")}</p>
         <p className="mt-1 text-[11px] text-[var(--win-muted)]">{t("settings.showCellHealthHint")}</p>
         <p className="mt-1 text-[11px] text-[var(--win-muted)]">{t("settings.sessionIdleHint")}</p>
         {saved && <div className="mt-3 text-sm font-semibold text-[#0d5c0d]">{t("common.saved")}</div>}

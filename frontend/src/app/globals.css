@@ -8465,3 +8465,7 @@ html[data-theme="dark"] .dv-prod-foot { color: #94a3b8; }
 html[data-theme="dark"] .dv-reporter { color: #cbd5e1; }
 html[data-theme="dark"] .dv-reporter b { color: #f1f5f9; }
 html[data-theme="dark"] .vg-sub { color: #94a3b8; }
+
+.dv-capacity { display: grid; gap: .15rem; margin-top: .25rem; }
+.dv-capacity .dv-bar { margin: .1rem 0 .2rem; }
+

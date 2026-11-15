@@ -204,12 +204,16 @@ export function VoltageReportPanel({
       live.max_electrolyzer ? formatElectrolyzer(live.max_electrolyzer) : null,
       live.max_position,
       live.max_element_nr ? t("dashboard.maxCellElement", { nr: live.max_element_nr }) : null,
-      live.max_electrolyzer_ka != null ? ` ${U.ka}` : null,
+      live.max_electrolyzer_ka != null ? `${formatNumber(live.max_electrolyzer_ka, 1)} ${U.ka}` : null,
     ]
       .filter(Boolean)
       .join(" · ") || undefined;
   // Design capacity of the cell room: 24 electrolyzers x 14.85 kA = 356.4 kA.
   const capacityPct = live.plant_total_ka != null && live.plant_total_ka > 0 ? (live.plant_total_ka / DESIGN_CAPACITY_KA) * 100 : null;
+  // Company plan: a percent of the standard capacity (e.g. 90% of 356.4 kA), set in Settings.
+  const planPct = priceQuery.data?.capacity_target_pct ?? null;
+  const targetKa = planPct != null && planPct > 0 ? (DESIGN_CAPACITY_KA * planPct) / 100 : null;
+  const planGap = targetKa != null && live.plant_total_ka != null ? live.plant_total_ka - targetKa : null;
   const trains = (["1", "2"] as const).map((train) => trainLine(live, train));
   // Daily kW is that day's cell voltage × AriaORMS kA. Week and month are the mean of those daily samples.
   const spanKw = span === "day" ? live.plant_power_kw : span === "month" ? live.plant_power_kw_30d : live.plant_power_kw_7d;
@@ -252,8 +256,42 @@ export function VoltageReportPanel({
           label={t("dashboard.plantTotalLoad")}
           value={live.plant_total_ka != null ? formatNumber(live.plant_total_ka, 1) : "—"}
           unit={U.ka}
-          meta={capacityPct != null ? t("dashboard.capacityHint", { pct: formatNumber(capacityPct, 1), total: formatNumber(DESIGN_CAPACITY_KA, 1) }) : undefined}
           spark={spark}
+        />
+        <Kpi
+          icon={Gauge}
+          tone="amber"
+          label={t("dashboard.unitCapacity")}
+          value={formatNumber(targetKa ?? DESIGN_CAPACITY_KA, 1)}
+          unit={U.ka}
+          extra={
+            <div className="dv-capacity">
+              <div className="dv-bar">
+                <i style={{ width: `${Math.min(100, Math.max(0, ((live.plant_total_ka ?? 0) / (targetKa ?? DESIGN_CAPACITY_KA)) * 100))}%` }} />
+              </div>
+              <div className="dv-kpi-meta">{t("dashboard.capacityDesign", { total: formatNumber(DESIGN_CAPACITY_KA, 1) })}</div>
+              <div className="dv-kpi-meta">
+                {planPct != null && planPct > 0
+                  ? t("dashboard.capacityPlan", { plan: formatNumber(planPct, 1), target: formatNumber(targetKa ?? 0, 1) })
+                  : t("dashboard.capacityNoPlan")}
+              </div>
+              {planGap != null && planPct != null && planPct > 0 ? (
+                <div className="dv-kpi-meta">
+                  <b>
+                    {t("dashboard.capacityPlanGap", {
+                      pct: formatNumber(((live.plant_total_ka ?? 0) / (targetKa ?? 1)) * 100, 1),
+                      gap: formatNumber(Math.abs(planGap), 1),
+                      dir: planGap < 0 ? t("dashboard.capacityBelow") : t("dashboard.capacityAbove"),
+                    })}
+                  </b>
+                </div>
+              ) : (
+                <div className="dv-kpi-meta">
+                  {capacityPct != null ? t("dashboard.capacityHint", { pct: formatNumber(capacityPct, 1), total: formatNumber(DESIGN_CAPACITY_KA, 1) }) : null}
+                </div>
+              )}
+            </div>
+          }
         />
         <Kpi
           icon={Activity}
@@ -262,13 +300,6 @@ export function VoltageReportPanel({
           value={avgMw != null ? formatNumber(avgMw, 2) : "—"}
           unit={U.mw}
           extra={spanPick()}
-        />
-        <Kpi
-          icon={Gauge}
-          tone="amber"
-          label={t("dashboard.plantCurrentPower")}
-          value={live.plant_power_kw != null ? formatNumber(live.plant_power_kw / 1000, 2) : "—"}
-          unit={U.mw}
         />
         <Kpi
           icon={Banknote}
