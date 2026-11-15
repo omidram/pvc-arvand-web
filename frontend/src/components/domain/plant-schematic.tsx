@@ -42,12 +42,6 @@ function powerValue(kw: number | null | undefined): { scale: "mw" | "kw" | "none
   return { scale: "kw", value: String(Math.round(kw)) };
 }
 
-function energyValue(kwh: number | null | undefined): { scale: "gwh" | "mwh" | "none"; value: string } {
-  if (kwh == null || Number.isNaN(kwh) || kwh <= 0) return { scale: "none", value: "—" };
-  if (kwh >= 1_000_000) return { scale: "gwh", value: (kwh / 1_000_000).toFixed(2) };
-  return { scale: "mwh", value: (kwh / 1000).toFixed(1) };
-}
-
 function gaugeArc(cx: number, cy: number, r: number, value: number): string {
   const start = -Math.PI * 0.75;
   const sweep = Math.PI * 1.5 * Math.max(0, Math.min(1, value));
@@ -116,7 +110,7 @@ function Metric({
   value: string;
 }) {
   return (
-    <span className={`psm-metric psm-chip-${kind}`}>
+    <span className={`psm-metric psm-chip-${kind}${label.includes("/") ? " is-raw" : ""}`}>
       <small>{label}</small>
       <b>{value}</b>
     </span>
@@ -185,7 +179,7 @@ function Faceplate({
   const unit = {
     v: fa ? "ولت" : "Volt",
     ka: fa ? "کیلوآمپر" : "Kiloampere",
-    mw: fa ? "مگاوات" : "Megawatt",
+    mw: "Mw/hr",
     kw: fa ? "کیلووات" : "Kilowatt",
   };
   const health = healthOf(block);
@@ -322,10 +316,8 @@ export function PlantSchematic({
   const fa = locale === "fa";
   const unit = {
     ka: fa ? "کیلوآمپر" : "Kiloampere",
-    mw: fa ? "مگاوات" : "Megawatt",
+    mw: "Mw/hr",
     kw: fa ? "کیلووات" : "Kilowatt",
-    mwh: fa ? "مگاوات‌ساعت" : "Megawatt-hour",
-    gwh: fa ? "گیگاوات‌ساعت" : "Gigawatt-hour",
   };
   const byName = useMemo(() => {
     const map = new Map<string, MonitoringElectrolyzerBlock>();
@@ -384,7 +376,6 @@ export function PlantSchematic({
           {(["1", "2"] as const).map((train) => {
             const stats = trainStats(train);
             const trainPower = powerValue(stats.power);
-            const trainEnergy = energyValue(stats.energy);
             return (
               <article key={train} className="psm-train">
                 <header className="psm-train-head">
@@ -408,7 +399,7 @@ export function PlantSchematic({
                   <div className="psm-train-metrics">
                     <Metric kind="i" label={unit.ka} value={stats.load > 0 ? stats.load.toFixed(1) : "—"} />
                     <Metric kind="p" label={trainPower.scale === "kw" ? unit.kw : unit.mw} value={trainPower.value} />
-                    <Metric kind="e" label={trainEnergy.scale === "gwh" ? unit.gwh : unit.mwh} value={trainEnergy.value} />
+                    <Metric kind="e" label="Mw/day" value={stats.energy > 0 ? (stats.energy / 1000).toFixed(1) : "—"} />
                   </div>
                 </div>
                 <div className="psm-train-export">
@@ -617,11 +608,11 @@ function ElectrolyzerMimic({
           <small>{t("monitoring.loadKa")}</small>
           <b>{formatNumber(block?.current_ka, 2)}</b>
         </span>
-        <span className="psm-elo-stat is-power">
+        <span className="psm-elo-stat is-power is-raw">
           <small>{t("monitoring.powerKw")}</small>
           <b>{formatNumber(block?.power_kw != null ? block.power_kw / 1000 : null, 2)}</b>
         </span>
-        <span className="psm-elo-stat is-energy">
+        <span className="psm-elo-stat is-energy is-raw">
           <small>{t("monitoring.energyKwh24h")}</small>
           <b>{formatNumber(block?.energy_kwh_24h != null ? block.energy_kwh_24h / 1000 : null, 1)}</b>
         </span>

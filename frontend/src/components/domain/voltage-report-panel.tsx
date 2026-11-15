@@ -137,7 +137,7 @@ export function VoltageReportPanel({
 }) {
   const { t, locale } = useI18n();
   const fa = locale === "fa";
-  const U = { mw: fa ? "مگاوات" : "Megawatt", mwh: fa ? "مگاوات‌ساعت" : "Megawatt-hour", v: fa ? "ولت" : "Volt", ka: fa ? "کیلوآمپر" : "Kiloampere" };
+  const U = { mw: "Mw/hr", mwDay: "Mw/day", v: fa ? "ولت" : "Volt", ka: fa ? "کیلوآمپر" : "Kiloampere" };
   const uid = useId().replace(/:/g, "");
   const [span, setSpan] = useState<"day" | "week" | "month">("day");
   const designKa = useFormula("unit_capacity", "design_ka", DESIGN_CAPACITY_KA);
@@ -392,7 +392,10 @@ export function VoltageReportPanel({
                     <b>{formatNumber(line.ka, 1)}</b> {U.ka}
                   </span>
                   <span>
-                    <b>{formatNumber(line.kwh / 1000, 1)}</b> {U.mwh}
+                    <b>{formatNumber(hoursDay > 0 ? line.kwh / 1000 / hoursDay : null, 2)}</b> {U.mw}
+                  </span>
+                  <span>
+                    <b>{formatNumber(line.kwh / 1000, 1)}</b> {U.mwDay}
                   </span>
                   <span className="is-danger">
                     <b>{formatNumber(line.danger, 0)}</b> {t("monitoring.legendDanger")}
