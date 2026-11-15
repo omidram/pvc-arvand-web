@@ -43,6 +43,7 @@ import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { ImportExportTab } from "@/components/domain/import-export-tab";
 import { BackupTab } from "@/components/domain/backup-tab";
 import { VoltageSyncTab } from "@/components/domain/voltage-sync-tab";
+import { FormulasTab } from "@/components/domain/formulas-tab";
 import { AriaLimsSyncTab } from "@/components/domain/arialims-sync-tab";
 import { FieldListsTab } from "@/components/domain/field-lists-tab";
 import { GroupDefinitionTab } from "@/components/domain/group-definition-tab";
@@ -519,6 +520,7 @@ function SettingsPageInner() {
         defaultTab={tab}
         tabs={[
           { key: "plant", label: t("settings.tabPlant"), content: <PlantInfoTab /> },
+          { key: "formulas", label: t("settings.tabFormulas"), content: <FormulasTab /> },
           {
             key: "electrolyzers",
             label: t("settings.tabElectrolyzers"),

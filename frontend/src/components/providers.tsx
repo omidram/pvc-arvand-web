@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/lib/theme/context";
 import { UiStyleProvider } from "@/lib/ui-style/context";
 import { CalendarProvider } from "@/lib/calendar/context";
 import { DialogProvider } from "@/lib/dialog";
+import { FormulaRuntime } from "@/lib/formulas";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => {
@@ -33,9 +34,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <I18nProvider>
               <DialogProvider>
                 <AuthProvider>
-                  <IdleSessionGuard />
-                  <OnlinePresence />
-                  {children}
+                  <FormulaRuntime>
+                    <IdleSessionGuard />
+                    <OnlinePresence />
+                    {children}
+                  </FormulaRuntime>
                 </AuthProvider>
               </DialogProvider>
             </I18nProvider>

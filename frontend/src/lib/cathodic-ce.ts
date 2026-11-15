@@ -107,8 +107,22 @@ export function calcCathodic(
   _online: Record<string, boolean>,
   initial: string,
   finalReading: string,
-  testHours: string
+  testHours: string,
+  factors: Record<string, number> = {}
 ): CathodicComputed {
+  const area = factors.area_m2 ?? AREA_M2;
+  const elements = factors.elements ?? ELEMENTS;
+  const faraday = factors.faraday ?? FARADAY;
+  const slope = factors.theory_slope ?? 0.1265;
+  const intercept = factors.theory_intercept ?? 2.4;
+  const scale = factors.theory_scale ?? 1000;
+  const theoryCe = factors.theory_ce ?? 0.95;
+  const tempRef = factors.temp_ref ?? 90;
+  const tempNum = factors.temp_num ?? 7;
+  const tempDen = factors.temp_den ?? 3;
+  const prodFactor = factors.prod_factor ?? 5.46;
+  const prodHours = factors.prod_hours ?? 12;
+  const dayHours = factors.day_hours ?? 24;
   const averages: Record<string, number | null> = {};
   const loadCode = new Map(rows.filter((row) => row.kind === "load").map((row) => [row.letter, row.code]));
   for (const row of rows) {
@@ -128,23 +142,23 @@ export function calcCathodic(
   const sumLoads = onLetters.length ? onLetters.reduce((sum, letter) => sum + (averages[`L${letter}`] as number), 0) : null;
   const voltsOk = onLetters.every((letter) => averages[`V${letter}`] != null);
   const sumVolts = onLetters.length && voltsOk ? onLetters.reduce((sum, letter) => sum + (averages[`V${letter}`] as number), 0) : null;
-  const j30 = div(sumLoads, count === null ? null : AREA_M2 * count);
+  const j30 = div(sumLoads, count === null ? null : area * count);
   const j33 = div(sumVolts, count);
-  const j34 = div(j33, ELEMENTS);
+  const j34 = div(j33, elements);
   const j35 = div(sumLoads, count);
   const j28 = averages.TEMP ?? null;
   const j2 = num(initial);
   const j3 = num(finalReading);
   const j31 = num(testHours);
-  const j37 = div(j2 === null || j3 === null ? null : (j3 - j2) * 24, j31);
-  const q32 = j30 === null ? null : ((0.1265 * j30 + 2.4) * 1000) / (FARADAY * 0.95);
-  const q33 = j33 === null || count === null || j35 === null || j37 === null ? null : div(j33 * count * j35 * 24, j37);
-  const q34 = q33 === null || j28 === null || j30 === null ? null : q33 - ((90 - j28) * 7 * j30) / 3;
+  const j37 = div(j2 === null || j3 === null ? null : (j3 - j2) * dayHours, j31);
+  const q32 = j30 === null ? null : ((slope * j30 + intercept) * scale) / (faraday * theoryCe);
+  const q33 = j33 === null || count === null || j35 === null || j37 === null ? null : div(j33 * count * j35 * dayHours, j37);
+  const q34 = q33 === null || j28 === null || j30 === null ? null : q33 - ((tempRef - j28) * tempNum * j30) / tempDen;
   const q35raw = div(q32, q34);
   const q35 = q35raw === null ? null : q35raw * 100;
   const q37 =
-    j37 === null || j35 === null || count === null ? null : div(100 * j37 * 1000, j35 * 24 * FARADAY * ELEMENTS * count);
-  const q39 = j37 === null || j30 === null || count === null ? null : div(j37 * 5.46 * 12, j30 * count);
+    j37 === null || j35 === null || count === null ? null : div(100 * j37 * 1000, j35 * dayHours * faraday * elements * count);
+  const q39 = j37 === null || j30 === null || count === null ? null : div(j37 * prodFactor * prodHours, j30 * count);
   return {
     averages,
     on_count: onCount,

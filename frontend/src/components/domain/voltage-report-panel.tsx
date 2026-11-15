@@ -11,6 +11,7 @@ import { VoltageGauge } from "@/components/domain/voltage-gauge";
 import { ProductionCard } from "@/components/domain/production-card";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatNumber } from "@/lib/utils";
+import { useFormula } from "@/lib/formulas";
 import {
   Area,
   AreaChart,
@@ -135,6 +136,12 @@ export function VoltageReportPanel({
   const U = { mw: fa ? "مگاوات" : "Megawatt", mwh: fa ? "مگاوات‌ساعت" : "Megawatt-hour", v: fa ? "ولت" : "Volt", ka: fa ? "کیلوآمپر" : "Kiloampere" };
   const uid = useId().replace(/:/g, "");
   const [span, setSpan] = useState<"day" | "week" | "month">("day");
+  const designKa = useFormula("unit_capacity", "design_ka", DESIGN_CAPACITY_KA);
+  const lossFactor = useFormula("electricity_cost", "loss_factor", 1.02);
+  const auxiliaryMw = useFormula("electricity_cost", "auxiliary_mw", 4.16);
+  const hoursDay = useFormula("report_periods", "hours_day", 24);
+  const hoursWeek = useFormula("report_periods", "hours_week", 168);
+  const hoursMonth = useFormula("report_periods", "hours_month", 720);
   const priceQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get, staleTime: 15_000 });
   const price = priceQuery.data?.electricity_price_per_kw;
   const spanPick = () => (
@@ -211,21 +218,21 @@ export function VoltageReportPanel({
   // Design capacity of the cell room: 24 electrolyzers x 14.85 kA = 356.4 kA.
   // Company plan: a percent of the standard capacity (e.g. 90% of 356.4 kA), set in Settings.
   const planPct = priceQuery.data?.capacity_target_pct ?? null;
-  const targetKa = planPct != null && planPct > 0 ? (DESIGN_CAPACITY_KA * planPct) / 100 : null;
+  const targetKa = planPct != null && planPct > 0 ? (designKa * planPct) / 100 : null;
   const planGap = targetKa != null && live.plant_total_ka != null ? live.plant_total_ka - targetKa : null;
   const hasPlan = targetKa != null;
-  const capBase = targetKa ?? DESIGN_CAPACITY_KA;
+  const capBase = targetKa ?? designKa;
   const capPct = live.plant_total_ka != null ? (live.plant_total_ka / capBase) * 100 : null;
   const capTone = !hasPlan ? "none" : capPct == null ? "none" : capPct >= 100 ? "good" : capPct >= 85 ? "warn" : "bad";
-  const capFill = Math.min(100, Math.max(0, ((live.plant_total_ka ?? 0) / DESIGN_CAPACITY_KA) * 100));
-  const capMark = Math.min(100, Math.max(0, ((targetKa ?? 0) / DESIGN_CAPACITY_KA) * 100));
+  const capFill = Math.min(100, Math.max(0, ((live.plant_total_ka ?? 0) / designKa) * 100));
+  const capMark = Math.min(100, Math.max(0, ((targetKa ?? 0) / designKa) * 100));
   const trains = (["1", "2"] as const).map((train) => trainLine(live, train));
   // Daily kW is that day's cell voltage × AriaORMS kA. Week and month are the mean of those daily samples.
   const spanKw = span === "day" ? live.plant_power_kw : span === "month" ? live.plant_power_kw_30d : live.plant_power_kw_7d;
   const avgMw = spanKw != null ? spanKw / 1000 : null;
   // ((MW × 1.02 + 4.16 MW auxiliary) × hours) × 1000 = kWh. Hours: day 24, week 168, month 720.
-  const hours = span === "day" ? 24 : span === "week" ? 24 * 7 : 24 * 30;
-  const periodCost = price != null && price > 0 && avgMw != null ? (avgMw * 1.02 + 4.16) * hours * 1000 * price : null;
+  const hours = span === "day" ? hoursDay : span === "week" ? hoursWeek : hoursMonth;
+  const periodCost = price != null && price > 0 && avgMw != null ? (avgMw * lossFactor + auxiliaryMw) * hours * 1000 * price : null;
 
   return (
     <section className={`dash-voltage-report dv ${compact ? "is-compact" : ""}`}>
@@ -235,11 +242,13 @@ export function VoltageReportPanel({
             <span className="dv-live-dot" aria-hidden />
             {t("dashboard.voltageReport")}
           </h2>
-          <p className="dash-voltage-sub">
-            {t("dashboard.voltageReportSub")}
-            {live.report_date ? ` · ${formatDate(live.report_date)}` : ""}
-            {live.shift_rotation ? ` · ${live.shift_rotation}` : ""}
-          </p>
+          {live.report_date || live.shift_rotation ? (
+            <p className="dash-voltage-sub">
+              {live.report_date ? formatDate(live.report_date) : ""}
+              {live.report_date && live.shift_rotation ? " · " : ""}
+              {live.shift_rotation || ""}
+            </p>
+          ) : null}
           {live.shift_supervisor ? (
             <p className="dv-reporter" title={live.shift_persons ?? undefined}>
               <UserRound size={13} aria-hidden />
@@ -298,7 +307,7 @@ export function VoltageReportPanel({
               <span>{t("dashboard.capPlanTarget")}</span>
             </div>
             <div>
-              <b>{formatNumber(DESIGN_CAPACITY_KA, 1)}</b>
+              <b>{formatNumber(designKa, 1)}</b>
               <span>{t("dashboard.capStandard")}</span>
             </div>
           </div>

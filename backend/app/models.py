@@ -337,6 +337,15 @@ class PlantSettings(Base):
     show_cell_health: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
+class FormulaOverride(Base):
+    """Edited numbers for one calculation. Missing keys keep the built-in default."""
+
+    __tablename__ = "formula_overrides"
+
+    key: Mapped[str] = mapped_column(String(40), primary_key=True)
+    params_json: Mapped[str] = mapped_column(Text, default="{}")
+
+
 class UnCeSettings(Base):
     """Single-row Un / CE calculation settings (the Un/CE-relevant part of Access tblGewDaten).
 

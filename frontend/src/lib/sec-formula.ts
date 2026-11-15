@@ -31,25 +31,45 @@ export interface SecMatch {
 }
 
 /** Expected (design) cell voltage at this load, per the electrolyzer current-voltage curve. */
-export function designVoltageAt(currentKa: number | null | undefined): number | null {
+export type SecFactors = {
+  k: number;
+  v0: number;
+  slope: number;
+  cells: number;
+  ratedKa: number;
+  okPct: number;
+  warnPct: number;
+};
+
+export const SEC_DEFAULTS: SecFactors = {
+  k: SEC_K,
+  v0: DESIGN_V0,
+  slope: DESIGN_SLOPE,
+  cells: DESIGN_CELLS,
+  ratedKa: DESIGN_RATED_KA,
+  okPct: 3,
+  warnPct: 8,
+};
+
+export function designVoltageAt(currentKa: number | null | undefined, factors: SecFactors = SEC_DEFAULTS): number | null {
   if (currentKa == null || !Number.isFinite(currentKa) || currentKa <= 0) return null;
-  return DESIGN_V0 + DESIGN_SLOPE * (currentKa / DESIGN_RATED_KA);
+  return factors.v0 + factors.slope * (currentKa / factors.ratedKa);
 }
 
-export function secTone(diffPct: number): SecTone {
-  if (diffPct <= 3) return "ok";
-  if (diffPct <= 8) return "warning";
+export function secTone(diffPct: number, factors: SecFactors = SEC_DEFAULTS): SecTone {
+  if (diffPct <= factors.okPct) return "ok";
+  if (diffPct <= factors.warnPct) return "warning";
   return "danger";
 }
 
 /** Compares the measured average cell voltage (scaled to the electrolyzer) with the design load curve. */
-export function secMatch(voltage: number | null | undefined, currentKa: number | null | undefined): SecMatch | null {
-  const dv = designVoltageAt(currentKa);
+export function secMatch(voltage: number | null | undefined, currentKa: number | null | undefined, factors: SecFactors = SEC_DEFAULTS): SecMatch | null {
+  const dv = designVoltageAt(currentKa, factors);
   if (voltage == null || !Number.isFinite(voltage) || voltage <= 0 || dv == null) return null;
-  const electrolyzerVoltage = voltage * DESIGN_CELLS;
-  const designElectrolyzerVoltage = dv * DESIGN_CELLS;
-  const actualSec = electrolyzerVoltage * SEC_K;
-  const designSec = designElectrolyzerVoltage * SEC_K;
+  const electrolyzerVoltage = voltage * factors.cells;
+  const designElectrolyzerVoltage = dv * factors.cells;
+  const actualSec = electrolyzerVoltage * factors.k;
+  const designSec = designElectrolyzerVoltage * factors.k;
   if (!designSec) return null;
   const diffPct = (Math.abs(actualSec - designSec) / designSec) * 100;
   return {
@@ -61,6 +81,6 @@ export function secMatch(voltage: number | null | undefined, currentKa: number |
     deltaPct: ((actualSec - designSec) / designSec) * 100,
     diffPct,
     matchPct: Math.max(0, 100 - diffPct),
-    tone: secTone(diffPct),
+    tone: secTone(diffPct, factors),
   };
 }

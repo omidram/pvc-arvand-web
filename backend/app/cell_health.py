@@ -6,6 +6,7 @@ Scores emphasize Trend and peer deviation over absolute calendar life.
 
 from __future__ import annotations
 
+from contextvars import ContextVar
 from datetime import date, datetime, timedelta
 from statistics import median
 from typing import Any
@@ -16,6 +17,19 @@ from sqlalchemy.orm import Session
 from . import alerts_engine, models
 from .warehouse import dol_for_element, load_shutdown_windows
 from .plant_topology import arrangement_name, train_of
+
+_HL: ContextVar[dict | None] = ContextVar("cell_health_limits", default=None)
+
+
+def _h(name: str, default: float) -> float:
+    """A cell-health number from Settings → Formulas, or the built-in default."""
+    cur = _HL.get()
+    if not cur or name not in cur:
+        return default
+    try:
+        return float(cur[name])
+    except (TypeError, ValueError):
+        return default
 
 # Soft operating envelopes (engineering guidance — not OEM trip limits).
 TEMP_WARN = (80.0, 92.0)
@@ -57,11 +71,11 @@ def _num(value: Any) -> float | None:
 def _status_from_score(score: float | None) -> str:
     if score is None:
         return "unknown"
-    if score >= 80:
+    if score >= _h("status_ok", 80):
         return "ok"
-    if score >= 60:
+    if score >= _h("status_watch", 60):
         return "watch"
-    if score >= 40:
+    if score >= _h("status_investigate", 40):
         return "investigate"
     return "critical"
 
@@ -122,7 +136,15 @@ def _brine_impurity_flags(params: dict[str, Any] | None) -> list[dict[str, Any]]
     if not isinstance(params, dict):
         return []
     flags: list[dict[str, Any]] = []
-    for key, limit in BRINE_SOFT_LIMITS.items():
+    limits = {
+        "Ca+Mg": _h("brine_ca_mg", BRINE_SOFT_LIMITS["Ca+Mg"]),
+        "Fe": _h("brine_fe", BRINE_SOFT_LIMITS["Fe"]),
+        "Al": _h("brine_al", BRINE_SOFT_LIMITS["Al"]),
+        "SiO2": _h("brine_sio2", BRINE_SOFT_LIMITS["SiO2"]),
+        "Na2SO4": _h("brine_sulfate", BRINE_SOFT_LIMITS["Na2SO4"]),
+        "Organics": _h("brine_organics", BRINE_SOFT_LIMITS["Organics"]),
+    }
+    for key, limit in limits.items():
         raw = None
         for candidate in (key, key.replace("+", " + "), key.lower(), key.upper()):
             if candidate in params:
@@ -164,14 +186,14 @@ def _envelope(db: Session, electrolyzer: str) -> dict[str, Any]:
         nonlocal score
         factors.append({"name": name, "value": value, "status": status, "detail": detail})
         if status == "warning":
-            score -= 8 * (weight or 1)
+            score -= _h("envelope_warn", 8) * (weight or 1)
         elif status == "danger":
-            score -= 18 * (weight or 1)
+            score -= _h("envelope_danger", 18) * (weight or 1)
 
     if anolyte_temp is not None:
-        if anolyte_temp < TEMP_DANGER[0] or anolyte_temp > TEMP_DANGER[1]:
+        if anolyte_temp < _h("temp_danger_low", TEMP_DANGER[0]) or anolyte_temp > _h("temp_danger_high", TEMP_DANGER[1]):
             add_factor("anolyte_temp", anolyte_temp, "danger", "Outside safe temperature band", 1.2)
-        elif anolyte_temp < TEMP_WARN[0] or anolyte_temp > TEMP_WARN[1]:
+        elif anolyte_temp < _h("temp_warn_low", TEMP_WARN[0]) or anolyte_temp > _h("temp_warn_high", TEMP_WARN[1]):
             add_factor("anolyte_temp", anolyte_temp, "warning", "Near edge of preferred temperature band")
         else:
             add_factor("anolyte_temp", anolyte_temp, "ok", "Within preferred band")
@@ -179,7 +201,7 @@ def _envelope(db: Session, electrolyzer: str) -> dict[str, Any]:
         add_factor("anolyte_temp", None, "unknown", "No recent AriaORMS temperature")
 
     if naoh is not None:
-        if naoh < NAOH_WARN[0] or naoh > NAOH_WARN[1]:
+        if naoh < _h("naoh_low", NAOH_WARN[0]) or naoh > _h("naoh_high", NAOH_WARN[1]):
             add_factor("naoh", naoh, "warning", "NaOH concentration outside preferred window")
         else:
             add_factor("naoh", naoh, "ok", "NaOH within preferred window")
@@ -187,7 +209,7 @@ def _envelope(db: Session, electrolyzer: str) -> dict[str, Any]:
         add_factor("naoh", None, "unknown", "No NaOH reading")
 
     if delta_p is not None:
-        if abs(delta_p) >= DELTA_P_WARN:
+        if abs(delta_p) >= _h("delta_p_warn", DELTA_P_WARN):
             add_factor("delta_p", delta_p, "warning", "Elevated differential pressure / ΔP")
         else:
             add_factor("delta_p", delta_p, "ok", "ΔP present")
@@ -349,33 +371,35 @@ def _band_score(value: float, bands: list[tuple[float, float]]) -> float:
 
 
 def _ce_score(pct: float) -> float:
-    if pct >= 96:
+    if pct >= _h("ce_a", 96):
         return 100
-    if pct >= 94:
+    if pct >= _h("ce_b", 94):
         return 86
-    if pct >= 92:
+    if pct >= _h("ce_c", 92):
         return 72
-    if pct >= 90:
+    if pct >= _h("ce_d", 90):
         return 58
     return 42
 
 
 def _un_score(un: float) -> float:
-    return _band_score(un, [(3.05, 100), (3.15, 86), (3.25, 72), (3.40, 58), (9, 40)])
+    return _band_score(un, [(_h("un_a", 3.05), 100), (_h("un_b", 3.15), 86), (_h("un_c", 3.25), 72), (_h("un_d", 3.40), 58), (9, 40)])
 
 
 def _current_score(ka: float) -> float:
-    if 8 <= ka <= 16:
+    good_low, good_high = _h("ka_good_low", 8), _h("ka_good_high", 16)
+    edge_low, edge_high = _h("ka_edge_low", 6), _h("ka_edge_high", 18)
+    if good_low <= ka <= good_high:
         return 100
-    if 6 <= ka < 8 or 16 < ka <= 18:
+    if edge_low <= ka < good_low or good_high < ka <= edge_high:
         return 80
-    if ka > 18:
+    if ka > edge_high:
         return 60
     return 72
 
 
 def _spc_score(spc: float) -> float:
-    return _band_score(spc, [(2100, 100), (2300, 86), (2500, 70), (100_000, 52)])
+    return _band_score(spc, [(_h("spc_a", 2100), 100), (_h("spc_b", 2300), 86), (_h("spc_c", 2500), 70), (100_000, 52)])
 
 
 def _average(values: list[float]) -> float | None:
@@ -474,7 +498,7 @@ def _lab_score(envelope: dict[str, Any]) -> float | None:
         return None
     score = 100.0
     score -= min(48.0, 12.0 * len(flags))
-    if naoh is not None and (naoh < NAOH_WARN[0] or naoh > NAOH_WARN[1]):
+    if naoh is not None and (naoh < _h("naoh_low", NAOH_WARN[0]) or naoh > _h("naoh_high", NAOH_WARN[1])):
         score -= 12
     return max(0.0, score)
 
@@ -493,19 +517,22 @@ WEIGHTS = {
 def _peer_score(delta_v: float) -> float:
     """Average voltage against the electrolyzer median: high = losses, far below = possible short / pinhole."""
     if delta_v >= 0:
-        return _band_score(delta_v, [(0.02, 100), (VOLTAGE_PEER_WATCH, 85), (VOLTAGE_PEER_INVESTIGATE, 65), (VOLTAGE_PEER_CRITICAL, 45), (99, 25)])
-    return _band_score(-delta_v, [(0.10, 100), (0.20, 75), (0.35, 50), (99, 30)])
+        return _band_score(delta_v, [(_h("peer_near", 0.02), 100), (_h("peer_watch", VOLTAGE_PEER_WATCH), 85), (_h("peer_investigate", VOLTAGE_PEER_INVESTIGATE), 65), (_h("peer_critical", VOLTAGE_PEER_CRITICAL), 45), (99, 25)])
+    return _band_score(-delta_v, [(_h("peer_low_ok", 0.10), 100), (_h("peer_low_watch", 0.20), 75), (_h("peer_low_investigate", 0.35), 50), (99, 30)])
 
 
 def _trend_score(mv_per_day: float, se: float) -> float:
     """A rise only counts when it is at least twice its standard error; otherwise the cell is treated as steady."""
-    if mv_per_day <= 0 or mv_per_day < 2 * se:
+    if mv_per_day <= 0 or mv_per_day < _h("trend_se_factor", 2) * se:
         return 100
-    return _band_score(mv_per_day, [(0.2, 100), (TREND_WATCH_MV_DAY, 85), (TREND_INVESTIGATE_MV_DAY, 65), (2.0, 45), (1e9, 25)])
+    return _band_score(
+        mv_per_day,
+        [(_h("trend_steady", 0.2), 100), (_h("trend_watch", TREND_WATCH_MV_DAY), 85), (_h("trend_investigate", TREND_INVESTIGATE_MV_DAY), 65), (_h("trend_high", 2.0), 45), (1e9, 25)],
+    )
 
 
 def _life_score(pct: float) -> float:
-    return _band_score(pct, [(50, 100), (75, 90), (90, 75), (100, 60), (1e9, 45)])
+    return _band_score(pct, [(_h("life_full", 50), 100), (_h("life_watch", 75), 90), (_h("life_high", 90), 75), (_h("life_end", 100), 60), (1e9, 45)])
 
 
 def electrolyzer_score(
@@ -550,7 +577,7 @@ def score_cell(
     reasons: list[tuple[float, str]] = []
 
     def add(name: str, value: float | None, score: float | None, scope: str, reason: str | None = None, detail: str | None = None):
-        weight = WEIGHTS[name]
+        weight = _h(f"w_{name}", WEIGHTS[name])
         if score is None or value is None:
             factors.append({"name": name, "status": "unknown", "value": value, "score": None, "weight": weight, "scope": scope, "detail": detail})
             return
@@ -603,6 +630,16 @@ def score_cell(
 
 
 def build_cell_health_board(db: Session, electrolyzer: str) -> dict[str, Any]:
+    from . import formulas
+
+    token = _HL.set(formulas.bundle(db).get("cell_health") or {})
+    try:
+        return _build_cell_health_board(db, electrolyzer)
+    finally:
+        _HL.reset(token)
+
+
+def _build_cell_health_board(db: Session, electrolyzer: str) -> dict[str, Any]:
     el = (electrolyzer or "").strip().upper()
     if not el:
         raise ValueError("electrolyzer is required")

@@ -396,7 +396,7 @@ There is no standardized voltage and no CE in that window for that unit. Enter t
   unCe: guide(
     "Un / CE",
     `# What this page puts together
-For the same electrolyzer and the same day: standardized voltage Un, current efficiency, and the specific energy SPC. SPC is Un × 100000 / (1.4923 × CE), the same expression as the original Access queries.
+For the same electrolyzer and the same day: standardized voltage Un, current efficiency, and the specific energy SPC. SPC is Un × scale / (alkali Faraday × CE). The scale and the Faraday divisor are in Settings → Formulas.
 # Choices
 From and till dates. One electrolyzer, or the whole plant. Which Un table. CE from the anodic balance or from caustic production. Chart or table.
 # Display
@@ -1063,7 +1063,7 @@ Un ولتاژ استاندارد است، اصلاح‌شده به سمت چگا
   unCe: guide(
     "Un / CE",
     `# این صفحه چه را کنار هم می‌گذارد
-برای همان الکترولایزر و همان روز: ولتاژ استاندارد Un، راندمان جریان، و انرژی ویژه. انرژی ویژه برابر است با Un ضربدر ۱۰۰۰۰۰ تقسیم بر (۱٫۴۹۲۳ ضربدر راندمان)، همان عبارت پرس‌وجوهای اکسس.
+برای همان الکترولایزر و همان روز: ولتاژ استاندارد Un، راندمان جریان، و انرژی ویژه. انرژی ویژه برابر است با Un ضربدر ضریب تقسیم بر (فارادی قلیا ضربدر راندمان). ضریب و مقسوم‌علیه فارادی در تنظیمات ← فرمول‌ها هستند.
 # انتخاب‌ها
 تاریخ شروع و پایان. یک الکترولایزر، یا کل واحد. کدام جدول Un. راندمان از موازنهٔ آندی یا از تولید سود. نمودار یا جدول.
 # نمایش

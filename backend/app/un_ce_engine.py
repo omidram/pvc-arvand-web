@@ -77,6 +77,18 @@ class Cfg:
     clo_analysis: int = 2
     acidified: bool = True
     temp_corr_element: bool = False
+    u0: float = U0
+    t_ref: float = T_REF
+    c_ref: float = C_REF
+    temp_span: float = 30.0
+    f_naclo3: float = F_NACLO3
+    f_naclo: float = F_NAOCL_NACLO
+    f_hocl: float = F_NAOCL_HOCL
+    f_hcl: float = F_HCL
+    f_alkali: float = F_ALKALI
+    f_na2co3: float = F_NA2CO3
+    o2_background: float = O2_BACKGROUND
+    spc_scale: float = 100000.0
 
     def as_dict(self) -> dict:
         return {
@@ -107,6 +119,23 @@ def load_cfg(db: Session) -> Cfg:
         cfg.akf = float(row.anodic_correction or 0.0)
         cfg.clo_analysis = int(row.clo_analysis or 2)
         cfg.temp_corr_element = int(row.temp_correction_element or 2) == 1
+    from . import formulas
+
+    numbers = formulas.bundle(db)
+    std = numbers["standardized_voltage"]
+    ce = numbers["anodic_ce"]
+    cfg.u0 = std["u0"]
+    cfg.t_ref = std["t_ref"]
+    cfg.c_ref = std["c_ref"]
+    cfg.temp_span = std["temp_span"]
+    cfg.f_naclo3 = ce["f_naclo3"]
+    cfg.f_naclo = ce["f_naclo"]
+    cfg.f_hocl = ce["f_hocl"]
+    cfg.f_hcl = ce["f_hcl"]
+    cfg.f_alkali = ce["f_alkali"]
+    cfg.f_na2co3 = ce["f_na2co3"]
+    cfg.o2_background = ce["o2_background"]
+    cfg.spc_scale = numbers["spc"]["scale"]
     factors = db.query(models.CorrectionFactor).all()
     best = None
     for factor in factors:
@@ -263,21 +292,23 @@ def unber(u, i, t, c, cfg: Cfg) -> float | None:
     """Access ``UnBer``: 2.42 + (iRef/i)*(U-2.42) - (90-t)*tKorr + (32-c)*cKorr."""
     if u is None or i is None or t is None or c is None or not i:
         return None
-    return U0 + (cfg.iref / i) * (u - U0) - (T_REF - t) * cfg.tkorr + (C_REF - c) * cfg.ckorr
+    return cfg.u0 + (cfg.iref / i) * (u - cfg.u0) - (cfg.t_ref - t) * cfg.tkorr + (cfg.c_ref - c) * cfg.ckorr
 
 
 def ti_element(tm, um, ui, cfg: Cfg) -> float | None:
     """Access ``TempKorrElement``: tm - (Um - Ui)*30 when switched on, else tm."""
     if tm is None or um is None or ui is None:
         return None
-    return tm - (um - ui) * 30 if cfg.temp_corr_element else tm
+    return tm - (um - ui) * cfg.temp_span if cfg.temp_corr_element else tm
 
 
-def spc(un, ce) -> float | None:
-    """Access ``SPCBer``: specific energy [kWh/t NaOH] = Un*100000/(1.4923*CE)."""
+def spc(un, ce, cfg: Cfg | None = None) -> float | None:
+    """Access ``SPCBer``: specific energy [kWh/t NaOH] = Un × scale / (alkali Faraday × CE)."""
     if un is None or ce is None or not ce:
         return None
-    return un * 100000 / (F_ALKALI * ce)
+    scale = cfg.spc_scale if cfg is not None else 100000.0
+    faraday = cfg.f_alkali if cfg is not None else F_ALKALI
+    return un * scale / (faraday * ce)
 
 
 def v_anolyte(v_pb, so4_pb, so4_an) -> float | None:
@@ -308,31 +339,31 @@ def ce_balance(cfg: Cfg, *, n, i, pb: dict, an: dict, cl: dict) -> dict | None:
 
     if an.get("naclo3") is None or pb.get("naclo3") is None:
         return None
-    mu_naclo3 = ((an["naclo3"] * v_an) - (pb["naclo3"] * flow)) / (denom * F_NACLO3) * 100
+    mu_naclo3 = ((an["naclo3"] * v_an) - (pb["naclo3"] * flow)) / (denom * cfg.f_naclo3) * 100
 
     if an.get("naocl") is None:
         return None
-    clo_factor = F_NAOCL_NACLO if cfg.clo_analysis == 1 else F_NAOCL_HOCL
+    clo_factor = cfg.f_naclo if cfg.clo_analysis == 1 else cfg.f_hocl
     mu_naocl = (an["naocl"] * v_an) / (denom * clo_factor) * 100
 
     if cfg.acidified:
         if pb.get("hcl") is None or an.get("hcl") is None:
             return None
-        mu_hcl = ((pb["hcl"] * flow) - (an["hcl"] * v_an)) / (denom * F_HCL) * 100
+        mu_hcl = ((pb["hcl"] * flow) - (an["hcl"] * v_an)) / (denom * cfg.f_hcl) * 100
     else:
         mu_hcl = 0.0
 
     if pb.get("naoh") is None:
         return None
-    mu_alkali = (pb["naoh"] * flow) / (denom * F_ALKALI) * 100
+    mu_alkali = (pb["naoh"] * flow) / (denom * cfg.f_alkali) * 100
     if pb.get("na2co3") is None:
         return None
-    mu_na2co3 = (pb["na2co3"] * flow) / (denom * F_NA2CO3) * 100
+    mu_na2co3 = (pb["na2co3"] * flow) / (denom * cfg.f_na2co3) * 100
 
     gas = y_cl2 + 2 * y_o2
     if not gas:
         return None
-    mu_o2 = 2 * (y_o2 - O2_BACKGROUND + cfg.akf) / gas * (100 - mu_naclo3 - mu_naocl)
+    mu_o2 = 2 * (y_o2 - cfg.o2_background + cfg.akf) / gas * (100 - mu_naclo3 - mu_naocl)
     mu_naoh = 100 - mu_o2 - mu_naclo3 - mu_naocl - mu_hcl + mu_na2co3 + mu_alkali
     return {
         "v_anolyte": v_an,
@@ -1440,7 +1471,7 @@ def spc_electrolyzer_rows(
                     "i": u["i"],
                     "un": u["un"],
                     "ce": ce,
-                    "spc": _r(spc(u["un"], ce), 2),
+                    "spc": _r(spc(u["un"], ce, cfg), 2),
                     "iref": cfg.iref,
                 }
             )
@@ -1462,7 +1493,7 @@ def spc_plant_rows(db: Session, cfg: Cfg, *, un_table: str, d0, d1) -> Result:
                 "i": un_rows[day]["i"],
                 "un": un,
                 "ce": ce,
-                "spc": _r(spc(un, ce), 2),
+                "spc": _r(spc(un, ce, cfg), 2),
                 "iref": cfg.iref,
             }
         )

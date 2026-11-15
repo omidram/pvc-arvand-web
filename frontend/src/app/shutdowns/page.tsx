@@ -27,6 +27,7 @@ import { monthStartIso, recentMonthOptions, todayIsoLocal } from "@/lib/date-ran
 import { ShutdownAnalysis, type ShutdownGroupBy } from "@/components/domain/shutdown-analysis";
 import { ShutdownTripBoard } from "@/components/domain/shutdown-trip-board";
 import { FilterHeadCell } from "@/components/ui/data-table";
+import { useFormula } from "@/lib/formulas";
 import { useSheetFilters } from "@/components/ui/table-sheet";
 
 function pad2(n: number) {
@@ -205,6 +206,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   const { t, locale } = useI18n();
   const { isShamsi } = useCalendar();
   const { canEdit, canViewField } = useAuth();
+  const cl2Factor = useFormula("production", "cl2_ton_per_ka_hour", 0.2074);
+  const naohFactor = useFormula("production", "naoh_ton_per_ka_hour", 0.2336);
   const editable = canEdit("shutdowns") && !showPeriodFilter;
   const [active, setActive] = useState<number | "new" | null>(null);
   const [from, setFrom] = useState(() => (showPeriodFilter ? dateFrom || monthStartIso() : dateFrom || ""));
@@ -687,12 +690,12 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("lost_load") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={lostFmt(src, 0.2074)} readOnly tabIndex={-1} title="Chlorine lost = KA × 0.2074 × Duration (h)" />
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(src, cl2Factor)} readOnly tabIndex={-1} title={`Chlorine lost = KA × ${cl2Factor} × Duration (h)`} />
                   </td>
                 ) : null}
                 {fieldVisible("lost_production") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={lostFmt(src, 0.2336)} readOnly tabIndex={-1} title="NaOH lost = KA × 0.2336 × Duration (h)" />
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(src, naohFactor)} readOnly tabIndex={-1} title={`NaOH lost = KA × ${naohFactor} × Duration (h)`} />
                   </td>
                 ) : null}
                 {fieldVisible("mtbf_days") ? (
@@ -871,12 +874,12 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
                 ) : null}
                 {fieldVisible("lost_load") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, 0.2074)} readOnly tabIndex={-1} title="Chlorine lost = KA × 0.2074 × Duration (h)" />
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, cl2Factor)} readOnly tabIndex={-1} title={`Chlorine lost = KA × ${cl2Factor} × Duration (h)`} />
                   </td>
                 ) : null}
                 {fieldVisible("lost_production") ? (
                   <td>
-                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, 0.2336)} readOnly tabIndex={-1} title="NaOH lost = KA × 0.2336 × Duration (h)" />
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, naohFactor)} readOnly tabIndex={-1} title={`NaOH lost = KA × ${naohFactor} × Duration (h)`} />
                   </td>
                 ) : null}
                 {fieldVisible("mtbf_days") ? (

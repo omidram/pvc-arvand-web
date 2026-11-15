@@ -162,6 +162,7 @@ def calculate(
     initial_reading: Any,
     final_reading: Any,
     test_hours: Any,
+    factors: dict | None = None,
 ) -> dict[str, Any]:
     """Same formulas as blank (4), using only 08:00, 16:00 and 24:00.
 
@@ -170,6 +171,28 @@ def calculate(
     out of COUNT(on/off).
     """
     del online  # on/off is derived from the load readings
+    given = factors or {}
+
+    def num(name: str, default: float) -> float:
+        try:
+            number = float(given.get(name, default))
+        except (TypeError, ValueError):
+            return default
+        return number
+
+    area = num("area_m2", AREA_M2)
+    elements = num("elements", ELEMENTS)
+    faraday = num("faraday", FARADAY)
+    slope = num("theory_slope", 0.1265)
+    intercept = num("theory_intercept", 2.4)
+    scale = num("theory_scale", 1000)
+    theory_ce = num("theory_ce", 0.95)
+    temp_ref = num("temp_ref", 90)
+    temp_num = num("temp_num", 7)
+    temp_den = num("temp_den", 3)
+    prod_factor = num("prod_factor", 5.46)
+    prod_hours = num("prod_hours", 12)
+    day_hours = num("day_hours", 24)
     rows = sheet_rows(train)
     readings = readings or {}
     load_code = {row["letter"]: row["code"] for row in rows if row["kind"] == "load"}
@@ -200,32 +223,32 @@ def calculate(
     volts_ok = all(averages[f"V{letter}"] is not None for letter in on_letters)
     sum_volts = sum(averages[f"V{letter}"] or 0 for letter in on_letters) if on_letters and volts_ok else None
 
-    j30 = _div(sum_loads, None if count is None else AREA_M2 * count)
+    j30 = _div(sum_loads, None if count is None else area * count)
     j33 = _div(sum_volts, count)
-    j34 = _div(j33, float(ELEMENTS))
+    j34 = _div(j33, elements)
     j35 = _div(sum_loads, count)
     j28 = averages.get("TEMP")
     j2 = _num(initial_reading)
     j3 = _num(final_reading)
     j31 = _num(test_hours)
-    j37 = _div(None if j2 is None or j3 is None else (j3 - j2) * 24, j31)
+    j37 = _div(None if j2 is None or j3 is None else (j3 - j2) * day_hours, j31)
 
-    q32 = None if j30 is None else (0.1265 * j30 + 2.4) * 1000 / (FARADAY * 0.95)
+    q32 = None if j30 is None else (slope * j30 + intercept) * scale / (faraday * theory_ce)
     q33 = None
     if j33 is not None and count is not None and j35 is not None and j37 is not None:
-        q33 = _div(j33 * count * j35 * 24, j37)
+        q33 = _div(j33 * count * j35 * day_hours, j37)
     q34 = None
     if q33 is not None and j28 is not None and j30 is not None:
-        q34 = q33 - ((90 - j28) * 7 * j30 / 3)
+        q34 = q33 - ((temp_ref - j28) * temp_num * j30 / temp_den)
     q35 = None if q32 is None or q34 is None else _div(q32, q34)
     if q35 is not None:
         q35 *= 100
     q37 = None
     if j37 is not None and j35 is not None and count is not None:
-        q37 = _div(100 * j37 * 1000, j35 * 24 * FARADAY * ELEMENTS * count)
+        q37 = _div(100 * j37 * 1000, j35 * day_hours * faraday * elements * count)
     q39 = None
     if j37 is not None and j30 is not None and count is not None:
-        q39 = _div(j37 * 5.46 * 12, j30 * count)
+        q39 = _div(j37 * prod_factor * prod_hours, j30 * count)
 
     return {
         "averages": averages,

@@ -73,13 +73,15 @@ def _clean_online(raw: dict | None) -> dict[str, float]:
     return out
 
 
-def _sheet_payload(train: int, sheet_date: date, row: models.CathodicCeSheet | None) -> dict:
+def _sheet_payload(db: Session, train: int, sheet_date: date, row: models.CathodicCeSheet | None) -> dict:
     readings = _clean_readings(row.readings if row else None)
     online = _clean_online(row.online if row else None)
     initial = row.initial_reading if row else None
     final = row.final_reading if row else None
     hours = row.test_hours if row else None
-    computed = eng.calculate(train, readings, online, initial, final, hours)
+    from .. import formulas
+
+    computed = eng.calculate(train, readings, online, initial, final, hours, formulas.bundle(db)["cathodic_ce"])
     tags = eng.train_tags(train)
     return {
         "train": train,
@@ -127,7 +129,7 @@ def _check_train(train: int) -> int:
 @router.get("/sheet")
 def get_sheet(train: int = Query(...), sheet_date: date = Query(...), db: Session = Depends(get_db)):
     train = _check_train(train)
-    return _sheet_payload(train, sheet_date, _get(db, train, sheet_date))
+    return _sheet_payload(db, train, sheet_date, _get(db, train, sheet_date))
 
 
 @router.put("/sheet")
@@ -153,7 +155,7 @@ def save_sheet(body: SheetIn, db: Session = Depends(get_db)):
     row.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(row)
-    return _sheet_payload(train, body.sheet_date, row)
+    return _sheet_payload(db, train, body.sheet_date, row)
 
 
 def _history_rows(db: Session, train: int) -> list[dict]:
@@ -165,7 +167,11 @@ def _history_rows(db: Session, train: int) -> list[dict]:
     )
     out = []
     for row in stored:
-        computed = eng.calculate(train, row.readings, row.online, row.initial_reading, row.final_reading, row.test_hours)
+        from .. import formulas
+
+        computed = eng.calculate(
+            train, row.readings, row.online, row.initial_reading, row.final_reading, row.test_hours, formulas.bundle(db)["cathodic_ce"]
+        )
         out.append(
             {
                 "sheet_date": row.sheet_date.isoformat() if row.sheet_date else "",
@@ -215,7 +221,15 @@ def _write_value(cell, value):
 def export_sheet(train: int = Query(...), sheet_date: date = Query(...), db: Session = Depends(get_db)):
     train = _check_train(train)
     row = _get(db, train, sheet_date)
-    payload = _sheet_payload(train, sheet_date, row)
+    payload = _sheet_payload(db, train, sheet_date, row)
+    from .. import formulas
+
+    factors = formulas.bundle(db)["cathodic_ce"]
+
+    def coeff(name: str) -> str:
+        text = f"{factors[name]:.8f}".rstrip("0").rstrip(".")
+        return text or "0"
+
     inputs = payload["inputs"]
     readings = inputs["readings"]
     tags = eng.train_tags(train)
@@ -303,7 +317,7 @@ def export_sheet(train: int = Query(...), sheet_date: date = Query(...), db: Ses
     ws["A30"] = "A.i"
     ws.merge_cells("B30:I30")
     ws["B30"] = "Avg. Current Density(KA/m2)"
-    ws["J30"] = '=IF(COUNT(N4:N15)=0,"",SUM(J4:J15)/(2.72*COUNT(N4:N15)))'
+    ws["J30"] = f'=IF(COUNT(N4:N15)=0,"",SUM(J4:J15)/({coeff("area_m2")}*COUNT(N4:N15)))'
     ws["A31"] = "T.T"
     ws.merge_cells("B31:I31")
     ws["B31"] = "Total Test Running Time(Hours)"
@@ -313,21 +327,21 @@ def export_sheet(train: int = Query(...), sheet_date: date = Query(...), db: Ses
     ws["C33"] = "Avg. Voltage Per Electrolyzer(V)"
     ws["J33"] = '=IF(COUNT(N4:N15)=0,"",SUM(J16:J27)/COUNT(N4:N15))'
     ws["C34"] = "Avg. Voltage Per Element(V)"
-    ws["J34"] = "=J33/163"
+    ws["J34"] = f'=J33/{coeff("elements")}'
     ws["C35"] = "Avg. Load of all Rectifier(KA)"
     ws["J35"] = '=IF(COUNT(N4:N15)=0,"",SUM(J4:J15)/COUNT(N4:N15))'
     ws["A37"] = "T.P"
     ws.merge_cells("B37:I37")
     ws["B37"] = "Total 100% w/w product NaOH During T.T (ton/day)"
-    ws["J37"] = "=(J3-J2)*24/J31"
+    ws["J37"] = f'=(J3-J2)*{coeff("day_hours")}/J31'
 
     results = [
-        (32, "Etheoretical", "=(0.1265*J30+2.4)*1000/(1.4923*0.95)", "kwh/t NaOH100%"),
-        (33, "Emeasured", "=J33*COUNT(N4:N15)*J35*24/J37", "kwh/t NaOH100%"),
-        (34, "Emeasured,corr.", "=Q33-((90-J28)*7*J30/3)", "kwh/t NaOH100%"),
+        (32, "Etheoretical", f'=({coeff("theory_slope")}*J30+{coeff("theory_intercept")})*{coeff("theory_scale")}/({coeff("faraday")}*{coeff("theory_ce")})', "kwh/t NaOH100%"),
+        (33, "Emeasured", f'=J33*COUNT(N4:N15)*J35*{coeff("day_hours")}/J37', "kwh/t NaOH100%"),
+        (34, "Emeasured,corr.", f'=Q33-(({coeff("temp_ref")}-J28)*{coeff("temp_num")}*J30/{coeff("temp_den")})', "kwh/t NaOH100%"),
         (35, "Efficiency of Power", "=(Q32/Q34)*100", "%"),
-        (37, "CE(Current Efficiency)", "=100*J37*1000/(J35*24*1.4923*163*COUNT(N4:N15))", "%"),
-        (39, "Extrapolated Production", "=J37*5.46*12/(J30*COUNT(N4:N15))", "mtpd NaOH 100%"),
+        (37, "CE(Current Efficiency)", f'=100*J37*1000/(J35*{coeff("day_hours")}*{coeff("faraday")}*{coeff("elements")}*COUNT(N4:N15))', "%"),
+        (39, "Extrapolated Production", f'=J37*{coeff("prod_factor")}*{coeff("prod_hours")}/(J30*COUNT(N4:N15))', "mtpd NaOH 100%"),
     ]
     for r, label, formula, unit in results:
         ws.cell(r, 15, label).font = Font(bold=True)

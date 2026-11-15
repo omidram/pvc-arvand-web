@@ -16,6 +16,7 @@ import {
   type CathodicSheet,
 } from "@/lib/cathodic-ce";
 import { todayIsoLocal } from "@/lib/date-range";
+import { useCathodicFactors } from "@/lib/formulas";
 import { useI18n } from "@/lib/i18n/context";
 
 type Cells = Record<string, Record<string, string>>;
@@ -76,6 +77,7 @@ function hasNumber(values: Record<string, string> | undefined, hours: string[]):
 
 export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
   const { t } = useI18n();
+  const cathodicFactors = useCathodicFactors();
   const queryClient = useQueryClient();
   const [day, setDay] = useState(todayIsoLocal);
   const [dateLabel, setDateLabel] = useState("");
@@ -124,8 +126,8 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
   const sheet = sheetQuery.data;
   const hours = sheet?.yellow_hours?.length ? sheet.yellow_hours : sheet?.hours || [];
   const computed = useMemo(
-    () => (sheet ? calcCathodic(sheet.rows, hours, cells, {}, initial, finalReading, testHours) : null),
-    [sheet, hours, cells, initial, finalReading, testHours]
+    () => (sheet ? calcCathodic(sheet.rows, hours, cells, {}, initial, finalReading, testHours, cathodicFactors) : null),
+    [sheet, hours, cells, initial, finalReading, testHours, cathodicFactors]
   );
 
   const save = useMutation({

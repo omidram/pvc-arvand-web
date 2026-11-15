@@ -61,6 +61,24 @@ def _rename_serial(kind: str):
 ANODE_REQUIRED = ["anode_nr", "manufacturer", "coating", "received_date"]
 CATHODE_REQUIRED = ["cathode_nr", "manufacturer", "coating", "received_date"]
 
+def _save_coating(db: Session, obj) -> None:
+    from ..coating_names import apply as coating_name
+
+    obj.coating = coating_name(obj.coating)
+
+
+def _save_recoater(kind: str):
+    link = serial_hook(kind, f"{kind}_nr")
+
+    def _apply(db: Session, obj) -> None:
+        from ..coating_names import apply as coating_name
+
+        link(db, obj)
+        obj.manufacturer = coating_name(obj.manufacturer)
+
+    return _apply
+
+
 anodes_router = build_crud_router(
     model=models.Anode,
     read_schema=schemas.AnodeBase,
@@ -72,6 +90,7 @@ anodes_router = build_crud_router(
     required_fields=ANODE_REQUIRED,
     unique_compact=True,
     on_rename=_rename_serial("anode"),
+    after_save=_save_coating,
 )
 
 anode_maintenance_router = build_crud_router(
@@ -91,7 +110,7 @@ anode_recoating_router = build_crud_router(
     prefix="/anode-recoating",
     tags=["anodes"],
     search_fields=["anode_nr", "coating_nr", "manufacturer", "remarks"],
-    after_save=serial_hook("anode", "anode_nr"),
+    after_save=_save_recoater("anode"),
 )
 
 anode_coating_checks_router = build_crud_router(
@@ -115,6 +134,7 @@ cathodes_router = build_crud_router(
     required_fields=CATHODE_REQUIRED,
     unique_compact=True,
     on_rename=_rename_serial("cathode"),
+    after_save=_save_coating,
 )
 
 cathode_maintenance_router = build_crud_router(
@@ -134,7 +154,7 @@ cathode_recoating_router = build_crud_router(
     prefix="/cathode-recoating",
     tags=["cathodes"],
     search_fields=["cathode_nr", "manufacturer", "remarks"],
-    after_save=serial_hook("cathode", "cathode_nr"),
+    after_save=_save_recoater("cathode"),
 )
 
 cathode_coating_checks_router = build_crud_router(

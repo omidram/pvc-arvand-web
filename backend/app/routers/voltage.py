@@ -245,9 +245,9 @@ def calculate_standardized(
     temp_ref: float = 90.0,
     conc_ref: float | None = None,
 ):
-    """Access ``UnBer`` (see ``calculations.standardized_voltage``). ``zero_voltage``,
-    ``temp_ref`` and ``conc_ref`` are accepted for backwards compatibility but ignored:
-    Access fixes them at 2.42 V / 90 degC / 32 %. iRef, tKorr and cKorr come from the
+    """Access ``UnBer`` (see ``calculations.standardized_voltage``). U0, the reference
+    temperature and the reference concentration come from Settings → Formulas.
+    iRef, tKorr and cKorr come from the
     Un/CE settings (or the ``reference_current_density`` override)."""
     from .. import un_ce_engine
 
@@ -268,6 +268,9 @@ def calculate_standardized(
         t_corr = float(factor.temp_correction or 0.0)
         c_corr = float(factor.conc_correction or 0.0)
 
+    from .. import formulas
+
+    std = formulas.bundle(db)["standardized_voltage"]
     result = standardized_voltage(
         u_meas=u_meas,
         current_density=current_density,
@@ -276,6 +279,9 @@ def calculate_standardized(
         conc_meas=conc_meas,
         temp_correction=t_corr,
         conc_correction=c_corr,
+        zero_voltage=std["u0"],
+        temp_ref=std["t_ref"],
+        conc_ref=std["c_ref"],
     )
     return {"standardized_voltage": result.standardized_voltage, "inputs": result.inputs}
 
@@ -668,8 +674,10 @@ def calculate_current_efficiency(
     akf: float = 0.0,
     acidified: bool = False,
     clo_as_naclO: bool = False,
+    db: Session = Depends(get_db),
 ):
     """Anodic-balance CE — same formulas as Access ``ModBerechnungen.Eta*Ber``."""
+    from .. import formulas
     from ..calculations import current_efficiency
 
     result = current_efficiency(
@@ -691,5 +699,6 @@ def calculate_current_efficiency(
         akf=akf,
         acidified=acidified,
         clo_as_naclO=clo_as_naclO,
+        factors=formulas.bundle(db)["anodic_ce"],
     )
     return result

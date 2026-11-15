@@ -304,7 +304,7 @@ export const extraEn: Tree = {
       match: "Analyses are matched by date and by electrolyzer / group / element. Every combination of anolyte × pure brine × chlorine gas × current of the same day gives one result row.",
       missing: "If any input is missing (or a divisor is zero) no result is shown for that row — Access stored −1 in this case.",
       naohBasis: "“NaOH” basis: these CE values are not calculated — they are what operators entered under Data input → CE from NaOH balance.",
-      constants: "0.662, 1.36, 1.4923 and 1.978 are Faraday factors: kg of the compound produced/consumed per kA·h per cell (NaClO3, HCl, NaOH, Na2CO3).",
+      constants: "The divisors are Faraday factors: kg of the compound produced or consumed per kA·h per cell. Change them in Settings → Formulas.",
     },
     relatedTitle: "Related formulas (Un, energy)",
     related: {
@@ -1533,7 +1533,7 @@ export const extraFa: Tree = {
       match: "آنالیزها بر اساس تاریخ و الکترولایزر / گروه / المنت با هم جفت می‌شوند. هر ترکیب آنولیت × آب‌نمک خالص × گاز کلر × جریانِ همان روز یک ردیف نتیجه می‌دهد.",
       missing: "اگر هر یک از ورودی‌ها خالی باشد (یا مخرج صفر شود) برای آن ردیف نتیجه‌ای نمایش داده نمی‌شود — Access در این حالت ‎−1 ذخیره می‌کرد.",
       naohBasis: "مبنای «NaOH»: این مقادیر محاسبه نمی‌شوند؛ همان اعدادی هستند که بهره‌برداری در Data input ← CE from NaOH balance وارد کرده است.",
-      constants: "اعداد ۰٫۶۶۲، ۱٫۳۶، ۱٫۴۹۲۳ و ۱٫۹۷۸ ضرایب فارادی هستند: کیلوگرم ماده تولید/مصرف‌شده به ازای هر kA·h در هر سل (NaClO3، HCl، NaOH، Na2CO3).",
+      constants: "مقسوم‌علیه‌ها ضرایب فارادی هستند: کیلوگرم ماده تولید یا مصرف‌شده به ازای هر kA·h در هر سل. تغییرشان در تنظیمات ← فرمول‌ها است.",
     },
     relatedTitle: "فرمول‌های مرتبط (Un و انرژی)",
     related: {

@@ -12,6 +12,7 @@ import { ElectrolyzerPropertiesPanel } from "@/components/domain/electrolyzer-pr
 import { CellHealthMini } from "@/components/domain/cell-health-chip";
 import { useShowCellHealth } from "@/lib/use-show-cell-health";
 import { secMatch } from "@/lib/sec-formula";
+import { useSecFactors } from "@/lib/formulas";
 
 type Focus = "danger" | "warning" | "ok" | null;
 type View =
@@ -180,6 +181,7 @@ function Faceplate({
 }) {
   const { t, locale } = useI18n();
   const fa = locale === "fa";
+  const secFactors = useSecFactors();
   const unit = {
     v: fa ? "ولت" : "Volt",
     ka: fa ? "کیلوآمپر" : "Kiloampere",
@@ -191,7 +193,7 @@ function Faceplate({
   const train = name.slice(-1);
   const last = lastVoltages(block);
   const voltage = block?.avg_voltage ?? last.avg;
-  const sec = secMatch(voltage, block?.current_ka);
+  const sec = secMatch(voltage, block?.current_ka, secFactors);
   const power = powerValue(block?.power_kw);
   return (
     <button type="button" className={`psm-face is-${health}`} onClick={onOpen}>
@@ -222,7 +224,7 @@ function Faceplate({
                 </span>
                 <span className="psm-tip-row">
                   <i style={{ background: "#0891b2" }} />
-                  {fa ? "بار (کیلوآمپر / ۱۴٫۸۵)" : "Load (kA / 14.85)"}
+                  {fa ? `بار (کیلوآمپر / ${secFactors.ratedKa})` : `Load (kA / ${secFactors.ratedKa})`}
                   <b>{fmtFixed(block?.current_ka, 1)} kA</b>
                 </span>
                 <span className="psm-tip-row">
@@ -236,7 +238,7 @@ function Faceplate({
                   <b>{fmtFixed(sec.electrolyzerVoltage, 1)} V</b>
                 </span>
                 <span className="psm-tip-row">
-                  {fa ? "واقعی = ولتاژ × ۴٫۲۷۷" : "Actual = voltage × 4.277"}
+                  {fa ? `واقعی = ولتاژ × ${secFactors.k}` : `Actual = voltage × ${secFactors.k}`}
                   <b>{fmtFixed(sec.actualSec, 0)}</b>
                 </span>
                 <span className="psm-tip-row">
@@ -244,7 +246,9 @@ function Faceplate({
                   <b>{fmtFixed(sec.designElectrolyzerVoltage, 1)} V</b>
                 </span>
                 <span className="psm-tip-row">
-                  {fa ? "مورد انتظار = (۲٫۳۹ + ۰٫۱۲۶ × kA/۱۴٫۸۵) × ۱۶۳ × ۴٫۲۷۷" : "Expected = (2.39 + 0.126 × kA/14.85) × 163 × 4.277"}
+                  {fa
+                    ? `مورد انتظار = (${secFactors.v0} + ${secFactors.slope} × kA/${secFactors.ratedKa}) × ${secFactors.cells} × ${secFactors.k}`
+                    : `Expected = (${secFactors.v0} + ${secFactors.slope} × kA/${secFactors.ratedKa}) × ${secFactors.cells} × ${secFactors.k}`}
                   <b>{fmtFixed(sec.designSec, 0)}</b>
                 </span>
                 <span className="psm-tip-foot">

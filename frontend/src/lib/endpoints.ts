@@ -1802,6 +1802,8 @@ export const monitoringApi = {
   }): Promise<T.AlertEvent[]> => (await apiClient.get("/monitoring/alerts", { params })).data,
   acknowledge: async (id: number): Promise<T.AlertEvent> =>
     (await apiClient.post(`/monitoring/alerts/${id}/acknowledge`)).data,
+  acknowledgeMany: async (ids: number[]): Promise<{ ok: boolean; acknowledged: number }> =>
+    (await apiClient.post("/monitoring/alerts/acknowledge-many", { ids })).data,
   resolve: async (id: number): Promise<T.AlertEvent> =>
     (await apiClient.post(`/monitoring/alerts/${id}/resolve`)).data,
   resolveAll: async (severity?: string): Promise<{ ok: boolean; resolved: number }> =>

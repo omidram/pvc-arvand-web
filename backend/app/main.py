@@ -20,6 +20,7 @@ from .routers import (
     arrangement_board as arrangement_board_router_module,
     assembly_inspections,
     field_options as field_options_router_module,
+    formulas as formulas_router_module,
     group_overview as group_overview_router_module,
     auth as auth_router_module,
     backup as backup_router_module,
@@ -634,6 +635,13 @@ with SessionLocal() as _db:
     persist_industrial_names(_db)
     persist_industrial_reasons(_db)
     try:
+        from .coating_names import normalize_stored
+
+        if normalize_stored(_db):
+            _db.commit()
+    except Exception:  # noqa: BLE001
+        _db.rollback()
+    try:
         from .routers.field_options import seed_field_options
 
         seed_field_options(_db)
@@ -832,6 +840,9 @@ _api(
     maintenance_reports_router_module.router,
     dependencies=[Depends(require_any_form_access("anodes", "cathodes", "membranes"))],
 )
+
+# --- Calculation numbers (any signed-in user can read them; editing needs Settings) ---
+_api(formulas_router_module.router)
 
 # --- Dropdown values for data-entry fields (anode/cathode/membrane details, Assembly Data) ---
 _api(

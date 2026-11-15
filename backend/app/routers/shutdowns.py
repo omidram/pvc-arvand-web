@@ -51,8 +51,11 @@ def _apply_trip_metrics(db: Session, obj: models.Shutdown) -> None:
     ka = obj.ka_before_trip
     if hours is not None and ka is not None:
         try:
-            obj.lost_load = round(float(ka) * 0.2074 * float(hours), 4)
-            obj.lost_production = round(float(ka) * 0.2336 * float(hours), 4)
+            from .. import formulas
+
+            made = formulas.bundle(db)["production"]
+            obj.lost_load = round(float(ka) * made["cl2_ton_per_ka_hour"] * float(hours), 4)
+            obj.lost_production = round(float(ka) * made["naoh_ton_per_ka_hour"] * float(hours), 4)
         except (TypeError, ValueError):
             pass
     else:

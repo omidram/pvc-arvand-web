@@ -66,6 +66,7 @@ CATALOG: dict[str, tuple[Any, list[str]]] = {
 ASSEMBLY_RELATIONS: list[dict[str, Any]] = [
     {
         # One coating-company pool: assembly, anode, cathode, group definition and segregation.
+        "coating": True,
         "fields": [
             ("elements", "anode_coating"),
             ("elements", "cathode_coating"),
@@ -73,7 +74,6 @@ ASSEMBLY_RELATIONS: list[dict[str, Any]] = [
             ("cathodes", "coating"),
             ("group_definitions", "anode_coating"),
             ("group_definitions", "cathode_coating"),
-            ("segregations", "company"),
         ],
         "sources": [
             (models.Element, "anode_coating"),
@@ -82,7 +82,6 @@ ASSEMBLY_RELATIONS: list[dict[str, Any]] = [
             (models.Cathode, "coating"),
             (models.GroupDefinition, "anode_coating"),
             (models.GroupDefinition, "cathode_coating"),
-            (models.ElectrodeSegregation, "company"),
         ],
     },
     {
@@ -149,7 +148,7 @@ BUILT_IN: dict[tuple[str, str], list[str]] = {
     if rel.get("built_in")
 }
 
-SEED_VERSION = "3"
+SEED_VERSION = "4"
 
 
 def _distinct(db: Session, model: Any, column: str) -> list[str]:
@@ -187,6 +186,21 @@ def sync_assembly_combos(db: Session) -> int:
                 if _key(text) not in seen:
                     seen.add(_key(text))
                     values.append(text)
+        if rel.get("coating"):
+            from ..coating_names import COMPANIES, coating_option
+
+            collapsed: list[str] = []
+            collapsed_seen: set[str] = set()
+            for text in values:
+                name = coating_option(text)
+                if name and _key(name) not in collapsed_seen:
+                    collapsed_seen.add(_key(name))
+                    collapsed.append(name)
+            for name, _aliases in COMPANIES:
+                if _key(name) not in collapsed_seen:
+                    collapsed_seen.add(_key(name))
+                    collapsed.append(name)
+            values = collapsed
         for table, field in rel["fields"]:
             if table not in CATALOG or field not in CATALOG[table][1]:
                 continue
@@ -204,6 +218,12 @@ def publish_assembly_value(db: Session, table: str, field: str, value: str | Non
     if not text or len(text) > 200:
         return
     rel = _relation(table, field)
+    if rel and rel.get("coating"):
+        from ..coating_names import coating_option
+
+        text = coating_option(text) or ""
+        if not text:
+            return
     targets = rel["fields"] if rel else [(table, field)]
     for item_table, item_field in targets:
         if item_table not in CATALOG or item_field not in CATALOG[item_table][1]:
@@ -295,7 +315,24 @@ def _items(db: Session, table: str, field: str) -> list[dict[str, Any]]:
             by_key[key]["count"] = max(by_key[key]["count"], count)
         else:
             by_key[key] = {"id": None, "value": value, "managed": False, "built_in": False, "count": count}
-    return sorted(by_key.values(), key=lambda r: _natural(r["value"]))
+    rows = list(by_key.values())
+    if _relation(table, field) and _relation(table, field).get("coating"):
+        from ..coating_names import COMPANIES, coating_option
+
+        merged: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            name = coating_option(row["value"])
+            if not name:
+                continue
+            prev = merged.get(_key(name))
+            if prev is None:
+                merged[_key(name)] = {**row, "value": name}
+            else:
+                prev["count"] = max(prev["count"], row["count"])
+        for name, _aliases in COMPANIES:
+            merged.setdefault(_key(name), {"id": None, "value": name, "managed": False, "built_in": True, "count": 0})
+        rows = list(merged.values())
+    return sorted(rows, key=lambda r: _natural(r["value"]))
 
 
 def _targets(table: str, field: str) -> list[tuple[str, str]]:
@@ -432,6 +469,14 @@ def add_option(payload: OptionIn, db: Session = Depends(get_db)):
     value = _clean(payload.value)
     if not value:
         raise HTTPException(status_code=400, detail="Value is empty")
+    rel = _relation(payload.table, payload.field)
+    if rel and rel.get("coating"):
+        from ..coating_names import coating_option
+
+        company = coating_option(value)
+        if not company:
+            raise HTTPException(status_code=400, detail="Enter the coating company name only")
+        value = company
     existing = [
         o for o in db.query(models.FieldOption).filter_by(table_name=payload.table, field_name=payload.field).all()
         if o.value.lower() == value.lower()

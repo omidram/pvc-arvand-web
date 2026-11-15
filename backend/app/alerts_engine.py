@@ -524,6 +524,13 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     avg_kw_7d, kwh_7d = period_sample_power(db, 7)
     avg_kw_30d, kwh_30d = period_sample_power(db, 30)
     shift = day_shift(db, service_day) if service_day is not None else None
+    from . import formulas
+
+    periods = formulas.bundle(db)["report_periods"]
+    power_formula = formulas.bundle(db)["plant_power"]
+    hours_day = periods["hours_day"]
+    stack_min_v = power_formula["stack_min_v"]
+    offline_ka = power_formula["offline_ka"]
     plant_ka = 0.0
     plant_kwh = 0.0
     plant_kw = 0.0
@@ -541,7 +548,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
             if el not in by_el:
                 continue
             ka = float(load.get("current_ka") or 0)
-            if ka <= 1:
+            if ka <= offline_ka:
                 ka = 0.0
         clock = str(load.get("time") or "")
         same_time = float((stacks_by_time.get(el) or {}).get(clock) or 0)
@@ -549,7 +556,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         clocks = stacks_by_time.get(el) or {}
         latest_stack = float(clocks[max(clocks)] or 0) if clocks else 0.0
         # Shift kA has no clock, so use the latest cell stack. Log-sheet kA keeps its own clock.
-        use_v = latest_stack if shift is not None and latest_stack > 50 else (same_time if same_time > 50 else logged)
+        use_v = latest_stack if shift is not None and latest_stack > stack_min_v else (same_time if same_time > stack_min_v else logged)
         if ka > 0:
             if shift is None:
                 unit_ka[el] = ka
@@ -558,7 +565,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
             power = use_v * ka
             unit_power[el] = power
             plant_kw += power
-            plant_kwh += power * 24.0
+            plant_kwh += power * hours_day
 
     ok = warn = danger = 0
     max_v = None
@@ -609,7 +616,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
                 "avg_voltage": round(total / len(vals), 4) if vals else None,
                 "max_voltage": round(max(vals), 4) if vals else None,
                 "current_ka": round(unit_ka[el], 3) if el in unit_ka else None,
-                "energy_kwh_24h": round(power * 24.0, 1) if power else None,
+                "energy_kwh_24h": round(power * hours_day, 1) if power else None,
                 "online": True,
                 "danger_count": sev.get("danger", 0),
                 "warning_count": sev.get("warning", 0),

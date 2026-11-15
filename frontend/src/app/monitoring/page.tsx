@@ -91,6 +91,16 @@ function AlertsPanel({
 }) {
   const { t } = useI18n();
   const qc = useQueryClient();
+  const [picked, setPicked] = useState<number[]>([]);
+  const openIds = alerts.filter((a) => a.status === "open").map((a) => a.id);
+  const pickedOpen = picked.filter((id) => openIds.includes(id));
+  const ackMany = useMutation({
+    mutationFn: (ids: number[]) => monitoringApi.acknowledgeMany(ids),
+    onSuccess: () => {
+      setPicked([]);
+      qc.invalidateQueries({ queryKey: ["monitoring"] });
+    },
+  });
   const ack = useMutation({
     mutationFn: (id: number) => monitoringApi.acknowledge(id),
     onSuccess: () => {
@@ -110,10 +120,36 @@ function AlertsPanel({
 
   return (
     <div className="mon-alert-list">
+      {canEdit && openIds.length > 0 ? (
+        <div className="mon-alert-bulk">
+          <label>
+            <input
+              type="checkbox"
+              checked={openIds.length > 0 && pickedOpen.length === openIds.length}
+              onChange={(event) => setPicked(event.target.checked ? openIds : [])}
+            />
+            {t("monitoring.selectAllAlerts")}
+          </label>
+          <Button type="button" variant="secondary" disabled={pickedOpen.length === 0 || ackMany.isPending} onClick={() => ackMany.mutate(pickedOpen)}>
+            {t("monitoring.acknowledgeSelected")}
+            {pickedOpen.length ? ` (${pickedOpen.length})` : ""}
+          </Button>
+        </div>
+      ) : null}
       {alerts.map((a) => (
         <article key={a.id} className={`mon-alert ${severityClass(a.severity)}`}>
           <div className="mon-alert-main">
             <div className="mon-alert-title">
+              {canEdit && a.status === "open" ? (
+                <input
+                  type="checkbox"
+                  checked={pickedOpen.includes(a.id)}
+                  aria-label={a.title}
+                  onChange={(event) =>
+                    setPicked((cur) => (event.target.checked ? [...cur, a.id] : cur.filter((id) => id !== a.id)))
+                  }
+                />
+              ) : null}
               <ShieldAlert size={16} />
               <span>{a.title}</span>
               <span className={`mon-sev-badge ${severityClass(a.severity)}`}>{a.severity}</span>

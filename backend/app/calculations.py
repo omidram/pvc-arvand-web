@@ -33,9 +33,9 @@ def standardized_voltage(
     conc_meas: float,
     temp_correction: float,
     conc_correction: float,
-    zero_voltage: float | None = None,  # ignored - Access always uses 2.42 V
-    temp_ref: float | None = None,  # ignored - Access always uses 90 degC
-    conc_ref: float | None = None,  # ignored - Access always uses 32 %
+    zero_voltage: float | None = None,
+    temp_ref: float | None = None,
+    conc_ref: float | None = None,
 ) -> StandardizedVoltageResult:
     """Access ``UnBer``:
 
@@ -51,11 +51,14 @@ def standardized_voltage(
     if not current_density:
         raise ValueError("current_density must be non-zero")
 
+    u0 = UN_U0 if zero_voltage is None else zero_voltage
+    t_ref = UN_T_REF if temp_ref is None else temp_ref
+    c_ref = UN_C_REF if conc_ref is None else conc_ref
     un = (
-        UN_U0
-        + (reference_current_density / current_density) * (u_meas - UN_U0)
-        - (UN_T_REF - temp_meas) * temp_correction
-        + (UN_C_REF - conc_meas) * conc_correction
+        u0
+        + (reference_current_density / current_density) * (u_meas - u0)
+        - (t_ref - temp_meas) * temp_correction
+        + (c_ref - conc_meas) * conc_correction
     )
     return StandardizedVoltageResult(
         standardized_voltage=round(un, 4),
@@ -63,11 +66,11 @@ def standardized_voltage(
             "u_meas": u_meas,
             "current_density": current_density,
             "reference_current_density": reference_current_density,
-            "zero_voltage": UN_U0,
+            "zero_voltage": u0,
             "temp_meas": temp_meas,
-            "temp_ref": UN_T_REF,
+            "temp_ref": t_ref,
             "conc_meas": conc_meas,
-            "conc_ref": UN_C_REF,
+            "conc_ref": c_ref,
             "temp_correction": temp_correction,
             "conc_correction": conc_correction,
         },
@@ -119,6 +122,7 @@ def current_efficiency(
     akf: float = 0.0,
     acidified: bool = False,
     clo_as_naclO: bool = False,
+    factors: dict | None = None,
 ) -> CurrentEfficiencyResult:
     """Anodic-balance current efficiency — Access ``ModBerechnungen`` parity.
 
@@ -126,6 +130,22 @@ def current_efficiency(
     current in kA, ``n_cells`` = number of cells in the balance boundary.
     """
     notes: list[str] = []
+    given = factors or {}
+
+    def factor(name: str, default: float) -> float:
+        try:
+            number = float(given.get(name, default))
+        except (TypeError, ValueError):
+            return default
+        return number
+
+    f_naclo3 = factor("f_naclo3", 0.662)
+    f_hocl = factor("f_hocl", 0.98)
+    f_naclo = factor("f_naclo", 1.38869)
+    f_hcl = factor("f_hcl", 1.36)
+    f_alkali = factor("f_alkali", 1.4923)
+    f_na2co3 = factor("f_na2co3", 1.978)
+    o2_background = factor("o2_background", 0.18)
     denom = n_cells * current_ka
     if not denom:
         raise ValueError("n_cells and current_ka must be non-zero")
@@ -141,13 +161,13 @@ def current_efficiency(
     # Access EtaNaClO3Ber: ((c_an * V') - (c_pb * V)) / (n*i*0.662) * 100
     eta_naclo3 = None
     if v is not None and v_p is not None and c_naclo3_pb is not None and c_naclo3_an is not None:
-        eta_naclo3 = ((c_naclo3_an * v_p) - (c_naclo3_pb * v)) / (0.662 * denom) * 100
+        eta_naclo3 = ((c_naclo3_an * v_p) - (c_naclo3_pb * v)) / (f_naclo3 * denom) * 100
     else:
         notes.append("eta_naclo3 skipped: needs pure-brine and anolyte flow + NaClO3 concentrations")
 
     # Access EtaNaOClBer — 0.98 for HOCl analysis, 1.38869 when ClO is analysed as NaOCl
     eta_hocl = None
-    clo_factor = 1.38869 if clo_as_naclO else 0.98
+    clo_factor = f_naclo if clo_as_naclO else f_hocl
     if v_p is not None and c_hocl_an is not None:
         eta_hocl = (c_hocl_an * v_p) / (clo_factor * denom) * 100
     else:
@@ -157,7 +177,7 @@ def current_efficiency(
     eta_hcl = None
     if acidified:
         if v is not None and v_p is not None and c_hcl_pb is not None and c_hcl_an is not None:
-            eta_hcl = ((c_hcl_pb * v) - (c_hcl_an * v_p)) / (1.36 * denom) * 100
+            eta_hcl = ((c_hcl_pb * v) - (c_hcl_an * v_p)) / (f_hcl * denom) * 100
         else:
             notes.append("eta_hcl skipped: needs pure-brine and anolyte flow + HCl concentrations")
     else:
@@ -166,13 +186,13 @@ def current_efficiency(
     # Access EtaAlkaliBer / EtaNa2CO3Ber
     eta_alkali = None
     if v is not None and c_naoh_pb is not None:
-        eta_alkali = (c_naoh_pb * v) / (1.4923 * denom) * 100
+        eta_alkali = (c_naoh_pb * v) / (f_alkali * denom) * 100
     else:
         notes.append("eta_alkali skipped: needs pure-brine flow + NaOH concentration")
 
     eta_na2co3 = None
     if v is not None and c_na2co3_pb is not None:
-        eta_na2co3 = (c_na2co3_pb * v) / (1.978 * denom) * 100
+        eta_na2co3 = (c_na2co3_pb * v) / (f_na2co3 * denom) * 100
     else:
         notes.append("eta_na2co3 skipped: needs pure-brine flow + Na2CO3 concentration")
 
@@ -181,7 +201,7 @@ def current_efficiency(
     if y_o2 is not None and y_cl2 is not None and eta_naclo3 is not None and eta_hocl is not None:
         gas_den = y_cl2 + 2 * y_o2
         if gas_den != 0:
-            eta_o2 = 2 * (y_o2 - 0.18 + akf) / gas_den * (100 - eta_naclo3 - eta_hocl)
+            eta_o2 = 2 * (y_o2 - o2_background + akf) / gas_den * (100 - eta_naclo3 - eta_hocl)
         else:
             notes.append("eta_o2 skipped: YCl2 + 2*YO2 is zero")
     else:

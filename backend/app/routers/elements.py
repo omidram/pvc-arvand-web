@@ -138,6 +138,10 @@ def _share_with_masters(db: Session, obj: models.Element) -> None:
 
 def _sync_saved_element(db: Session, obj: models.Element) -> None:
     """Keep DOL and the anode/cathode/membrane masters in step with this installation."""
+    from ..coating_names import apply as coating_name
+
+    obj.anode_coating = coating_name(obj.anode_coating)
+    obj.cathode_coating = coating_name(obj.cathode_coating)
     if obj.dol_days is None:
         computed = element_dol(obj, shutdowns=_dol_shutdowns(db, obj))
         if computed is not None:
@@ -148,6 +152,8 @@ def _sync_saved_element(db: Session, obj: models.Element) -> None:
     obj.membrane_nr = link_serial(db, "membrane", obj.membrane_nr, extra={"membrane_type": obj.membrane_type})
     obj.group_nr = link_group(db, obj.group_nr)
     _share_with_masters(db, obj)
+    obj.anode_coating = coating_name(obj.anode_coating)
+    obj.cathode_coating = coating_name(obj.cathode_coating)
     # Coatings decide the group, so a changed anode/cathode/membrane follows Group Definition immediately.
     sync_element_group(db, obj)
     obj.group_nr = link_group(db, obj.group_nr)
@@ -910,8 +916,11 @@ def _rename_group(db: Session, old: str, new: str) -> None:
 
 
 def _fill_groups_after_definition(db: Session, obj: models.GroupDefinition) -> None:
+    from ..coating_names import apply as coating_name
     from .field_options import publish_assembly_value
 
+    obj.anode_coating = coating_name(obj.anode_coating)
+    obj.cathode_coating = coating_name(obj.cathode_coating)
     for field in ("anode_coating", "cathode_coating", "membrane_type", "gap_mm"):
         publish_assembly_value(db, "group_definitions", field, getattr(obj, field, None))
     apply_defined_groups(db)

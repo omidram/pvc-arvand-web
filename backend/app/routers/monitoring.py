@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy import func, or_, text
 from sqlalchemy.orm import Session
 
@@ -392,6 +393,26 @@ def list_alerts(
     if category:
         q = q.filter(models.AlertEvent.category == category)
     return q.order_by(models.AlertEvent.created_at.desc()).limit(limit).all()
+
+
+class AlertIdsIn(BaseModel):
+    ids: list[int] = Field(min_length=1, max_length=500)
+
+
+@router.post("/alerts/acknowledge-many")
+def acknowledge_many(body: AlertIdsIn, db: Session = Depends(get_db)):
+    now = datetime.utcnow()
+    rows = (
+        db.query(models.AlertEvent)
+        .filter(models.AlertEvent.id.in_(body.ids), models.AlertEvent.status == "open")
+        .all()
+    )
+    for obj in rows:
+        obj.status = "acknowledged"
+        obj.acknowledged_at = now
+        obj.updated_at = now
+    db.commit()
+    return {"ok": True, "acknowledged": len(rows)}
 
 
 @router.post("/alerts/{alert_id}/acknowledge", response_model=schemas.AlertEventRead)

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Gauge } from "lucide-react";
 import { monitoringApi } from "@/lib/endpoints";
 import { secMatch } from "@/lib/sec-formula";
+import { useSecFactors } from "@/lib/formulas";
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
 
@@ -11,6 +12,7 @@ import { formatNumber } from "@/lib/utils";
  * intensity is to the design curve, across every electrolyzer with a live current reading. */
 export function SecMatchSummary() {
   const { t } = useI18n();
+  const secFactors = useSecFactors();
   const q = useQuery({
     queryKey: ["monitoring", "snapshot", "sec-match"],
     queryFn: monitoringApi.snapshot,
@@ -18,7 +20,7 @@ export function SecMatchSummary() {
     refetchInterval: 60_000,
   });
   const rows = (q.data?.electrolyzers ?? [])
-    .map((b) => secMatch(b.avg_voltage, b.current_ka))
+    .map((b) => secMatch(b.avg_voltage, b.current_ka, secFactors))
     .filter((m): m is NonNullable<typeof m> => m != null);
 
   if (q.isLoading || !rows.length) return null;
