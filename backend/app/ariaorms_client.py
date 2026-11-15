@@ -193,6 +193,8 @@ def fetch_cellroom_shifts(
     username: str | None = None,
     password: str | None = None,
     page_url: str | None = None,
+    only_day: date | None = None,
+    only_kind: str | None = None,
 ) -> list[dict[str, Any]]:
     """Download the written cell-room shift report (xlsx) of every rotation for each day in the window.
 
@@ -208,7 +210,16 @@ def fetch_cellroom_shifts(
     if "LoadShiftReport" not in html and "TypeOfReport" not in html:
         raise RuntimeError("AriaORMS shift report page was not recognized (login rejected or wrong address)")
     report_id = _report_id(html)
-    rotations = _page_rotations(html) or [("5", "rotation 5"), ("6", "rotation 6")]
+    rotations = _page_rotations(html) or [("5", "12 صبح"), ("6", "12 شب")]
+    if only_kind:
+        from .shift_report import pick_rotations
+
+        rotations = pick_rotations(rotations, only_kind)
+        if not rotations:
+            logger.warning("Shift report page has no rotation for %s", only_kind)
+            return []
+    if only_day is not None:
+        start = end = only_day
     found: list[dict[str, Any]] = []
     seen: set[str] = set()
     day = start

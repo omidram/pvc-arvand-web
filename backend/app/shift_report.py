@@ -7,7 +7,7 @@ Those fields, not the voltage log sheet, are the plant's in-service count and kA
 from __future__ import annotations
 
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from html.parser import HTMLParser
 from io import BytesIO
 from typing import Any
@@ -137,7 +137,7 @@ def parse_grid(
         key = name.upper()
         bucket = units.setdefault(
             key,
-            {"electrolyzer": key, "online": False, "load_ka": None, "shutdown_note": ""},
+            {"electrolyzer": key, "online": None, "load_ka": None, "shutdown_note": ""},
         )
         return bucket
 
@@ -167,7 +167,10 @@ def parse_grid(
             stop = _STOP_RE.match(label)
             named = _EL_RE.match(label)
             if load and load.group(1).upper() in known:
-                unit(load.group(1))["load_ka"] = _number(value)
+                bucket = unit(load.group(1))
+                bucket["load_ka"] = _number(value)
+                if (bucket["load_ka"] or 0) > 0:
+                    bucket["online"] = True
                 cursor += 2
             elif count:
                 train(count.group(1))["in_service"] = int(_number(value) or 0)
@@ -178,13 +181,17 @@ def parse_grid(
             elif train_on:
                 train(train_on.group(1))["on"] = _on_off(value)
                 cursor += 2
+            elif _TON_RE.search(label):
+                ton = _TON_RE.search(label)
+                train(ton.group(1))["ton_h"] = _number(value)
+                cursor += 2
             elif stop and stop.group(1).upper() in known:
                 unit(stop.group(1))["shutdown_note"] = value
                 cursor += 2
             elif named and named.group(1).upper() in known and _on_off(value) is not None:
                 unit(named.group(1))["online"] = bool(_on_off(value))
                 cursor += 2
-            elif _DAY_RE.match(label) or _TON_RE.search(label):
+            elif _DAY_RE.match(label):
                 cursor += 2
             else:
                 cursor += 1
@@ -358,12 +365,13 @@ def save_shift_reports(db: Session, reports: list[dict[str, Any]]) -> int:
                     supervisor=(report.get("supervisor") or "")[:200] or None,
                     shift_persons=report.get("shift_persons") or None,
                     electrolyzer=name,
-                    in_service=bool(item.get("online")),
+                    in_service=item.get("online") is True,
                     load_ka=item.get("load_ka"),
                     train=train_no,
                     train_on=train_info.get("on"),
                     train_ka=train_info.get("ka"),
                     train_in_service=train_info.get("in_service"),
+                    train_ton_h=train_info.get("ton_h"),
                     shutdown_note=(item.get("shutdown_note") or "")[:200] or None,
                 )
             )
@@ -385,19 +393,126 @@ def _pack(rows: list[models.CellroomShiftLoad]) -> dict[str, Any] | None:
         }
         for row in chosen
     }
-    train_counts: dict[str, int] = {}
+    trains: dict[str, dict[str, Any]] = {}
     for row in chosen:
-        if row.train and row.train_in_service is not None:
-            train_counts[row.train] = int(row.train_in_service)
-    official = sum(train_counts.values()) if train_counts else sum(1 for row in chosen if row.in_service)
+        if not row.train:
+            continue
+        bucket = trains.setdefault(row.train, {"on": None, "ka": None, "in_service": None, "ton_h": None})
+        if row.train_on is not None:
+            bucket["on"] = bool(row.train_on)
+        if row.train_ka is not None:
+            bucket["ka"] = float(row.train_ka)
+        if row.train_in_service is not None:
+            bucket["in_service"] = int(row.train_in_service)
+        ton = getattr(row, "train_ton_h", None)
+        if ton is not None:
+            bucket["ton_h"] = float(ton)
+    official = sum(item["in_service"] for item in trains.values() if item.get("in_service") is not None)
+    if not official:
+        official = sum(1 for row in chosen if row.in_service)
     return {
         "report_date": chosen[0].report_date,
         "rotation": chosen[0].rotation,
+        "shift_index": int(chosen[0].shift_index or 0),
         "supervisor": chosen[0].supervisor or "",
         "shift_persons": chosen[0].shift_persons or "",
         "in_service_count": official,
+        "has_unit_loads": any((unit["load_ka"] or 0) > 0 or unit["online"] for unit in units.values()),
+        "trains": trains,
         "units": units,
     }
+
+
+MORNING = "morning"
+NIGHT = "night"
+_KIND_ID = {MORNING: "5", NIGHT: "6"}
+
+
+def rotation_kind(text: str) -> str | None:
+    """12 صبح is the day shift filed at 19:00. 12 شب is the night shift filed at 07:00 the next morning."""
+    value = _clean(text)
+    compact = value.replace(" ", "")
+    if "صبح" in compact or "روز" in value or "morning" in value.lower():
+        return MORNING
+    if "شب" in value or "night" in value.lower():
+        return NIGHT
+    return None
+
+
+def due_shift(now: datetime | None = None) -> tuple[date, str]:
+    """Which written report the dashboard should show.
+
+    At and after 19:00 the day shift of that date (12 صبح) has been filed.
+    At and after 07:00 the night shift of the previous date (12 شب) has been filed.
+    Before 07:00 the night report is not written yet, so yesterday's 12 صبح stays.
+    """
+    if now is None:
+        from .energy import tehran_now
+
+        now = tehran_now()
+    if now.hour >= 19:
+        return now.date(), MORNING
+    if now.hour < 7:
+        return now.date() - timedelta(days=1), MORNING
+    return now.date() - timedelta(days=1), NIGHT
+
+
+def pick_rotations(rotations: list[tuple[str, str]], kind: str) -> list[tuple[str, str]]:
+    """The page option for this shift. Falls back to the known AriaORMS ids 5 and 6."""
+    matched = [(value, label) for value, label in rotations if rotation_kind(label) == kind]
+    if matched:
+        return matched
+    wanted = _KIND_ID.get(kind)
+    by_id = [(value, label) for value, label in rotations if value == wanted]
+    if by_id:
+        return by_id
+    if wanted and not rotations:
+        label = "12 صبح" if kind == MORNING else "12 شب"
+        return [(wanted, label)]
+    return []
+
+
+def _has_load(packed: dict[str, Any] | None) -> bool:
+    if not packed:
+        return False
+    if any((item.get("ka") or 0) > 0 for item in (packed.get("trains") or {}).values()):
+        return True
+    return any((unit.get("load_ka") or 0) > 0 for unit in (packed.get("units") or {}).values())
+
+
+def _rows_between(db: Session, start_day: date, end_day: date) -> list[models.CellroomShiftLoad]:
+    return (
+        db.query(models.CellroomShiftLoad)
+        .filter(
+            models.CellroomShiftLoad.report_date >= start_day,
+            models.CellroomShiftLoad.report_date < end_day,
+        )
+        .all()
+    )
+
+
+def _pack_kind(rows: list[models.CellroomShiftLoad], kind: str) -> dict[str, Any] | None:
+    picked = [row for row in rows if rotation_kind(row.rotation or "") == kind]
+    if not picked:
+        wanted = 1 if kind == MORNING else 3
+        picked = [row for row in rows if int(row.shift_index or 0) == wanted]
+    return _pack(picked)
+
+
+def current_shift(db: Session, now: datetime | None = None) -> dict[str, Any] | None:
+    """The shift the live dashboard is based on. Never a blank one while an older report still has kA."""
+    day, kind = due_shift(now)
+    window = _rows_between(db, day - timedelta(days=4), day + timedelta(days=1))
+    primary = _pack_kind([row for row in window if row.report_date == day], kind)
+    if _has_load(primary):
+        return primary
+    grouped: dict[tuple[date, str], list[models.CellroomShiftLoad]] = {}
+    for row in window:
+        grouped.setdefault((row.report_date, row.rotation or ""), []).append(row)
+    candidates = [packed for packed in (_pack(items) for items in grouped.values()) if _has_load(packed)]
+    if candidates:
+        return max(candidates, key=lambda item: (item["report_date"], int(item.get("shift_index") or 0)))
+    return primary
 
 
 def day_shift(db: Session, day: date | None) -> dict[str, Any] | None:

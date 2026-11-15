@@ -338,6 +338,20 @@ def _ensure_voltage_sync_shift_columns() -> None:
 _ensure_voltage_sync_shift_columns()
 
 
+def _ensure_shift_train_ton() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("cellroom_shift_loads")}
+    except Exception:
+        return
+    if "train_ton_h" in present:
+        return
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE cellroom_shift_loads ADD COLUMN train_ton_h FLOAT"))
+
+
+_ensure_shift_train_ton()
+
+
 def _ensure_user_last_seen() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("users")}

@@ -464,9 +464,9 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]], *, service_day
     plant_kwh_24h = 0.0
     plant_kwh_30d = 0.0
     day_samples = samples_on_day(db, service_day) if service_day is not None else {}
-    from .shift_report import day_shift
+    from .shift_report import current_shift
 
-    shift = day_shift(db, service_day) if service_day is not None else None
+    shift = current_shift(db)
     for block in blocks:
         el = format_electrolyzer_name(block.get("electrolyzer"))
         live = day_samples.get(el) or latest.get(el) or {}
@@ -484,10 +484,10 @@ def attach_to_snapshot(db: Session, blocks: list[dict[str, Any]], *, service_day
         if current_value is None or current_value <= 1:
             current = None
         online = bool(live_cells)
-        if shift is not None:
+        if shift is not None and shift.get("has_unit_loads"):
             unit = shift["units"].get(el) or {}
-            online = bool(unit.get("online"))
             load_ka = unit.get("load_ka")
+            online = bool(unit.get("online") or (load_ka or 0) > 0)
             current = float(load_ka) if online and load_ka is not None and float(load_ka) > 0 else None
         if not online:
             live = {}

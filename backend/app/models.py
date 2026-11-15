@@ -905,6 +905,7 @@ class CellroomShiftLoad(Base):
     train_on: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     train_ka: Mapped[float | None] = mapped_column(Float, nullable=True)
     train_in_service: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    train_ton_h: Mapped[float | None] = mapped_column(Float, nullable=True)
     shutdown_note: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
 

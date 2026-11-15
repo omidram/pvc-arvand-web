@@ -517,13 +517,14 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         if peak is None or v > peak[0]:
             unit_peak[el] = (v, pos, (row.element_nr or "").strip() or None)
 
-    from .shift_report import day_shift
+    from .shift_report import current_shift
 
     day_loads = samples_on_day(db, service_day) if service_day is not None else {}
     stacks_by_time = cell_stacks_on_day(db, service_day) if service_day is not None else {}
     avg_kw_7d, kwh_7d = period_sample_power(db, 7)
     avg_kw_30d, kwh_30d = period_sample_power(db, 30)
-    shift = day_shift(db, service_day) if service_day is not None else None
+    # 19:00 → today's 12 صبح. 07:00 → yesterday's 12 شب. A missing file keeps the last report that has kA.
+    shift = current_shift(db)
     from . import formulas
 
     periods = formulas.bundle(db)["report_periods"]
@@ -536,14 +537,22 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
     plant_kw = 0.0
     unit_power: dict[str, float] = {}
     unit_ka: dict[str, float] = {}
+    use_units = bool(shift and shift.get("has_unit_loads"))
+    train_total = sum(float(item["ka"]) for item in ((shift or {}).get("trains") or {}).values() if item.get("ka"))
     for el in known:
         load = day_loads.get(el) or {}
         shift_unit = (shift or {}).get("units", {}).get(el) if shift else None
-        if shift is not None:
-            if not shift_unit or not shift_unit.get("online"):
+        if use_units:
+            if not shift_unit or not (shift_unit.get("online") or (shift_unit.get("load_ka") or 0) > 0):
                 continue
             ka = float(shift_unit.get("load_ka") or 0)
             unit_ka[el] = ka
+        elif shift is not None:
+            ka = float(load.get("current_ka") or 0)
+            if ka <= offline_ka:
+                ka = 0.0
+            if ka > 0:
+                unit_ka[el] = ka
         else:
             if el not in by_el:
                 continue
@@ -566,6 +575,8 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
             unit_power[el] = power
             plant_kw += power
             plant_kwh += power * hours_day
+    if train_total > 0:
+        plant_ka = train_total
 
     ok = warn = danger = 0
     max_v = None
@@ -578,7 +589,7 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         vals = by_el.get(el, [])
         power = unit_power.get(el)
         shift_unit = (shift or {}).get("units", {}).get(el) if shift else None
-        if shift is not None and not (shift_unit and shift_unit.get("online")):
+        if use_units and not (shift_unit and (shift_unit.get("online") or (shift_unit.get("load_ka") or 0) > 0)):
             vals = []
         if not vals and el not in unit_ka:
             electrolyzers.append(
@@ -641,7 +652,21 @@ def voltage_live_stats(db: Session) -> dict[str, Any]:
         "plant_energy_kwh_24h": round(plant_kwh, 1) if plant_kwh else None,
         "plant_energy_kwh_7d": round(kwh_7d, 1) if kwh_7d else None,
         "plant_energy_kwh_30d": round(kwh_30d, 1) if kwh_30d else None,
-        "report_date": (service_day or today).isoformat(),
+        "report_date": (
+            shift["report_date"].isoformat()
+            if shift is not None and hasattr(shift.get("report_date"), "isoformat")
+            else (service_day or today).isoformat()
+        ),
+        "trains": [
+            {
+                "train": number,
+                "on": item.get("on"),
+                "ka": item.get("ka"),
+                "in_service": item.get("in_service"),
+                "ton_per_hour": item.get("ton_h"),
+            }
+            for number, item in sorted(((shift or {}).get("trains") or {}).items())
+        ],
         "online_count": (
             int(shift["in_service_count"])
             if shift is not None and shift.get("in_service_count") is not None

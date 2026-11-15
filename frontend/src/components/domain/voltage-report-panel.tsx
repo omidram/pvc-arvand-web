@@ -55,11 +55,13 @@ function trainLine(live: DashboardVoltageStats, train: TrainId) {
   const present = live.electrolyzers.filter((row) => names.has(formatElectrolyzer(row.electrolyzer)));
   const serving = (row: (typeof present)[number]) => row.online === true;
   const online = present.filter(serving).length;
+  const reported = live.trains?.find((row) => row.train === train);
+  const fromReport = reported != null && ((reported.ka ?? 0) > 0 || (reported.in_service ?? 0) > 0 || reported.on != null);
   return {
     train,
-    online,
+    online: fromReport ? reported?.in_service ?? online : online,
     total: names.size,
-    ka: present.reduce((sum, row) => sum + (serving(row) ? row.current_ka || 0 : 0), 0),
+    ka: fromReport ? reported?.ka ?? 0 : present.reduce((sum, row) => sum + (serving(row) ? row.current_ka || 0 : 0), 0),
     kwh: present.reduce((sum, row) => sum + (serving(row) ? row.energy_kwh_24h || 0 : 0), 0),
     danger: present.reduce((sum, row) => sum + (serving(row) ? row.danger_count || 0 : 0), 0),
     warning: present.reduce((sum, row) => sum + (serving(row) ? row.warning_count || 0 : 0), 0),

@@ -635,6 +635,13 @@ export interface DashboardVoltageStats {
   shift_supervisor?: string | null;
   shift_rotation?: string | null;
   shift_persons?: string | null;
+  trains?: {
+    train: string;
+    on?: boolean | null;
+    ka?: number | null;
+    in_service?: number | null;
+    ton_per_hour?: number | null;
+  }[];
   cell_count: number;
   ok_count: number;
   warning_count: number;

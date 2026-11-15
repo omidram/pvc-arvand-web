@@ -787,14 +787,14 @@ def launch_pull(*, include_today: bool = True) -> dict[str, Any]:
         return spawned
 
 def pull_shift_report(db: Session, row: models.VoltageSyncSettings | None = None, *, days_back: int = 1) -> dict[str, Any]:
-    """Download the AriaORMS cell-room shift report (today and ``days_back`` earlier days) and store it.
+    """Download the one AriaORMS shift that is due at this clock.
 
-    It gives the in-service electrolyzers, each electrolyzer's kA and the supervisor who filed the shift.
+    19:00 asks for today's 12 صبح. 07:00 asks for yesterday's 12 شب. ``days_back`` is unused;
+    an unwritten report is skipped and the dashboard keeps the previous shift that has kA.
     """
-    from datetime import date as date_cls, timedelta
-
+    del days_back
     from . import ariaorms_client
-    from .shift_report import save_shift_reports
+    from .shift_report import due_shift, save_shift_reports
 
     row = row or db.query(models.VoltageSyncSettings).first()
     if row is None:
@@ -809,13 +809,23 @@ def pull_shift_report(db: Session, row: models.VoltageSyncSettings | None = None
         if not username or not password:
             raise RuntimeError("AriaORMS username/password are not configured in Settings -> Data Sync")
         base = ariaorms_client.normalize_base_url(url)
-        end_day = date_cls.today()
-        start_day = end_day - timedelta(days=max(0, days_back))
+        # 19:00 pulls today's 12 صبح. 07:00 pulls yesterday's 12 شب. Nothing else is requested.
+        shift_day, shift_kind = due_shift()
+        end_day = shift_day
+        start_day = shift_day
         # Close the settings transaction first: the HTTP calls below can take a while.
         db.commit()
         opener = ariaorms_client.new_opener(base, username, password)
         reports = ariaorms_client.fetch_cellroom_shifts(
-            opener, base, start_day, end_day, username=username, password=password, page_url=url
+            opener,
+            base,
+            start_day,
+            end_day,
+            username=username,
+            password=password,
+            page_url=url,
+            only_day=shift_day,
+            only_kind=shift_kind,
         )
         saved = save_shift_reports(db, reports)
         if reports:
@@ -827,7 +837,10 @@ def pull_shift_report(db: Session, row: models.VoltageSyncSettings | None = None
             )
             status = "success"
         else:
-            note = "AriaORMS returned no shift report for these days"
+            note = (
+                f"AriaORMS has not written the {shift_kind} report of {shift_day} yet. "
+                "The dashboard keeps the previous shift."
+            )
             status = "empty"
     except Exception as exc:  # noqa: BLE001
         db.rollback()
