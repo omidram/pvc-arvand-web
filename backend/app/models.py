@@ -1167,7 +1167,7 @@ class ElementDashboardSettings(Base):
     membrane_life_days: Mapped[int | None] = mapped_column(Integer)
     warn_percent: Mapped[int | None] = mapped_column(Integer)  # warn from this % of the limit
     coating_thickness_min: Mapped[float | None] = mapped_column(Float)  # residual coating % that triggers recoating
-    shop_queue_days: Mapped[int | None] = mapped_column(Integer)  # dismantled this recently = waiting for re-assembly
+    shop_queue_days: Mapped[int | None] = mapped_column(Integer)  # disassembled this recently = waiting for re-assembly
 
 
 class CathodicCeSheet(Base):

@@ -67,7 +67,7 @@ CELLS_PER_ELECTROLYZER = 168
 PLANT_CAPACITY = len(all_electrolyzers()) * CELLS_PER_ELECTROLYZER
 
 # Stages a person can set (the rest come from Assembly Data).
-# A dismantled element is retired (rate off). It is not put back in the assembly queue.
+# A disassembled element is retired (rate off). It is not put back in the assembly queue.
 MANUAL_STAGES = ("awaiting_disassembly", "awaiting_assembly", "assembling", "awaiting_qc", "ready")
 STAGE_RANK = {"awaiting_assembly": 1, "assembling": 2, "awaiting_qc": 3, "ready": 4}
 ALLOWED_BY_BASE = {
@@ -736,7 +736,7 @@ def part_rows(db: Session, kind: str, settings: dict[str, Any] | None = None) ->
 
 
 def _current_mount(db: Session, field: str, serial: str, skip_id: int | None) -> models.Element | None:
-    """The live installation of this part, ignoring the dismantled element it came from."""
+    """The live installation of this part, ignoring the disassembled element it came from."""
     column = getattr(models.Element, field)
     match = compact_eq(column, serial)
     if match is None:
@@ -1094,7 +1094,7 @@ def cells_overview(db: Session) -> dict[str, Any]:
 
     Uses Assembly Data directly: an element is *in a cell* while its newest installation has no
     disassembly date. A cell with two such elements is a conflict (``conflict`` when two of them are
-    on line / installed, ``stale`` when the extra one is only switched off but never dismantled).
+    on line / installed, ``stale`` when the extra one is only switched off but never disassembled).
     The same element number open in two different cells is listed under ``multi_cell``.
     """
     rows = rows_of(db, models.Element)

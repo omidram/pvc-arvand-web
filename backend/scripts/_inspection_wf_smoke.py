@@ -117,7 +117,7 @@ def filled_form(**over):
         "membrane_type": "N2030",
         "electrode_nr_anode": "EA",
         "electrode_nr_cathode": "EC",
-        "inspection_reason": "Dismantled",
+        "inspection_reason": "Disassembled",
         "blister_anode_area": "0",
         "blister_periphery_top": "0",
         "blister_periphery_bottom": "0",

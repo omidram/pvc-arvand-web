@@ -653,7 +653,7 @@ DEFAULT_ROLES: list[dict] = [
     },
     {
         "name": "کارشناس تعمیرات",
-        "description": "Inspection of dismantled anodes and cathodes",
+        "description": "Inspection of disassembled anodes and cathodes",
         "is_system": True,
         "permissions": {
             "dashboard": "view",

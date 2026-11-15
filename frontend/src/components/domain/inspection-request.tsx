@@ -37,7 +37,7 @@ function pieces(r: InspectionRequest, t: T) {
   return [r.element_nr && t("wf.insp.elementShort", { n: r.element_nr }), r.anode_nr, r.cathode_nr].filter(Boolean).join(" · ") || "—";
 }
 
-/** C-90 asks inspection for Element Inspection forms; dismantled elements land here on their own. */
+/** C-90 asks inspection for Element Inspection forms; disassembled elements land here on their own. */
 export function InspectionRequestsPanel({ onOpen }: { onOpen: (id: number) => void }) {
   const { t } = useI18n();
   const qc = useQueryClient();

@@ -57,7 +57,7 @@ def list_shop(
     if element_nr:
         key = compact_nr(element_nr)
         items = [i for i in items if i["key"] == key]
-    if state == "shop":  # everything that needs a decision: not in service, not already-archived dismantled cells
+    if state == "shop":  # everything that needs a decision: not in service, not already-archived disassembled cells
         items = [i for i in items if i["state"] not in ("in_service", "disassembled")]
     elif state == "assembled":
         items = [i for i in items if i.get("assembly_date") and i["state"] in ("assembling", "awaiting_qc", "ready", "installed")]
@@ -312,7 +312,7 @@ def relocate_element(db: Session, body: ShopRelocate, user: models.User) -> dict
         else []
     )
     if any(row.stage == "awaiting_disassembly" for row in shop):
-        raise HTTPException(status_code=400, detail=f"Element {body.element_nr} is waiting to be dismantled")
+        raise HTTPException(status_code=400, detail=f"Element {body.element_nr} is waiting to be disassembled")
     electrolyzer = format_electrolyzer_name(body.electrolyzer.strip())
     if not electrolyzer or electrolyzer not in {format_electrolyzer_name(n) for n in all_electrolyzers()}:
         raise HTTPException(status_code=400, detail=f"'{body.electrolyzer}' is not an electrolyzer of this plant")
@@ -441,7 +441,7 @@ def parts_now(
     element_id: int | None = None,
     db: Session = Depends(get_db),
 ):
-    """Where the anode, cathode and membrane of a dismantled element are now."""
+    """Where the anode, cathode and membrane of a disassembled element are now."""
     return {"parts": svc.parts_now(db, anode_nr=anode_nr, cathode_nr=cathode_nr, membrane_nr=membrane_nr, skip_id=element_id)}
 
 

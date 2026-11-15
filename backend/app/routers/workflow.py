@@ -2361,7 +2361,7 @@ def _write_decommission(db: Session, r: WfCellRequest, day: date, reason: str | 
     if el is None:
         raise HTTPException(409, f"Element {r.element_nr} has no Assembly Data row")
     if el.disassembly_date:
-        raise HTTPException(409, f"Element {r.element_nr} is already dismantled in Assembly Data")
+        raise HTTPException(409, f"Element {r.element_nr} is already disassembled in Assembly Data")
     if el.decommissioning_date:
         day = svc._as_date(el.decommissioning_date) or day
     else:
@@ -2588,7 +2588,7 @@ class CellDecideIn(NoteIn):
 
 @router.post("/cell/{request_id}/decide")
 def cell_decide(request_id: int, body: CellDecideIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    """The cell shop's decision is the Element Workflow decision itself: kept healthy, dismantled, or moved to a new cell."""
+    """The cell shop's decision is the Element Workflow decision itself: kept healthy, disassembled, or moved to a new cell."""
     from .element_dashboard import ShopRelocate, relocate_element
 
     r = _load_cell(db, request_id)
@@ -3392,7 +3392,7 @@ def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
             life = format_service_life(fields.get("install_date"), fields.get("decommission_date") or fields.get("disassemble_date"))
             if life:
                 fields["service_life"] = life
-        # The cell that was dismantled, even when the newest assembly row has no electrolyzer yet.
+        # The cell that was disassembled, even when the newest assembly row has no electrolyzer yet.
         fields.update(
             disassembly_monitoring(
                 db,
@@ -3526,7 +3526,7 @@ class _System:
 
 
 def inspection_on_disassembly(db: Session, el: models.Element, actor: Any) -> None:
-    """A dismantled element waits in C-90's cartable until C-90 sends the inspection request."""
+    """A disassembled element waits in C-90's cartable until C-90 sends the inspection request."""
     day = svc._as_date(el.disassembly_date)
     if day is None or not (0 <= (date.today() - day).days <= AUTO_REQUEST_DAYS):
         return
@@ -3538,7 +3538,7 @@ def inspection_on_disassembly(db: Session, el: models.Element, actor: Any) -> No
     done = db.query(WfInspectionRequest).filter(WfInspectionRequest.element_id == el.id, WfInspectionRequest.status.in_(CLOSED)).first()
     if done is not None:
         return
-    r = _new_insp(db, actor, "await_request", el, reason=(el.decommission_reason or "").strip()[:800] or "Dismantled")
+    r = _new_insp(db, actor, "await_request", el, reason=(el.decommission_reason or "").strip()[:800] or "Disassembled")
     _event(db, "inspection", r, "auto_created", actor, None, None, {"date": _iso(svc._as_date(el.disassembly_date))})
     if not _close_if_reported(db, r, actor):
         _notify(db, "inspection", r, actor)

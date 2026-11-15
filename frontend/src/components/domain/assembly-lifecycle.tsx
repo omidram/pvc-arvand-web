@@ -22,7 +22,7 @@ import Link from "next/link";
 /** A running element. Disassembly ends it (rate off); it is not assembled again under the same number. */
 export const SERVICE_LIFE: ElementStage[] = ["in_service", "decommissioned", "awaiting_disassembly", "disassembled"];
 
-/** A new element, built from inspected parts. This track does not continue a dismantled element. */
+/** A new element, built from inspected parts. This track does not continue a disassembled element. */
 export const BUILD_LIFE: ElementStage[] = ["awaiting_assembly", "assembling", "awaiting_qc", "ready", "installed"];
 
 export const LIFE_CYCLE: ElementStage[] = [...SERVICE_LIFE, ...BUILD_LIFE];
