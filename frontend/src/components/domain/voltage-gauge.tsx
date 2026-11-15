@@ -22,6 +22,7 @@ export function VoltageGauge({
   label,
   unit = "V",
   caption,
+  sub,
   tone = "info",
   digits = 2,
 }: {
@@ -30,6 +31,8 @@ export function VoltageGauge({
   label: string;
   unit?: string;
   caption?: string;
+  /** Small line under the label, e.g. where the maximum is. */
+  sub?: string;
   tone?: Tone;
   digits?: number;
 }) {
@@ -107,6 +110,7 @@ export function VoltageGauge({
         </div>
       </div>
       <div className="vg-label">{label}</div>
+      {sub ? <div className="vg-sub">{sub}</div> : null}
     </div>
   );
 }

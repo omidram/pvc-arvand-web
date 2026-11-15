@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useId, useState, type ComponentType, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, ArrowRight, Banknote, Gauge, Zap } from "lucide-react";
+import { Activity, ArrowRight, Banknote, Gauge, UserRound, Zap } from "lucide-react";
 import { settingsApi } from "@/lib/endpoints";
 import type { DashboardVoltageStats } from "@/lib/types";
 import { TRAIN_LETTERS, electrolyzerName, formatElectrolyzer, type TrainId } from "@/lib/plant-topology";
@@ -215,8 +215,14 @@ export function VoltageReportPanel({
             {t("dashboard.voltageReportSub")}
             {live.report_date ? ` · ${formatDate(live.report_date)}` : ""}
             {live.shift_rotation ? ` · ${live.shift_rotation}` : ""}
-            {live.shift_supervisor ? ` · ${live.shift_supervisor}` : ""}
           </p>
+          {live.shift_supervisor ? (
+            <p className="dv-reporter" title={live.shift_persons ?? undefined}>
+              <UserRound size={13} aria-hidden />
+              <span>{t("dashboard.reportedBy")}</span>
+              <b>{live.shift_supervisor}</b>
+            </p>
+          ) : null}
         </div>
         <Link href="/monitoring" className="dash-voltage-link">
           {t("dashboard.openMonitoring")}
@@ -332,14 +338,29 @@ export function VoltageReportPanel({
         </div>
 
         <ProductionCard plantKa={live.plant_total_ka} trains={trains.map((line) => ({ train: line.train, ka: line.ka }))} />
-        <VoltageGauge
-          value={live.avg_voltage}
-          max={live.cell_gauge_max}
-          label={t("dashboard.avgCellGauge")}
-          unit={U.v}
-          tone="info"
-          digits={3}
-        />
+        <div className="dv-gauge-pair">
+          <VoltageGauge
+            value={live.avg_voltage}
+            max={live.cell_gauge_max}
+            label={t("dashboard.avgCellGauge")}
+            unit={U.v}
+            tone="info"
+            digits={3}
+          />
+          <VoltageGauge
+            value={live.max_voltage}
+            max={live.cell_gauge_max}
+            label={t("dashboard.maxCellGauge")}
+            sub={
+              live.max_electrolyzer
+                ? [formatElectrolyzer(live.max_electrolyzer), live.max_position].filter(Boolean).join(" · ")
+                : undefined
+            }
+            unit={U.v}
+            tone={live.max_voltage != null && live.danger_limit > 0 && live.max_voltage >= live.danger_limit ? "danger" : "warning"}
+            digits={3}
+          />
+        </div>
       </div>
 
       {!compact && barData.length > 0 ? (
