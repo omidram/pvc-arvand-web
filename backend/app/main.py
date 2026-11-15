@@ -351,6 +351,23 @@ def _ensure_element_dashboard_queue_days() -> None:
 _ensure_element_dashboard_queue_days()
 
 
+def _clear_undefined_groups() -> None:
+    """Elements may only carry a group that exists in Group Definition; a leftover group number is dropped."""
+    from .relations_sync import apply_defined_groups
+
+    db = SessionLocal()
+    try:
+        if apply_defined_groups(db):
+            db.commit()
+    except Exception:
+        db.rollback()
+    finally:
+        db.close()
+
+
+_clear_undefined_groups()
+
+
 def _ensure_segregation_disassemble_date() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("electrode_segregations")}

@@ -224,6 +224,10 @@ def sync_element_group(db: Session, el: models.Element, definitions: list[models
     if best and best != current:
         el.group_nr = best
         return "assigned"
+    if current_group is None:
+        # Only groups that exist in Group Definition may stay on an element (no ghost group such as "2").
+        el.group_nr = None
+        return "cleared"
     return "mismatch"
 
 
@@ -232,7 +236,7 @@ def apply_defined_groups(db: Session) -> int:
     definitions = db.query(models.GroupDefinition).all()
     changed = 0
     for el in db.query(models.Element).all():
-        if sync_element_group(db, el, definitions) == "assigned":
+        if sync_element_group(db, el, definitions) in ("assigned", "cleared"):
             changed += 1
     return changed
 
