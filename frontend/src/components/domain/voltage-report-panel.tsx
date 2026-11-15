@@ -209,11 +209,16 @@ export function VoltageReportPanel({
       .filter(Boolean)
       .join(" · ") || undefined;
   // Design capacity of the cell room: 24 electrolyzers x 14.85 kA = 356.4 kA.
-  const capacityPct = live.plant_total_ka != null && live.plant_total_ka > 0 ? (live.plant_total_ka / DESIGN_CAPACITY_KA) * 100 : null;
   // Company plan: a percent of the standard capacity (e.g. 90% of 356.4 kA), set in Settings.
   const planPct = priceQuery.data?.capacity_target_pct ?? null;
   const targetKa = planPct != null && planPct > 0 ? (DESIGN_CAPACITY_KA * planPct) / 100 : null;
   const planGap = targetKa != null && live.plant_total_ka != null ? live.plant_total_ka - targetKa : null;
+  const hasPlan = targetKa != null;
+  const capBase = targetKa ?? DESIGN_CAPACITY_KA;
+  const capPct = live.plant_total_ka != null ? (live.plant_total_ka / capBase) * 100 : null;
+  const capTone = !hasPlan ? "none" : capPct == null ? "none" : capPct >= 100 ? "good" : capPct >= 85 ? "warn" : "bad";
+  const capFill = Math.min(100, Math.max(0, ((live.plant_total_ka ?? 0) / DESIGN_CAPACITY_KA) * 100));
+  const capMark = Math.min(100, Math.max(0, ((targetKa ?? 0) / DESIGN_CAPACITY_KA) * 100));
   const trains = (["1", "2"] as const).map((train) => trainLine(live, train));
   // Daily kW is that day's cell voltage × AriaORMS kA. Week and month are the mean of those daily samples.
   const spanKw = span === "day" ? live.plant_power_kw : span === "month" ? live.plant_power_kw_30d : live.plant_power_kw_7d;
@@ -258,41 +263,47 @@ export function VoltageReportPanel({
           unit={U.ka}
           spark={spark}
         />
-        <Kpi
-          icon={Gauge}
-          tone="amber"
-          label={t("dashboard.unitCapacity")}
-          value={formatNumber(targetKa ?? DESIGN_CAPACITY_KA, 1)}
-          unit={U.ka}
-          extra={
-            <div className="dv-capacity">
-              <div className="dv-bar">
-                <i style={{ width: `${Math.min(100, Math.max(0, ((live.plant_total_ka ?? 0) / (targetKa ?? DESIGN_CAPACITY_KA)) * 100))}%` }} />
-              </div>
-              <div className="dv-kpi-meta">{t("dashboard.capacityDesign", { total: formatNumber(DESIGN_CAPACITY_KA, 1) })}</div>
-              <div className="dv-kpi-meta">
-                {planPct != null && planPct > 0
-                  ? t("dashboard.capacityPlan", { plan: formatNumber(planPct, 1), target: formatNumber(targetKa ?? 0, 1) })
-                  : t("dashboard.capacityNoPlan")}
-              </div>
-              {planGap != null && planPct != null && planPct > 0 ? (
-                <div className="dv-kpi-meta">
-                  <b>
-                    {t("dashboard.capacityPlanGap", {
-                      pct: formatNumber(((live.plant_total_ka ?? 0) / (targetKa ?? 1)) * 100, 1),
-                      gap: formatNumber(Math.abs(planGap), 1),
-                      dir: planGap < 0 ? t("dashboard.capacityBelow") : t("dashboard.capacityAbove"),
-                    })}
-                  </b>
-                </div>
-              ) : (
-                <div className="dv-kpi-meta">
-                  {capacityPct != null ? t("dashboard.capacityHint", { pct: formatNumber(capacityPct, 1), total: formatNumber(DESIGN_CAPACITY_KA, 1) }) : null}
-                </div>
-              )}
+        <div className={`dv-kpi dv-amber dv-cap is-${capTone}`}>
+          <span className="dv-kpi-icon">
+            <Gauge size={18} />
+          </span>
+          <div className="dv-kpi-label">{t("dashboard.unitCapacity")}</div>
+          <div className="dv-kpi-value">
+            {capPct != null ? formatNumber(capPct, 1) : "—"}
+            <span className="dv-kpi-unit">{t(hasPlan ? "dashboard.capOfPlan" : "dashboard.capOfStandard")}</span>
+          </div>
+          {hasPlan && planGap != null ? (
+            <div className={`dv-cap-chip ${planGap < 0 ? "is-below" : "is-above"}`}>
+              <span aria-hidden>{planGap < 0 ? "\u25BC" : "\u25B2"}</span>
+              {t(planGap < 0 ? "dashboard.capGapBelow" : "dashboard.capGapAbove", { gap: formatNumber(Math.abs(planGap), 1) })}
             </div>
-          }
-        />
+          ) : (
+            <div className="dv-cap-chip is-none">{t("dashboard.capacityNoPlan")}</div>
+          )}
+          <div className="dv-cap-track" role="img" aria-label={t("dashboard.unitCapacity")}>
+            <i className="dv-cap-fill" style={{ width: `${capFill}%` }} />
+            {hasPlan ? (
+              <span className="dv-cap-mark" style={{ left: `${capMark}%` }}>
+                <em>{formatNumber(planPct ?? 0, 0)}%</em>
+              </span>
+            ) : null}
+          </div>
+          <div className="dv-cap-stats">
+            <div>
+              <b>{live.plant_total_ka != null ? formatNumber(live.plant_total_ka, 1) : "\u2014"}</b>
+              <span>{t("dashboard.capNow")}</span>
+            </div>
+            <div>
+              <b>{hasPlan ? formatNumber(targetKa ?? 0, 1) : "\u2014"}</b>
+              <span>{t("dashboard.capPlanTarget")}</span>
+            </div>
+            <div>
+              <b>{formatNumber(DESIGN_CAPACITY_KA, 1)}</b>
+              <span>{t("dashboard.capStandard")}</span>
+            </div>
+          </div>
+          <div className="dv-kpi-meta">{U.ka}</div>
+        </div>
         <Kpi
           icon={Activity}
           tone="violet"

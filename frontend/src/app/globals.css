@@ -8469,3 +8469,21 @@ html[data-theme="dark"] .vg-sub { color: #94a3b8; }
 .dv-capacity { display: grid; gap: .15rem; margin-top: .25rem; }
 .dv-capacity .dv-bar { margin: .1rem 0 .2rem; }
 
+
+/* Unit capacity card: current load against the company plan */
+.dv-cap { align-items: stretch; }
+.dv-cap .dv-kpi-label, .dv-cap .dv-kpi-value, .dv-cap .dv-kpi-meta { text-align: center; }
+.dv-cap .dv-kpi-value { display: flex; align-items: baseline; justify-content: center; gap: .35rem; }
+.dv-cap-chip { align-self: center; display: inline-flex; align-items: center; gap: .3rem; padding: .22rem .65rem; border-radius: 999px; font-size: .72rem; font-weight: 700; margin: .2rem 0 .1rem; background: #e2e8f0; color: #475569; }
+.dv-cap-chip.is-below { background: #fee2e2; color: #b91c1c; }
+.dv-cap-chip.is-above { background: #dcfce7; color: #15803d; }
+.dv-cap-track { position: relative; height: 12px; border-radius: 999px; background: #e2e8f0; margin: 1.1rem .5rem .5rem; }
+.dv-cap-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: linear-gradient(90deg, #22d3ee, #2563eb); transition: width .8s ease; }
+.dv-cap.is-good .dv-cap-fill { background: linear-gradient(90deg, #34d399, #059669); }
+.dv-cap.is-warn .dv-cap-fill { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+.dv-cap.is-bad .dv-cap-fill { background: linear-gradient(90deg, #fb923c, #dc2626); }
+.dv-cap-mark { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: #0f172a; }
+.dv-cap-mark em { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); font-style: normal; font-size: .62rem; font-weight: 700; color: #0f172a; white-space: nowrap; padding-bottom: 2px; }
+.dv-cap-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; margin-top: .5rem; padding-top: .55rem; border-top: 1px dashed #cbd5e1; text-align: center; }
+.dv-cap-stats b { display: block; font-size: .95rem; color: #0f172a; font-variant-numeric: tabular-nums; }
+.dv-cap-stats span { font-size: .62rem; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
