@@ -227,6 +227,7 @@ export function VoltageReportPanel({
   const hasPlan = targetKa != null;
   const capBase = targetKa ?? designKa;
   const capPct = live.plant_total_ka != null ? (live.plant_total_ka / capBase) * 100 : null;
+  const designPct = live.plant_total_ka != null && designKa > 0 ? (live.plant_total_ka / designKa) * 100 : null;
   const capTone = !hasPlan ? "none" : capPct == null ? "none" : capPct >= 100 ? "good" : capPct >= 85 ? "warn" : "bad";
   const capFill = Math.min(100, Math.max(0, ((live.plant_total_ka ?? 0) / designKa) * 100));
   const capMark = Math.min(100, Math.max(0, ((targetKa ?? 0) / designKa) * 100));
@@ -267,7 +268,7 @@ export function VoltageReportPanel({
         </Link>
       </div>
 
-      <div className="dv-kpis">
+      <div className="dv-board">
         <Kpi
           icon={Zap}
           tone="blue"
@@ -311,8 +312,8 @@ export function VoltageReportPanel({
               <span>{t("dashboard.capPlanTarget")}</span>
             </div>
             <div>
-              <b>{formatNumber(designKa, 1)}</b>
-              <span>{t("dashboard.capStandard")}</span>
+              <b>{designPct != null ? `${formatNumber(designPct, 1)}%` : "\u2014"}</b>
+              <span className="is-design">{t("dashboard.capByDesign")}</span>
             </div>
           </div>
           <div className="dv-kpi-meta">{U.ka}</div>
@@ -334,9 +335,6 @@ export function VoltageReportPanel({
           extra={spanPick()}
           meta={price != null && price > 0 ? t("dashboard.plantPowerCostHint", { price: formatNumber(price, price >= 1 ? 0 : 2), hours }) : undefined}
         />
-      </div>
-
-      <div className="dv-grid">
         <div className="dv-card dv-health">
           <div className="dv-card-title">{t("dashboard.fromLive", { count: live.cell_count, els: live.online_count ?? live.electrolyzers.length })}</div>
           <div className="dv-donut">

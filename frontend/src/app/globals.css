@@ -7920,6 +7920,22 @@ html[data-theme="dark"] .wo-lines-table th, html[data-theme="dark"] .wo-lines-to
   margin-bottom: 0.9rem;
   align-items: stretch;
 }
+.dv-board {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+  align-items: stretch;
+}
+/* Marked order on the plant photo: trains, load, production, capacity, health, max voltage, power, cost. */
+.dv-board > :nth-child(1) { order: 2; }
+.dv-board > :nth-child(2) { order: 4; }
+.dv-board > :nth-child(3) { order: 7; }
+.dv-board > :nth-child(4) { order: 8; }
+.dv-board > :nth-child(5) { order: 5; }
+.dv-board > :nth-child(6) { order: 1; }
+.dv-board > :nth-child(7) { order: 3; }
+.dv-board > :nth-child(8) { order: 6; }
 .dv-card {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 0.6rem;
@@ -8186,12 +8202,17 @@ html {
   }
 }
 
+@media (max-width: 1100px) {
+  .dv-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 @media (max-width: 420px) {
   .access-main-grid,
   div.search-menu,
   .ed-hero,
   .dv-kpis,
   .dv-grid,
+  .dv-board,
   .psm-elo-grid,
   .psm-elo-grid.is-large {
     grid-template-columns: minmax(0, 1fr) !important;
@@ -8505,3 +8526,4 @@ html[data-theme="dark"] .vg-sub { color: #94a3b8; }
 .dv-cap-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; margin-top: .5rem; padding-top: .55rem; border-top: 1px dashed #cbd5e1; text-align: center; }
 .dv-cap-stats b { display: block; font-size: .95rem; color: #0f172a; font-variant-numeric: tabular-nums; }
 .dv-cap-stats span { font-size: .62rem; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
+.dv-cap-stats span.is-design { text-transform: none; letter-spacing: 0; line-height: 1.25; }
