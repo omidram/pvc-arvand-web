@@ -8377,3 +8377,57 @@ html[data-theme="dark"] .recharts-label {
 html[data-theme="dark"] .recharts-cartesian-grid line {
   stroke: #334155;
 }
+/* ================= Electrolyzer faceplate: gauge, SEC strip, hover tip ================= */
+.psm-gauge-wrap { position: relative; display: inline-flex; flex: none; outline: none; cursor: help; }
+.psm-gauge { filter: drop-shadow(0 1px 2px rgba(15, 39, 68, 0.12)); }
+.psm-gauge-arc { transition: stroke-dasharray 0.4s ease; }
+.psm-gauge-tick { stroke: #cbd5e1; stroke-width: 0.8; }
+.psm-gauge-tick.is-major { stroke: #94a3b8; stroke-width: 1.2; }
+.psm-gauge .psm-gauge-pct { font-size: 13px; font-weight: 800; }
+.psm-gauge .psm-gauge-cap { font-size: 6px; font-weight: 700; letter-spacing: 0.12em; fill: #64748b; }
+html[data-theme="dark"] .psm-gauge-tick { stroke: #475569; }
+html[data-theme="dark"] .psm-gauge .psm-gauge-cap { fill: #94a3b8; }
+.psm-gauge-wrap:hover .psm-gauge, .psm-gauge-wrap:focus .psm-gauge { transform: scale(1.04); transition: transform 0.15s ease; }
+
+.psm-tip {
+  position: absolute;
+  z-index: 40;
+  left: 50%;
+  top: calc(100% + 6px);
+  transform: translateX(-30%);
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  width: 270px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #0f2744;
+  color: #e2e8f0;
+  box-shadow: 0 10px 28px rgba(15, 39, 68, 0.35);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: start;
+  white-space: normal;
+  pointer-events: none;
+}
+.psm-tip strong { color: #fff; font-size: 12px; margin-bottom: 2px; }
+.psm-gauge-wrap:hover .psm-tip, .psm-gauge-wrap:focus .psm-tip { display: flex; }
+.psm-tip-row { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+.psm-tip-row i { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.psm-tip-row b { margin-inline-start: auto; color: #fff; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.psm-tip-sep { height: 1px; background: rgba(148, 163, 184, 0.35); margin: 2px 0; }
+.psm-tip-foot { color: #93c5fd; font-size: 10px; margin-top: 2px; }
+
+.psm-face .psm-sec {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 2px 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  text-align: center;
+}
+.psm-sec-col { display: flex; flex-direction: column; align-items: center; line-height: 1.15; }
+.psm-sec-col small { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.8; }
+.psm-sec-col b { font-size: 12px; }
+.psm-sec-delta b { font-size: 12px; }

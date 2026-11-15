@@ -59,39 +59,48 @@ function gaugeArc(cx: number, cy: number, r: number, value: number): string {
   return `M ${x1} ${y1} A ${r} ${r} 0 ${sweep > Math.PI ? 1 : 0} 1 ${x2} ${y2}`;
 }
 
-/** Three rings: match to design, load, cell voltage. The centre is the match percent. */
+/** Three rings: match to design (tone), load against rated kA, actual SEC against expected SEC. */
 function StatusGauge({
   match,
-  voltage,
-  current,
+  load,
+  secRatio,
   tone,
 }: {
   match: number | null;
-  voltage: number | null;
-  current: number | null;
+  load: number | null;
+  secRatio: number | null;
   tone: "ok" | "warning" | "danger" | "muted";
 }) {
   const toneColor = tone === "ok" ? "#10b981" : tone === "warning" ? "#f59e0b" : tone === "danger" ? "#ef4444" : "#94a3b8";
   const rings = [
-    { r: 32, value: match == null ? 0 : match / 100, color: toneColor },
-    { r: 25, value: current == null || current <= 0 ? 0 : current / 16, color: "#0891b2" },
-    { r: 18, value: voltage == null || voltage <= 0 ? 0 : voltage / 4, color: "#2563eb" },
+    { r: 33, value: match == null ? 0 : match / 100, color: toneColor, id: "m" },
+    { r: 26, value: load == null || load <= 0 ? 0 : load / 16, color: "#0891b2", id: "l" },
+    { r: 19, value: secRatio == null || secRatio <= 0 ? 0 : secRatio / 1.25, color: "#2563eb", id: "s" },
   ];
+  const ticks = Array.from({ length: 11 }, (_, i) => {
+    const angle = -Math.PI * 0.75 + (Math.PI * 1.5 * i) / 10;
+    return { x1: 39 + 38 * Math.cos(angle), y1: 39 + 38 * Math.sin(angle), x2: 39 + (i % 5 === 0 ? 35.5 : 36.8) * Math.cos(angle), y2: 39 + (i % 5 === 0 ? 35.5 : 36.8) * Math.sin(angle), major: i % 5 === 0 };
+  });
   return (
     <svg className="psm-gauge" viewBox="0 0 78 78" aria-hidden>
+      {ticks.map((tick, index) => (
+        <line key={index} className={tick.major ? "psm-gauge-tick is-major" : "psm-gauge-tick"} x1={tick.x1} y1={tick.y1} x2={tick.x2} y2={tick.y2} />
+      ))}
       {rings.map((ring) => (
-        <g key={ring.r}>
+        <g key={ring.id}>
           <path className="psm-gauge-track" d={gaugeArc(39, 39, ring.r, 1)} fill="none" stroke="#e2e8f0" strokeWidth="4.5" strokeLinecap="round" />
-          <path d={gaugeArc(39, 39, ring.r, ring.value)} fill="none" stroke={ring.color} strokeWidth="4.5" strokeLinecap="round" />
+          <path className="psm-gauge-arc" d={gaugeArc(39, 39, ring.r, ring.value)} fill="none" stroke={ring.color} strokeWidth="4.5" strokeLinecap="round" />
         </g>
       ))}
-      <text x="39" y="43" textAnchor="middle">
+      <text className="psm-gauge-pct" x="39" y="41" textAnchor="middle">
         {match == null ? "—" : `${Math.round(match)}%`}
+      </text>
+      <text className="psm-gauge-cap" x="39" y="50" textAnchor="middle">
+        SEC
       </text>
     </svg>
   );
 }
-
 function Metric({
   kind,
   label,
@@ -191,12 +200,59 @@ function Faceplate({
       </div>
       <RackMeter cells={cellMap(block)} focus={focus} />
       <div className="psm-face-body">
-        <StatusGauge
-          match={sec?.matchPct ?? null}
-          voltage={voltage}
-          current={block?.current_ka ?? null}
-          tone={sec?.tone ?? "muted"}
-        />
+        <span className="psm-gauge-wrap" tabIndex={0}>
+          <StatusGauge
+            match={sec?.matchPct ?? null}
+            load={block?.current_ka ?? null}
+            secRatio={sec ? sec.actualSec / sec.designSec : null}
+            tone={sec?.tone ?? "muted"}
+          />
+          <span className="psm-tip" role="tooltip">
+            <strong>{fa ? "شدت مصرف برق DC" : "DC power consumption (SEC)"}</strong>
+            {sec ? (
+              <>
+                <span className="psm-tip-row is-match">
+                  <i style={{ background: sec.tone === "ok" ? "#10b981" : sec.tone === "warning" ? "#f59e0b" : "#ef4444" }} />
+                  {fa ? "تطابق با طراحی" : "Match to design"}
+                  <b>{fmtFixed(sec.matchPct, 1)}%</b>
+                </span>
+                <span className="psm-tip-row">
+                  <i style={{ background: "#0891b2" }} />
+                  {fa ? "بار (کیلوآمپر / ۱۴٫۸۵)" : "Load (kA / 14.85)"}
+                  <b>{fmtFixed(block?.current_ka, 1)} kA</b>
+                </span>
+                <span className="psm-tip-row">
+                  <i style={{ background: "#2563eb" }} />
+                  {fa ? "واقعی نسبت به مورد انتظار" : "Actual vs expected"}
+                  <b>{fmtFixed((sec.actualSec / sec.designSec) * 100, 0)}%</b>
+                </span>
+                <span className="psm-tip-sep" />
+                <span className="psm-tip-row">
+                  {fa ? "ولتاژ الکترولایزر" : "Electrolyzer voltage"}
+                  <b>{fmtFixed(sec.electrolyzerVoltage, 1)} V</b>
+                </span>
+                <span className="psm-tip-row">
+                  {fa ? "واقعی = ولتاژ × ۴٫۲۷۷" : "Actual = voltage × 4.277"}
+                  <b>{fmtFixed(sec.actualSec, 0)}</b>
+                </span>
+                <span className="psm-tip-row">
+                  {fa ? "ولتاژ مورد انتظار" : "Expected voltage"}
+                  <b>{fmtFixed(sec.designElectrolyzerVoltage, 1)} V</b>
+                </span>
+                <span className="psm-tip-row">
+                  {fa ? "مورد انتظار = (۲٫۳۹ + ۰٫۱۲۶ × kA/۱۴٫۸۵) × ۱۶۳ × ۴٫۲۷۷" : "Expected = (2.39 + 0.126 × kA/14.85) × 163 × 4.277"}
+                  <b>{fmtFixed(sec.designSec, 0)}</b>
+                </span>
+                <span className="psm-tip-foot">
+                  {fa ? "کیلووات‌ساعت بر تن NaOH ۱۰۰٪" : "kWh / ton NaOH 100%"} · {sec.deltaPct >= 0 ? "+" : ""}
+                  {fmtFixed(sec.deltaPct, 1)}%
+                </span>
+              </>
+            ) : (
+              <span className="psm-tip-foot">{fa ? "داده ولتاژ یا کیلوآمپر موجود نیست" : "No voltage or current reading"}</span>
+            )}
+          </span>
+        </span>
         <div className="psm-face-readout">
           <Metric kind="v" label={unit.v} value={fmtFixed(voltage, 3)} />
           <Metric kind="i" label={unit.ka} value={fmtFixed(block?.current_ka, 1)} />
@@ -204,22 +260,24 @@ function Faceplate({
         </div>
       </div>
       {sec ? (
-        <div
-          className={`psm-sec is-${sec.tone}`}
-          title={t("monitoring.secMatchHint", {
-            actual: fmtFixed(sec.actualSec, 0),
-            design: fmtFixed(sec.designSec, 0),
-            pct: fmtFixed(sec.matchPct, 0),
-          })}
-        >
-          <span>{t("monitoring.secPair")}</span>
-          <b>
-            {fmtFixed(voltage, 1)} / {fmtFixed(sec.designVoltage, 1)}
-          </b>
-          <b>{fmtFixed(sec.matchPct, 0)}%</b>
+        <div className={`psm-sec is-${sec.tone}`}>
+          <span className="psm-sec-col">
+            <small>{fa ? "واقعی" : "Actual"}</small>
+            <b>{fmtFixed(sec.actualSec, 0)}</b>
+          </span>
+          <span className="psm-sec-col">
+            <small>{fa ? "مورد انتظار" : "Expected"}</small>
+            <b>{fmtFixed(sec.designSec, 0)}</b>
+          </span>
+          <span className="psm-sec-col psm-sec-delta">
+            <small>{fa ? "اختلاف" : "Δ"}</small>
+            <b>
+              {sec.deltaPct >= 0 ? "+" : ""}
+              {fmtFixed(sec.deltaPct, 1)}%
+            </b>
+          </span>
         </div>
-      ) : null}
-      <div className="psm-face-alerts">
+      ) : null}      <div className="psm-face-alerts">
         {block?.cell_count ? (
           <>
             <span className="psm-chip is-danger">{block.danger_count}</span>
