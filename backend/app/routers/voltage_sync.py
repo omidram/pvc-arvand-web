@@ -93,6 +93,30 @@ async def import_voltage_sync_file(
     filename = file.filename or ""
 
     def work(db: Session, progress):
+        from ..shift_report import is_shift_workbook, parse_shift_xlsx, save_shift_reports
+
+        if is_shift_workbook(content):
+            # The cell-room shift report: in-service electrolyzers, kA per electrolyzer and the supervisor.
+            report = parse_shift_xlsx(content)
+            if report is None or not report.get("units"):
+                raise HTTPException(status_code=400, detail="The shift report has no electrolyzer rows or no date")
+            rows = save_shift_reports(db, [report])
+            db.commit()
+            day = report["report_date"].isoformat()
+            rotation = report.get("rotation") or "-"
+            supervisor = report.get("supervisor") or "-"
+            return {
+                "ok": True,
+                "mode": "shift-report",
+                "files_scanned": 1,
+                "files_applied": 1,
+                "rows_upserted": rows,
+                "message": (
+                    f"Shift report {day} ({rotation}): {report.get('in_service_count')} electrolyzers "
+                    f"in service, supervisor {supervisor}"
+                ),
+                "details": [{"status": "shift-report", "reading_date": day, "rows_upserted": rows}],
+            }
         try:
             info = voltage_sync.apply_excel_bytes(
                 db,

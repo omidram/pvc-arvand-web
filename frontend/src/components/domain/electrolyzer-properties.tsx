@@ -17,28 +17,6 @@ function Fact({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function ChipList({
-  title,
-  items,
-}: {
-  title: string;
-  items: { label: string; count: number }[];
-}) {
-  if (!items.length) return null;
-  return (
-    <div className="psm-elo-chips">
-      <h5>{title}</h5>
-      <div>
-        {items.map((item) => (
-          <span key={`${item.label}-${item.count}`}>
-            {item.label} <b>{item.count}</b>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="psm-elo-section">
@@ -160,19 +138,6 @@ export function ElectrolyzerPropertiesPanel({ name }: { name: string }) {
               />
             ))}
           </div>
-        </Section>
-
-        <Section title={t("monitoring.liveSnapshot")}>
-          <div className="psm-elo-facts">
-            <Fact label={t("monitoring.allInstalls")} value={summary.installations} />
-            <Fact label={t("monitoring.activeCells")} value={summary.active_cells} />
-            <Fact label={t("monitoring.occupiedCells")} value={summary.occupied_positions} />
-            <Fact label={t("monitoring.emptyCells")} value={summary.empty_positions} />
-            <Fact label={t("monitoring.dismantledCells")} value={summary.dismantled} />
-            <Fact label={t("monitoring.avgDol")} value={summary.avg_dol_days} />
-          </div>
-          <ChipList title={t("monitoring.membraneMix")} items={summary.membrane_types} />
-          <ChipList title={t("monitoring.coatingMix")} items={summary.anode_coatings} />
         </Section>
 
         <Section title={t("monitoring.voltageNorm")}>

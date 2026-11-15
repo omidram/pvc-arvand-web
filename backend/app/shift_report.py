@@ -23,8 +23,9 @@ _EL = r"[A-HJ-M][12]"
 _EL_RE = re.compile(rf"^({_EL})$", re.I)
 _LOAD_RE = re.compile(rf"^({_EL})\s*LOAD\s*\(KA\)$", re.I)
 _DAY_RE = re.compile(rf"^({_EL})\s*\(DAY\)$", re.I)
-_STOP_RE = re.compile(rf"^({_EL})\s*SHUT DOWN and START\s*\(TIME\)$", re.I)
-_COUNT_RE = re.compile(r"Number of Electrolyzer in Service TRAIN\s*([12])", re.I)
+_STOP_RE = re.compile(rf"^({_EL})\s*SHUT DOWN\s*(?:\(TIME\))?\s*and START\s*\(TIME\)$", re.I)
+# AriaORMS spells train 2 "Electrolyer", so accept any spelling between "Electroly" and "in Service".
+_COUNT_RE = re.compile(r"Number of Electroly\w* in Service TRAIN\s*([12])", re.I)
 _TRAIN_KA_RE = re.compile(r"CELLROOM TRAIN\s*([12])\s*\(KA\)", re.I)
 _TRAIN_ON_RE = re.compile(r"^CELLROOM TRAIN\s*([12])$", re.I)
 _TON_RE = re.compile(r"CELLROOM TRAIN\s*([12])\s*\(TON", re.I)
@@ -230,6 +231,32 @@ def parse_shift_html(
     return parsed
 
 
+def is_shift_workbook(content: bytes) -> bool:
+    """True for the AriaORMS cell-room shift report export (has an OperationInfo sheet)."""
+    import openpyxl
+
+    try:
+        book = openpyxl.load_workbook(BytesIO(content), read_only=True)
+    except Exception:  # noqa: BLE001
+        return False
+    try:
+        return any(name.strip().lower() == "operationinfo" for name in book.sheetnames)
+    finally:
+        book.close()
+
+
+def _rotation_index(text: str) -> int:
+    """Order of the rotation inside its day, so the latest shift wins (day < evening < night)."""
+    value = _clean(text)
+    if any(word in value for word in ("روز", "صبح")):
+        return 1
+    if "عصر" in value:
+        return 2
+    if "شب" in value:
+        return 3
+    return 0
+
+
 def parse_shift_xlsx(
     content: bytes,
     *,
@@ -237,20 +264,60 @@ def parse_shift_xlsx(
     rotation: str = "",
     shift_index: int = 0,
 ) -> dict[str, Any] | None:
+    """Read an AriaORMS shift-report workbook.
+
+    The export has an ``OperationInfo`` sheet (label / value rows: ON/OFF, LOAD (KA), in-service
+    counts), an ``Actions`` sheet that carries the shift date, rotation and supervisor, and a
+    ``PresentPersons`` sheet. An older single-grid workbook is still read as before.
+    """
     import openpyxl
 
     book = openpyxl.load_workbook(BytesIO(content), data_only=True, read_only=True)
-    rows: list[list[str]] = []
+    info_rows: list[list[str]] = []
+    other_rows: list[list[str]] = []
+    actions: list[list[str]] = []
+    persons: list[str] = []
     try:
         for sheet in book.worksheets:
+            key = sheet.title.strip().lower()
             for row in sheet.iter_rows(values_only=True):
                 cells = [_clean(cell) for cell in row]
-                if any(cells):
-                    rows.append(cells)
+                if not any(cells):
+                    continue
+                if key == "operationinfo":
+                    info_rows.append(cells)
+                elif key == "actions":
+                    actions.append(cells)
+                elif key == "presentpersons":
+                    persons.append(" ".join(c for c in cells[:2] if c))
+                else:
+                    other_rows.append(cells)
     finally:
         book.close()
-    return parse_grid(rows, fallback_date=fallback_date, rotation=rotation, shift_index=shift_index)
+    if not info_rows:
+        return parse_grid(other_rows + actions, fallback_date=fallback_date, rotation=rotation, shift_index=shift_index)
 
+    supervisor = ""
+    day = fallback_date
+    found_rotation = rotation
+    if len(actions) >= 2:
+        head = [c.lower() for c in actions[0]]
+        first = actions[1]
+
+        def at(name: str) -> str:
+            return first[head.index(name)] if name in head and head.index(name) < len(first) else ""
+
+        supervisor = at("supervisor")
+        day = parse_plant_date(at("shift")) or day
+        if at("shift") and len(first) > 1 and first[1]:
+            found_rotation = first[1]
+    parsed = parse_grid(info_rows, fallback_date=day, rotation=found_rotation, shift_index=shift_index or _rotation_index(found_rotation))
+    if parsed is not None:
+        parsed["supervisor"] = supervisor or parsed.get("supervisor") or ""
+        names = [n for n in persons[1:] if n]
+        if names:
+            parsed["shift_persons"] = "، ".join(names)[:1000]
+    return parsed
 
 def _persons_from_html(html: str) -> str:
     text = re.sub(r"<[^>]+>", " ", html)
