@@ -2637,7 +2637,7 @@ def cell_dismantle(request_id: int, body: CellDismantleIn, db: Session = Depends
         raise HTTPException(403, "C-90 confirms the dismantling")
     svc.clear_cache()
     try:
-        svc.advance_stage(db, r.element_nr, (body.note or "").strip() or None, _display(user), body.date)
+        svc.advance_stage(db, r.element_nr, (body.note or "").strip() or None, _display(user), body.date, by_request=True)
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from exc
     db.flush()

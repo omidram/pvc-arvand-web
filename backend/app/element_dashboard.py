@@ -442,19 +442,32 @@ def decide_decommissioned(db: Session, element_nr: str, choice: str, note: str |
     return {**result, "from": item["state"]}
 
 
-def advance_stage(db: Session, element_nr: str, note: str | None, user: str | None, day: date | None = None) -> dict[str, Any]:
-    """Move one element to the next step of the cycle. Dismantling is written to Assembly Data. Raises ValueError."""
+def advance_stage(
+    db: Session,
+    element_nr: str,
+    note: str | None,
+    user: str | None,
+    day: date | None = None,
+    *,
+    by_request: bool = False,
+) -> dict[str, Any]:
+    """Move one element to the next step of the cycle. Dismantling is written to Assembly Data. Raises ValueError.
+
+    ``by_request`` is set by the workflow request that owns the element (C-90 confirming the dismantle on the
+    cell request). Only the shop board is stopped by an open request; the request itself must not block itself.
+    """
     key = compact_nr(element_nr)
     if not key:
         raise ValueError("Element number is required")
     item = next((i for i in build_pipeline(db) if i["key"] == key), None)
     if item is None:
         raise ValueError(f"Element {element_nr} was not found")
-    from .routers.workflow import shop_change_blocked
+    if not by_request:
+        from .routers.workflow import shop_change_blocked
 
-    blocked = shop_change_blocked(db, item["element_nr"], kind="advance")
-    if blocked:
-        raise ValueError(blocked)
+        blocked = shop_change_blocked(db, item["element_nr"], kind="advance")
+        if blocked:
+            raise ValueError(blocked)
     target = NEXT_STAGE.get(item["state"])
     if target is None:
         raise ValueError(f"Element {item['element_nr']} is '{item['state']}'; there is no next cell-shop step (installing is entered in Assembly Data)")
