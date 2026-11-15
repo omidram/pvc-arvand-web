@@ -135,6 +135,16 @@ class VoltageSyncSettings(Base):
     last_run_message: Mapped[str | None] = mapped_column(String(500), nullable=True)
     # JSON map: relative path -> {mtime, size} of last successfully applied file
     processed_state: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # AriaORMS cell-room shift report (in-service electrolyzers, kA per electrolyzer, supervisor).
+    shift_report_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    shift_report_url: Mapped[str | None] = mapped_column(
+        String(500), default="http://192.168.20.12:8080/ViewShiftReport.aspx", nullable=True
+    )
+    # Comma-separated local wall-clock times (HH:MM) for the scheduled shift-report pull.
+    shift_report_times: Mapped[str | None] = mapped_column(String(60), default="07:00,19:00", nullable=True)
+    shift_last_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    shift_last_status: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    shift_last_message: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
 
 class AriaLimsSyncSettings(Base):

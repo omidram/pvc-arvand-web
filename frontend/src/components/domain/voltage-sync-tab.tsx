@@ -12,6 +12,7 @@ import { Input, Label } from "@/components/ui/input";
 import { LoadingState, ErrorState } from "@/components/ui/spinner";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDateTime } from "@/lib/utils";
+import { ShiftReportSettings } from "@/components/domain/shift-report-settings";
 
 function SyncForm({ initial }: { initial: VoltageSyncSettings }) {
   const { t } = useI18n();
@@ -288,6 +289,7 @@ export function VoltageSyncTab() {
           <SyncForm key={`${data.id}-${data.last_run_at || "none"}-${data.watched_file_count}`} initial={data} />
         </CardContent>
       </Card>
+      <ShiftReportSettings key={`shift-${data.shift_last_run_at || "none"}-${data.shift_report_times}`} initial={data} />
     </div>
   );
 }

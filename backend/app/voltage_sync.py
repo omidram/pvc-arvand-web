@@ -785,3 +785,76 @@ def launch_pull(*, include_today: bool = True) -> dict[str, Any]:
         spawned = spawn_import(work, daemon=False)
         _active_pull_job = spawned["job_id"]
         return spawned
+
+def pull_shift_report(db: Session, row: models.VoltageSyncSettings | None = None, *, days_back: int = 1) -> dict[str, Any]:
+    """Download the AriaORMS cell-room shift report (today and ``days_back`` earlier days) and store it.
+
+    It gives the in-service electrolyzers, each electrolyzer's kA and the supervisor who filed the shift.
+    """
+    from datetime import date as date_cls, timedelta
+
+    from . import ariaorms_client
+    from .shift_report import save_shift_reports
+
+    row = row or db.query(models.VoltageSyncSettings).first()
+    if row is None:
+        return {"ok": False, "message": "Voltage sync settings are missing"}
+    url = (row.shift_report_url or "").strip() or "http://192.168.20.12:8080/ViewShiftReport.aspx"
+    username = (row.username or "").strip()
+    password = (row.password or "").strip()
+    note = ""
+    status = "error"
+    saved = 0
+    try:
+        if not username or not password:
+            raise RuntimeError("AriaORMS username/password are not configured in Settings -> Data Sync")
+        base = ariaorms_client.normalize_base_url(url)
+        end_day = date_cls.today()
+        start_day = end_day - timedelta(days=max(0, days_back))
+        # Close the settings transaction first: the HTTP calls below can take a while.
+        db.commit()
+        opener = ariaorms_client.new_opener(base, username, password)
+        reports = ariaorms_client.fetch_cellroom_shifts(
+            opener, base, start_day, end_day, username=username, password=password, page_url=url
+        )
+        saved = save_shift_reports(db, reports)
+        if reports:
+            latest = max(reports, key=lambda item: (item["report_date"], int(item.get("shift_index") or 0)))
+            note = (
+                f"{len(reports)} shift(s), {saved} electrolyzer rows. Latest {latest['report_date']} "
+                f"{latest.get('rotation') or ''}: {latest.get('in_service_count')} in service, "
+                f"supervisor {latest.get('supervisor') or '-'}"
+            )
+            status = "success"
+        else:
+            note = "AriaORMS returned no shift report for these days"
+            status = "empty"
+    except Exception as exc:  # noqa: BLE001
+        db.rollback()
+        note = str(exc)[:400]
+        logger.exception("AriaORMS shift report pull failed")
+    row = db.query(models.VoltageSyncSettings).first()
+    if row is not None:
+        row.shift_last_run_at = datetime.utcnow()
+        row.shift_last_status = status
+        row.shift_last_message = note[:500]
+    commit_db(db)
+    return {
+        "ok": status == "success",
+        "mode": "shift-report",
+        "files_scanned": 1,
+        "files_applied": 1 if status == "success" else 0,
+        "rows_upserted": saved,
+        "message": note,
+        "details": [],
+    }
+
+
+def launch_shift_pull() -> dict[str, Any]:
+    """Run the shift-report pull on a server thread (Settings button)."""
+    from .import_jobs import spawn_import
+
+    def work(session: Session, progress):
+        return pull_shift_report(session, days_back=1)
+
+    return spawn_import(work, daemon=False)

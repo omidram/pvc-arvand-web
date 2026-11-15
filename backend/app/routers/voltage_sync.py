@@ -26,6 +26,7 @@ def _to_read(obj: models.VoltageSyncSettings) -> schemas.VoltageSyncSettingsRead
     data.resolved_watch_dir = str(resolved)
     data.watched_file_count = voltage_sync.count_watched_files(obj.watch_dir)
     data.next_run_at = voltage_sync_scheduler.get_next_run_at() if obj.enabled else None
+    data.shift_next_run_at = voltage_sync_scheduler.get_next_shift_run_at() if obj.shift_report_enabled else None
     return data
 
 
@@ -42,6 +43,10 @@ def update_voltage_sync_settings(
     obj = _get_or_create(db)
     data = payload.model_dump(exclude_unset=True)
     password = data.pop("password", None)
+    if "shift_report_times" in data:
+        data["shift_report_times"] = ",".join(f"{h:02d}:{m:02d}" for h, m in voltage_sync_scheduler.shift_times(data["shift_report_times"]))
+    if "shift_report_url" in data and not (data["shift_report_url"] or "").strip():
+        data["shift_report_url"] = voltage_sync_scheduler.DEFAULT_SHIFT_URL
     for key, value in data.items():
         setattr(obj, key, value)
     if password is not None and str(password).strip() != "":
@@ -80,6 +85,13 @@ def run_voltage_sync_now(db: Session = Depends(get_db)):
     """Pull today's AriaORMS log sheets on the server. Navigation does not cancel it."""
     _get_or_create(db)
     return voltage_sync.launch_pull(include_today=True)
+
+
+@router.post("/shift-run")
+def run_shift_report_now(db: Session = Depends(get_db)):
+    """Read the AriaORMS shift report now (the same job that runs at 07:00 and 19:00)."""
+    _get_or_create(db)
+    return voltage_sync.launch_shift_pull()
 
 
 @router.post("/import-file")

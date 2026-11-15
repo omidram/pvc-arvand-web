@@ -984,6 +984,13 @@ export interface VoltageSyncSettings {
   resolved_watch_dir: string | null;
   watched_file_count: number;
   next_run_at: string | null;
+  shift_report_enabled: boolean;
+  shift_report_url: string | null;
+  shift_report_times: string | null;
+  shift_last_run_at: string | null;
+  shift_last_status: "success" | "error" | "empty" | null;
+  shift_last_message: string | null;
+  shift_next_run_at: string | null;
 }
 
 export interface VoltageSyncRunResult {

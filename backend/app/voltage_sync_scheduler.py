@@ -13,6 +13,9 @@ from .database import SessionLocal, is_sqlite_lock
 logger = logging.getLogger("pvc_arvand.voltage_sync")
 
 DAILY_JOB_ID = "voltage_sync_daily_ariaorms"
+SHIFT_JOB_PREFIX = "shift_report_pull_"
+DEFAULT_SHIFT_URL = "http://192.168.20.12:8080/ViewShiftReport.aspx"
+DEFAULT_SHIFT_TIMES = "07:00,19:00"
 WATCH_JOB_ID = "voltage_sync_watch"
 _scheduler: BackgroundScheduler | None = None
 
@@ -38,6 +41,9 @@ def _default_settings() -> models.VoltageSyncSettings:
         password=DEFAULT_PASSWORD,
         daily_time="00:00",
         lookback_days=7,
+        shift_report_enabled=True,
+        shift_report_url=DEFAULT_SHIFT_URL,
+        shift_report_times=DEFAULT_SHIFT_TIMES,
     )
 
 
@@ -58,6 +64,38 @@ def _run_daily_pull() -> None:
         logger.exception("AriaORMS daily pull failed")
     finally:
         db.close()
+
+
+def _run_shift_pull() -> None:
+    """07:00 / 19:00: read the AriaORMS shift report and store in-service electrolyzers and kA."""
+    db = SessionLocal()
+    try:
+        row = db.query(models.VoltageSyncSettings).first()
+        if not row or not row.shift_report_enabled:
+            return
+        result = voltage_sync.pull_shift_report(db, row, days_back=1)
+        logger.info("AriaORMS shift report pull: %s", result.get("message"))
+    except OperationalError as exc:
+        if is_sqlite_lock(exc):
+            logger.warning("Shift report pull deferred: database is busy")
+        else:
+            logger.exception("Shift report pull failed")
+    except Exception:  # noqa: BLE001
+        logger.exception("Shift report pull failed")
+    finally:
+        db.close()
+
+
+def shift_times(value: str | None) -> list[tuple[int, int]]:
+    out: list[tuple[int, int]] = []
+    for part in (value or DEFAULT_SHIFT_TIMES).replace(";", ",").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        hour, minute = _parse_hhmm(part)
+        if (hour, minute) not in out:
+            out.append((hour, minute))
+    return out or [(7, 0), (19, 0)]
 
 
 def _run_watch_cycle() -> None:
@@ -91,10 +129,20 @@ def _parse_hhmm(value: str | None) -> tuple[int, int]:
 
 def apply_schedule(row: "models.VoltageSyncSettings") -> None:
     scheduler = get_scheduler()
-    for job_id in (DAILY_JOB_ID, WATCH_JOB_ID):
-        existing = scheduler.get_job(job_id)
-        if existing:
-            scheduler.remove_job(job_id)
+    for job in list(scheduler.get_jobs()):
+        if job.id in (DAILY_JOB_ID, WATCH_JOB_ID) or job.id.startswith(SHIFT_JOB_PREFIX):
+            scheduler.remove_job(job.id)
+
+    # The shift report has its own switch: it does not depend on the log-sheet pull being enabled.
+    if row and row.shift_report_enabled:
+        for hour, minute in shift_times(row.shift_report_times):
+            scheduler.add_job(
+                _run_shift_pull,
+                CronTrigger(hour=hour, minute=minute),
+                id=f"{SHIFT_JOB_PREFIX}{hour:02d}{minute:02d}",
+                replace_existing=True,
+                misfire_grace_time=3600,
+            )
 
     if not row or not row.enabled:
         return
@@ -144,6 +192,15 @@ def init_scheduler_from_db() -> None:
             if not row.source_url:
                 row.source_url = DEFAULT_SOURCE
                 changed = True
+            if not (row.shift_report_url or "").strip():
+                row.shift_report_url = DEFAULT_SHIFT_URL
+                changed = True
+            if not (row.shift_report_times or "").strip():
+                row.shift_report_times = DEFAULT_SHIFT_TIMES
+                changed = True
+            if row.shift_report_enabled is None:
+                row.shift_report_enabled = True
+                changed = True
             if changed:
                 db.commit()
                 db.refresh(row)
@@ -154,6 +211,12 @@ def init_scheduler_from_db() -> None:
         db.close()
     if start_pull:
         voltage_sync.launch_pull(include_today=True)
+
+
+def get_next_shift_run_at() -> str | None:
+    scheduler = get_scheduler()
+    times = [job.next_run_time for job in scheduler.get_jobs() if job.id.startswith(SHIFT_JOB_PREFIX) and job.next_run_time]
+    return min(times).isoformat() if times else None
 
 
 def get_next_run_at() -> str | None:

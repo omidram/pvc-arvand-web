@@ -161,6 +161,9 @@ class VoltageSyncSettingsBase(ORMModel):
     username: str | None = None
     daily_time: str = "00:00"
     lookback_days: int = Field(default=7, ge=1, le=400)
+    shift_report_enabled: bool = True
+    shift_report_url: str | None = "http://192.168.20.12:8080/ViewShiftReport.aspx"
+    shift_report_times: str | None = "07:00,19:00"
 
 
 class VoltageSyncSettingsUpdate(VoltageSyncSettingsBase):
@@ -174,6 +177,10 @@ class VoltageSyncSettingsRead(VoltageSyncSettingsBase):
     last_run_at: datetime | None = None
     last_run_status: str | None = None
     last_run_message: str | None = None
+    shift_last_run_at: datetime | None = None
+    shift_last_status: str | None = None
+    shift_last_message: str | None = None
+    shift_next_run_at: str | None = None
     resolved_watch_dir: str | None = None
     watched_file_count: int = 0
     next_run_at: str | None = None

@@ -301,6 +301,28 @@ def _ensure_plant_settings_show_cell_health() -> None:
 _ensure_plant_settings_show_cell_health()
 
 
+def _ensure_voltage_sync_shift_columns() -> None:
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("voltage_sync_settings")}
+    except Exception:
+        return
+    wanted = {
+        "shift_report_enabled": "BOOLEAN DEFAULT 1",
+        "shift_report_url": "VARCHAR(500)",
+        "shift_report_times": "VARCHAR(60)",
+        "shift_last_run_at": "DATETIME",
+        "shift_last_status": "VARCHAR(20)",
+        "shift_last_message": "VARCHAR(500)",
+    }
+    with engine.begin() as conn:
+        for name, ddl in wanted.items():
+            if name not in present:
+                conn.execute(text(f"ALTER TABLE voltage_sync_settings ADD COLUMN {name} {ddl}"))
+
+
+_ensure_voltage_sync_shift_columns()
+
+
 def _ensure_user_last_seen() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("users")}

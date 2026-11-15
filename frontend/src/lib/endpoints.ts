@@ -1446,6 +1446,9 @@ export const voltageSyncApi = {
       password: string;
       daily_time: string;
       lookback_days: number;
+      shift_report_enabled: boolean;
+      shift_report_url: string | null;
+      shift_report_times: string | null;
     }>
   ): Promise<T.VoltageSyncSettings> => (await apiClient.put("/voltage-sync/settings", payload)).data,
   active: async (): Promise<{
@@ -1459,6 +1462,10 @@ export const voltageSyncApi = {
   }> => (await apiClient.get("/voltage-sync/active")).data,
   runNow: async (onProgress?: (progress: ImportProgress) => void): Promise<T.VoltageSyncRunResult> => {
     const { data } = await apiClient.post("/voltage-sync/run");
+    return followImport(data, onProgress);
+  },
+  runShiftNow: async (onProgress?: (progress: ImportProgress) => void): Promise<T.VoltageSyncRunResult> => {
+    const { data } = await apiClient.post("/voltage-sync/shift-run");
     return followImport(data, onProgress);
   },
   importFile: async (

@@ -300,11 +300,12 @@ def fetch_cellroom_shifts(
     *,
     username: str | None = None,
     password: str | None = None,
+    page_url: str | None = None,
 ) -> list[dict[str, Any]]:
     """Download گزارش کارکردی سلول‌ها for each rotation in the date window."""
     from .shift_report import parse_shift_html, parse_shift_xlsx
 
-    page = f"{base}/ViewShiftReport.aspx"
+    page = (page_url or "").strip() or f"{base}/ViewShiftReport.aspx"
     body, _meta = _read(opener, page)
     html = _decode_page(body)
     form = _parse_form(html, page)
