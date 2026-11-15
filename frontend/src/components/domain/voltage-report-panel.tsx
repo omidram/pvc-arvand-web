@@ -8,6 +8,7 @@ import { settingsApi } from "@/lib/endpoints";
 import type { DashboardVoltageStats } from "@/lib/types";
 import { TRAIN_LETTERS, electrolyzerName, formatElectrolyzer, type TrainId } from "@/lib/plant-topology";
 import { VoltageGauge } from "@/components/domain/voltage-gauge";
+import { ProductionCard } from "@/components/domain/production-card";
 import { useI18n } from "@/lib/i18n/context";
 import { formatDate, formatNumber } from "@/lib/utils";
 import {
@@ -34,13 +35,6 @@ const TOOLTIP_STYLE = {
   color: "#f8fafc",
   boxShadow: "0 8px 24px rgba(15,23,42,0.3)",
 };
-
-function maxVTone(v: number | null | undefined, limit: number): "ok" | "warning" | "danger" | "info" {
-  if (v == null) return "info";
-  if (v >= limit) return "danger";
-  if (v >= limit - 0.2) return "warning";
-  return "ok";
-}
 
 function hasLiveTotals(voltage?: DashboardVoltageStats | null): boolean {
   if (!voltage) return false;
@@ -337,15 +331,7 @@ export function VoltageReportPanel({
           })}
         </div>
 
-        <VoltageGauge
-          value={live.max_voltage}
-          max={live.cell_gauge_max}
-          label={t("dashboard.maxCellGauge")}
-          unit={U.v}
-          caption={[live.max_electrolyzer, live.max_position].filter(Boolean).join(" / ") || undefined}
-          tone={maxVTone(live.max_voltage, live.danger_limit)}
-          digits={3}
-        />
+        <ProductionCard plantKa={live.plant_total_ka} trains={trains.map((line) => ({ train: line.train, ka: line.ka }))} />
         <VoltageGauge
           value={live.avg_voltage}
           max={live.cell_gauge_max}

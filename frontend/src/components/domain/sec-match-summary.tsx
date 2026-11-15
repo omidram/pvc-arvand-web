@@ -26,7 +26,8 @@ export function SecMatchSummary() {
   const ok = rows.filter((r) => r.tone === "ok").length;
   const warning = rows.filter((r) => r.tone === "warning").length;
   const danger = rows.filter((r) => r.tone === "danger").length;
-  const avgMatch = rows.reduce((sum, r) => sum + r.matchPct, 0) / rows.length;
+  // 100% = exactly the expected consumption; 128% = 28% above it.
+  const avgMatch = rows.reduce((sum, r) => sum + 100 + r.deltaPct, 0) / rows.length;
   const tone = danger > 0 ? "danger" : warning > 0 ? "warning" : "ok";
 
   return (

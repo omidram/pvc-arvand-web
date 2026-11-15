@@ -8431,3 +8431,23 @@ html[data-theme="dark"] .psm-gauge .psm-gauge-cap { fill: #94a3b8; }
 .psm-sec-col small { font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.8; }
 .psm-sec-col b { font-size: 12px; }
 .psm-sec-delta b { font-size: 12px; }
+
+.psm-gauge-mark { stroke: #0f2744; stroke-width: 1.6; stroke-linecap: round; }
+html[data-theme="dark"] .psm-gauge-mark { stroke: #f8fafc; }
+
+/* Chlorine / caustic production card */
+.dv-production { display: flex; flex-direction: column; gap: 0.5rem; justify-content: center; }
+.dv-prod-pickers { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.dv-prod-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.dv-prod-row { display: flex; flex-direction: column; align-items: center; padding: 0.55rem 0.4rem; border-radius: 12px; background: #f1f5f9; }
+.dv-prod-row small { font-size: 11px; font-weight: 700; color: #475569; }
+.dv-prod-row b { font-size: 1.7rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.dv-prod-row span { font-size: 11px; font-weight: 700; opacity: 0.75; }
+.dv-prod-row.is-cl2 { background: #ecfccb; color: #3f6212; }
+.dv-prod-row.is-cl2 small { color: #4d7c0f; }
+.dv-prod-row.is-naoh { background: #e0f2fe; color: #075985; }
+.dv-prod-row.is-naoh small { color: #0369a1; }
+.dv-prod-foot { text-align: center; font-size: 10.5px; color: #64748b; }
+html[data-theme="dark"] .dv-prod-row.is-cl2 { background: #1a2e05; color: #d9f99d; }
+html[data-theme="dark"] .dv-prod-row.is-naoh { background: #0c2a43; color: #bae6fd; }
+html[data-theme="dark"] .dv-prod-foot { color: #94a3b8; }
