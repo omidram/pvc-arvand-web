@@ -7,7 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ClipboardList, MailOpen } from "lucide-react";
 import { useI18n } from "@/lib/i18n/context";
 import { cn, formatDateTime } from "@/lib/utils";
-import { CARTABLE_MS, workflowApi, workflowHref, type WfNotice } from "@/lib/workflow";
+import { CARTABLE_MS, workflowApi, workflowHref, type WfNotice, type WfSummary } from "@/lib/workflow";
 
 type Toast = { id: number; flow: string; recordId: number; title: string; text: string };
 
@@ -48,7 +48,11 @@ export function WorkflowBell({ classic }: { classic?: boolean }) {
 
   const meta = useQuery({ queryKey: ["wf", "meta"], queryFn: workflowApi.meta, staleTime: 60_000 });
   const summary = useQuery({ queryKey: ["wf", "summary"], queryFn: workflowApi.summary, refetchInterval: CARTABLE_MS, refetchOnWindowFocus: true });
-  const list = useQuery({ queryKey: ["wf", "notifications"], queryFn: () => workflowApi.notifications(15), enabled: open });
+  // The pop-up lists what is still waiting for me (the same items the badge counts), not finished history.
+  const list = useQuery({ queryKey: ["wf", "cartable"], queryFn: workflowApi.cartable, enabled: open, refetchInterval: open ? CARTABLE_MS : false });
+  const waitingRows = [...(list.data ?? [])]
+    .sort((a, b) => (a.sla_left_minutes ?? Number.MAX_SAFE_INTEGER) - (b.sla_left_minutes ?? Number.MAX_SAFE_INTEGER))
+    .slice(0, 15);
 
   useEffect(() => {
     const items = summary.data?.items;
@@ -97,6 +101,13 @@ export function WorkflowBell({ classic }: { classic?: boolean }) {
     void qc.invalidateQueries({ queryKey: ["wf"] });
   }
 
+  async function openRow(row: WfSummary) {
+    setOpen(false);
+    router.push(href({ flow: row.flow, record_id: row.id }));
+    await workflowApi.markRead({ flow: row.flow, record_id: row.id }).catch(() => undefined);
+    void qc.invalidateQueries({ queryKey: ["wf"] });
+  }
+
   async function markAll() {
     await workflowApi.markRead({ all: true }).catch(() => undefined);
     void qc.invalidateQueries({ queryKey: ["wf"] });
@@ -125,17 +136,17 @@ export function WorkflowBell({ classic }: { classic?: boolean }) {
             </button>
           </div>
           <div className="tk-drop-list">
-            {!list.data?.length ? <p className="tk-drop-empty">{t("wf.noNotices")}</p> : null}
-            {list.data?.map((n) => (
-              <button key={n.id} type="button" className={cn("tk-drop-item", !n.read && "is-unread")} onClick={() => void openNotice(n)}>
+            {!waitingRows.length ? <p className="tk-drop-empty">{t("wf.noNotices")}</p> : null}
+            {waitingRows.map((row) => (
+              <button key={`${row.flow}-${row.id}`} type="button" className={cn("tk-drop-item", row.sla_state === "late" && "is-unread")} onClick={() => void openRow(row)}>
                 <span className="tk-drop-top">
-                  <strong>{n.title}</strong>
-                  <span className="tk-drop-time">{formatDateTime(n.created_at)}</span>
+                  <strong>{row.title || row.code}</strong>
+                  <span className="tk-drop-time">{row.sla_state === "late" ? t("wf.sla.state.late") : row.updated_at ? formatDateTime(row.updated_at) : ""}</span>
                 </span>
                 <span className="tk-drop-subject">
-                  {t(`wf.flow.${n.flow}`)} — {n.status ? t(`wf.status.${n.status}`) : ""}
+                  {t(`wf.flow.${row.flow}`)} — {row.status ? t(`wf.status.${row.status}`) : ""}
                 </span>
-                <span className="tk-drop-preview">{n.from_name}</span>
+                <span className="tk-drop-preview">{row.created_by}</span>
               </button>
             ))}
           </div>
