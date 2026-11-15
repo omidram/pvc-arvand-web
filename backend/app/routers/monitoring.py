@@ -76,6 +76,14 @@ def _export_date(value):
     return text[:10] if text else None
 
 
+def _round_or_none(value, digits: int):
+    return None if value is None else round(float(value), digits)
+
+
+def _kilo_to_mega(value):
+    return None if value is None else float(value) / 1000.0
+
+
 def _monitoring_export_pack(
     db: Session,
     *,
@@ -231,13 +239,14 @@ def _monitoring_export_pack(
             "ok_count": block.get("ok_count"),
             "warning_count": block.get("warning_count"),
             "danger_count": block.get("danger_count"),
-            "avg_voltage": block.get("avg_voltage"),
+            "avg_voltage": _round_or_none(block.get("avg_voltage"), 2),
             "max_voltage": block.get("max_voltage"),
             "total_voltage": block.get("total_voltage"),
             "current_ka": block.get("current_ka"),
-            "power_kw": block.get("power_kw"),
-            "energy_kwh_24h": block.get("energy_kwh_24h"),
-            "energy_kwh_30d": block.get("energy_kwh_30d"),
+            # Power in megawatt, energy in megawatt-hour (the same units as the screen).
+            "power_mw": _round_or_none(_kilo_to_mega(block.get("power_kw")), 2),
+            "energy_mwh_24h": _round_or_none(_kilo_to_mega(block.get("energy_kwh_24h")), 1),
+            "energy_mwh_30d": _round_or_none(_kilo_to_mega(block.get("energy_kwh_30d")), 1),
             "reading_date": _export_date(block.get("reading_date")),
             "reading_time": block.get("reading_time"),
         }
@@ -254,9 +263,9 @@ def _monitoring_export_pack(
         "max_voltage",
         "total_voltage",
         "current_ka",
-        "power_kw",
-        "energy_kwh_24h",
-        "energy_kwh_30d",
+        "power_mw",
+        "energy_mwh_24h",
+        "energy_mwh_30d",
         "reading_date",
         "reading_time",
     ]

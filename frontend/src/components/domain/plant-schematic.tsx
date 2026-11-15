@@ -494,9 +494,9 @@ function ElectrolyzerMimic({
                   {live
                     ? t("monitoring.liveCount", { count: live })
                     : t("monitoring.lastReadingCount", { count: lastKnown })}
-                  {rackLive?.power_kw != null ? ` · ${formatNumber(rackLive.power_kw, 0)} ${fa ? "کیلووات" : "Kilowatt"}` : ""}
+                  {rackLive?.power_kw != null ? ` · ${formatNumber(rackLive.power_kw / 1000, 2)} Mw/hr` : ""}
                   {rackLive?.energy_kwh_24h != null && rackLive.energy_kwh_24h > 0
-                    ? ` · ${formatNumber(rackLive.energy_kwh_24h, 0)} ${fa ? "کیلووات‌ساعت" : "Kilowatt-hour"}`
+                    ? ` · ${formatNumber(rackLive.energy_kwh_24h / 1000, 1)} Mw/day`
                     : ""}
                 </span>
               </header>
@@ -554,11 +554,11 @@ function ElectrolyzerMimic({
         </span>
         <span className="psm-elo-stat is-power">
           <small>{t("monitoring.powerKw")}</small>
-          <b>{formatNumber(block?.power_kw, 0)}</b>
+          <b>{formatNumber(block?.power_kw != null ? block.power_kw / 1000 : null, 2)}</b>
         </span>
         <span className="psm-elo-stat is-energy">
           <small>{t("monitoring.energyKwh24h")}</small>
-          <b>{formatNumber(block?.energy_kwh_24h, 0)}</b>
+          <b>{formatNumber(block?.energy_kwh_24h != null ? block.energy_kwh_24h / 1000 : null, 1)}</b>
         </span>
         <span className="psm-count is-danger">{block?.danger_count ?? 0}</span>
         <span className="psm-count is-warning">{block?.warning_count ?? 0}</span>

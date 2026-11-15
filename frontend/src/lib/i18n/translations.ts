@@ -1,4 +1,4 @@
-﻿// Central translation dictionary. Keys are looked up via dot-path, e.g. t("common.save").
+// Central translation dictionary. Keys are looked up via dot-path, e.g. t("common.save").
 // "fields.*" holds shared field/column labels reused across many pages so that most
 // forms and tables get translated coverage without duplicating strings everywhere.
 
@@ -904,8 +904,8 @@ const en = {
     trainSummary: "{online}/12 online · {cells} cells · {danger} danger · {warning} warning",
     trainPower: "{online}/{total} online · {ka} kA · {mwh} MWh (24 h) · {danger} danger · {warning} warning",
     loadKa: "Load (Kiloampere)",
-    powerKw: "Power (Kilowatt)",
-    energyKwh24h: "Energy 24 hours (Kilowatt-hour)",
+    powerKw: "Power (Mw/hr)",
+    energyKwh24h: "Energy 24 hours (Mw/day)",
     energyKwh30d: "Energy 30 d (kWh)",
     energyKwh: "Energy (kWh)",
     healthTitle: "Cell Health & Lifecycle",
@@ -3972,8 +3972,8 @@ const fa: DeepPartialStrings<typeof en> = {
     trainSummary: "{online}/۱۲ آنلاین · {cells} سلول · {danger} خطر · {warning} هشدار",
     trainPower: "{online}/{total} آنلاین · {ka} کیلوآمپر · {mwh} مگاوات‌ساعت (۲۴ ساعت) · {danger} خطر · {warning} هشدار",
     loadKa: "بار (کیلوآمپر)",
-    powerKw: "توان (کیلووات)",
-    energyKwh24h: "انرژی ۲۴ ساعت (کیلووات‌ساعت)",
+    powerKw: "توان (Mw/hr)",
+    energyKwh24h: "انرژی ۲۴ ساعت (Mw/day)",
     energyKwh30d: "انرژی ۳۰ روز (کیلووات‌ساعت)",
     energyKwh: "انرژی (کیلووات‌ساعت)",
     healthTitle: "سلامت و عمر سلول",

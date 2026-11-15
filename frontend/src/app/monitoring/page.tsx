@@ -474,14 +474,14 @@ function OverviewTab({ onOpenAlerts }: { onOpenAlerts: () => void }) {
         />
         <Kpi
           label={t("monitoring.powerKw")}
-          value={voltage.power_kw != null ? formatNumber(voltage.power_kw, 0) : "—"}
+          value={voltage.power_kw != null ? formatNumber(voltage.power_kw / 1000, 2) : "—"}
           tone="info"
           icon={Zap}
           onClick={() => setFocus(null)}
         />
         <Kpi
           label={t("monitoring.energyKwh24h")}
-          value={voltage.energy_kwh_24h != null ? formatNumber(voltage.energy_kwh_24h, 0) : "—"}
+          value={voltage.energy_kwh_24h != null ? formatNumber(voltage.energy_kwh_24h / 1000, 1) : "—"}
           tone="info"
           icon={Zap}
           onClick={() => setFocus(null)}

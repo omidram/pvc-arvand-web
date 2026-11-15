@@ -299,8 +299,13 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
     });
     if (seq !== matchSeq.current || !found) return;
     const patch: Record<string, unknown> = {};
+    // Typing a location (electrolyzer / position) or membrane type must never swap the element, anode or
+    // cathode that the flow already named; those fields are only filled when still blank.
+    const keepFilled = focus === "electrolyzer" || focus === "position" || focus === "membrane_type";
     const take = (key: string, value: unknown) => {
-      if (value != null && String(value) !== "") patch[key] = String(value);
+      if (value == null || String(value) === "") return;
+      if (keepFilled && key !== focus && text(valuesRef.current[key]).trim() !== "") return;
+      patch[key] = String(value);
     };
     take("element_nr", found.element_nr);
     take("anode_nr", found.anode_nr);
@@ -309,9 +314,24 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
     take("membrane_type", found.membrane_type);
     take("electrolyzer", found.electrolyzer);
     take("position", found.position);
-    if (found.computed_dol_days != null) patch.operation_days = String(found.computed_dol_days);
+    if (found.computed_dol_days != null && !(keepFilled && text(valuesRef.current.operation_days).trim() !== "")) {
+      patch.operation_days = String(found.computed_dol_days);
+    }
     if (Object.keys(patch).length) patchRef.current(patch);
   }
+
+  // Opened from a disassembly (element / anode / cathode already named): fill the electrolyzer, position,
+  // membrane and operation days of that installation so the inspection file is complete.
+  const autoPulled = useRef(false);
+  useEffect(() => {
+    if (autoPulled.current || readOnly || numericId != null) return;
+    const v = valuesRef.current;
+    const focus = ["element_nr", "anode_nr", "cathode_nr"].find((k) => text(v[k]).trim() !== "");
+    if (!focus) return;
+    autoPulled.current = true;
+    void pull(focus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readOnly, numericId]);
 
   function grids(): Record<string, Record<string, unknown>> {
     return (values.__grids as Record<string, Record<string, unknown>> | undefined) || {};
