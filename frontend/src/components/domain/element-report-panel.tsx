@@ -623,7 +623,7 @@ function ManagementBoard({ board }: { board: ElementBoard }) {
         ) : (
           <ul className="er-board-list">
             {board.membranes.items
-              .filter((item) => item.count > 0)
+              .filter((item) => item.count > 0 && item.type && item.type !== "—")
               .map((item, index) => (
                 <li key={`${item.type}-${index}`}>
                   <span className="er-kind is-membrane">M</span>
@@ -881,10 +881,12 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
 
       {data.board ? <PalletBoard pallets={data.board.pallets} /> : null}
 
-      <div className="er-two">
-        <AssemblyStockSummary board={data.board} />
-        {data.workshop ? <ShopSheet sheet={data.workshop} compact={compact} /> : null}
-      </div>
+      {!compact && data.board ? (
+        <div className="er-two">
+          <AssemblyStockSummary board={data.board} />
+          {data.workshop ? <ShopSheet sheet={data.workshop} compact={false} /> : null}
+        </div>
+      ) : null}
 
       {!compact ? (
         <div className="er-parts">

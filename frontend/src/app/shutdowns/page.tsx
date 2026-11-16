@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Suspense, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -126,6 +126,7 @@ function ShutdownMenu() {
           <div className="mb-2 text-[12px] font-bold">{t("menus.input")}</div>
           <div className="access-sunken flex w-[220px] flex-col gap-2">
             <AccessBtn href="/shutdowns?form=list">{t("menus.shutdownList")}</AccessBtn>
+            <AccessBtn href="/shutdowns?form=open">{t("shutdowns.openList")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=reasons">{t("menus.shutdownReasons")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=categories">{t("menus.shutdownCategories")}</AccessBtn>
             <AccessBtn href="/shutdowns?form=trip-causes">{t("menus.tripCause")}</AccessBtn>
@@ -202,7 +203,17 @@ function ComboInput({
   );
 }
 
-function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: string; dateTo?: string; showPeriodFilter?: boolean }) {
+function ShutdownListForm({
+  dateFrom,
+  dateTo,
+  showPeriodFilter,
+  openOnly,
+}: {
+  dateFrom?: string;
+  dateTo?: string;
+  showPeriodFilter?: boolean;
+  openOnly?: boolean;
+}) {
   const { t, locale } = useI18n();
   const { isShamsi } = useCalendar();
   const { canEdit, canViewField } = useAuth();
@@ -217,15 +228,20 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Partial<Shutdown>>({});
   const [query, setQuery] = useState("");
+  const listScrollRef = useRef<HTMLDivElement>(null);
   const months = useMemo(() => recentMonthOptions(isShamsi, locale === "fa"), [isShamsi, locale]);
   const monthKey = months.find((month) => month.from === from && month.to === to)?.key || "";
 
   const listParams = useMemo(() => {
     const params: Record<string, unknown> = { limit: 10000 };
+    if (openOnly) {
+      params.open_only = true;
+      return params;
+    }
     if (from) params.date_from = `${from}T00:00:00`;
     if (to) params.date_to = `${to}T23:59:59`;
     return params;
-  }, [from, to]);
+  }, [from, to, openOnly]);
 
   const { listQuery, createMutation, updateMutation, removeMutation } = useCrudResource<Shutdown>(
     "shutdowns",
@@ -245,8 +261,17 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     queryFn: () => shutdownTypesApi.list({ limit: 200 }),
   });
 
-  // Keep No. in order even if the API order changes; newest stays at the bottom next to the new-row line.
-  const rows = useMemo(() => [...(listQuery.data || [])].sort((a, b) => a.nr - b.nr), [listQuery.data]);
+  // Input and open lists run newest shutdown first. The period view stays chronological.
+  const rows = useMemo(() => {
+    const data = [...(listQuery.data || [])];
+    data.sort((a, b) => {
+      const byTime = showPeriodFilter
+        ? (a.shutdown_time || "").localeCompare(b.shutdown_time || "")
+        : (b.shutdown_time || "").localeCompare(a.shutdown_time || "");
+      return byTime || (showPeriodFilter ? a.nr - b.nr : b.nr - a.nr);
+    });
+    return data;
+  }, [listQuery.data, showPeriodFilter]);
   const causes = causesQuery.data || [];
   const categoryOptions = useMemo(() => {
     const fromTable = (categoriesQuery.data || []).map((c) => c.category || "").filter(Boolean);
@@ -299,10 +324,7 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
   );
   const sheet = useSheetFilters(sheetCols, shown);
   const mainSort = useSort(sheet.shown, SHUTDOWN_SORT);
-  const listed = useMemo(() => {
-    if (mainSort.sort || (!from && !to)) return mainSort.sorted;
-    return [...mainSort.sorted].sort((a, b) => (a.shutdown_time || "").localeCompare(b.shutdown_time || ""));
-  }, [mainSort.sorted, mainSort.sort, from, to]);
+  const listed = mainSort.sorted;
   const totalMins = listed.reduce((sum, r) => sum + (durationMinutes(r) ?? 0), 0);
   const totalHm = `${Math.floor(totalMins / 60)}:${String(totalMins % 60).padStart(2, "0")}`;
 
@@ -310,8 +332,37 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
     return canViewField("shutdowns", field);
   }
 
+  function textFilled(value: string | null | undefined) {
+    return Boolean((value || "").trim());
+  }
+
+  function shutdownSaveError(row: Partial<Shutdown>): string | null {
+    const part = plantPartValue(row.plant_part);
+    if (!part) return t("shutdowns.needPlant");
+    if (!row.shutdown_time) return t("shutdowns.needTime");
+    if (!textFilled(row.shutdown_type)) return t("shutdowns.needType");
+    if (!textFilled(row.code) && !textFilled(row.cause)) return t("shutdowns.needCode");
+    if (row.ka_before_trip == null || Number.isNaN(Number(row.ka_before_trip))) return t("shutdowns.needKaBefore");
+    if (row.startup_time && row.shutdown_time && row.startup_time < row.shutdown_time) return t("shutdowns.startBeforeStop");
+    if (row.startup_time && (row.ka_after_trip == null || Number.isNaN(Number(row.ka_after_trip)))) return t("shutdowns.needKaAfter");
+    if (!row.startup_time) {
+      const key = part.toLowerCase();
+      const clash = rows.find(
+        (item) => item.nr !== row.nr && !item.startup_time && plantPartValue(item.plant_part).toLowerCase() === key
+      );
+      if (clash) return t("shutdowns.alreadyOpen", { part, nr: clash.nr });
+    }
+    return null;
+  }
+
   function saveRow(row: Shutdown, patch: Partial<Shutdown>, done?: () => void) {
     if (!editable) return;
+    const next = { ...row, ...patch };
+    const message = shutdownSaveError(next);
+    if (message) {
+      setSaveError(message);
+      return;
+    }
     setSaveError(null);
     updateMutation.mutate(
       {
@@ -372,16 +423,13 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
 
   function createNew() {
     if (!editable) return;
-    if (!draft.plant_part || !draft.shutdown_time) {
-      setSaveError(t("shutdowns.plantTimeRequired"));
-      return;
-    }
-    if (draft.startup_time && draft.startup_time < draft.shutdown_time) {
-      setSaveError(t("shutdowns.startBeforeStop"));
+    const message = shutdownSaveError(draft);
+    if (message) {
+      setSaveError(message);
       return;
     }
     setSaveError(null);
-    const day = draft.shutdown_time.slice(0, 10);
+    const day = (draft.shutdown_time || "").slice(0, 10);
     createMutation.mutate(
       {
         plant_part: draft.plant_part || null,
@@ -411,18 +459,26 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
 
   return (
     <AccessHub helpKey="shutdowns"
-      title={showPeriodFilter ? t("shutdowns.periodTitle") : t("menus.shutdownList")}
+      title={showPeriodFilter ? t("shutdowns.periodTitle") : openOnly ? t("shutdowns.openList") : t("menus.shutdownList")}
       titleBlue
       backHref="/shutdowns"
       backLabel={t("mainMenu.shutDown")}
       extraButtons={
         <>
           <ExportButtons prefix="/shutdowns" params={listParams} filenameBase="shutdowns" />
+          {editable && !openOnly ? (
+            <AccessBtn href="/shutdowns?form=open">{t("shutdowns.openList")}</AccessBtn>
+          ) : null}
+          {editable && openOnly ? (
+            <AccessBtn href="/shutdowns?form=list">{t("shutdowns.showAll")}</AccessBtn>
+          ) : null}
           {editable ? (
             <AccessBtn
               onClick={() => {
                 setActive("new");
+                setEditing(null);
                 setDraft({ shutdown_time: nowLocalApi() });
+                listScrollRef.current?.scrollTo({ top: 0 });
               }}
             >
               + {t("menus.shutdownList")}
@@ -434,6 +490,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
       <PlantBar />
       <div className="shutdown-list-toolbar mb-3 flex flex-wrap items-end justify-between gap-3 text-[12px]">
         <div className="flex flex-wrap items-end gap-3">
+          {openOnly ? null : (
+          <>
           <label className="flex flex-col gap-1">
             <span>{t("shutdowns.month")}</span>
             <select
@@ -466,6 +524,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
             <span>{t("menus.till")}</span>
             <DateInput className="access-inset-field" value={to} onChange={(e) => setTo(e.target.value)} />
           </label>
+          </>
+          )}
           <label className="flex flex-col gap-1">
             <span>{t("common.search")}</span>
             <input className="access-inset-field w-52" value={query} onChange={(e) => setQuery(e.target.value)} />
@@ -475,7 +535,8 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
           {t("shutdowns.totalDuration")}: {totalHm} &nbsp;·&nbsp; {t("shutdowns.totalShutdowns")}: {listed.length}
         </div>
       </div>
-      <div className="overflow-auto shutdown-list-scroll">
+      {openOnly ? <p className="mb-2 text-[12px]">{t("shutdowns.openHint")}</p> : null}
+      <div className="overflow-auto shutdown-list-scroll" ref={listScrollRef}>
         <table className="access-cont-table shutdown-list-table min-w-[1600px]">
           <thead>
             <tr>
@@ -572,6 +633,150 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
             </tr>
           </thead>
           <tbody>
+            {editable && active === "new" ? (
+              <tr className="is-active-row">
+                <td className="access-selector">*</td>
+                <td>
+                  <input className="w-12" value="*" readOnly tabIndex={-1} />
+                </td>
+                {fieldVisible("plant_part") ? (
+                  <td>
+                    <ElectrolyzerCombo
+                      variant="access"
+                      className="w-full min-w-[4rem]"
+                      plainOptions={PLANT_SCOPES}
+                      value={plantPartValue(draft.plant_part)}
+                      onChange={(v) => setDraft((d) => ({ ...d, plant_part: plantPartValue(v) || null }))}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("shutdown_time") ? (
+                  <td className="sd-stamp">
+                    <DateInput
+                      type="datetime-local"
+                      className="w-full min-w-[108px] tabular-nums"
+                      value={toLocalInput(draft.shutdown_time)}
+                      onChange={(e) => setDraft((d) => ({ ...d, shutdown_time: toApiDateTime(e.target.value) }))}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("startup_time") ? (
+                  <td className="sd-stamp">
+                    <DateInput
+                      type="datetime-local"
+                      className="w-full min-w-[108px] tabular-nums"
+                      value={toLocalInput(draft.startup_time)}
+                      onChange={(e) => setDraft((d) => ({ ...d, startup_time: toApiDateTime(e.target.value) }))}
+                    />
+                  </td>
+                ) : null}
+                <td>
+                  <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(draft)} readOnly tabIndex={-1} />
+                </td>
+                <td>
+                  <ComboInput
+                    listId="sd-type-new"
+                    options={typeOptions}
+                    value={draft.shutdown_type || ""}
+                    onChange={(v) => setDraft((d) => ({ ...d, shutdown_type: v || null }))}
+                  />
+                </td>
+                {fieldVisible("code") ? (
+                  <td>
+                    <ComboInput
+                      listId="sd-code-new"
+                      options={codeOptions}
+                      value={draft.code || ""}
+                      className="w-14"
+                      onChange={(v) => applyCode(null, v, true)}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("cause") ? (
+                  <td>
+                    <ComboInput
+                      listId="sd-cause-new"
+                      options={causeOptions}
+                      value={draft.cause || ""}
+                      onChange={(v) => applyCause(null, v, true)}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("ka_before_trip") ? (
+                  <td>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-20 text-center tabular-nums"
+                      value={draft.ka_before_trip ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, ka_before_trip: e.target.value === "" ? null : Number(e.target.value) }))
+                      }
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("ka_after_trip") ? (
+                  <td>
+                    <input
+                      type="number"
+                      step="0.01"
+                      className="w-20 text-center tabular-nums"
+                      value={draft.ka_after_trip ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, ka_after_trip: e.target.value === "" ? null : Number(e.target.value) }))
+                      }
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("lost_load") ? (
+                  <td>
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, cl2Factor)} readOnly tabIndex={-1} title={`Chlorine lost = KA × ${cl2Factor} × Duration (h)`} />
+                  </td>
+                ) : null}
+                {fieldVisible("lost_production") ? (
+                  <td>
+                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, naohFactor)} readOnly tabIndex={-1} title={`NaOH lost = KA × ${naohFactor} × Duration (h)`} />
+                  </td>
+                ) : null}
+                {fieldVisible("mtbf_days") ? (
+                  <td>
+                    <input
+                      type="number"
+                      step="0.1"
+                      className="w-20 text-center tabular-nums"
+                      value={draft.mtbf_days ?? ""}
+                      onChange={(e) =>
+                        setDraft((d) => ({ ...d, mtbf_days: e.target.value === "" ? null : Number(e.target.value) }))
+                      }
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("category") ? (
+                  <td>
+                    <ComboInput
+                      listId="sd-cat-new"
+                      options={categoryOptions}
+                      value={draft.category || ""}
+                      onChange={(v) => setDraft((d) => ({ ...d, category: v || null }))}
+                    />
+                  </td>
+                ) : null}
+                {fieldVisible("remarks") ? (
+                  <td>
+                    <input
+                      className="w-full"
+                      value={draft.remarks || ""}
+                      onChange={(e) => setDraft((d) => ({ ...d, remarks: e.target.value || null }))}
+                    />
+                  </td>
+                ) : null}
+                <td>
+                  <button type="button" className="access-btn text-[11px]" onClick={createNew} disabled={createMutation.isPending}>
+                    {t("common.save")}
+                  </button>
+                </td>
+              </tr>
+            ) : null}
             {listed.map((row) => {
               const open = editing === row.nr;
               const src = (open ? { ...row, ...editDraft } : row) as Shutdown;
@@ -777,150 +982,6 @@ function ShutdownListForm({ dateFrom, dateTo, showPeriodFilter }: { dateFrom?: s
               </tr>
               );
             })}
-            {editable && active === "new" ? (
-              <tr className="is-active-row">
-                <td className="access-selector">*</td>
-                <td>
-                  <input className="w-12" value="*" readOnly tabIndex={-1} />
-                </td>
-                {fieldVisible("plant_part") ? (
-                  <td>
-                    <ElectrolyzerCombo
-                      variant="access"
-                      className="w-full min-w-[4rem]"
-                      plainOptions={PLANT_SCOPES}
-                      value={plantPartValue(draft.plant_part)}
-                      onChange={(v) => setDraft((d) => ({ ...d, plant_part: plantPartValue(v) || null }))}
-                    />
-                  </td>
-                ) : null}
-                {fieldVisible("shutdown_time") ? (
-                  <td className="sd-stamp">
-                    <DateInput
-                      type="datetime-local"
-                      className="w-full min-w-[108px] tabular-nums"
-                      value={toLocalInput(draft.shutdown_time)}
-                      onChange={(e) => setDraft((d) => ({ ...d, shutdown_time: toApiDateTime(e.target.value) }))}
-                    />
-                  </td>
-                ) : null}
-                {fieldVisible("startup_time") ? (
-                  <td className="sd-stamp">
-                    <DateInput
-                      type="datetime-local"
-                      className="w-full min-w-[108px] tabular-nums"
-                      value={toLocalInput(draft.startup_time)}
-                      onChange={(e) => setDraft((d) => ({ ...d, startup_time: toApiDateTime(e.target.value) }))}
-                    />
-                  </td>
-                ) : null}
-                <td>
-                  <input className="w-20 text-center font-semibold tabular-nums" value={durationHm(draft)} readOnly tabIndex={-1} />
-                </td>
-                <td>
-                  <ComboInput
-                    listId="sd-type-new"
-                    options={typeOptions}
-                    value={draft.shutdown_type || ""}
-                    onChange={(v) => setDraft((d) => ({ ...d, shutdown_type: v || null }))}
-                  />
-                </td>
-                {fieldVisible("code") ? (
-                  <td>
-                    <ComboInput
-                      listId="sd-code-new"
-                      options={codeOptions}
-                      value={draft.code || ""}
-                      className="w-14"
-                      onChange={(v) => applyCode(null, v, true)}
-                    />
-                  </td>
-                ) : null}
-                {fieldVisible("cause") ? (
-                  <td>
-                    <ComboInput
-                      listId="sd-cause-new"
-                      options={causeOptions}
-                      value={draft.cause || ""}
-                      onChange={(v) => applyCause(null, v, true)}
-                    />
-                  </td>
-                ) : null}
-                {fieldVisible("ka_before_trip") ? (
-                  <td>
-                    <input
-                      type="number"
-                      step="0.01"
-                      className="w-20 text-center tabular-nums"
-                      value={draft.ka_before_trip ?? ""}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, ka_before_trip: e.target.value === "" ? null : Number(e.target.value) }))
-                      }
-                    />
-                  </td>
-                ) : null}
-                {fieldVisible("ka_after_trip") ? (
-                  <td>
-                    <input
-                      type="number"
-                      step="0.01"
-                      className="w-20 text-center tabular-nums"
-                      value={draft.ka_after_trip ?? ""}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, ka_after_trip: e.target.value === "" ? null : Number(e.target.value) }))
-                      }
-                    />
-                  </td>
-                ) : null}
-                {fieldVisible("lost_load") ? (
-                  <td>
-                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, cl2Factor)} readOnly tabIndex={-1} title={`Chlorine lost = KA × ${cl2Factor} × Duration (h)`} />
-                  </td>
-                ) : null}
-                {fieldVisible("lost_production") ? (
-                  <td>
-                    <input className="w-24 text-center tabular-nums" value={lostFmt(draft as Shutdown, naohFactor)} readOnly tabIndex={-1} title={`NaOH lost = KA × ${naohFactor} × Duration (h)`} />
-                  </td>
-                ) : null}
-                {fieldVisible("mtbf_days") ? (
-                  <td>
-                    <input
-                      type="number"
-                      step="0.1"
-                      className="w-20 text-center tabular-nums"
-                      value={draft.mtbf_days ?? ""}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, mtbf_days: e.target.value === "" ? null : Number(e.target.value) }))
-                      }
-                    />
-                  </td>
-                ) : null}
-                {fieldVisible("category") ? (
-                  <td>
-                    <ComboInput
-                      listId="sd-cat-new"
-                      options={categoryOptions}
-                      value={draft.category || ""}
-                      onChange={(v) => setDraft((d) => ({ ...d, category: v || null }))}
-                    />
-                  </td>
-                ) : null}
-                {fieldVisible("remarks") ? (
-                  <td>
-                    <input
-                      className="w-full"
-                      value={draft.remarks || ""}
-                      onChange={(e) => setDraft((d) => ({ ...d, remarks: e.target.value || null }))}
-                    />
-                  </td>
-                ) : null}
-                <td>
-                  <button type="button" className="access-btn text-[11px]" onClick={createNew} disabled={createMutation.isPending}>
-                    {t("common.save")}
-                  </button>
-                </td>
-              </tr>
-            ) : null}
           </tbody>
         </table>
       </div>
@@ -1342,6 +1403,7 @@ function ShutdownsInner() {
   if (form === "trip-causes") return <TripCausesForm />;
   if (form === "categories") return <CategoriesForm />;
   if (form === "period") return <ShutdownListForm showPeriodFilter />;
+  if (form === "open") return <ShutdownListForm openOnly />;
   if (form === "summary-reason") return <SummaryForm groupBy="reason" title={t("shutdowns.summaryReasonTitle")} />;
   if (form === "summary-category") return <SummaryForm groupBy="category" title={t("shutdowns.summaryCategoryTitle")} />;
   if (form === "summary-trip") return <SummaryForm groupBy="cause" title={t("shutdowns.summaryTripTitle")} />;

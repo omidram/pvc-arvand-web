@@ -199,7 +199,9 @@ def rows_to_dicts(items: list, fields: list[str]) -> list[dict[str, Any]]:
     for item in items:
         row = {}
         for f in fields:
-            row[f] = _cell_value(getattr(item, f, None))
+            # Keep real dates here. Jalali text is applied when the file is written,
+            # after the date filter has compared the original values.
+            row[f] = getattr(item, f, None) if not isinstance(item, dict) else item.get(f)
         out.append(row)
     return out
 
@@ -284,7 +286,7 @@ def export_pdf(rows: list[dict[str, Any]], fields: list[str], title: str) -> Str
 
     data = [[_p(f, header_style) for f in fields]]
     for row in rows:
-        data.append([_p("" if row.get(f) is None else row.get(f), cell_style) for f in fields])
+        data.append([_p("" if _cell_value(row.get(f)) in (None, "") else _cell_value(row.get(f)), cell_style) for f in fields])
     table = Table(data, repeatRows=1)
     table.setStyle(
         TableStyle(

@@ -77,6 +77,7 @@ def list_shutdowns(
     q: str | None = Query(default=None),
     date_from: datetime | None = Query(default=None),
     date_to: datetime | None = Query(default=None),
+    open_only: bool = Query(default=False),
     skip: int = 0,
     limit: int = Query(default=5000, le=20000),
     db: Session = Depends(get_db),
@@ -87,7 +88,9 @@ def list_shutdowns(
         query = query.filter(
             or_(models.Shutdown.plant_part.ilike(like), models.Shutdown.cause.ilike(like), models.Shutdown.category.ilike(like))
         )
-    if date_from is not None or date_to is not None:
+    if open_only:
+        query = query.filter(models.Shutdown.startup_time.is_(None))
+    elif date_from is not None or date_to is not None:
         def in_window(column):
             parts = []
             if date_from is not None:
@@ -113,10 +116,11 @@ def export_shutdowns_xlsx(
     q: str | None = None,
     date_from: datetime | None = None,
     date_to: datetime | None = None,
+    open_only: bool = False,
     filters: ExportFilters = Depends(),
     db: Session = Depends(get_db),
 ):
-    items = list_shutdowns(q=q, date_from=date_from, date_to=date_to, limit=20000, db=db)
+    items = list_shutdowns(q=q, date_from=date_from, date_to=date_to, open_only=open_only, limit=20000, db=db)
     rows = rows_to_dicts(items, SHUTDOWN_EXPORT_FIELDS)
     rows, fields = filters.apply(rows, SHUTDOWN_EXPORT_FIELDS)
     return export_xlsx(rows, fields, "shutdowns")
@@ -127,10 +131,11 @@ def export_shutdowns_pdf(
     q: str | None = None,
     date_from: datetime | None = None,
     date_to: datetime | None = None,
+    open_only: bool = False,
     filters: ExportFilters = Depends(),
     db: Session = Depends(get_db),
 ):
-    items = list_shutdowns(q=q, date_from=date_from, date_to=date_to, limit=2000, db=db)
+    items = list_shutdowns(q=q, date_from=date_from, date_to=date_to, open_only=open_only, limit=2000, db=db)
     rows = rows_to_dicts(items, SHUTDOWN_EXPORT_FIELDS)
     rows, fields = filters.apply(rows, SHUTDOWN_EXPORT_FIELDS)
     return export_pdf(rows, fields, "shutdowns")
@@ -175,14 +180,55 @@ def get_shutdown(nr: int, db: Session = Depends(get_db)):
     return _enrich(obj)
 
 
+def _plant_key(value: str | None) -> str:
+    """Same part written as A1 or 1A is one key, so a second open trip cannot slip through."""
+    raw = (value or "").strip()
+    if not raw:
+        return ""
+    compact = raw.upper().replace(" ", "")
+    letters = set("ABCDEFGHJKLM")
+    if len(compact) == 2 and compact[0] in letters and compact[1] in "12":
+        return compact
+    if len(compact) == 2 and compact[1] in letters and compact[0] in "12":
+        return f"{compact[1]}{compact[0]}"
+    return raw.casefold()
+
+
 def _validate(obj: models.Shutdown) -> None:
-    """Same rules as the Access form: a trip needs a plant part and a shutdown time; start-up cannot precede it."""
+    """A new trip needs the operator fields. Duration, lost load and MTBF stay calculated."""
     if not (obj.plant_part or "").strip():
-        raise HTTPException(status_code=422, detail="Plant part is required.")
+        raise HTTPException(status_code=422, detail="Part of plant is required.")
     if obj.shutdown_time is None:
         raise HTTPException(status_code=422, detail="Shutdown time is required.")
+    if not (obj.shutdown_type or "").strip():
+        raise HTTPException(status_code=422, detail="Shutdown type is required.")
+    if not (obj.code or "").strip() and not (obj.cause or "").strip():
+        raise HTTPException(status_code=422, detail="Enter a code or a trip cause.")
+    if obj.ka_before_trip is None:
+        raise HTTPException(status_code=422, detail="KA before the trip is required.")
     if obj.startup_time is not None and obj.startup_time < obj.shutdown_time:
         raise HTTPException(status_code=422, detail="Start-up time cannot be before the shutdown time.")
+    if obj.startup_time is not None and obj.ka_after_trip is None:
+        raise HTTPException(status_code=422, detail="KA after start is required once the start-up time is filled.")
+
+
+def _reject_second_open(db: Session, obj: models.Shutdown) -> None:
+    """One open shutdown per plant part until that row has a start-up time."""
+    if obj.startup_time is not None:
+        return
+    key = _plant_key(obj.plant_part)
+    if not key:
+        return
+    query = db.query(models.Shutdown).filter(models.Shutdown.startup_time.is_(None))
+    if obj.nr is not None:
+        query = query.filter(models.Shutdown.nr != obj.nr)
+    others = query.all()
+    clash = next((row for row in others if _plant_key(row.plant_part) == key), None)
+    if clash is not None:
+        raise HTTPException(
+            status_code=422,
+            detail=f"{obj.plant_part} already has an open shutdown (No. {clash.nr}). Enter its start-up time before adding another.",
+        )
 
 
 def _fill_from_code(db: Session, obj: models.Shutdown) -> None:
@@ -240,6 +286,7 @@ def _sync_lookups(db: Session, obj: models.Shutdown) -> None:
 def create_shutdown(payload: schemas.ShutdownBase, db: Session = Depends(get_db)):
     obj = models.Shutdown(**payload.model_dump())
     _validate(obj)
+    _reject_second_open(db, obj)
     _sync_lookups(db, obj)
     db.add(obj)
     db.flush()
@@ -256,8 +303,8 @@ def update_shutdown(nr: int, payload: schemas.ShutdownBase, db: Session = Depend
         raise HTTPException(status_code=404, detail="Not found")
     for key, value in payload.model_dump(exclude_unset=True).items():
         setattr(obj, key, value)
-    if obj.shutdown_time and obj.startup_time and obj.startup_time < obj.shutdown_time:
-        raise HTTPException(status_code=422, detail="Start-up time cannot be before the shutdown time.")
+    _validate(obj)
+    _reject_second_open(db, obj)
     _sync_lookups(db, obj)
     _apply_trip_metrics(db, obj)
     db.commit()

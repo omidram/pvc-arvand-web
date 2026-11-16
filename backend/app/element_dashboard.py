@@ -1440,9 +1440,12 @@ def management_board(
             "items": [
                 {"type": name, "count": n}
                 for name, n in sorted(
-                    __import__("collections").Counter((r.get("membrane_type") or "").strip() or "—" for r in stock).items(),
+                    __import__("collections").Counter(
+                        (r.get("membrane_type") or "").strip() for r in stock if (r.get("membrane_type") or "").strip()
+                    ).items(),
                     key=lambda kv: (-kv[1], kv[0]),
                 )
+                if n > 0
             ],
             "shown": len({(r.get("membrane_type") or "").strip() or "—" for r in stock}),
         },
@@ -1645,7 +1648,7 @@ def workshop_inventory(
         "membrane_stock": len(stock_mem),
         "membrane_used": _membrane_used(db),
         "membrane_store": _membrane_store(db),
-        "membrane_types": [{"type": name, "count": n} for name, n in by_type.most_common(12)],
+        "membrane_types": [{"type": name, "count": n} for name, n in by_type.most_common() if n > 0 and name and name != "—"],
     }
 
 

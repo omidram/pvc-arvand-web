@@ -66,6 +66,10 @@ export function ExportExcelDialog({ open, prefix, params, columnHints, onClose, 
         setSelected(new Set(fields));
         const dates = data.date_fields.length ? data.date_fields : fields.filter((f) => f.toLowerCase().includes("date"));
         setDateField(dates[0] ?? "");
+        const pageFrom = typeof params?.date_from === "string" ? params.date_from.slice(0, 10) : "";
+        const pageTo = typeof params?.date_to === "string" ? params.date_to.slice(0, 10) : "";
+        if (pageFrom) setDateFrom(pageFrom);
+        if (pageTo) setDateTo(pageTo);
       })
       .catch(() => {
         if (cancelled) return;
@@ -80,7 +84,7 @@ export function ExportExcelDialog({ open, prefix, params, columnHints, onClose, 
     return () => {
       cancelled = true;
     };
-  }, [open, prefix, metaParams, columnHints]);
+  }, [open, prefix, metaParams, columnHints, params]);
 
   const fields = meta?.fields.length ? meta.fields : (columnHints ?? []).map((c) => c.key);
   const dateFields = meta?.date_fields.length
