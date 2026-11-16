@@ -23,6 +23,7 @@ export function ExportButtons({
   filenameBase,
   allowImport = true,
   exportColumns,
+  prepare,
 }: {
   prefix: string;
   params?: Record<string, unknown>;
@@ -30,6 +31,8 @@ export function ExportButtons({
   allowImport?: boolean;
   /** Optional column labels when export.meta is unavailable. */
   exportColumns?: ExportColumnOption[];
+  /** Runs before the download. May save a new form and return its id. */
+  prepare?: () => Promise<Record<string, unknown> | void>;
 }) {
   const { t } = useI18n();
   const { isAdmin } = useAuth();
@@ -45,11 +48,12 @@ export function ExportButtons({
     setBusy(format);
     setNote("");
     try {
+      const ready = (await prepare?.()) || {};
       const filterParams = format === "xlsx" && excelOptions ? buildExportQueryParams(excelOptions) : {};
       await downloadExport(
         prefix,
         format,
-        { ...params, ...filterParams },
+        { ...params, ...ready, ...filterParams },
         filenameBase ? `${filenameBase}.${format}` : undefined
       );
     } catch (err) {

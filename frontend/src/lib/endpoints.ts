@@ -613,12 +613,27 @@ export async function downloadExport(
     const response = await apiClient.get(`${prefix}/export.${format}`, { params, responseType: "blob" });
     data = response.data;
   } catch (err) {
-    const payload = (err as { response?: { data?: Blob } }).response?.data;
-    if (payload instanceof Blob) {
-      const text = await payload.text();
+    const payload: unknown = (err as { response?: { data?: unknown } }).response?.data;
+    let text = "";
+    if (payload instanceof Blob) text = await payload.text();
+    else if (typeof payload === "string") text = payload;
+    else if (payload instanceof ArrayBuffer) text = new TextDecoder().decode(payload);
+    if (text) {
       try {
         const parsed = JSON.parse(text) as { detail?: unknown };
-        if (typeof parsed.detail === "string" && parsed.detail) throw new Error(parsed.detail);
+        const detail = parsed.detail;
+        const message =
+          typeof detail === "string"
+            ? detail
+            : Array.isArray(detail)
+              ? detail
+                  .map((item) =>
+                    typeof item === "string" ? item : item && typeof item === "object" && "msg" in item ? String(item.msg) : ""
+                  )
+                  .filter(Boolean)
+                  .join(" ")
+              : "";
+        if (message) throw new Error(message);
       } catch (inner) {
         if (inner instanceof Error && inner.message !== "Unexpected token" && !inner.message.startsWith("Unexpected")) throw inner;
       }

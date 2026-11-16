@@ -163,7 +163,7 @@ def filled_form(**over):
     return body
 
 bare = client.post("/inspections", json={"element_nr": "301", "anode_nr": "A-1", "cathode_nr": "K-1"})
-assert bare.status_code == 422 and "Signature" in bare.json()["detail"], bare.text
+assert bare.status_code == 422 and "date" in bare.json()["detail"].lower(), bare.text
 rep = ok(client.post("/inspections", json=filled_form(element_nr="301", anode_nr="A-1", cathode_nr="K-1")), 201)
 done = ok(client.get(f"/workflow/inspection/{req['id']}"))
 assert done["report"]["id"] == rep["id"] and done["status"] == "await_inspection", done

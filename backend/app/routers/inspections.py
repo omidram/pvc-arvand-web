@@ -30,8 +30,7 @@ def _require_filled(obj: models.InspectionReport) -> None:
     if missing:
         raise HTTPException(
             status_code=422,
-            detail="The inspection form cannot be saved until it is filled through the signature. Missing: "
-            + ", ".join(missing),
+            detail="Enter the inspection date before saving.",
         )
 
 
@@ -63,15 +62,23 @@ def _drop_route(app_router: APIRouter, path_suffix: str, method: str = "GET") ->
     app_router.routes[:] = kept
 
 
-def _grids_map(db: Session, element_nr: str | None) -> dict[str, dict]:
-    if not element_nr:
-        return {}
-    rows = db.query(models.InspectionHalfshellGrid).filter(models.InspectionHalfshellGrid.element_nr == element_nr).all()
+def _grid_key(inspection: models.InspectionReport) -> str:
+    """Maps belong to the element. A form saved with only a date keeps its own map."""
+    key = (inspection.element_nr or "").strip()
+    return key or f"inspection:{inspection.id}"
+
+
+def _grids_for(db: Session, inspection: models.InspectionReport):
+    return db.query(models.InspectionHalfshellGrid).filter(models.InspectionHalfshellGrid.element_nr == _grid_key(inspection))
+
+
+def _grids_map(db: Session, inspection: models.InspectionReport) -> dict[str, dict]:
+    rows = _grids_for(db, inspection).all()
     return {row.grid_type: (row.grid_data or {}) for row in rows}
 
 
 def _pack(db: Session, items: list[models.InspectionReport]):
-    return [(item, _grids_map(db, item.element_nr)) for item in items]
+    return [(item, _grids_map(db, item)) for item in items]
 
 
 _drop_route(router, "/export.pdf")
@@ -96,7 +103,7 @@ def export_inspection_xlsx(
     item = db.query(models.InspectionReport).filter(models.InspectionReport.id == id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Inspection not found")
-    return inspection_form_xlsx(item, _grids_map(db, item.element_nr))
+    return inspection_form_xlsx(item, _grids_map(db, item))
 
 
 @router.get("/export.pdf", include_in_schema=False)
@@ -125,11 +132,7 @@ def list_grids(inspection_id: int, db: Session = Depends(get_db)):
     inspection = db.query(models.InspectionReport).filter(models.InspectionReport.id == inspection_id).first()
     if not inspection:
         raise HTTPException(status_code=404, detail="Inspection not found")
-    return (
-        db.query(models.InspectionHalfshellGrid)
-        .filter(models.InspectionHalfshellGrid.element_nr == inspection.element_nr)
-        .all()
-    )
+    return _grids_for(db, inspection).all()
 
 
 @grids_router.put("/{grid_type}", response_model=schemas.InspectionHalfshellGridRead)
@@ -139,16 +142,9 @@ def upsert_grid(inspection_id: int, grid_type: str, payload: dict, db: Session =
     inspection = db.query(models.InspectionReport).filter(models.InspectionReport.id == inspection_id).first()
     if not inspection:
         raise HTTPException(status_code=404, detail="Inspection not found")
-    grid = (
-        db.query(models.InspectionHalfshellGrid)
-        .filter(
-            models.InspectionHalfshellGrid.element_nr == inspection.element_nr,
-            models.InspectionHalfshellGrid.grid_type == grid_type,
-        )
-        .first()
-    )
+    grid = _grids_for(db, inspection).filter(models.InspectionHalfshellGrid.grid_type == grid_type).first()
     if not grid:
-        grid = models.InspectionHalfshellGrid(element_nr=inspection.element_nr, grid_type=grid_type, grid_data={})
+        grid = models.InspectionHalfshellGrid(element_nr=_grid_key(inspection), grid_type=grid_type, grid_data={})
         db.add(grid)
     grid.grid_data = payload
     db.commit()

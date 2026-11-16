@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId, useMemo } from "react";
 
 /** CZ-03 Uhde grid: rows A–M skipping I, columns 18→1. One empty cell frames every side. */
 const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M"] as const;
@@ -18,6 +18,11 @@ function cellKey(row: string, col: number) {
   return `${row}${col}`;
 }
 
+/** Frame cells sit outside A–M / 1–18. Keys never collide with A18-style codes. */
+function padKey(band: number, slot: number) {
+  return `p${band}-${slot}`;
+}
+
 type Props = {
   value: Record<string, unknown>;
   onChange: (next: Record<string, unknown>) => void;
@@ -30,6 +35,7 @@ type Props = {
 };
 
 export function InspectionDefectGrid({ value, onChange, disabled, title, legend = true, dense = false }: Props) {
+  const listId = useId().replace(/:/g, "");
   const map = useMemo(() => {
     const out: Record<string, string> = {};
     for (const [k, v] of Object.entries(value || {})) {
@@ -48,36 +54,57 @@ export function InspectionDefectGrid({ value, onChange, disabled, title, legend 
   }
 
   const filled = Object.keys(map).length;
-  const padCount = COLS.length + 2;
+  const slots = COLS.length + 3;
   const cell = dense
     ? "box-border h-[18px] w-full border border-[#111] bg-white p-0 text-center text-[9px] font-bold text-[#111]"
     : "box-border h-[18px] w-full border border-[#a0a0a0] bg-white p-0 text-center text-[9px] font-bold";
   const head = dense ? "p-0 text-center text-[9px] font-bold text-[#111]" : "p-0.5 text-center font-normal text-[var(--win-muted)]";
 
-  function pad(key: string) {
-    return <td key={key} className="p-0"><div className={`${cell} insp-pad`} /></td>;
+  function frameCell(band: number, slot: number) {
+    const key = padKey(band, slot);
+    const code = map[key] || "";
+    return (
+      <td key={key} className="p-0">
+        <input
+          className={`${cell} insp-pad`}
+          aria-label={key}
+          title={code ? `${code} — w, pm, vh, T, or any text` : "w, pm, vh, T, or any text"}
+          disabled={disabled}
+          list={listId}
+          value={code}
+          onChange={(e) => writeCell(key, e.target.value)}
+          style={CODE_COLORS[code] ? { background: CODE_COLORS[code] } : undefined}
+        />
+      </td>
+    );
   }
 
   return (
     <div className={legend ? "space-y-1" : undefined}>
       {title ? <div className="text-[11px] font-bold">{title}</div> : null}
       <div className="overflow-x-auto">
+        <datalist id={listId}>
+          <option value="w" />
+          <option value="pm" />
+          <option value="vh" />
+          <option value="T" />
+        </datalist>
         <table className="w-full border-collapse text-[9px] leading-none">
           <tbody>
-            <tr>{Array.from({ length: padCount + 1 }, (_, i) => pad(`top-${i}`))}</tr>
+            <tr>{Array.from({ length: slots }, (_, slot) => frameCell(0, slot))}</tr>
             <tr>
-              {pad("head-l")}
-              <th className={head} />
+              {frameCell(1, 0)}
+              {frameCell(1, 1)}
               {COLS.map((c) => (
                 <th key={c} className={head}>
                   {c}
                 </th>
               ))}
-              {pad("head-r")}
+              {frameCell(1, slots - 1)}
             </tr>
-            {ROWS.map((row) => (
+            {ROWS.map((row, rowIndex) => (
               <tr key={row}>
-                {pad(`${row}-l`)}
+                {frameCell(rowIndex + 2, 0)}
                 <td className={head}>{row}</td>
                 {COLS.map((col) => {
                   const key = cellKey(row, col);
@@ -108,10 +135,10 @@ export function InspectionDefectGrid({ value, onChange, disabled, title, legend 
                     </td>
                   );
                 })}
-                {pad(`${row}-r`)}
+                {frameCell(rowIndex + 2, slots - 1)}
               </tr>
             ))}
-            <tr>{Array.from({ length: padCount + 1 }, (_, i) => pad(`bot-${i}`))}</tr>
+            <tr>{Array.from({ length: slots }, (_, slot) => frameCell(14, slot))}</tr>
           </tbody>
         </table>
       </div>

@@ -95,9 +95,12 @@ function InspectionsWorkspace() {
       );
       await queryClient.invalidateQueries({ queryKey: ["inspections"] });
       await queryClient.invalidateQueries({ queryKey: ["inspection-grids", saved.id] });
+      return saved;
     } catch (err) {
       const detail = saveError(err);
-      await appAlert(detail ? `${t("inspections.saveFailed")} ${detail}` : t("inspections.saveFailed"));
+      const text = detail ? `${t("inspections.saveFailed")} ${detail}` : t("inspections.saveFailed");
+      await appAlert(text);
+      throw new Error(text);
     } finally {
       setSaving(false);
     }
@@ -124,6 +127,7 @@ function InspectionsWorkspace() {
       onDelete={(id) => removeMutation.mutate(id)}
       confirmDelete={(row) => t("inspections.confirmDelete", { nr: row.element_nr })}
       exportPrefix="/inspections"
+      exportSavesNew
       filenameBase="inspections"
       formBody={(ctx) => (
         <InspectionSheet

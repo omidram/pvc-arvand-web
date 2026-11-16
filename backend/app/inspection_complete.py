@@ -1,8 +1,6 @@
-"""Element Inspection (CZ-03) may be stored only when it is filled through the signature.
+"""Element Inspection (CZ-03) can be stored when the inspection date is filled.
 
-Defect grids and free remarks stay optional: an empty grid cell is "no mark", and
-Remarks / Deposits may be blank. A yes/no line counts as filled when its note has
-text or its OK flag is set. Keep the same list in frontend inspection-sheet.tsx.
+Every other line, the signature and the defect grids stay optional.
 """
 from typing import Any
 
@@ -75,14 +73,7 @@ def _filled(value: Any) -> bool:
 
 
 def missing_inspection_labels(data: Any) -> list[str]:
-    missing: list[str] = []
-    for key, label, flag in INSPECTION_LINES:
-        if _filled(_get(data, key)) or (flag and _get(data, flag) is True):
-            continue
-        missing.append(label)
-    name_ok = _filled(_get(data, "inspector_name")) or _filled(_get(data, "sign_insp_name")) or _filled(_get(data, "signature"))
-    if not name_ok:
-        missing.append("Name")
-    if not _filled(_get(data, "sign_insp_image")):
-        missing.append("Signature (Insp.)")
-    return missing
+    """Only the inspection date is required. The rest of the sheet may be blank."""
+    if _filled(_get(data, "inspection_date")):
+        return []
+    return ["Date Of Inspection"]

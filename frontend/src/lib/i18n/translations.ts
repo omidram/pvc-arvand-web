@@ -773,7 +773,8 @@ const en = {
     gridsTitle: "Half-shell grids — Element {nr}",
     gridsHelp:
       "CZ-03 membrane/anode/cathode inspection grid: rows A–M (skip I), columns 18→1. Click a cell to cycle defect codes w (wrinkle), pm (pressure marks), vh (visible holes), T (tears).",
-    clickHint: "Choose w, pm, vh or T from the cell list. Delete clears that cell.",
+    clickHint: "Inner cells: choose w, pm, vh or T. Delete clears that cell. The empty cells around the grid accept the same codes or any text.",
+    needDate: "Enter the inspection date before saving.",
     saveFailed: "Could not save the inspection report.",
     needSignature: "Save is blocked until the inspection form is filled through the signature. Still empty: {list}",
     invalidJson: "Invalid JSON — please fix before saving.",
@@ -3886,7 +3887,8 @@ const fa: DeepPartialStrings<typeof en> = {
     gridsTitle: "گریدهای نیم‌پوسته — المان {nr}",
     gridsHelp:
       "شبکه بازرسی CZ-03: ردیف‌های A–M (بدون I)، ستون‌های ۱۸→۱. با کلیک روی سلول کدهای عیب w (چین)، pm (فشار)، vh (سوراخ)، T (پارگی) را بچرخانید.",
-    clickHint: "از فهرست خانه w، pm، vh یا T را انتخاب کنید. دکمه Delete همان خانه را پاک می‌کند.",
+    clickHint: "خانه‌های داخل شبکه: w، pm، vh یا T. Delete همان خانه را پاک می‌کند. خانه‌های دور شبکه هم همین کدها را می‌پذیرند و هم متن آزاد.",
+    needDate: "قبل از ذخیره، تاریخ بازرسی را وارد کنید.",
     saveFailed: "گزارش بازرسی ذخیره نشد.",
     needSignature: "تا وقتی فرم بازرسی تا قسمت امضا پر نشود، ذخیره ممکن نیست. هنوز خالی: {list}",
     invalidJson: "JSON نامعتبر است — لطفاً قبل از ذخیره اصلاح کنید.",

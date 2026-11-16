@@ -139,6 +139,7 @@ export function AccessWorkspace<T extends object>({
   commands,
   exportPrefix,
   exportParams,
+  exportSavesNew = false,
   filenameBase,
   onLookup,
   onSuggest,
@@ -177,6 +178,8 @@ export function AccessWorkspace<T extends object>({
   commands?: React.ReactNode;
   exportPrefix?: string;
   exportParams?: Record<string, unknown>;
+  /** A new inspection has no id until it is saved. Export saves it first, then downloads that form. */
+  exportSavesNew?: boolean;
   filenameBase?: string;
   onLookup?: (
     name: string,
@@ -486,6 +489,34 @@ export function AccessWorkspace<T extends object>({
     }
   }
 
+  async function ensureExportId(): Promise<Record<string, unknown>> {
+    if (!exportSavesNew || !canEdit) {
+      if (pinnedId.current) return { id: pinnedId.current };
+      if (current && !isNew) return { id: readId(current) };
+      return {};
+    }
+    const creating = isNew || !current;
+    const payload = formBody ? values : accessPayload(fields, values);
+    const message = validate?.(payload, { isNew: creating });
+    if (message) throw new Error(message);
+    if (creating) {
+      const created = await onCreate(payload);
+      const createdId = savedIdentity(created, null);
+      if (!createdId) throw new Error(t("common.export"));
+      pinnedId.current = createdId;
+      keepNotice.current = true;
+      setIsNew(false);
+      setSaveNotice(t("common.saved"));
+      return { id: createdId };
+    }
+    const oldId = readId(current);
+    const saved = await onSave(oldId, payload);
+    const nextId = savedIdentity(saved, oldId);
+    if (nextId) pinnedId.current = nextId;
+    setSaveNotice(t("common.saved"));
+    return { id: nextId || oldId };
+  }
+
   function handleDelete() {
     if (!current) return;
     const msg = confirmDelete ? confirmDelete(current) : t("common.confirmDeleteGeneric");
@@ -659,6 +690,7 @@ export function AccessWorkspace<T extends object>({
           onNext={() => go(index + 1)}
           onLast={() => go(rows.length - 1)}
           onNew={() => {
+            pinnedId.current = "";
             setExtra(null);
             setIsNew(true);
             setSheetPeek(false);
@@ -705,7 +737,15 @@ export function AccessWorkspace<T extends object>({
           {exportPrefix ? (
             <ExportButtons
               prefix={exportPrefix}
-              params={{ ...exportParams, ...(current && !isNew ? { id: readId(current) } : {}) }}
+              params={{
+                ...exportParams,
+                ...(pinnedId.current
+                  ? { id: pinnedId.current }
+                  : current && !isNew
+                    ? { id: readId(current) }
+                    : {}),
+              }}
+              prepare={exportSavesNew ? ensureExportId : undefined}
               filenameBase={filenameBase}
               exportColumns={fields
                 .filter((f) => !HIDDEN_SHEET_KEYS.has(f.name))

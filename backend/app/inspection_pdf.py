@@ -106,6 +106,14 @@ def _multiline(c: canvas.Canvas, x: float, y: float, w: float, h: float, label: 
     c.drawText(text)
 
 
+def _frame_text(data: dict[str, Any] | None, band: int, slot: int) -> str:
+    return str((data or {}).get(f"p{band}-{slot}") or "")
+
+
+def _is_frame(band: int, slot: int, bands: int, slots: int) -> bool:
+    return band in (0, bands - 1) or slot in (0, slots - 1) or (band == 1 and slot == 1)
+
+
 def _grid_cell(c: canvas.Canvas, x: float, y: float, w: float, h: float, code: str = "") -> None:
     fill = CODE_FILL.get(code)
     if fill:
@@ -116,8 +124,9 @@ def _grid_cell(c: canvas.Canvas, x: float, y: float, w: float, h: float, code: s
     c.setLineWidth(0.3)
     c.rect(x, y, w, h, stroke=1, fill=0)
     if code:
-        c.setFont("Helvetica-Bold", 5)
-        c.drawCentredString(x + w / 2, y + 1.5, code[:3])
+        size = 5 if len(code) <= 3 else 3.5
+        c.setFont("Helvetica-Bold", size)
+        c.drawCentredString(x + w / 2, y + (1.6 if size < 5 else 1.5), code[:6])
         c.setFont("Helvetica", 5)
 
 
@@ -139,8 +148,8 @@ def _grid(c: canvas.Canvas, x: float, y: float, w: float, h: float, title: str, 
         yy = top - (band + 1) * rh
         for slot in range(slots):
             xx = left + slot * cw
-            if band == 0 or band == bands - 1 or slot == 0 or slot == slots - 1:
-                _grid_cell(c, xx, yy, cw, rh)
+            if _is_frame(band, slot, bands, slots):
+                _grid_cell(c, xx, yy, cw, rh, _frame_text(data, band, slot))
                 continue
             if band == 1:
                 if slot >= 2:
@@ -396,8 +405,9 @@ def inspection_form_xlsx(row: models.InspectionReport, grids: dict[str, dict[str
             for slot in range(slots):
                 value = ""
                 fill = None
-                if band in (0, bands - 1) or slot in (0, slots - 1):
-                    value = ""
+                if _is_frame(band, slot, bands, slots):
+                    value = _frame_text(data, band, slot)
+                    fill = fills.get(value)
                 elif band == 1 and slot >= 2:
                     value = str(GRID_COLS[slot - 2])
                 elif band > 1:

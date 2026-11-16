@@ -4716,18 +4716,26 @@ td.insp-lab { font-weight: 700; white-space: nowrap; width: 1%; }
 .insp-top { grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr); }
 .insp-grid table { width: 100%; table-layout: fixed; }
 .insp-grid select.insp-code,
-.insp-grid .insp-pad {
+.insp-grid input.insp-pad {
   width: 100% !important;
   height: 18px !important;
   min-width: 0 !important;
   box-sizing: border-box;
-  appearance: none;
-  -webkit-appearance: none;
   border-radius: 0;
   font: inherit;
   line-height: 16px;
+  text-align: center;
+  padding: 0;
+  color: #111;
 }
-.insp-grid .insp-pad { display: block; pointer-events: none; }
+.insp-grid select.insp-code {
+  appearance: none;
+  -webkit-appearance: none;
+}
+.insp-grid input.insp-pad {
+  display: block;
+  background: #fff;
+}
 .insp-pane { min-width: 0; border-right: 1px solid #111; }
 .insp-top > .insp-pane,
 .insp-split > .insp-pane:first-child { border-right: 1px solid #111; }
