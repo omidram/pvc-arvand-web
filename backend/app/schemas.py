@@ -659,12 +659,21 @@ class InspectionReportBase(ORMModel):
     leakage_corner: str | None = None
     leakage_outlet: str | None = None
     leakage_inlet: str | None = None
+    leakage_pan_cathode: str | None = None
+    leakage_web_cathode: str | None = None
+    leakage_corner_cathode: str | None = None
+    leakage_outlet_cathode: str | None = None
+    leakage_inlet_cathode: str | None = None
+    leakage_flange: str | None = None
+    leakage_flange_cathode: str | None = None
     signature: str | None = None
     sample_cathode_note: str | None = None
     sample_anode_note: str | None = None
     sample_membrane_note: str | None = None
     xrf_anode: str | None = None
     xrf_cathode: str | None = None
+    xrf_anode_na: bool = False
+    xrf_cathode_na: bool = False
     sign_insp_name: str | None = None
     sign_insp_image: str | None = Field(default=None, max_length=1_200_000)
     sign_insp_at: str | None = None
@@ -675,6 +684,15 @@ class InspectionReportBase(ORMModel):
     sign_proc_name: str | None = None
     sign_proc_image: str | None = Field(default=None, max_length=1_200_000)
     sign_proc_at: str | None = None
+
+    @field_validator("xrf_anode_na", "xrf_cathode_na", mode="before")
+    @classmethod
+    def _na_flag(cls, value: object) -> bool:
+        if value is None or value == "":
+            return False
+        if isinstance(value, str):
+            return value.strip().lower() in {"1", "true", "yes", "y"}
+        return bool(value)
 
     @field_validator("sign_insp_shift", mode="before")
     @classmethod

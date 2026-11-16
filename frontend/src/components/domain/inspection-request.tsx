@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Ban, ClipboardCheck, FileText, Link2, MessageSquare, Paperclip, Plus, Send } from "lucide-react";
 import { DeadlineBadge, RequestEditForm, Stepper, useWorkflowMeta } from "@/components/domain/warehouse-workflow";
 import { Badge } from "@/components/ui/badge";
@@ -418,7 +418,11 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
   const qc = useQueryClient();
   const [note, setNote] = useState("");
+  const [deposits, setDeposits] = useState(d.deposits || "");
   const [deleteHint, setDeleteHint] = useState("");
+  useEffect(() => {
+    setDeposits(d.deposits || "");
+  }, [d.id, d.deposits]);
   const [files, setFiles] = useState<File[]>([]);
   const acts = d.actions;
   const done = (next: InspectionRequestDetail) => {
@@ -556,13 +560,20 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
             </div>
           ) : null}
           {acts.includes("edit") ? <RequestEditForm d={d} t={t} /> : null}
+          {acts.includes("send") ? (
+            <label className="wh-grow">
+              {t("wf.insp.deposits")}
+              <textarea value={deposits} onChange={(e) => setDeposits(e.target.value)} rows={3} />
+              <span className="wh-muted">{t("wf.insp.depositsHint")}</span>
+            </label>
+          ) : null}
           <div className="wh-form-inline wf-inline-plain">
             <label className="wh-grow">
               {acts.includes("cancel") ? t("wf.insp.noteOrReason") : t("wf.note")}
               <input value={note} onChange={(e) => setNote(e.target.value)} />
             </label>
             {acts.includes("send") ? (
-              <button type="button" className="wf-btn is-primary" disabled={run.isPending} onClick={() => go("send")}>
+              <button type="button" className="wf-btn is-primary" disabled={run.isPending || !deposits.trim()} onClick={() => go("send", { deposits: deposits.trim() })}>
                 <Send size={14} /> {t("wf.insp.send")}
               </button>
             ) : null}

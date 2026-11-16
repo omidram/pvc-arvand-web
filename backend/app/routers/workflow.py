@@ -2904,6 +2904,7 @@ def _insp_summary(db: Session, r: WfInspectionRequest, conf: dict | None = None)
         "disassembly_date": _iso(r.disassembly_date),
         "reason": _plant_reason(db, r.element_nr, r.element_id) or r.reason,
         "report_id": r.report_id,
+        "deposits": r.deposits,
         "anode_count": 1 if r.anode_nr else 0,
         "cathode_count": 1 if r.cathode_nr else 0,
         "company_id": None,
@@ -2972,8 +2973,19 @@ def _finish_if_both(db: Session, r: WfInspectionRequest, actor: Any) -> bool:
     return True
 
 
+def _copy_request_deposits(db: Session, r: WfInspectionRequest, report: models.InspectionReport | None = None) -> None:
+    """The Deposits column is C-90's. Keep it on the request and on the inspection form."""
+    text = (r.deposits or "").strip()
+    if not text or report is None:
+        return
+    if not (report.deposits or "").strip():
+        report.deposits = text
+
+
 def _attach_report(db: Session, r: WfInspectionRequest, report_id: int, actor: Any, note: str | None = None) -> None:
     r.report_id = report_id
+    report = db.get(models.InspectionReport, report_id)
+    _copy_request_deposits(db, r, report)
     r.updated_at = _now()
     _event(db, "inspection", r, "report_filled", actor, r.status, note, {"report_id": report_id})
     _sync_inspection_segregation(db, r)
@@ -3141,6 +3153,20 @@ def list_inspection_requests(
     return [_insp_summary(db, r, conf) for r in rows[:500]]
 
 
+@router.get("/inspection/deposits")
+def inspection_deposits_lookup(
+    element_nr: str | None = None,
+    anode_nr: str | None = None,
+    cathode_nr: str | None = None,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    """Deposits already written by C-90 for the open inspection of this element."""
+    _require_view(db, user, INSPECTION_VIEW_KEYS)
+    found = _open_insp_for(db, element_nr, anode_nr, cathode_nr)
+    return {"deposits": (found.deposits or "") if found is not None else ""}
+
+
 @router.get("/inspection/{request_id}")
 def get_inspection_request(request_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     _require_view(db, user, INSPECTION_VIEW_KEYS)
@@ -3166,7 +3192,7 @@ def create_inspection_request(body: InspCreateIn, db: Session = Depends(get_db),
     existing = _open_insp_for(db, el.element_nr if el is not None else None, body.anode_nr or (el.anode_nr if el else None), body.cathode_nr or (el.cathode_nr if el else None))
     if existing:
         raise HTTPException(409, f"Inspection request {existing.code} is still open for this element")
-    r = _new_insp(db, user, "await_inspection", el, anode_nr=(body.anode_nr or "").strip() or None, cathode_nr=(body.cathode_nr or "").strip() or None, reason=body.reason)
+    r = _new_insp(db, user, "await_request", el, anode_nr=(body.anode_nr or "").strip() or None, cathode_nr=(body.cathode_nr or "").strip() or None, reason=body.reason)
     _event(db, "inspection", r, "created", user, None, body.note, {"reason": r.reason})
     if not _close_if_reported(db, r, user):
         _notify(db, "inspection", r, user)
@@ -3174,10 +3200,20 @@ def create_inspection_request(body: InspCreateIn, db: Session = Depends(get_db),
     return _insp_detail(db, r, user)
 
 
+class InspSendIn(NoteIn):
+    deposits: str | None = None
+
+
 @router.post("/inspection/{request_id}/send")
-def inspection_send(request_id: int, body: NoteIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
+def inspection_send(request_id: int, body: InspSendIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     r = _load_insp(db, request_id)
     _require_stage(db, user, "inspection", r.status, ("await_request",))
+    deposits = (body.deposits or r.deposits or "").strip()
+    if not deposits:
+        raise HTTPException(400, "C-90 must fill Deposits before this form is sent to inspection")
+    r.deposits = deposits[:4000]
+    if r.report_id:
+        _copy_request_deposits(db, r, db.get(models.InspectionReport, r.report_id))
     if not _close_if_reported(db, r, user):
         _insp_move(db, r, "await_inspection", "send", user, body.note)
     db.commit()
@@ -3510,7 +3546,7 @@ def coating_request_inspections(batch_id: int, body: NoteIn, db: Session = Depen
         el = _life_of(db, kind=it.element_kind, serial=it.serial)
         if _open_insp_for(db, None, a, c):
             continue
-        r = _new_insp(db, user, "await_inspection", el, anode_nr=a, cathode_nr=c, reason=f"Recoating {codes}")
+        r = _new_insp(db, user, "await_request", el, anode_nr=a, cathode_nr=c, reason=f"Recoating {codes}")
         _event(db, "inspection", r, "created", user, None, body.note, {"coating_id": b.id})
         _notify(db, "inspection", r, user)
         made += 1
@@ -3564,6 +3600,10 @@ def inspection_report_saved(db: Session, report: models.InspectionReport) -> Non
         return
     day = svc._as_date(report.inspection_date)
     actor = _System(report.inspector_name or report.sign_insp_name or "Element Inspection")
+    if not (report.deposits or "").strip():
+        donor = _open_insp_for(db, report.element_nr, report.anode_nr or report.electrode_nr_anode, report.cathode_nr or report.electrode_nr_cathode)
+        if donor is not None and (donor.deposits or "").strip():
+            report.deposits = donor.deposits
     for r in db.query(WfInspectionRequest).filter(WfInspectionRequest.status.notin_(CLOSED)).all():
         mine = {("e", compact_nr(r.element_nr)), ("a", compact_nr(r.anode_nr)), ("c", compact_nr(r.cathode_nr))}
         if not keys & mine:

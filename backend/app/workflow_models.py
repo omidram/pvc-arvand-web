@@ -174,6 +174,7 @@ class WfInspectionRequest(Base):
     disassembly_date: Mapped[date | None] = mapped_column(Date)
     reason: Mapped[str | None] = mapped_column(String(800))
     report_id: Mapped[int | None] = mapped_column(Integer, index=True)  # inspection_reports.id once filled
+    deposits: Mapped[str | None] = mapped_column(Text)  # C-90 writes this before inspection receives the form
     # {inspection|process: {anode|cathode: {healthy, result}}} — the step ends when both sides have both pieces
     decisions: Mapped[dict | None] = mapped_column(JSON)
     last_note: Mapped[str | None] = mapped_column(Text)

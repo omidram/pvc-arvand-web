@@ -608,7 +608,23 @@ export async function downloadExport(
   params?: Record<string, unknown>,
   filename?: string
 ): Promise<void> {
-  const { data } = await apiClient.get(`${prefix}/export.${format}`, { params, responseType: "blob" });
+  let data: Blob;
+  try {
+    const response = await apiClient.get(`${prefix}/export.${format}`, { params, responseType: "blob" });
+    data = response.data;
+  } catch (err) {
+    const payload = (err as { response?: { data?: Blob } }).response?.data;
+    if (payload instanceof Blob) {
+      const text = await payload.text();
+      try {
+        const parsed = JSON.parse(text) as { detail?: unknown };
+        if (typeof parsed.detail === "string" && parsed.detail) throw new Error(parsed.detail);
+      } catch (inner) {
+        if (inner instanceof Error && inner.message !== "Unexpected token" && !inner.message.startsWith("Unexpected")) throw inner;
+      }
+    }
+    throw err;
+  }
   const url = window.URL.createObjectURL(new Blob([data]));
   const link = document.createElement("a");
   link.href = url;

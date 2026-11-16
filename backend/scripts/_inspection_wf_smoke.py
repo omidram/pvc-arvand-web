@@ -98,7 +98,7 @@ ok(client.put(f"/elements/{e301}", json={"remarks": "x"}))
 assert len(ok(client.get("/workflow/inspection", params={"open_only": True}))) == 1, "no duplicate on a later save"
 print("dismantling -> C-90 cartable:", req["code"])
 
-detail = ok(client.post(f"/workflow/inspection/{req['id']}/send", json={"note": "please inspect"}))
+detail = ok(client.post(f"/workflow/inspection/{req['id']}/send", json={"note": "please inspect", "deposits": "scale on the pan"}))
 assert detail["status"] == "await_inspection", detail
 current["name"] = "insp"
 assert [r["id"] for r in cart()] == [req["id"]]
@@ -139,6 +139,13 @@ def filled_form(**over):
         "leakage_corner": "0",
         "leakage_outlet": "0",
         "leakage_inlet": "0",
+        "leakage_pan_cathode": "0",
+        "leakage_web_cathode": "0",
+        "leakage_corner_cathode": "0",
+        "leakage_outlet_cathode": "0",
+        "leakage_inlet_cathode": "0",
+        "leakage_flange": "0",
+        "leakage_flange_cathode": "0",
         "sample_cathode_note": "-",
         "sample_anode_note": "-",
         "sample_membrane_note": "-",
@@ -192,6 +199,8 @@ conf["hours"]["inspection"]["await_inspection"] = 1
 ok(client.put("/workflow/settings", json={"hours": conf["hours"], "warn_percent": 30}))
 current["name"] = "c90"
 r2 = ok(client.post("/workflow/inspection", json={"anode_nr": "A-3", "reason": "check"}))
+assert r2["status"] == "await_request", r2
+r2 = ok(client.post(f"/workflow/inspection/{r2['id']}/send", json={"deposits": "none"}))
 assert r2["status"] == "await_inspection", r2
 with Session() as db:
     back = wf_router._now() - timedelta(hours=3)

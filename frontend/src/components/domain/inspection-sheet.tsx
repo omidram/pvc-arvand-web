@@ -3,9 +3,11 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { InspectionDefectGrid } from "@/components/domain/inspection-defect-grid";
-import { InspectionSignaturePad, InspectorShiftSelect } from "@/components/domain/inspection-signature";
+import { InspectionSignaturePad } from "@/components/domain/inspection-signature";
 import { DateInput } from "@/components/ui/date-input";
+import { useAuth } from "@/lib/auth/context";
 import { elementsApi, inspectionGridsApi, relationsApi } from "@/lib/endpoints";
+import { workflowApi } from "@/lib/workflow";
 import { useI18n } from "@/lib/i18n/context";
 import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
 import { fieldDefsFromKeys, labelFieldOrHumanize } from "@/lib/access-datasheet-fields";
@@ -47,6 +49,13 @@ export const INSPECTION_SHEET_FIELDS = [
   "leakage_corner",
   "leakage_outlet",
   "leakage_inlet",
+  "leakage_pan_cathode",
+  "leakage_web_cathode",
+  "leakage_corner_cathode",
+  "leakage_outlet_cathode",
+  "leakage_inlet_cathode",
+  "leakage_flange",
+  "leakage_flange_cathode",
   "sample_cathode",
   "sample_anode",
   "sample_membrane",
@@ -68,6 +77,8 @@ export const INSPECTION_SHEET_FIELDS = [
   "general_remarks",
   "xrf_anode",
   "xrf_cathode",
+  "xrf_anode_na",
+  "xrf_cathode_na",
   "sign_insp_name",
   "sign_insp_image",
   "sign_insp_at",
@@ -91,6 +102,8 @@ const INSPECTION_DATASHEET_BOOL = new Set<string>([
   "anode_spacer_ok",
   "cathode_spacer_ok",
   "frame_gasket_ok",
+  "xrf_anode_na",
+  "xrf_cathode_na",
 ]);
 
 const INSPECTION_DATASHEET_DATE = new Set(["inspection_date", "sign_insp_at", "sign_maint_at", "sign_proc_at"]);
@@ -138,7 +151,7 @@ export function inspectionSheetPayload(values: Record<string, unknown>): Record<
 const INSPECTION_REQUIRED_LINES: { key: string; label: string; flag?: string }[] = [
   { key: "client", label: "Client" },
   { key: "anode_nr", label: "Anode NO" },
-  { key: "inspection_date", label: "Date" },
+  { key: "inspection_date", label: "Date Of Inspection" },
   { key: "electrolyzer", label: "electrolyzer No" },
   { key: "cathode_nr", label: "Cathode No" },
   { key: "operation_days", label: "Operation days" },
@@ -158,8 +171,8 @@ const INSPECTION_REQUIRED_LINES: { key: string; label: string; flag?: string }[]
   { key: "pressure_marks", label: "Pressure marks (pm)" },
   { key: "visible_holes", label: "Visible holes (vh)" },
   { key: "cracks", label: "Tears (T)" },
-  { key: "xrf_anode", label: "XRF.Anode" },
-  { key: "xrf_cathode", label: "XRF.Cathode" },
+  { key: "xrf_anode", label: "XRF.Anode", flag: "xrf_anode_na" },
+  { key: "xrf_cathode", label: "XRF.Cathode", flag: "xrf_cathode_na" },
   { key: "deformation_pan", label: "Deformation pan (DP)" },
   { key: "deformation_electrode", label: "Deformation electrode (DP)" },
   { key: "coloured_area", label: "coloured area (CA)" },
@@ -170,6 +183,13 @@ const INSPECTION_REQUIRED_LINES: { key: string; label: string; flag?: string }[]
   { key: "leakage_corner", label: "Leakage corner area (LC)" },
   { key: "leakage_outlet", label: "Leakage outlet nozzle (LO)" },
   { key: "leakage_inlet", label: "Leakage inlet nozzle (LI)" },
+  { key: "leakage_pan_cathode", label: "Leakage pan cathode" },
+  { key: "leakage_web_cathode", label: "Leakage web cathode" },
+  { key: "leakage_corner_cathode", label: "Leakage corner cathode" },
+  { key: "leakage_outlet_cathode", label: "Leakage outlet cathode" },
+  { key: "leakage_inlet_cathode", label: "Leakage inlet cathode" },
+  { key: "leakage_flange", label: "Loose Flange anode" },
+  { key: "leakage_flange_cathode", label: "Loose Flange cathode" },
   { key: "sample_cathode_note", label: "sample cathode", flag: "sample_cathode" },
   { key: "anode_tube_remark", label: "insert pipe (Anode)", flag: "anode_tube_ok" },
   { key: "sample_anode_note", label: "sample anode", flag: "sample_anode" },
@@ -186,6 +206,17 @@ function filledValue(value: unknown): boolean {
   return true;
 }
 
+function flagOn(value: unknown): boolean {
+  return value === true || value === 1 || value === "1" || value === "true";
+}
+
+function todayIso(): string {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
 /** Null when the sheet is filled through the inspector signature and may be saved. */
 export function inspectionSheetSaveError(
   values: Record<string, unknown>,
@@ -194,7 +225,7 @@ export function inspectionSheetSaveError(
   const missing: string[] = [];
   for (const line of INSPECTION_REQUIRED_LINES) {
     const note = filledValue(values[line.key]);
-    const flag = line.flag ? values[line.flag] === true : false;
+    const flag = line.flag ? flagOn(values[line.flag]) : false;
     if (!note && !flag) missing.push(line.label);
   }
   const nameOk =
@@ -230,6 +261,8 @@ function text(value: unknown): string {
 
 export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId }: SheetProps) {
   const { t } = useI18n();
+  const { canEdit, isAdmin } = useAuth();
+  const depositsLocked = readOnly || !(isAdmin || canEdit("wf_c90"));
   const patchRef = useRef(onPatch);
   patchRef.current = onPatch;
   const valuesRef = useRef(values);
@@ -333,6 +366,32 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [readOnly, numericId]);
 
+  const seededFor = useRef<string | null>(null);
+  useEffect(() => {
+    const token = numericId == null ? "new" : String(numericId);
+    if (seededFor.current === token) return;
+    seededFor.current = token;
+    if (readOnly || numericId != null) return;
+    const patch: Record<string, unknown> = {};
+    if (!text(valuesRef.current.client).trim()) patch.client = "APC";
+    if (!text(valuesRef.current.inspection_date).trim()) patch.inspection_date = todayIso();
+    if (Object.keys(patch).length) patchRef.current(patch);
+  }, [readOnly, numericId]);
+
+  const elementNr = text(values.element_nr);
+  const anodeNr = text(values.anode_nr);
+  const cathodeNr = text(values.cathode_nr);
+  const depositsQuery = useQuery({
+    queryKey: ["inspection-deposits", elementNr, anodeNr, cathodeNr],
+    queryFn: () => workflowApi.inspectionDeposits({ element_nr: elementNr, anode_nr: anodeNr, cathode_nr: cathodeNr }),
+    enabled: !text(values.deposits) && Boolean(elementNr || anodeNr || cathodeNr),
+  });
+  useEffect(() => {
+    const found = depositsQuery.data?.deposits?.trim();
+    if (!found || text(valuesRef.current.deposits).trim()) return;
+    patchRef.current({ deposits: found });
+  }, [depositsQuery.data]);
+
   function grids(): Record<string, Record<string, unknown>> {
     return (values.__grids as Record<string, Record<string, unknown>> | undefined) || {};
   }
@@ -364,6 +423,39 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
         disabled={readOnly}
         onChange={(e) => onPatch({ [noteKey]: e.target.value, [flagKey]: e.target.value.trim() !== "" })}
       />
+    );
+  }
+
+  function naBox(name: string) {
+    return (
+      <label className="insp-na">
+        <input
+          type="checkbox"
+          checked={flagOn(values[name])}
+          disabled={readOnly}
+          onChange={(e) => onChange(name, e.target.checked)}
+        />
+        N/A
+      </label>
+    );
+  }
+
+  function leak(label: string, anode: string, cathode: string, head = false) {
+    return (
+      <div>
+        {head ? (
+          <div className="insp-leak insp-leak-head">
+            <span />
+            <span>Anode</span>
+            <span>Cathode</span>
+          </div>
+        ) : null}
+        <div className="insp-leak">
+          <span className="insp-lab">{label}</span>
+          {line(anode)}
+          {line(cathode)}
+        </div>
+      </div>
     );
   }
 
@@ -404,7 +496,7 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
               <td>{labeled("Anode NO:", line("anode_nr", undefined, (typed) => pull("anode_nr", typed)))}</td>
               <td>
                 {labeled(
-                  "Date:",
+                  "Date Of Inspection:",
                   <DateInput type="date" disabled={readOnly} value={text(values.inspection_date)} onChange={(e) => onChange("inspection_date", e.target.value)} />
                 )}
               </td>
@@ -503,11 +595,21 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
                 </td>
               </tr>
               <tr>
-                <td className="insp-lab">XRF.Anode:</td>
+                <td className="insp-lab">
+                  <span className="insp-xrf">
+                    XRF.Anode:
+                    {naBox("xrf_anode_na")}
+                  </span>
+                </td>
                 <td colSpan={4}>{line("xrf_anode")}</td>
               </tr>
               <tr>
-                <td className="insp-lab">XRF.Cathode:</td>
+                <td className="insp-lab">
+                  <span className="insp-xrf">
+                    XRF.Cathode:
+                    {naBox("xrf_cathode_na")}
+                  </span>
+                </td>
                 <td colSpan={4}>{line("xrf_cathode")}</td>
               </tr>
             </tbody>
@@ -528,48 +630,42 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
           <tbody>
             <tr>
               <td>{labeled("Deformation pan (DP):", line("deformation_pan"))}</td>
-              <td rowSpan={5} className="insp-topcell insp-deposits-cell">
-                <div className="insp-lab">Deposits(D):</div>
+              <td rowSpan={6} className="insp-topcell insp-deposits-cell">
+                <div className="insp-lab">Deposits(D): <span className="insp-c90">C-90</span></div>
                 <textarea
                   className="insp-in insp-deposits"
                   value={text(values.deposits)}
-                  disabled={readOnly}
+                  disabled={depositsLocked}
                   onChange={(e) => onChange("deposits", e.target.value)}
                 />
               </td>
-              <td>{labeled("Leakage pan(LP):", line("leakage_pan"))}</td>
+              <td>{leak("Leakage pan(LP):", "leakage_pan", "leakage_pan_cathode", true)}</td>
             </tr>
             <tr>
               <td>{labeled("Deformation electrode (DP):", line("deformation_electrode"))}</td>
-              <td>{labeled("Leakage Web area (Lw):", line("leakage_web"))}</td>
+              <td>{leak("Leakage Web area (Lw):", "leakage_web", "leakage_web_cathode")}</td>
             </tr>
             <tr>
               <td>{labeled("coloured area (CA):", line("coloured_area"))}</td>
-              <td>{labeled("Leakage corner area (LC):", line("leakage_corner"))}</td>
+              <td>{leak("Leakage corner area (LC):", "leakage_corner", "leakage_corner_cathode")}</td>
             </tr>
             <tr>
               <td>{labeled("coloured electrode(CE):", line("coloured_electrode"))}</td>
-              <td>{labeled("Leakage outlet nozzle(LO):", line("leakage_outlet"))}</td>
+              <td>{leak("Leakage outlet nozzle(LO):", "leakage_outlet", "leakage_outlet_cathode")}</td>
             </tr>
             <tr>
               <td>{labeled("coloured pan (CP):", line("coloured_pan"))}</td>
-              <td>{labeled("Leakage inlet nozzle (LI):", line("leakage_inlet"))}</td>
+              <td>{leak("Leakage inlet nozzle (LI):", "leakage_inlet", "leakage_inlet_cathode")}</td>
+            </tr>
+            <tr>
+              <td />
+              <td>{leak("Loose Flange:", "leakage_flange", "leakage_flange_cathode")}</td>
             </tr>
             <tr>
               <td>{labeled("sample taken:", <span className="insp-in" />)}</td>
               <td>{labeled("insert pipe(Anode):", note("anode_tube_remark", "anode_tube_ok"))}</td>
               <td>
-                {labeled(
-                  "Name:",
-                  <>
-                    {line("inspector_name")}
-                    <InspectorShiftSelect
-                      value={text(values.sign_insp_shift)}
-                      disabled={readOnly}
-                      onChange={(letter) => onChange("sign_insp_shift", letter)}
-                    />
-                  </>
-                )}
+                {labeled("Name:", line("inspector_name"))}
               </td>
             </tr>
             <tr>
@@ -591,14 +687,12 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
                     label="Insp."
                     name={text(values.sign_insp_name) || text(values.signature)}
                     image={text(values.sign_insp_image)}
-                    shift={text(values.sign_insp_shift)}
                     readOnly={readOnly}
                     onChange={(patch) =>
                       onPatch({
                         sign_insp_name: patch.name ?? values.sign_insp_name,
                         sign_insp_image: patch.image ?? values.sign_insp_image,
                         sign_insp_at: patch.at ?? values.sign_insp_at,
-                        sign_insp_shift: patch.shift ?? values.sign_insp_shift,
                         signature: patch.name ?? values.signature,
                       })
                     }

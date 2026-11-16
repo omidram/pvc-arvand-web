@@ -114,6 +114,15 @@ _INSPECTION_SHEET_COLUMNS = {
     "leakage_corner": "TEXT",
     "leakage_outlet": "TEXT",
     "leakage_inlet": "TEXT",
+    "leakage_pan_cathode": "TEXT",
+    "leakage_web_cathode": "TEXT",
+    "leakage_corner_cathode": "TEXT",
+    "leakage_outlet_cathode": "TEXT",
+    "leakage_inlet_cathode": "TEXT",
+    "leakage_flange": "TEXT",
+    "leakage_flange_cathode": "TEXT",
+    "xrf_anode_na": "INTEGER DEFAULT 0",
+    "xrf_cathode_na": "INTEGER DEFAULT 0",
     "signature": "TEXT",
     "sample_cathode_note": "TEXT",
     "sample_anode_note": "TEXT",
@@ -227,10 +236,13 @@ def _ensure_inspection_decision_column() -> None:
         present = {col["name"] for col in inspect(engine).get_columns("wf_inspection_requests")}
     except Exception:
         return
-    if "decisions" in present:
-        return
-    with engine.begin() as conn:
-        conn.execute(text("ALTER TABLE wf_inspection_requests ADD COLUMN decisions TEXT"))
+    if "decisions" not in present:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE wf_inspection_requests ADD COLUMN decisions TEXT"))
+        present.add("decisions")
+    if "deposits" not in present:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE wf_inspection_requests ADD COLUMN deposits TEXT"))
 
 
 _ensure_inspection_sheet_columns()

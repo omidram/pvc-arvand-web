@@ -47,6 +47,13 @@ def _g(row: models.InspectionReport, name: str) -> str:
     return _txt(getattr(row, name, None))
 
 
+def _xrf(row: models.InspectionReport, name: str, flag: str) -> str:
+    text = _g(row, name)
+    if getattr(row, flag, False):
+        return f"{text}  N/A".strip()
+    return text
+
+
 def _image(data_url: str | None) -> ImageReader | None:
     raw = (data_url or "").strip()
     if not raw.startswith("data:image") or "," not in raw:
@@ -99,37 +106,54 @@ def _multiline(c: canvas.Canvas, x: float, y: float, w: float, h: float, label: 
     c.drawText(text)
 
 
+def _grid_cell(c: canvas.Canvas, x: float, y: float, w: float, h: float, code: str = "") -> None:
+    fill = CODE_FILL.get(code)
+    if fill:
+        c.setFillColor(fill)
+        c.rect(x, y, w, h, stroke=0, fill=1)
+        c.setFillColor(black)
+    c.setStrokeColor(black)
+    c.setLineWidth(0.3)
+    c.rect(x, y, w, h, stroke=1, fill=0)
+    if code:
+        c.setFont("Helvetica-Bold", 5)
+        c.drawCentredString(x + w / 2, y + 1.5, code[:3])
+        c.setFont("Helvetica", 5)
+
+
 def _grid(c: canvas.Canvas, x: float, y: float, w: float, h: float, title: str, data: dict[str, Any]) -> None:
+    """18×A–M map with one empty cell on every side, matching the on-screen form."""
     _box(c, x, y, w, h)
     c.setFont("Helvetica-Bold", 7)
-    c.drawCentredString(x + w / 2, y + h - 11, title)
-    top = y + h - 16
-    left = x + 14
-    cols, rows = 18, 12
-    cw = (w - 20) / cols
-    rh = (h - 28) / (rows + 1)
+    c.drawCentredString(x + w / 2, y + h - 10, title)
+    top = y + h - 14
+    left = x + 4
+    # pad + row letter + 18 columns + pad
+    slots = 21
+    # pad row + number row + 12 data rows + pad row
+    bands = 15
+    cw = (w - 8) / slots
+    rh = (h - 16) / bands
     c.setFont("Helvetica", 5)
-    for i, col in enumerate(GRID_COLS):
-        c.drawCentredString(left + (i + 0.5) * cw, top - 8, str(col))
-    for r, row in enumerate(GRID_ROWS):
-        yy = top - (r + 2) * rh
-        c.drawRightString(left - 2, yy + 2, row)
-        for i, col in enumerate(GRID_COLS):
-            key = f"{row}{col}"
-            code = str((data or {}).get(key) or "")
-            xx = left + i * cw
-            fill = CODE_FILL.get(code)
-            if fill:
-                c.setFillColor(fill)
-                c.rect(xx, yy, cw, rh, stroke=0, fill=1)
-                c.setFillColor(black)
-            c.setStrokeColor(black)
-            c.setLineWidth(0.3)
-            c.rect(xx, yy, cw, rh, stroke=1, fill=0)
-            if code:
-                c.setFont("Helvetica-Bold", 5)
-                c.drawCentredString(xx + cw / 2, yy + 2, code[:3])
-                c.setFont("Helvetica", 5)
+    for band in range(bands):
+        yy = top - (band + 1) * rh
+        for slot in range(slots):
+            xx = left + slot * cw
+            if band == 0 or band == bands - 1 or slot == 0 or slot == slots - 1:
+                _grid_cell(c, xx, yy, cw, rh)
+                continue
+            if band == 1:
+                if slot >= 2:
+                    c.drawCentredString(xx + cw / 2, yy + 1.5, str(GRID_COLS[slot - 2]))
+                _grid_cell(c, xx, yy, cw, rh)
+                continue
+            row = GRID_ROWS[band - 2]
+            if slot == 1:
+                _grid_cell(c, xx, yy, cw, rh)
+                c.drawCentredString(xx + cw / 2, yy + 1.5, row)
+                continue
+            code = str((data or {}).get(f"{row}{GRID_COLS[slot - 2]}") or "")
+            _grid_cell(c, xx, yy, cw, rh, code)
 
 
 def _sign(c: canvas.Canvas, x: float, y: float, w: float, h: float, label: str, name: str, image: str | None) -> None:
@@ -165,7 +189,7 @@ def _draw_report(c: canvas.Canvas, row: models.InspectionReport, grids: dict[str
     col = (width - 2 * m) / 3
     row_h = 14
     header = [
-        [("Client:", "client"), ("Anode NO:", "anode_nr"), ("Date:", "inspection_date")],
+        [("Client:", "client"), ("Anode NO:", "anode_nr"), ("Date Of Inspection:", "inspection_date")],
         [("electrolyzer No:", "electrolyzer"), ("Cathode No:", "cathode_nr"), ("Operation days:", "operation_days")],
         [("Position:", "position"), ("membrane No:", "membrane_nr"), ("Electrode No:(Anode)", "electrode_nr_anode")],
         [("Element no:", "element_nr"), ("membrane Type:", "membrane_type"), ("Electrode No:(Cathode)", "electrode_nr_cathode")],
@@ -201,8 +225,8 @@ def _draw_report(c: canvas.Canvas, row: models.InspectionReport, grids: dict[str
         dy -= 13
     xrf_h = 26
     _multiline(c, bx, y + xrf_h, right_w, dy - y - xrf_h, "Remarks:", _g(row, "blister_remarks"))
-    _cell(c, bx, y + 13, right_w, 13, "XRF.Anode:", _g(row, "xrf_anode"))
-    _cell(c, bx, y, right_w, 13, "XRF.Cathode:", _g(row, "xrf_cathode"))
+    _cell(c, bx, y + 13, right_w, 13, "XRF.Anode:", _xrf(row, "xrf_anode", "xrf_anode_na"))
+    _cell(c, bx, y, right_w, 13, "XRF.Cathode:", _xrf(row, "xrf_cathode", "xrf_cathode_na"))
 
     split_h = 92
     y -= split_h
@@ -213,23 +237,31 @@ def _draw_report(c: canvas.Canvas, row: models.InspectionReport, grids: dict[str
     _grid(c, m + content_w / 2, y, content_w / 2, split_h, "cathode half shell (plan view)", grids.get("cathode_half") or {})
 
     mid = content_w / 3
-    y -= 13
-    _cell(c, m, y, mid, 13, "Deformation pan (DP):", _g(row, "deformation_pan"))
-    _cell(c, m + 2 * mid, y, mid, 13, "Leakage pan(LP):", _g(row, "leakage_pan"))
-    dep_top = y + 13
-    y -= 13
-    _cell(c, m, y, mid, 13, "Deformation electrode (DP):", _g(row, "deformation_electrode"))
-    _cell(c, m + 2 * mid, y, mid, 13, "Leakage Web area (Lw):", _g(row, "leakage_web"))
-    y -= 13
-    _cell(c, m, y, mid, 13, "coloured area (CA):", _g(row, "coloured_area"))
-    _cell(c, m + 2 * mid, y, mid, 13, "Leakage corner area (LC):", _g(row, "leakage_corner"))
-    y -= 13
-    _cell(c, m, y, mid, 13, "coloured electrode(CE):", _g(row, "coloured_electrode"))
-    _cell(c, m + 2 * mid, y, mid, 13, "Leakage outlet nozzle(LO):", _g(row, "leakage_outlet"))
-    y -= 13
-    _cell(c, m, y, mid, 13, "coloured pan (CP):", _g(row, "coloured_pan"))
-    _cell(c, m + 2 * mid, y, mid, 13, "Leakage inlet nozzle (LI):", _g(row, "leakage_inlet"))
-    _multiline(c, m + mid, y, mid, dep_top - y, "Deposits(D):", _g(row, "deposits"))
+    leak_rows = [
+        ("Deformation pan (DP):", "deformation_pan", "Leakage pan(LP):", "leakage_pan", "leakage_pan_cathode"),
+        ("Deformation electrode (DP):", "deformation_electrode", "Leakage Web area (Lw):", "leakage_web", "leakage_web_cathode"),
+        ("coloured area (CA):", "coloured_area", "Leakage corner area (LC):", "leakage_corner", "leakage_corner_cathode"),
+        ("coloured electrode(CE):", "coloured_electrode", "Leakage outlet nozzle(LO):", "leakage_outlet", "leakage_outlet_cathode"),
+        ("coloured pan (CP):", "coloured_pan", "Leakage inlet nozzle (LI):", "leakage_inlet", "leakage_inlet_cathode"),
+        ("", "", "Loose Flange:", "leakage_flange", "leakage_flange_cathode"),
+    ]
+    head_h, row_h = 11, 12
+    block_h = head_h + len(leak_rows) * row_h
+    y -= block_h
+    _multiline(c, m + mid, y, mid, block_h, "Deposits(D): C-90", _g(row, "deposits"))
+    _box(c, m + 2 * mid, y + block_h - head_h, mid, head_h)
+    c.setFont("Helvetica-Bold", 7)
+    c.drawString(m + 2 * mid + mid * 0.46, y + block_h - head_h + 3, "Anode")
+    c.drawString(m + 2 * mid + mid * 0.74, y + block_h - head_h + 3, "Cathode")
+    for index, (left_lab, left_key, leak_lab, anode_key, cathode_key) in enumerate(leak_rows):
+        yy = y + block_h - head_h - (index + 1) * row_h
+        if left_lab:
+            _cell(c, m, yy, mid, row_h, left_lab, _g(row, left_key))
+        else:
+            _box(c, m, yy, mid, row_h)
+        _cell(c, m + 2 * mid, yy, mid * 0.46, row_h, leak_lab, "")
+        _cell(c, m + 2 * mid + mid * 0.46, yy, mid * 0.27, row_h, "", _g(row, anode_key))
+        _cell(c, m + 2 * mid + mid * 0.73, yy, mid * 0.27, row_h, "", _g(row, cathode_key))
 
     foot = 13
     y -= foot
@@ -261,9 +293,6 @@ def _draw_report(c: canvas.Canvas, row: models.InspectionReport, grids: dict[str
     sw = mid / 3
     sx = m + 2 * mid
     insp_name = _g(row, "sign_insp_name") or _g(row, "signature")
-    shift = (_g(row, "sign_insp_shift") or "").strip().upper()
-    if shift in {"A", "B", "C", "D"}:
-        insp_name = f"{insp_name}  Shift {shift}".strip() if insp_name else f"Shift {shift}"
     _sign(c, sx, y, sw, sign_h, "Insp.", insp_name, getattr(row, "sign_insp_image", None))
     _sign(c, sx + sw, y, sw, sign_h, "Maint.", _g(row, "sign_maint_name"), getattr(row, "sign_maint_image", None))
     _sign(c, sx + 2 * sw, y, sw, sign_h, "Proc.", _g(row, "sign_proc_name"), getattr(row, "sign_proc_image", None))
@@ -286,6 +315,193 @@ def inspection_pdf_bytes(reports: list[tuple[models.InspectionReport, dict[str, 
     c.save()
     buf.seek(0)
     return buf.getvalue()
+
+
+def inspection_form_xlsx(row: models.InspectionReport, grids: dict[str, dict[str, Any]]) -> StreamingResponse:
+    """One CZ-03 sheet, laid out like the form on screen. Not the whole inspection list."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
+
+    thin = Border(
+        left=Side(style="thin", color="111111"),
+        right=Side(style="thin", color="111111"),
+        top=Side(style="thin", color="111111"),
+        bottom=Side(style="thin", color="111111"),
+    )
+    bold = Font(name="Calibri", bold=True, size=9)
+    title_font = Font(name="Calibri", bold=True, size=14)
+    small = Font(name="Calibri", size=8)
+    center = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    left_align = Alignment(horizontal="left", vertical="center", wrap_text=True)
+    fills = {
+        "w": PatternFill("solid", fgColor="F5D76E"),
+        "pm": PatternFill("solid", fgColor="F0AD4E"),
+        "vh": PatternFill("solid", fgColor="E74C3C"),
+        "T": PatternFill("solid", fgColor="9B59B6"),
+    }
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "CZ-03"
+    ws.page_setup.orientation = "landscape"
+    ws.page_setup.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 1
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.freeze_panes = "A2"
+
+    def put(r: int, c: int, value: str, *, font=None, align=None, fill=None, span: int = 1) -> None:
+        cell = ws.cell(r, c, value)
+        cell.font = font or small
+        cell.alignment = align or left_align
+        cell.border = thin
+        if fill is not None:
+            cell.fill = fill
+        if span > 1:
+            ws.merge_cells(start_row=r, start_column=c, end_row=r, end_column=c + span - 1)
+            for extra in range(1, span):
+                ws.cell(r, c + extra).border = thin
+
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=12)
+    title = ws.cell(1, 1, "INSPECTION REPORT MEMBRANE/ANODE/CATHODE")
+    title.font = title_font
+    title.alignment = center
+    for col in range(1, 13):
+        ws.cell(1, col).border = thin
+        ws.cell(1, col).font = title_font
+
+    header = [
+        ("Client:", "client", "Anode NO:", "anode_nr", "Date Of Inspection:", "inspection_date"),
+        ("electrolyzer No:", "electrolyzer", "Cathode No:", "cathode_nr", "Operation days:", "operation_days"),
+        ("Position:", "position", "membrane No:", "membrane_nr", "Electrode No:(Anode)", "electrode_nr_anode"),
+        ("Element no:", "element_nr", "membrane Type:", "membrane_type", "Electrode No:(Cathode)", "electrode_nr_cathode"),
+    ]
+    for offset, cells in enumerate(header):
+        excel_row = 2 + offset
+        for index in range(3):
+            put(excel_row, 1 + index * 4, cells[index * 2], font=bold)
+            put(excel_row, 2 + index * 4, _g(row, cells[index * 2 + 1]), span=3)
+    put(6, 1, "Reason for inspection", font=bold)
+    put(6, 2, _g(row, "inspection_reason"), span=11)
+
+    cursor = 8
+
+    def paint_grid(origin_col: int, origin_row: int, caption: str, data: dict[str, Any]) -> int:
+        put(origin_row, origin_col, caption, font=bold, align=center, span=21)
+        slots = 21
+        bands = 15
+        for band in range(bands):
+            excel_row = origin_row + 1 + band
+            for slot in range(slots):
+                value = ""
+                fill = None
+                if band in (0, bands - 1) or slot in (0, slots - 1):
+                    value = ""
+                elif band == 1 and slot >= 2:
+                    value = str(GRID_COLS[slot - 2])
+                elif band > 1:
+                    grid_row = GRID_ROWS[band - 2]
+                    if slot == 1:
+                        value = grid_row
+                    else:
+                        value = str((data or {}).get(f"{grid_row}{GRID_COLS[slot - 2]}") or "")
+                        fill = fills.get(value)
+                put(excel_row, origin_col + slot, value, font=bold if value in fills or (band == 1 or (slot == 1 and band > 1)) else small, align=center, fill=fill)
+        return origin_row + 1 + bands
+
+    cursor = paint_grid(1, cursor, "Membrane inspection — Anode Side (top view)", grids.get("membrane_as") or {})
+    cursor += 1
+    left = paint_grid(1, cursor, "Cathode Side (plan view)", grids.get("membrane_ks") or {})
+    paint_grid(23, cursor, "Leak test anode side (plan view)", grids.get("membrane_lt") or {})
+    cursor = left + 1
+    left = paint_grid(1, cursor, "Anode half shell (plan view)", grids.get("anode_half") or {})
+    paint_grid(23, cursor, "cathode half shell (plan view)", grids.get("cathode_half") or {})
+    cursor = left + 1
+
+    blister = [
+        ("Anode Surface %", "blister_anode_area"),
+        ("Periphery %", "blister_periphery_top"),
+        ("Periphery %", "blister_periphery_bottom"),
+        ("Periphery %", "blister_periphery_side"),
+        ("Corner %", "blister_corners"),
+        ("Wrinkle(w)", "folds"),
+        ("Pressure marks(pm)", "pressure_marks"),
+        ("Visible holes(vh)", "visible_holes"),
+        ("Tears(T)", "cracks"),
+    ]
+    put(cursor, 1, "Blister", font=bold, span=2)
+    cursor += 1
+    for label, key in blister:
+        put(cursor, 1, label, font=bold)
+        put(cursor, 2, _g(row, key), span=3)
+        cursor += 1
+    put(cursor, 1, "Remarks:", font=bold)
+    put(cursor, 2, _g(row, "blister_remarks"), span=5)
+    cursor += 1
+    put(cursor, 1, "XRF.Anode:", font=bold)
+    put(cursor, 2, _xrf(row, "xrf_anode", "xrf_anode_na"), span=3)
+    put(cursor, 5, "N/A" if getattr(row, "xrf_anode_na", False) else "", align=center)
+    cursor += 1
+    put(cursor, 1, "XRF.Cathode:", font=bold)
+    put(cursor, 2, _xrf(row, "xrf_cathode", "xrf_cathode_na"), span=3)
+    put(cursor, 5, "N/A" if getattr(row, "xrf_cathode_na", False) else "", align=center)
+    cursor += 2
+    put(cursor, 1, "Deposits(D): C-90", font=bold)
+    put(cursor, 2, _g(row, "deposits"), span=5)
+    cursor += 1
+    put(cursor, 1, "Leakage", font=bold)
+    put(cursor, 2, "Anode", font=bold, align=center)
+    put(cursor, 3, "Cathode", font=bold, align=center)
+    cursor += 1
+    for label, anode_key, cathode_key in (
+        ("Leakage pan(LP)", "leakage_pan", "leakage_pan_cathode"),
+        ("Leakage Web area (Lw)", "leakage_web", "leakage_web_cathode"),
+        ("Leakage corner area (LC)", "leakage_corner", "leakage_corner_cathode"),
+        ("Leakage outlet nozzle(LO)", "leakage_outlet", "leakage_outlet_cathode"),
+        ("Leakage inlet nozzle (LI)", "leakage_inlet", "leakage_inlet_cathode"),
+        ("Loose Flange", "leakage_flange", "leakage_flange_cathode"),
+    ):
+        put(cursor, 1, label, font=bold)
+        put(cursor, 2, _g(row, anode_key), align=center)
+        put(cursor, 3, _g(row, cathode_key), align=center)
+        cursor += 1
+    footer = [
+        ("sample cathode", _g(row, "sample_cathode_note") or ("Yes" if getattr(row, "sample_cathode", False) else "")),
+        ("sample anode", _g(row, "sample_anode_note") or ("Yes" if getattr(row, "sample_anode", False) else "")),
+        ("sample membrane", _g(row, "sample_membrane_note") or ("Yes" if getattr(row, "sample_membrane", False) else "")),
+        ("insert pipe (Anode)", _g(row, "anode_tube_remark") or ("Yes" if getattr(row, "anode_tube_ok", False) else "")),
+        ("insert pipe (cathode)", _g(row, "cathode_tube_remark") or ("Yes" if getattr(row, "cathode_tube_ok", False) else "")),
+        ("spacer strip (Anode)", _g(row, "anode_spacer_remark") or ("Yes" if getattr(row, "anode_spacer_ok", False) else "")),
+        ("spacer strip (cathode)", _g(row, "cathode_spacer_remark") or ("Yes" if getattr(row, "cathode_spacer_ok", False) else "")),
+        ("Frame gasket", _g(row, "frame_gasket_remark") or ("Yes" if getattr(row, "frame_gasket_ok", False) else "")),
+        ("Name", _g(row, "inspector_name") or _g(row, "sign_insp_name")),
+        ("Date", _g(row, "inspection_date")),
+        ("REMARKS", _g(row, "general_remarks")),
+    ]
+    for label, value in footer:
+        put(cursor, 1, label, font=bold)
+        put(cursor, 2, value, span=5)
+        cursor += 1
+    put(cursor, 1, "CZ-03-00-189-A", font=bold, span=3)
+
+    for index in range(1, 45):
+        ws.column_dimensions[get_column_letter(index)].width = 4.2 if index > 6 else 18
+    ws.row_dimensions[1].height = 22
+    ws.oddHeader.left.text = "CZ-03-00-189-A"
+    ws.print_title_rows = "1:1"
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.sheet_view.view = "pageBreakPreview"
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    filename = f"inspection-{_g(row, 'element_nr') or row.id}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 def inspection_pdf_response(reports: list[tuple[models.InspectionReport, dict[str, dict[str, Any]]]], filename: str) -> StreamingResponse:

@@ -741,6 +741,13 @@ _FINDING_FIELDS = [
     "leakage_corner",
     "leakage_outlet",
     "leakage_inlet",
+    "leakage_pan_cathode",
+    "leakage_web_cathode",
+    "leakage_corner_cathode",
+    "leakage_outlet_cathode",
+    "leakage_inlet_cathode",
+    "leakage_flange",
+    "leakage_flange_cathode",
 ]
 
 

@@ -5,9 +5,9 @@ from .. import models, schemas
 from ..crud import build_crud_router
 from ..database import get_db
 from ..relations_sync import multi_hook
-from ..export_utils import ExportFilters, build_export_meta, export_xlsx, rows_to_dicts
+from ..export_utils import build_export_meta
 from ..inspection_complete import missing_inspection_labels
-from ..inspection_pdf import inspection_pdf_response
+from ..inspection_pdf import inspection_form_xlsx, inspection_pdf_response
 
 _serial_links = multi_hook(
     ("anode", "anode_nr"),
@@ -88,61 +88,28 @@ def export_inspection_meta():
 
 @router.get("/export.xlsx", include_in_schema=False)
 def export_inspection_xlsx(
-    q: str | None = Query(default=None),
-    skip: int = 0,
-    limit: int = Query(default=20000, le=100000),
-    filters: ExportFilters = Depends(),
+    id: int | None = Query(default=None),
     db: Session = Depends(get_db),
 ):
-    from sqlalchemy import or_
-
-    query = db.query(models.InspectionReport)
-    if q:
-        like = f"%{q}%"
-        query = query.filter(
-            or_(
-                models.InspectionReport.element_nr.ilike(like),
-                models.InspectionReport.inspector_name.ilike(like),
-                models.InspectionReport.anode_nr.ilike(like),
-                models.InspectionReport.cathode_nr.ilike(like),
-                models.InspectionReport.membrane_nr.ilike(like),
-            )
-        )
-    items = query.order_by(models.InspectionReport.inspection_date.desc()).offset(skip).limit(limit).all()
-    rows = rows_to_dicts(items, _INSPECTION_EXPORT_FIELDS)
-    rows, fields = filters.apply(rows, _INSPECTION_EXPORT_FIELDS)
-    return export_xlsx(rows, fields, "inspections")
+    if id is None:
+        raise HTTPException(status_code=400, detail="Open one inspection form, then export that form")
+    item = db.query(models.InspectionReport).filter(models.InspectionReport.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Inspection not found")
+    return inspection_form_xlsx(item, _grids_map(db, item.element_nr))
 
 
 @router.get("/export.pdf", include_in_schema=False)
 def export_inspection_forms_pdf(
-    q: str | None = Query(default=None),
     id: int | None = Query(default=None),
-    skip: int = 0,
-    limit: int = Query(default=40, le=200),
     db: Session = Depends(get_db),
 ):
-    if id is not None:
-        item = db.query(models.InspectionReport).filter(models.InspectionReport.id == id).first()
-        if not item:
-            raise HTTPException(status_code=404, detail="Inspection not found")
-        return inspection_pdf_response(_pack(db, [item]), f"inspection-{item.element_nr or item.id}.pdf")
-    query = db.query(models.InspectionReport)
-    if q:
-        from sqlalchemy import or_
-
-        like = f"%{q}%"
-        query = query.filter(
-            or_(
-                models.InspectionReport.element_nr.ilike(like),
-                models.InspectionReport.inspector_name.ilike(like),
-                models.InspectionReport.anode_nr.ilike(like),
-                models.InspectionReport.cathode_nr.ilike(like),
-                models.InspectionReport.membrane_nr.ilike(like),
-            )
-        )
-    items = query.order_by(models.InspectionReport.inspection_date.desc()).offset(skip).limit(limit).all()
-    return inspection_pdf_response(_pack(db, items), "inspections.pdf")
+    if id is None:
+        raise HTTPException(status_code=400, detail="Open one inspection form, then export that form")
+    item = db.query(models.InspectionReport).filter(models.InspectionReport.id == id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Inspection not found")
+    return inspection_pdf_response(_pack(db, [item]), f"inspection-{item.element_nr or item.id}.pdf")
 
 
 @router.get("/{item_id}/sheet.pdf", include_in_schema=False)
