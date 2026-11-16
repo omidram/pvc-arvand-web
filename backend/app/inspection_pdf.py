@@ -3,16 +3,26 @@ from __future__ import annotations
 
 import base64
 import io
+import re
 from datetime import date, datetime
+from pathlib import Path
 from typing import Any
 
-from fastapi.responses import StreamingResponse
+import arabic_reshaper
+from bidi.algorithm import get_display
+from fastapi.responses import Response
 from reportlab.lib.colors import Color, black, white
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
 from . import models
+
+_ARABIC = re.compile(r"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]")
+_FONT_READY = False
+_ROOT = Path(__file__).resolve().parents[2]
 
 GRID_ROWS = list("ABCDEFGHJKLM")
 GRID_COLS = list(range(18, 0, -1))
@@ -29,6 +39,36 @@ CODE_FILL = {
     "vh": Color(0.91, 0.30, 0.24),
     "T": Color(0.61, 0.35, 0.71),
 }
+
+
+def _ensure_value_font() -> str:
+    global _FONT_READY
+    if _FONT_READY:
+        return "Vazir"
+    regular = _ROOT / "docs" / "fonts" / "Vazirmatn-Regular.ttf"
+    try:
+        pdfmetrics.registerFont(TTFont("Vazir", str(regular)))
+        _FONT_READY = True
+        return "Vazir"
+    except Exception:
+        return "Helvetica"
+
+
+def _shape(value: str) -> str:
+    if not value or not _ARABIC.search(value):
+        return value
+    try:
+        return get_display(arabic_reshaper.reshape(value))
+    except Exception:
+        return value
+
+
+def _fit(c: canvas.Canvas, text: str, font: str, size: float, max_w: float) -> str:
+    shown = _shape(text or "")
+    limit = max(max_w, 4)
+    while shown and c.stringWidth(shown, font, size) > limit:
+        shown = shown[:-1]
+    return shown
 
 
 def _txt(value: Any) -> str:
@@ -71,33 +111,44 @@ def _box(c: canvas.Canvas, x: float, y: float, w: float, h: float) -> None:
     c.rect(x, y, w, h, stroke=1, fill=0)
 
 
+def _center(c: canvas.Canvas, x: float, y: float, w: float, h: float, text: str, *, bold: bool = False, size: float = 7) -> None:
+    """One line, centred in its own cell, so a heading never paints over the value."""
+    _box(c, x, y, w, h)
+    font = "Helvetica-Bold" if bold else _ensure_value_font()
+    c.setFillColor(black)
+    c.setFont(font, size)
+    shown = _fit(c, text or "", font, size, w - 4)
+    if shown:
+        c.drawCentredString(x + w / 2, y + max((h - size) / 2, 1), shown)
+
+
 def _cell(c: canvas.Canvas, x: float, y: float, w: float, h: float, label: str, value: str, *, label_w: float | None = None) -> None:
     _box(c, x, y, w, h)
     c.setFillColor(black)
     c.setFont("Helvetica-Bold", 7)
     c.drawString(x + 3, y + h - 10, label)
     lw = label_w if label_w is not None else c.stringWidth(label, "Helvetica-Bold", 7) + 8
-    c.setFont("Helvetica", 8)
-    text = value or ""
-    max_w = w - lw - 6
-    while text and c.stringWidth(text, "Helvetica", 8) > max_w:
-        text = text[:-1]
-    c.drawString(x + lw, y + 4, text)
+    font = _ensure_value_font()
+    c.setFont(font, 8)
+    text = _fit(c, value or "", font, 8, w - lw - 6)
+    if text:
+        c.drawString(x + lw, y + 4, text)
 
 
 def _multiline(c: canvas.Canvas, x: float, y: float, w: float, h: float, label: str, value: str) -> None:
     _box(c, x, y, w, h)
     c.setFont("Helvetica-Bold", 7)
     c.drawString(x + 3, y + h - 10, label)
-    c.setFont("Helvetica", 8)
+    font = _ensure_value_font()
+    c.setFont(font, 8)
     text = c.beginText(x + 3, y + h - 20)
-    text.setFont("Helvetica", 8)
+    text.setFont(font, 8)
     width = w - 6
-    for raw_line in (value or "").splitlines() or [""]:
+    for raw_line in _shape(value or "").splitlines() or [""]:
         line = raw_line
         while line:
             cut = len(line)
-            while cut > 1 and c.stringWidth(line[:cut], "Helvetica", 8) > width:
+            while cut > 1 and c.stringWidth(line[:cut], font, 8) > width:
                 cut -= 1
             text.textLine(line[:cut])
             line = line[cut:]
@@ -214,30 +265,44 @@ def _draw_report(c: canvas.Canvas, row: models.InspectionReport, grids: dict[str
     content_w = width - 2 * m
     left_w = content_w * 0.55
     right_w = content_w - left_w
-    blister_h = 140
+    blister_h = 156
     y -= blister_h
     _grid(c, m, y, left_w, blister_h, "Membrane inspection — Anode Side (top view)", grids.get("membrane_as") or {})
     bx = m + left_w
     _box(c, bx, y, right_w, blister_h)
+    c.setFillColor(black)
     c.setFont("Helvetica-Bold", 8)
     c.drawCentredString(bx + right_w / 2, y + blister_h - 11, "Blister")
-    bw = right_w / 5
-    labels = ["Anode Surface %", "Periph. %", "Periph. %", "Periph. %", "% Corner"]
-    keys = ["blister_anode_area", "blister_periphery_top", "blister_periphery_bottom", "blister_periphery_side", "blister_corners"]
-    hy = y + blister_h - 24
-    for i, lab in enumerate(labels):
-        _cell(c, bx + i * bw, hy, bw, 12, lab, _g(row, keys[i]), label_w=2)
+    col_w = right_w / 5
+    head_h = 10
+    group_y = y + blister_h - 15 - head_h
+    for start, span, label in ((0, 1, "Anode Surface"), (1, 3, "Periphery"), (4, 1, "Corner")):
+        _center(c, bx + start * col_w, group_y, col_w * span, head_h, label, bold=True, size=7)
+    pct_y = group_y - head_h
+    for index in range(5):
+        _center(c, bx + index * col_w, pct_y, col_w, head_h, "%", bold=True, size=7)
+    val_h = 12
+    val_y = pct_y - val_h
+    value_keys = (
+        "blister_anode_area",
+        "blister_periphery_top",
+        "blister_periphery_bottom",
+        "blister_periphery_side",
+        "blister_corners",
+    )
+    for index, key in enumerate(value_keys):
+        _center(c, bx + index * col_w, val_y, col_w, val_h, _g(row, key), size=8)
     defects = [("Wrinkle(w)", "folds"), ("Pressure marks(pm)", "pressure_marks"), ("Visible holes(vh)", "visible_holes"), ("Tears(T)", "cracks")]
-    dy = hy - 14
+    dy = val_y - 12
     for lab, key in defects:
-        _cell(c, bx, dy, right_w, 13, lab, _g(row, key))
-        dy -= 13
-    xrf_h = 26
-    _multiline(c, bx, y + xrf_h, right_w, dy - y - xrf_h, "Remarks:", _g(row, "blister_remarks"))
-    _cell(c, bx, y + 13, right_w, 13, "XRF.Anode:", _xrf(row, "xrf_anode", "xrf_anode_na"))
-    _cell(c, bx, y, right_w, 13, "XRF.Cathode:", _xrf(row, "xrf_cathode", "xrf_cathode_na"))
+        _cell(c, bx, dy, right_w, 12, lab, _g(row, key))
+        dy -= 12
+    xrf_top = y + 24
+    _multiline(c, bx, xrf_top, right_w, max(dy + 12 - xrf_top, 16), "Remarks:", _g(row, "blister_remarks"))
+    _cell(c, bx, y + 12, right_w, 12, "XRF.Anode:", _xrf(row, "xrf_anode", "xrf_anode_na"))
+    _cell(c, bx, y, right_w, 12, "XRF.Cathode:", _xrf(row, "xrf_cathode", "xrf_cathode_na"))
 
-    split_h = 92
+    split_h = 84
     y -= split_h
     _grid(c, m, y, content_w / 2, split_h, "Cathode Side (plan view)", grids.get("membrane_ks") or {})
     _grid(c, m + content_w / 2, y, content_w / 2, split_h, "Leak test anode side (plan view)", grids.get("membrane_lt") or {})
@@ -326,7 +391,7 @@ def inspection_pdf_bytes(reports: list[tuple[models.InspectionReport, dict[str, 
     return buf.getvalue()
 
 
-def inspection_form_xlsx(row: models.InspectionReport, grids: dict[str, dict[str, Any]]) -> StreamingResponse:
+def inspection_form_xlsx(row: models.InspectionReport, grids: dict[str, dict[str, Any]]) -> Response:
     """One CZ-03 sheet, laid out like the form on screen. Not the whole inspection list."""
     from openpyxl import Workbook
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -505,19 +570,24 @@ def inspection_form_xlsx(row: models.InspectionReport, grids: dict[str, dict[str
 
     buf = io.BytesIO()
     wb.save(buf)
-    buf.seek(0)
     filename = f"inspection-{_g(row, 'element_nr') or row.id}.xlsx"
-    return StreamingResponse(
-        buf,
-        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    return _download(buf.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", filename)
+
+
+def _download(data: bytes, media_type: str, filename: str) -> Response:
+    """Whole file in one response. A streamed body reaches Chrome's downloader as 0 bytes."""
+    safe = filename.replace('"', "").replace("\r", "").replace("\n", "") or "export"
+    return Response(
+        content=data,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{safe}"',
+            "Content-Length": str(len(data)),
+            "Cache-Control": "no-store",
+        },
     )
 
 
-def inspection_pdf_response(reports: list[tuple[models.InspectionReport, dict[str, dict[str, Any]]]], filename: str) -> StreamingResponse:
+def inspection_pdf_response(reports: list[tuple[models.InspectionReport, dict[str, dict[str, Any]]]], filename: str) -> Response:
     data = inspection_pdf_bytes(reports)
-    return StreamingResponse(
-        io.BytesIO(data),
-        media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
+    return _download(data, "application/pdf", filename)

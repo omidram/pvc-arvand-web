@@ -11,7 +11,7 @@ import {
   type ExportExcelOptions,
 } from "@/components/domain/export-excel-dialog";
 import { ImportProgressBar } from "@/components/domain/import-progress";
-import { downloadExport, importExcel, type ImportProgress } from "@/lib/endpoints";
+import { EmptyDownloadError, downloadExport, importExcel, type ImportProgress } from "@/lib/endpoints";
 import { useAuth } from "@/lib/auth/context";
 import { appAlert } from "@/lib/dialog";
 import { useI18n } from "@/lib/i18n/context";
@@ -57,7 +57,7 @@ export function ExportButtons({
         filenameBase ? `${filenameBase}.${format}` : undefined
       );
     } catch (err) {
-      setNote(err instanceof Error ? err.message : t("common.export"));
+      setNote(err instanceof EmptyDownloadError ? t("common.exportEmpty") : err instanceof Error ? err.message : t("common.export"));
     } finally {
       setBusy(null);
     }

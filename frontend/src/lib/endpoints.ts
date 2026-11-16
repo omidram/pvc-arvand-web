@@ -601,6 +601,28 @@ export async function fetchExportMeta(
   };
 }
 
+/** Chrome's download shelf writes 0 bytes when the blob URL is revoked before the save finishes. */
+export class EmptyDownloadError extends Error {
+  constructor() {
+    super("The export file was empty.");
+  }
+}
+
+function saveBlob(data: Blob, filename: string): void {
+  if (!data.size) throw new EmptyDownloadError();
+  const url = window.URL.createObjectURL(data);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.rel = "noopener";
+  document.body.appendChild(link);
+  link.click();
+  window.setTimeout(() => {
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  }, 120_000);
+}
+
 /** Downloads a resource's export.xlsx/export.pdf via the browser (auth header via axios, then blob download). */
 export async function downloadExport(
   prefix: string,
@@ -640,14 +662,12 @@ export async function downloadExport(
     }
     throw err;
   }
-  const url = window.URL.createObjectURL(new Blob([data]));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename || `${prefix.replace(/^\//, "").replace(/\//g, "-")}.${format}`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(url);
+  const filenameOut = filename || `${prefix.replace(/^\//, "").replace(/\//g, "-")}.${format}`;
+  const bytes = data instanceof Blob ? data : new Blob([data]);
+  const typed = new Blob([await bytes.arrayBuffer()], {
+    type: format === "pdf" ? "application/pdf" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+  saveBlob(typed, filenameOut);
 }
 
 export type ImportProgress = { percent: number; processed: number; total: number };
