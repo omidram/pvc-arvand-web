@@ -8,6 +8,7 @@ export of a full plant or per-electrolyzer report. No external services
 or API keys required.
 """
 import io
+import math
 import statistics as pystats
 from collections import defaultdict
 from datetime import datetime
@@ -20,6 +21,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
@@ -44,35 +46,70 @@ def _zscore_outliers(values: list[tuple[str, float]], threshold: float = 2.5) ->
     return sorted(flagged, key=lambda x: abs(x["z_score"]), reverse=True)[:50]
 
 
+def _voltage_filter(query, electrolyzer: str | None):
+    query = query.filter(models.VoltageReading.standardized_voltage.isnot(None))
+    if electrolyzer:
+        query = query.filter(models.VoltageReading.electrolyzer == electrolyzer)
+    return query
+
+
+def _voltage_stats(db: Session, electrolyzer: str | None) -> tuple[dict | None, list[dict], int]:
+    """Count, mean and outliers in SQL. Loading every cell voltage into Python stalls the page."""
+    column = models.VoltageReading.standardized_voltage
+    count, average, low, high, total, total_sq = _voltage_filter(
+        db.query(func.count(column), func.avg(column), func.min(column), func.max(column), func.sum(column), func.sum(column * column)),
+        electrolyzer,
+    ).one()
+    count = int(count or 0)
+    if not count or average is None:
+        return None, [], 0
+    mean = float(average)
+    variance = float(total_sq or 0) / count - mean * mean
+    stdev = math.sqrt(variance) if variance > 0 else 0.0
+    stats = {
+        "count": count,
+        "mean": round(mean, 4),
+        "min": round(float(low), 4),
+        "max": round(float(high), 4),
+        "stdev": round(stdev, 4),
+    }
+    outliers: list[dict] = []
+    if stdev > 0:
+        lo = mean - 2.5 * stdev
+        hi = mean + 2.5 * stdev
+        rows = _voltage_filter(
+            db.query(
+                models.VoltageReading.electrolyzer,
+                models.VoltageReading.position,
+                models.VoltageReading.element_nr,
+                column,
+            ).filter((column < lo) | (column > hi)),
+            electrolyzer,
+        ).limit(50).all()
+        outliers = [
+            {
+                "label": f"{el or '?'} / {pos or nr or '?'}",
+                "value": round(float(value), 4),
+                "z_score": round((float(value) - mean) / stdev, 2),
+            }
+            for el, pos, nr, value in rows
+        ]
+        outliers.sort(key=lambda item: abs(item["z_score"]), reverse=True)
+    return stats, outliers, count
+
+
 def _build_summary(db: Session, electrolyzer: str | None) -> dict:
-    voltage_q = db.query(models.VoltageReading).filter(models.VoltageReading.standardized_voltage.isnot(None))
     shutdowns_q = db.query(models.Shutdown)
     elements_q = db.query(models.Element)
     ce_q = db.query(models.CurrentEfficiencyEntry).filter(models.CurrentEfficiencyEntry.value_pct.isnot(None))
     if electrolyzer:
-        voltage_q = voltage_q.filter(models.VoltageReading.electrolyzer == electrolyzer)
         shutdowns_q = shutdowns_q.filter(models.Shutdown.plant_part == electrolyzer)
         elements_q = elements_q.filter(models.Element.electrolyzer == electrolyzer)
         ce_q = ce_q.filter(models.CurrentEfficiencyEntry.scope_ref == electrolyzer)
 
-    readings = voltage_q.all()
     shutdowns = shutdowns_q.all()
     ce_entries = ce_q.all()
-
-    voltages = [r.standardized_voltage for r in readings]
-    voltage_stats = None
-    voltage_outliers = []
-    if voltages:
-        voltage_stats = {
-            "count": len(voltages),
-            "mean": round(pystats.fmean(voltages), 4),
-            "min": round(min(voltages), 4),
-            "max": round(max(voltages), 4),
-            "stdev": round(pystats.pstdev(voltages), 4) if len(voltages) > 1 else 0,
-        }
-        voltage_outliers = _zscore_outliers(
-            [(f"{r.electrolyzer or '?'} / {r.position or r.element_nr or '?'}", r.standardized_voltage) for r in readings]
-        )
+    voltage_stats, voltage_outliers, voltage_count = _voltage_stats(db, electrolyzer)
 
     by_category: dict[str, dict] = {}
     total_hours = 0.0
@@ -117,7 +154,7 @@ def _build_summary(db: Session, electrolyzer: str | None) -> dict:
             "active_elements": active_elements,
             "total_elements": elements_q.count(),
             "shutdowns": len(shutdowns),
-            "voltage_readings": len(readings),
+            "voltage_readings": voltage_count,
             "current_efficiency_entries": len(ce_entries),
         },
         "voltage_stats": voltage_stats,
@@ -154,20 +191,20 @@ def _month_key(dt: datetime) -> str:
 
 
 def _build_trends(db: Session, electrolyzer: str | None) -> dict:
-    voltage_q = db.query(models.VoltageReading).filter(
-        models.VoltageReading.standardized_voltage.isnot(None), models.VoltageReading.date.isnot(None)
+    period = func.substr(models.VoltageReading.date, 1, 7)
+    column = models.VoltageReading.standardized_voltage
+    voltage_q = db.query(period, func.avg(column), func.count(column)).filter(
+        column.isnot(None), models.VoltageReading.date.isnot(None)
     )
     shutdowns_q = db.query(models.Shutdown).filter(models.Shutdown.shutdown_time.isnot(None))
     if electrolyzer:
         voltage_q = voltage_q.filter(models.VoltageReading.electrolyzer == electrolyzer)
         shutdowns_q = shutdowns_q.filter(models.Shutdown.plant_part == electrolyzer)
 
-    voltage_by_month: dict[str, list[float]] = defaultdict(list)
-    for r in voltage_q.all():
-        voltage_by_month[_month_key(r.date)].append(r.standardized_voltage)
     voltage_trend = [
-        {"period": period, "avg_voltage": round(pystats.fmean(vals), 4), "count": len(vals)}
-        for period, vals in sorted(voltage_by_month.items())
+        {"period": bucket, "avg_voltage": round(float(average), 4), "count": int(count)}
+        for bucket, average, count in voltage_q.group_by(period).order_by(period).all()
+        if bucket and average is not None
     ]
 
     shutdown_by_month: dict[str, dict] = defaultdict(lambda: {"count": 0, "total_hours": 0.0})
@@ -186,12 +223,16 @@ def _build_trends(db: Session, electrolyzer: str | None) -> dict:
 
 @router.get("/summary")
 def report_summary(electrolyzer: str | None = None, db: Session = Depends(get_db)):
-    return _build_summary(db, electrolyzer)
+    from ..read_cache import get_or_compute
+
+    return get_or_compute(f"report-summary:{electrolyzer or ''}", 60, lambda: _build_summary(db, electrolyzer))
 
 
 @router.get("/trends")
 def report_trends(electrolyzer: str | None = None, db: Session = Depends(get_db)):
-    return _build_trends(db, electrolyzer)
+    from ..read_cache import get_or_compute
+
+    return get_or_compute(f"report-trends:{electrolyzer or ''}", 60, lambda: _build_trends(db, electrolyzer))
 
 
 @router.get("/export.xlsx", include_in_schema=False)

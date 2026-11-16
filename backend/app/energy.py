@@ -21,7 +21,6 @@ except Exception:
 # AriaORMS Excel often lands a day after the logsheet clock. Older than that is off.
 LIVE_LAG_DAYS = 1
 
-from sqlalchemy import String, and_, cast
 from sqlalchemy.orm import Session
 
 from . import models
@@ -35,13 +34,10 @@ def tehran_today() -> date:
 
 
 def _stored_on_days(column, start_day: date, end_day_exclusive: date):
-    """Match a calendar day whether SQLite stored 'YYYY-MM-DD HH:MM:SS' or with microseconds.
+    """Match a calendar day on the bare date column so the date index is used."""
+    from .sqlite_dates import stored_between
 
-    Binding a DateTime adds '.000000'. That text is greater than the stored
-    midnight stamp, so a filter of date >= that day drops the whole day.
-    """
-    as_text = cast(column, String)
-    return and_(as_text >= start_day.isoformat(), as_text < end_day_exclusive.isoformat())
+    return stored_between(column, start_day, end_day_exclusive)
 
 
 def tehran_now() -> datetime:

@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from sqlalchemy import func, or_
@@ -42,7 +42,8 @@ def _filter_electrolyzer(query, column, electrolyzer: str | None):
     aliases = _electrolyzer_aliases(electrolyzer)
     if not aliases:
         return query
-    return query.filter(func.upper(column).in_(aliases))
+    # Exact names keep the (electrolyzer, …) index. upper(column) scans every row.
+    return query.filter(column.in_(aliases))
 
 
 def _parse_day(value: str | date | datetime | None) -> date | None:
@@ -106,8 +107,11 @@ def _select_readings(
         if max_date is None:
             return None, None, []
         day = _parse_day(max_date)
-        # SQLite stores datetimes as text; equality on Python datetime can miss rows.
-        q = q.filter(func.date(models.VoltageReading.date) == func.date(max_date))
+        if day is None:
+            return None, None, []
+        from ..sqlite_dates import stored_between
+
+        q = q.filter(stored_between(models.VoltageReading.date, day, day + timedelta(days=1)))
         rows = list(q.all())
         rows.sort(key=lambda r: (_pos_key(r.position), r.id or 0))
         return day, day, rows
@@ -115,10 +119,9 @@ def _select_readings(
     assert start is not None and end is not None
     if end < start:
         start, end = end, start
-    q = q.filter(
-        func.date(models.VoltageReading.date) >= start.isoformat(),
-        func.date(models.VoltageReading.date) <= end.isoformat(),
-    )
+    from ..sqlite_dates import stored_between
+
+    q = q.filter(stored_between(models.VoltageReading.date, start, end + timedelta(days=1)))
     rows = list(q.all())
     rows.sort(key=lambda r: (_parse_day(r.date) or date.min, _pos_key(r.position), r.id or 0))
     return start, end, rows
@@ -205,7 +208,7 @@ def list_voltage_readings(
     query = db.query(models.VoltageReading)
     aliases = _electrolyzer_aliases(electrolyzer)
     if aliases:
-        query = query.filter(func.upper(models.VoltageReading.electrolyzer).in_(aliases))
+        query = query.filter(models.VoltageReading.electrolyzer.in_(aliases))
     start = _parse_day(date_from)
     end = _parse_day(date_till)
     if start and not end:
@@ -213,10 +216,9 @@ def list_voltage_readings(
     if end and not start:
         start = end
     if start and end:
-        query = query.filter(
-            func.date(models.VoltageReading.date) >= start.isoformat(),
-            func.date(models.VoltageReading.date) <= end.isoformat(),
-        )
+        from ..sqlite_dates import stored_between
+
+        query = query.filter(stored_between(models.VoltageReading.date, start, end + timedelta(days=1)))
     if q:
         like = f"%{q}%"
         query = query.filter(
@@ -341,10 +343,9 @@ def voltage_distribution(
         qn = db.query(models.ElectrolyzerNormalization)
         qn = _filter_electrolyzer(qn, models.ElectrolyzerNormalization.electrolyzer, electrolyzer)
         if start and end:
-            qn = qn.filter(
-                func.date(models.ElectrolyzerNormalization.date) >= start.isoformat(),
-                func.date(models.ElectrolyzerNormalization.date) <= end.isoformat(),
-            )
+            from ..sqlite_dates import stored_between
+
+            qn = qn.filter(stored_between(models.ElectrolyzerNormalization.date, start, end + timedelta(days=1)))
         for n in qn.all():
             key = (n.normalization_nr, (n.electrolyzer or "").strip().upper(), _parse_day(n.date), (n.time or "").strip())
             norms[key] = n

@@ -45,8 +45,7 @@ export default function OverviewPage() {
   const dashboardQuery = useQuery({
     queryKey: ["statistics", "dashboard", "with-voltage-gauges"],
     queryFn: statisticsApi.dashboard,
-    staleTime: 0,
-    refetchOnMount: "always",
+    staleTime: 20_000,
     refetchInterval: 30_000,
   });
   const dolQuery = useQuery({ queryKey: ["statistics", "dol-by-membrane-type"], queryFn: statisticsApi.dolByMembraneType });

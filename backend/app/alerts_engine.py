@@ -150,35 +150,26 @@ def _upsert_alert(db: Session, payload: dict[str, Any]) -> models.AlertEvent:
 
 
 def _latest_voltage_rows(db: Session) -> list[models.VoltageReading]:
-    """Latest reading per electrolyzer+position, without loading the full history."""
+    """Latest cell voltages for the service day, not a ranking of the whole history."""
     from sqlalchemy import func
 
-    ranked = (
-        db.query(
-            models.VoltageReading.id.label("id"),
-            func.row_number()
-            .over(
-                partition_by=(models.VoltageReading.electrolyzer, models.VoltageReading.position),
-                order_by=(
-                    models.VoltageReading.date.desc(),
-                    models.VoltageReading.time.desc(),
-                    models.VoltageReading.id.desc(),
-                ),
-            )
-            .label("rn"),
-        )
+    from .energy import _stored_on_days, as_date, live_cell_map
+
+    _service, by_el = live_cell_map(db)
+    if by_el:
+        return [row for rows in by_el.values() for row in rows]
+    latest = db.query(func.max(models.VoltageReading.date)).scalar()
+    day = as_date(latest)
+    if day is None:
+        return []
+    return (
+        db.query(models.VoltageReading)
         .filter(
+            _stored_on_days(models.VoltageReading.date, day, day + timedelta(days=1)),
             models.VoltageReading.voltage.isnot(None),
-            models.VoltageReading.electrolyzer.isnot(None),
             models.VoltageReading.position.isnot(None),
             models.VoltageReading.position != "",
         )
-        .subquery()
-    )
-    return (
-        db.query(models.VoltageReading)
-        .join(ranked, models.VoltageReading.id == ranked.c.id)
-        .filter(ranked.c.rn == 1)
         .all()
     )
 
@@ -471,6 +462,12 @@ def _live_voltage_rows(db: Session) -> list[models.VoltageReading]:
 
 def voltage_live_stats(db: Session) -> dict[str, Any]:
     """Live plant kA / kWh and same-day cell gauges for the main dashboard."""
+    from .read_cache import get_or_compute
+
+    return get_or_compute("voltage-live", 12, lambda: _voltage_live_stats(db))
+
+
+def _voltage_live_stats(db: Session) -> dict[str, Any]:
     from .energy import cell_stacks_on_day, live_cell_map, period_sample_power, samples_on_day, tehran_today
     from .plant_topology import all_electrolyzers, format_electrolyzer_name
 

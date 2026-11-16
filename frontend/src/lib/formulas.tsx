@@ -82,7 +82,7 @@ export function FormulaRuntime({ children }: { children: ReactNode }) {
     queryKey: ["formulas"],
     queryFn: formulasApi.list,
     enabled: Boolean(user),
-    staleTime: 15_000,
+    staleTime: 5 * 60_000,
   });
   const map: FormulaMap = {};
   for (const row of query.data || []) {

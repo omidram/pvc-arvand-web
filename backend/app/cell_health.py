@@ -21,6 +21,19 @@ from .plant_topology import arrangement_name, train_of
 _HL: ContextVar[dict | None] = ContextVar("cell_health_limits", default=None)
 
 
+def _el_names(electrolyzer: str) -> list[str]:
+    """Name spellings stored in the plant file, without upper() on the column."""
+    raw = (electrolyzer or "").strip()
+    folded = raw.upper()
+    names = {raw, folded, folded.lower()}
+    letters = "".join(ch for ch in folded if ch.isalpha())
+    digits = "".join(ch for ch in folded if ch.isdigit())
+    if letters and digits:
+        names.add(f"{letters}{digits}")
+        names.add(f"{digits}{letters}")
+    return [name for name in names if name]
+
+
 def _h(name: str, default: float) -> float:
     """A cell-health number from Settings → Formulas, or the built-in default."""
     cur = _HL.get()
@@ -110,7 +123,7 @@ def _linear_slope_mv_per_day(points: list[tuple[date, float]]) -> tuple[float, f
 def _latest_norm(db: Session, electrolyzer: str) -> models.ElectrolyzerNormalization | None:
     return (
         db.query(models.ElectrolyzerNormalization)
-        .filter(func.upper(models.ElectrolyzerNormalization.electrolyzer) == electrolyzer)
+        .filter(models.ElectrolyzerNormalization.electrolyzer.in_(_el_names(electrolyzer)))
         .order_by(models.ElectrolyzerNormalization.date.desc(), models.ElectrolyzerNormalization.id.desc())
         .first()
     )
@@ -308,7 +321,7 @@ def _latest_readings_for_el(db: Session, electrolyzer: str) -> dict[str, models.
     """Latest reading per position for one electrolyzer."""
     rows = (
         db.query(models.VoltageReading)
-        .filter(func.upper(models.VoltageReading.electrolyzer) == electrolyzer)
+        .filter(models.VoltageReading.electrolyzer.in_(_el_names(electrolyzer)))
         .order_by(models.VoltageReading.date.desc(), models.VoltageReading.id.desc())
         .limit(2500)
         .all()
@@ -330,7 +343,7 @@ def _trend_map(db: Session, electrolyzer: str, days: int = 45) -> dict[str, tupl
     rows = (
         db.query(models.VoltageReading)
         .filter(
-            func.upper(models.VoltageReading.electrolyzer) == electrolyzer,
+            models.VoltageReading.electrolyzer.in_(_el_names(electrolyzer)),
             models.VoltageReading.date.isnot(None),
             models.VoltageReading.date >= cutoff,
             models.VoltageReading.voltage.isnot(None),
@@ -414,7 +427,7 @@ def _window_avgs(db: Session, electrolyzer: str, days: int = 30) -> tuple[dict[s
     rows = (
         db.query(models.VoltageReading)
         .filter(
-            func.upper(models.VoltageReading.electrolyzer) == electrolyzer,
+            models.VoltageReading.electrolyzer.in_(_el_names(electrolyzer)),
             models.VoltageReading.date.isnot(None),
             models.VoltageReading.date >= cutoff,
             models.VoltageReading.voltage.isnot(None),
@@ -436,7 +449,7 @@ def _window_avgs(db: Session, electrolyzer: str, days: int = 30) -> tuple[dict[s
     norms = (
         db.query(models.ElectrolyzerNormalization)
         .filter(
-            func.upper(models.ElectrolyzerNormalization.electrolyzer) == electrolyzer,
+            models.ElectrolyzerNormalization.electrolyzer.in_(_el_names(electrolyzer)),
             models.ElectrolyzerNormalization.date.isnot(None),
             models.ElectrolyzerNormalization.date >= cutoff,
             models.ElectrolyzerNormalization.total_current.isnot(None),

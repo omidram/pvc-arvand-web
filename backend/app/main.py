@@ -47,6 +47,7 @@ from .routers import (
     segregation,
     shutdowns,
     statistics,
+    system as system_router_module,
     storage as storage_router_module,
     table_files as table_files_router_module,
     tickets as tickets_router_module,
@@ -718,6 +719,9 @@ def _safe_static_file(full_path: str):
 
 @app.on_event("startup")
 def _start_schedulers() -> None:
+    from .database import ensure_hot_indexes
+
+    ensure_hot_indexes()
     backup_scheduler.init_scheduler_from_db()
     voltage_sync_scheduler.init_scheduler_from_db()
     arialims_sync_scheduler.init_scheduler_from_db()
@@ -810,6 +814,7 @@ _api(config_router.correction_factors_router, dependencies=_perm("settings"))
 _api(config_router.electrode_areas_router, dependencies=_perm("settings"))
 _api(config_router.voltage_distribution_classes_router, dependencies=_perm("settings"))
 _api(config_router.settings_router, dependencies=_perm("settings"))
+_api(system_router_module.router)
 
 # --- Element administration ---
 _api(elements.router, dependencies=_perm("elements"))

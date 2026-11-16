@@ -55,8 +55,7 @@ export function MainMenu() {
     queryKey: ["statistics", "dashboard", "main-menu-voltage"],
     queryFn: statisticsApi.dashboard,
     enabled: canSeeVoltage,
-    staleTime: 0,
-    refetchOnMount: "always",
+    staleTime: 20_000,
     refetchInterval: 30_000,
   });
   const settings = settingsQuery.data;

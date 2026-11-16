@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   settingsApi,
+  systemApi,
+  type MachineResources,
   electrolyzersApi,
   subPlantsApi,
   fullPlantsApi,
@@ -433,6 +435,93 @@ function AppearanceTab() {
   );
 }
 
+function ResourceMeter({ label, percent, detail }: { label: string; percent: number | null; detail: string }) {
+  const pct = percent == null ? 0 : Math.max(0, Math.min(100, percent));
+  const color = percent == null ? "#94a3b8" : pct >= 85 ? "#a10000" : pct >= 70 ? "#b45309" : "#0a246a";
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3 text-[12px]">
+        <span className="font-bold">{label}</span>
+        <span className="tabular-nums">{percent == null ? "—" : `${Math.round(pct)}%`}</span>
+      </div>
+      <div className="mt-1 h-2 overflow-hidden bg-[#d0d0d0]">
+        <div style={{ width: `${pct}%`, background: color, height: "100%" }} />
+      </div>
+      <div className="mt-0.5 text-[11px] text-[var(--win-muted)]">{detail}</div>
+    </div>
+  );
+}
+
+function LiveMachineCard() {
+  const { t } = useI18n();
+  const query = useQuery({
+    queryKey: ["system", "resources"],
+    queryFn: systemApi.resources,
+    refetchInterval: 4000,
+    staleTime: 3000,
+  });
+  const machine = query.data as MachineResources | undefined;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("settings.reqLiveTitle")}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 text-[12px] leading-relaxed">
+        <p>{t("settings.reqLiveIntro")}</p>
+        {query.isLoading && !machine ? <p className="text-[var(--win-muted)]">{t("settings.reqLiveLoading")}</p> : null}
+        {query.isError && !machine ? <p className="text-[#a10000]">{t("settings.reqLiveFail")}</p> : null}
+        {machine ? (
+          <>
+            <p className="font-bold text-[var(--win-navy)]">
+              {t("settings.reqLiveBusy")}: {machine.engaged_percent == null ? "—" : `${Math.round(machine.engaged_percent)}%`}
+              <span className="ms-2 font-normal text-[var(--win-muted)]">
+                {machine.hostname} · {machine.platform}
+              </span>
+            </p>
+            <ResourceMeter
+              label={t("settings.reqLiveCpu")}
+              percent={machine.cpu_percent}
+              detail={`${machine.cpu_count} ${t("settings.reqLiveCores")}`}
+            />
+            <ResourceMeter
+              label={t("settings.reqLiveRam")}
+              percent={machine.ram_percent}
+              detail={
+                machine.ram_used_mb != null && machine.ram_total_mb != null
+                  ? `${machine.ram_used_mb.toLocaleString()} / ${machine.ram_total_mb.toLocaleString()} MB`
+                  : "—"
+              }
+            />
+            <ResourceMeter
+              label={t("settings.reqLiveDisk")}
+              percent={machine.disk_percent}
+              detail={
+                machine.disk_free_gb != null && machine.disk_total_gb != null
+                  ? `${machine.disk_free_gb} GB ${t("settings.reqLiveFree")} / ${machine.disk_total_gb} GB`
+                  : machine.disk_path
+              }
+            />
+            <ResourceMeter
+              label={t("settings.reqLiveApp")}
+              percent={machine.process_ram_percent}
+              detail={
+                [
+                  machine.process_ram_mb != null ? `${machine.process_ram_mb.toLocaleString()} MB` : null,
+                  machine.process_cpu_percent != null
+                    ? `${t("settings.reqLiveCpu")} ${Math.round(machine.process_cpu_percent)}% ${t("settings.reqLiveOfMachine")}`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ") || "—"
+              }
+            />
+          </>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
 function RequirementsTab() {
   const { t } = useI18n();
   const workstation = [
@@ -480,6 +569,7 @@ function RequirementsTab() {
 
   return (
     <div className="grid gap-3">
+      <LiveMachineCard />
       <Card>
         <CardHeader>
           <CardTitle>{t("settings.reqTitle")}</CardTitle>

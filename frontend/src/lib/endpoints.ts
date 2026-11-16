@@ -137,6 +137,29 @@ export const settingsApi = {
     (await apiClient.put("/settings", payload)).data,
 };
 
+export type MachineResources = {
+  hostname: string;
+  platform: string;
+  cpu_count: number;
+  cpu_percent: number | null;
+  ram_total_mb: number | null;
+  ram_used_mb: number | null;
+  ram_percent: number | null;
+  disk_path: string;
+  disk_total_gb: number | null;
+  disk_used_gb: number | null;
+  disk_free_gb: number | null;
+  disk_percent: number | null;
+  process_ram_mb: number | null;
+  process_ram_percent: number | null;
+  process_cpu_percent: number | null;
+  engaged_percent: number | null;
+};
+
+export const systemApi = {
+  resources: async (): Promise<MachineResources> => (await apiClient.get("/system/resources")).data,
+};
+
 export const remarksApi = resource<T.Remark>("/remarks");
 export const performanceTestsApi = resource<T.PerformanceTest>("/performance-tests");
 

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from statistics import mean, pstdev
 
 from fastapi import APIRouter, Depends, Query
@@ -47,18 +47,13 @@ def _dol_bucket(dols: list[int]) -> dict:
 @router.get("/dashboard", dependencies=[Depends(require_any_form_access("dashboard", "voltage"))])
 def dashboard(db: Session = Depends(get_db)):
     from .. import alerts_engine
+    from ..read_cache import get_or_compute
 
     settings_row = db.query(models.PlantSettings).first()
-    active_elements = db.query(models.Element).filter(models.Element.disassembly_date.is_(None)).count()
-    try:
-        voltage = alerts_engine.voltage_live_stats(db)
-    except Exception:
-        voltage = None
-    return {
-        "customer": settings_row.customer if settings_row else None,
-        "uan": settings_row.uan if settings_row else None,
-        "plant_type": settings_row.plant_type if settings_row else None,
-        "counts": {
+
+    def counts():
+        active_elements = db.query(models.Element).filter(models.Element.disassembly_date.is_(None)).count()
+        return {
             "electrolyzers": _safe_count(db, models.Electrolyzer),
             "elements_total": _safe_count(db, models.Element),
             "elements_active": active_elements,
@@ -69,7 +64,17 @@ def dashboard(db: Session = Depends(get_db)):
             "inspections": _safe_count(db, models.InspectionReport),
             "analysis_samples": _safe_count(db, models.AnalysisSample),
             "voltage_readings": _safe_count(db, models.VoltageReading),
-        },
+        }
+
+    try:
+        voltage = alerts_engine.voltage_live_stats(db)
+    except Exception:
+        voltage = None
+    return {
+        "customer": settings_row.customer if settings_row else None,
+        "uan": settings_row.uan if settings_row else None,
+        "plant_type": settings_row.plant_type if settings_row else None,
+        "counts": get_or_compute("dashboard-counts", 120, counts),
         "voltage": voltage,
     }
 
@@ -428,20 +433,14 @@ def group_voltages(
     if day is None:
         return empty
 
-    day_text = day.isoformat()
-    # Prefer SQL date filter; fall back to Python if dialect returns nothing.
+    from ..sqlite_dates import stored_between
+
     readings = (
         db.query(models.VoltageReading)
         .filter(value_ok)
-        .filter(func.date(models.VoltageReading.date) == day_text)
+        .filter(stored_between(models.VoltageReading.date, day, day + timedelta(days=1)))
         .all()
     )
-    if not readings:
-        readings = [
-            row
-            for row in db.query(models.VoltageReading).filter(value_ok).limit(500000).all()
-            if _parse_stat_day(row.date) == day
-        ]
 
     el_filter = _el_aliases(electrolyzer) if mode_key == "avg-el-date" else set()
     if mode_key == "avg-el-date" and el_filter:

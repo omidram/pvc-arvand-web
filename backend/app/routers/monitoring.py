@@ -34,8 +34,13 @@ def _position_keys(position: str | None) -> list[str]:
 
 @router.get("/snapshot", response_model=schemas.MonitoringSnapshot)
 def monitoring_snapshot(db: Session = Depends(get_db)):
-    data = alerts_engine.build_snapshot(db, evaluate=False)
-    return schemas.MonitoringSnapshot.model_validate(data)
+    from ..read_cache import get_or_compute
+
+    def compute():
+        data = alerts_engine.build_snapshot(db, evaluate=False)
+        return schemas.MonitoringSnapshot.model_validate(data).model_dump()
+
+    return get_or_compute("monitoring-snapshot", 12, compute)
 
 
 @router.get("/import-progress")

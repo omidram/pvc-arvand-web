@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import time
 from typing import Callable
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -21,6 +22,8 @@ SKIP_PREFIXES = (
     "/health",
 )
 SKIP_EXACT = {"/api/logs"}  # avoid noise / recursion on log list polling
+# Every API call used to open the users table. Keep the name for a minute.
+_user_cache: dict[int, tuple[float, str | None, str | None]] = {}
 
 
 class AuditMiddleware(BaseHTTPMiddleware):
@@ -46,15 +49,21 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 username = payload.get("username")
                 user_role = payload.get("role")
                 # Prefer live role/username from DB when possible
-                db = SessionLocal()
-                try:
-                    db.info["skip_audit"] = True
-                    user = db.query(models.User).filter(models.User.id == user_id).first()
-                    if user:
-                        username = user.username
-                        user_role = user.role
-                finally:
-                    db.close()
+                cached = _user_cache.get(user_id)
+                now = time.monotonic()
+                if cached and now - cached[0] < 60:
+                    username, user_role = cached[1], cached[2]
+                else:
+                    db = SessionLocal()
+                    try:
+                        db.info["skip_audit"] = True
+                        user = db.query(models.User).filter(models.User.id == user_id).first()
+                        if user:
+                            username = user.username
+                            user_role = user.role
+                            _user_cache[user_id] = (now, username, user_role)
+                    finally:
+                        db.close()
             except Exception:
                 pass
 

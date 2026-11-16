@@ -41,6 +41,9 @@ def _sqlite_on_connect(dbapi_connection, connection_record) -> None:
         # "disk I/O error" on the next read, including the users table.
         cursor.execute("PRAGMA mmap_size=0")
         cursor.execute("PRAGMA temp_store=MEMORY")
+        # 64 MiB page cache. The voltage history is large; the default 2 MiB
+        # makes every dashboard read hit the disk again.
+        cursor.execute("PRAGMA cache_size=-65536")
     finally:
         cursor.close()
 
@@ -136,6 +139,50 @@ _CORE_SCHEMA = {
 }
 
 _SCHEMA_ERROR = re.compile(r"malformed database schema \((.+)\)")
+
+
+# Indexes the Access import never created. create_all does not add them to a
+# table that already exists, and without them a date filter scans 1.5M voltage rows.
+_HOT_INDEXES = (
+    ("voltage_readings", "ix_voltage_readings_date", "(date)"),
+    ("electrolyzer_normalizations", "ix_norm_date", "(date)"),
+    ("elements", "ix_elements_electrolyzer", "(electrolyzer)"),
+    ("elements", "ix_elements_element_nr", "(element_nr)"),
+    ("elements", "ix_elements_anode_nr", "(anode_nr)"),
+    ("elements", "ix_elements_cathode_nr", "(cathode_nr)"),
+    ("elements", "ix_elements_membrane_nr", "(membrane_nr)"),
+    ("alert_events", "ix_alert_events_status", "(status)"),
+    ("audit_logs", "ix_audit_logs_created_at", "(created_at)"),
+    ("anodes", "ix_anodes_anode_nr", "(anode_nr)"),
+    ("cathodes", "ix_cathodes_cathode_nr", "(cathode_nr)"),
+    ("membranes", "ix_membranes_membrane_nr", "(membrane_nr)"),
+)
+
+
+def ensure_hot_indexes() -> None:
+    """Create the indexes list screens and the live dashboard need. Once only."""
+    if not _sqlite:
+        return
+    from sqlalchemy import text
+
+    try:
+        with engine.connect() as conn:
+            tables = {row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='table'"))}
+            existing = {row[0] for row in conn.execute(text("SELECT name FROM sqlite_master WHERE type='index'"))}
+        for table, name, columns in _HOT_INDEXES:
+            if table not in tables or name in existing:
+                continue
+            with engine.begin() as conn:
+                info = conn.execute(text(f'PRAGMA table_info("{table}")')).fetchall()
+                have = {row[1] for row in info}
+                needed = [part.strip() for part in columns.strip("()").split(",")]
+                if not all(part in have for part in needed):
+                    continue
+                _log.info("Creating index %s on %s (first start can take a minute)", name, table)
+                conn.execute(text(f'CREATE INDEX IF NOT EXISTS "{name}" ON "{table}" {columns}'))
+                existing.add(name)
+    except Exception:
+        _log.exception("Hot indexes were not created")
 
 
 def _sqlite_file() -> Path | None:

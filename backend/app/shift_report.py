@@ -12,7 +12,6 @@ from html.parser import HTMLParser
 from io import BytesIO
 from typing import Any
 
-from sqlalchemy import String, cast
 from sqlalchemy.orm import Session
 
 from . import models
@@ -568,12 +567,12 @@ def shift_power_by_day(db: Session, start_day: date, end_day: date) -> dict[date
     shifts = shifts_between(db, start_day, end_day)
     if not shifts:
         return {}
-    stored = cast(models.ElectrolyzerNormalization.date, String)
+    from .sqlite_dates import stored_between
+
     voltage_rows = (
         db.query(models.ElectrolyzerNormalization)
         .filter(
-            stored >= start_day.isoformat(),
-            stored < end_day.isoformat(),
+            stored_between(models.ElectrolyzerNormalization.date, start_day, end_day),
             models.ElectrolyzerNormalization.total_voltage.isnot(None),
             models.ElectrolyzerNormalization.total_voltage > 50,
         )
