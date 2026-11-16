@@ -1065,6 +1065,23 @@ class AnalysisSampleRead(AnalysisSampleBase):
     id: int
 
 
+def loose_float(value):
+    """A kiloampere, voltage or temperature cell. Status words such as «قابل استفاده» become None."""
+    if value is None or value is False or value == "":
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return None if value != value else float(value)
+    text = str(value).strip().replace(",", ".").replace("\u066b", ".")
+    if not text:
+        return None
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return None
+
+
 class ElectrodeSegregationBase(ORMModel):
     serial_nr: str
     electrode_kind: str | None = None
@@ -1089,6 +1106,11 @@ class ElectrodeSegregationBase(ORMModel):
     pallet: str | None = None
     inspection_form_serial: str | None = None
     remarks: str | None = None
+
+    @field_validator("decommission_voltage", "decommission_ka", "decommission_temp", mode="before")
+    @classmethod
+    def _measure_is_a_number(cls, value):
+        return loose_float(value)
 
 
 class ElectrodeSegregationRead(ElectrodeSegregationBase):

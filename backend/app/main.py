@@ -437,6 +437,66 @@ def _ensure_segregation_enrich_columns() -> None:
 _ensure_segregation_enrich_columns()
 
 
+def _clear_text_in_segregation_measures() -> None:
+    """SQLite kept status notes such as «قابل استفاده» inside the kiloampere column.
+
+    A non-numeric note moves into the decision when that cell is still empty, then the
+    measure becomes null so ElectrodeSegregationRead can return the row.
+    """
+    from .schemas import loose_float
+
+    try:
+        present = {col["name"] for col in inspect(engine).get_columns("electrode_segregations")}
+    except Exception:
+        return
+    measures = [name for name in ("decommission_voltage", "decommission_ka", "decommission_temp") if name in present]
+    if not measures:
+        return
+    decision_ok = "decision" in present
+    selected = ["id"] + (["decision"] if decision_ok else []) + measures
+    try:
+        with engine.begin() as conn:
+            rows = conn.execute(
+                text(
+                    "SELECT "
+                    + ", ".join(selected)
+                    + " FROM electrode_segregations WHERE "
+                    + " OR ".join(f"typeof({name}) = 'text'" for name in measures)
+                )
+            ).mappings().all()
+    except Exception:
+        return
+    try:
+        with engine.begin() as conn:
+            for row in rows:
+                values = {}
+                for name in measures:
+                    raw = row[name]
+                    if not isinstance(raw, str):
+                        continue
+                    values[name] = loose_float(raw)
+                if not values:
+                    continue
+                decision = (row["decision"] or "").strip() if decision_ok else "kept"
+                raw_note = row.get("decommission_ka")
+                note = raw_note if isinstance(raw_note, str) else ""
+                if decision_ok and not decision and values.get("decommission_ka") is None and note.strip():
+                    conn.execute(
+                        text("UPDATE electrode_segregations SET decision = :note WHERE id = :id"),
+                        {"note": note.strip()[:200], "id": row["id"]},
+                    )
+                assignments = ", ".join(f"{name} = :{name}" for name in values)
+                conn.execute(
+                    text(f"UPDATE electrode_segregations SET {assignments} WHERE id = :id"),
+                    {**values, "id": row["id"]},
+                )
+    except Exception:
+        return
+
+
+_clear_text_in_segregation_measures()
+
+
 def _ensure_shutdown_trip_columns() -> None:
     try:
         present = {col["name"] for col in inspect(engine).get_columns("shutdowns")}

@@ -52,12 +52,7 @@ _SEG_DATE_FIELDS = ("install_date", "decommission_date", "disassemble_date", "in
 
 
 def _safe_float(value) -> float | None:
-    if value is None or value == "":
-        return None
-    try:
-        return float(str(value).strip().replace(",", ".").replace("\u066b", "."))
-    except (TypeError, ValueError):
-        return None
+    return schemas.loose_float(value)
 
 
 def _safe_read(obj: models.ElectrodeSegregation) -> schemas.ElectrodeSegregationRead:
@@ -93,6 +88,8 @@ def _row_kwargs(fields: dict) -> dict:
         value = fields[key]
         if key.endswith("_date"):
             out[key] = _parse_iso_date(value)
+        elif key in _SEG_FLOAT_FIELDS:
+            out[key] = _safe_float(value)
         else:
             out[key] = value
     return out

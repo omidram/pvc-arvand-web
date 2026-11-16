@@ -3411,6 +3411,10 @@ def _sync_inspection_segregation(db: Session, r: WfInspectionRequest) -> None:
         for key, value in fields.items():
             if key not in cols or key == "id":
                 continue
+            if key in {"decommission_voltage", "decommission_ka", "decommission_temp"}:
+                from ..schemas import loose_float
+
+                value = loose_float(value)
             if value is None and key not in {"decision", "coating_quality", "warranty", "segregation"} and existing is not None:
                 continue
             setattr(row, key, value)
