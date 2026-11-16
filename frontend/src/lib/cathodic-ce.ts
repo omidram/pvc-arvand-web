@@ -210,12 +210,6 @@ export const cathodicCeApi = {
     test_hours: number | null;
     readings: Record<string, Record<string, number>>;
     online: Record<string, number>;
-    sign_insp_name: string;
-    sign_insp_image: string;
-    sign_insp_at: string;
-    sign_proc_name: string;
-    sign_proc_image: string;
-    sign_proc_at: string;
   }): Promise<CathodicSheet> => (await apiClient.put("/cathodic-ce/sheet", body)).data,
   history: async (train: number): Promise<{ train: number; rows: CathodicHistoryRow[] }> =>
     (await apiClient.get("/cathodic-ce/history", { params: { train } })).data,

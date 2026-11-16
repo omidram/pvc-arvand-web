@@ -232,7 +232,7 @@ export function VoltageReportPanel({
   const capFill = Math.min(100, Math.max(0, ((live.plant_total_ka ?? 0) / designKa) * 100));
   const capMark = Math.min(100, Math.max(0, ((targetKa ?? 0) / designKa) * 100));
   const trains = (["1", "2"] as const).map((train) => trainLine(live, train));
-  // Daily kW is that day's cell voltage × AriaORMS kA. Week and month are the mean of those daily samples.
+  // Daily kW is that day's stack voltage × one shift kA. Week and month are the mean of those daily samples.
   const spanKw = span === "day" ? live.plant_power_kw : span === "month" ? live.plant_power_kw_30d : live.plant_power_kw_7d;
   const avgMw = spanKw != null ? spanKw / 1000 : null;
   // ((MW × 1.02 + 4.16 MW auxiliary) × hours) × 1000 = kWh. Hours: day 24, week 168, month 720.
@@ -311,9 +311,9 @@ export function VoltageReportPanel({
               <b>{hasPlan ? formatNumber(targetKa ?? 0, 1) : "\u2014"}</b>
               <span>{t("dashboard.capPlanTarget")}</span>
             </div>
-            <div>
-              <b>{designPct != null ? `${formatNumber(designPct, 1)}%` : "\u2014"}</b>
-              <span className="is-design">{t("dashboard.capByDesign")}</span>
+            <div title={designPct != null ? `${t("dashboard.capByDesign")}: ${formatNumber(designPct, 1)}%` : undefined}>
+              <b>{formatNumber(designKa, 1)}</b>
+              <span className="is-design">{t("dashboard.capFull")}</span>
             </div>
           </div>
           <div className="dv-kpi-meta">{U.ka}</div>

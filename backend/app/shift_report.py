@@ -562,10 +562,103 @@ def shifts_between(db: Session, start_day: date, end_day: date) -> dict[date, di
     return {day: packed for day, packed in ((day, _pack(items)) for day, items in grouped.items()) if packed}
 
 
+# One electrolyzer is about 15 kA. A larger figure on a unit row is the train
+# current copied onto every electrolyzer, or the same shift added more than once.
+UNIT_KA_LIMIT = 30.0
+
+
+def combine_train_power(pairs: list[tuple[float, float]], train_ka: float | None) -> float:
+    """kW for one train. Each pair is one electrolyzer's stack voltage and its own kA.
+
+    The train current is counted once. Unit currents are summed only when each
+    one is a real electrolyzer load. If every row carries more than a unit can
+    draw, that number is the train current repeated on each read: use it once.
+    If the unit loads add up to more than the official train kA, scale them
+    back so the same kiloamperes are not added again.
+    """
+    usable = [(float(v), float(i)) for v, i in pairs if v and i and float(v) > 50 and float(i) > 0]
+    if not usable:
+        return 0.0
+    currents = [i for _, i in usable]
+    unit_sum = sum(currents)
+    official = float(train_ka) if train_ka else 0.0
+    if len(usable) >= 2 and min(currents) > UNIT_KA_LIMIT:
+        ka = official if official > 0 else unit_sum / len(usable)
+        mean_v = sum(v for v, _ in usable) / len(usable)
+        return mean_v * ka
+    if official > 0 and unit_sum > official * 1.5:
+        return sum(v * i for v, i in usable) * (official / unit_sum)
+    return sum(v * i for v, i in usable)
+
+
+def _clock_minutes(label: str | None) -> int:
+    text = _clean(label)
+    if ":" not in text:
+        return -1
+    hour_s, minute_s = text.split(":", 1)
+    try:
+        return int(hour_s) * 60 + int(minute_s[:2])
+    except ValueError:
+        return -1
+
+
+def averaged_shift_loads(rows: list) -> dict[date, dict[str, Any]]:
+    """One kiloampere per electrolyzer per day.
+
+    A repeated pull of the same shift keeps one row. Morning and night are
+    averaged, not added. Train kA is stored on every electrolyzer row; it is
+    recorded once per train per shift, then averaged across that day's shifts.
+    """
+    grouped: dict[date, dict[str, dict[str, tuple[int, float | None, bool]]]] = {}
+    train_samples: dict[date, dict[str, dict[str, float]]] = {}
+    for row in rows:
+        day = _as_date(getattr(row, "report_date", None))
+        name = format_electrolyzer_name(getattr(row, "electrolyzer", None))
+        if day is None or not name:
+            continue
+        rotation = (getattr(row, "rotation", None) or "") or str(getattr(row, "shift_index", "") or "")
+        slot = grouped.setdefault(day, {}).setdefault(rotation, {})
+        row_id = int(getattr(row, "id", 0) or 0)
+        prev = slot.get(name)
+        if prev is not None and prev[0] >= row_id:
+            continue
+        raw_ka = getattr(row, "load_ka", None)
+        ka = float(raw_ka) if raw_ka is not None else None
+        online = bool(getattr(row, "in_service", False)) or (ka or 0) > 0
+        slot[name] = (row_id, ka, online)
+        train = str(getattr(row, "train", None) or train_of(name) or "")
+        raw_train = getattr(row, "train_ka", None)
+        if train and raw_train is not None and float(raw_train) > 0:
+            train_samples.setdefault(day, {}).setdefault(rotation, {})[train] = float(raw_train)
+
+    out: dict[date, dict[str, Any]] = {}
+    for day, rotations in grouped.items():
+        unit_values: dict[str, list[float]] = {}
+        for units in rotations.values():
+            for name, (_row_id, ka, _online) in units.items():
+                # A shift with no load is skipped. Two real shifts are averaged, not added.
+                if ka is None or ka <= 0:
+                    continue
+                unit_values.setdefault(name, []).append(ka)
+        units_out = {
+            name: sum(values) / len(values)
+            for name, values in unit_values.items()
+            if values and sum(values) / len(values) > 0
+        }
+        by_train: dict[str, list[float]] = {}
+        for rotation_trains in (train_samples.get(day) or {}).values():
+            for train, ka in rotation_trains.items():
+                by_train.setdefault(train, []).append(ka)
+        trains_out = {train: sum(values) / len(values) for train, values in by_train.items() if values}
+        if units_out or trains_out:
+            out[day] = {"units": units_out, "trains": trains_out}
+    return out
+
+
 def shift_power_by_day(db: Session, start_day: date, end_day: date) -> dict[date, float]:
-    """Daily plant kW from shift-report kA times that day's stack voltage."""
-    shifts = shifts_between(db, start_day, end_day)
-    if not shifts:
+    """Daily plant kW. Each day is one sample: averaged shift kA times that day's latest stack voltage."""
+    loads = averaged_shift_loads(_rows_between(db, start_day, end_day))
+    if not loads:
         return {}
     from .sqlite_dates import stored_between
 
@@ -578,30 +671,30 @@ def shift_power_by_day(db: Session, start_day: date, end_day: date) -> dict[date
         )
         .all()
     )
-    volts: dict[tuple[str, date], float] = {}
+    # Latest stack that day, not the highest spike and not a sum of every reading.
+    volts: dict[tuple[str, date], tuple[tuple[int, int], float]] = {}
     for row in voltage_rows:
         sample_day = _as_date(row.date)
-        if sample_day is None or row.electrolyzer is None:
+        if sample_day is None or sample_day not in loads or row.electrolyzer is None:
             continue
         name = format_electrolyzer_name(row.electrolyzer)
-        if name not in shifts.get(sample_day, {}).get("units", {}):
+        if name not in loads[sample_day]["units"]:
             continue
-        prev = volts.get((name, sample_day))
+        stamp = (_clock_minutes(getattr(row, "time", None)), int(getattr(row, "id", 0) or 0))
         value = float(row.total_voltage or 0)
-        if prev is None or value > prev:
-            volts[(name, sample_day)] = value
+        prev = volts.get((name, sample_day))
+        if prev is None or stamp > prev[0]:
+            volts[(name, sample_day)] = (stamp, value)
     out: dict[date, float] = {}
-    for day, shift in shifts.items():
-        total = 0.0
-        used = False
-        for name, unit in shift["units"].items():
-            if not unit.get("online"):
-                continue
-            ka = float(unit.get("load_ka") or 0)
-            voltage = volts.get((name, day)) or 0
+    for day, packed in loads.items():
+        by_train: dict[str, list[tuple[float, float]]] = {}
+        for name, ka in packed["units"].items():
+            voltage = volts.get((name, day), (None, 0.0))[1]
             if ka > 0 and voltage > 50:
-                total += voltage * ka
-                used = True
-        if used:
+                by_train.setdefault(train_of(name) or "", []).append((voltage, float(ka)))
+        total = 0.0
+        for train, pairs in by_train.items():
+            total += combine_train_power(pairs, packed["trains"].get(train))
+        if total > 0:
             out[day] = total
     return out

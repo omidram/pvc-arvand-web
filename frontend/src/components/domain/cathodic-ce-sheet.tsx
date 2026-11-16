@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AccessHub } from "@/components/layout/access-hub";
-import { InspectionSignaturePad } from "@/components/domain/inspection-signature";
 import { Button } from "@/components/ui/button";
 import { DateInput } from "@/components/ui/date-input";
 import { LoadingState } from "@/components/ui/spinner";
@@ -86,12 +85,6 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
   const [finalReading, setFinalReading] = useState("");
   const [testHours, setTestHours] = useState("");
   const [cells, setCells] = useState<Cells>({});
-  const [inspName, setInspName] = useState("");
-  const [inspImage, setInspImage] = useState("");
-  const [inspAt, setInspAt] = useState("");
-  const [procName, setProcName] = useState("");
-  const [procImage, setProcImage] = useState("");
-  const [procAt, setProcAt] = useState("");
   const [notice, setNotice] = useState("");
 
   const sheetQuery = useQuery({
@@ -114,12 +107,6 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
     setFinalReading(textOf(sheet.inputs.final_reading));
     setTestHours(textOf(sheet.inputs.test_hours));
     setCells(cellsFrom(sheet));
-    setInspName(sheet.inputs.sign_insp_name || "");
-    setInspImage(sheet.inputs.sign_insp_image || "");
-    setInspAt(sheet.inputs.sign_insp_at || "");
-    setProcName(sheet.inputs.sign_proc_name || "");
-    setProcImage(sheet.inputs.sign_proc_image || "");
-    setProcAt(sheet.inputs.sign_proc_at || "");
     setNotice("");
   }, [sheetQuery.data, day]);
 
@@ -164,12 +151,6 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
         test_hours: num(testHours),
         readings,
         online: flags,
-        sign_insp_name: inspName,
-        sign_insp_image: inspImage,
-        sign_insp_at: inspAt,
-        sign_proc_name: procName,
-        sign_proc_image: procImage,
-        sign_proc_at: procAt,
       });
     },
     onSuccess: async () => {
@@ -177,15 +158,6 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
       await queryClient.invalidateQueries({ queryKey: ["cathodic-ce-history", train] });
     },
   });
-
-  function clearChecks() {
-    setInspName("");
-    setInspImage("");
-    setInspAt("");
-    setProcName("");
-    setProcImage("");
-    setProcAt("");
-  }
 
   function setCell(code: string, hour: string, value: string) {
     const text = numericText(value);
@@ -202,7 +174,6 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
       }
       return next;
     });
-    clearChecks();
   }
 
   const ce = computed?.q37 ?? null;
@@ -230,7 +201,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
         </label>
         <label className="text-[12px] font-bold">
           {t("cathodicCe.dateLabel")}
-          <input className="access-inset-field mt-1 block w-64" value={dateLabel} onChange={(e) => { setDateLabel(e.target.value); clearChecks(); }} onKeyDown={enterNext} />
+          <input className="access-inset-field mt-1 block w-64" value={dateLabel} onChange={(e) => setDateLabel(e.target.value)} onKeyDown={enterNext} />
         </label>
         <label className="text-[12px] font-bold">
           {t("cathodicCe.totalLoad")}
@@ -238,7 +209,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
             <input
               className="access-inset-field block w-28"
               value={totalLoad}
-              onChange={(e) => { setTotalLoad(numericText(e.target.value)); clearChecks(); }}
+              onChange={(e) => setTotalLoad(numericText(e.target.value))}
               onKeyDown={enterNext}
               inputMode="decimal"
               placeholder="125"
@@ -260,29 +231,6 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
       </div>
 
       <p className="mb-2 max-w-5xl text-[12px] leading-5">{t("cathodicCe.hint")}</p>
-
-      {sheet ? (
-        <CheckStep
-          started={started}
-          inspName={inspName}
-          inspImage={inspImage}
-          inspAt={inspAt}
-          procName={procName}
-          procImage={procImage}
-          procAt={procAt}
-          onInsp={(patch) => {
-            if (patch.name !== undefined) setInspName(patch.name);
-            if (patch.image !== undefined) setInspImage(patch.image);
-            if (patch.at !== undefined) setInspAt(patch.at);
-          }}
-          onProc={(patch) => {
-            if (patch.name !== undefined) setProcName(patch.name);
-            if (patch.image !== undefined) setProcImage(patch.image);
-            if (patch.at !== undefined) setProcAt(patch.at);
-          }}
-          t={t}
-        />
-      ) : null}
 
       {sheetQuery.isLoading ? <LoadingState /> : null}
       {sheetQuery.isError ? <p className="text-[12px] text-red-700">{(sheetQuery.error as Error).message}</p> : null}
@@ -329,8 +277,8 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
                 <HeaderInputs
                   initial={initial}
                   finalReading={finalReading}
-                  onInitial={(value) => { setInitial(numericText(value)); clearChecks(); }}
-                  onFinal={(value) => { setFinalReading(numericText(value)); clearChecks(); }}
+                  onInitial={(value) => setInitial(numericText(value))}
+                  onFinal={(value) => setFinalReading(numericText(value))}
                   span={hours.length}
                   production={sheet.production_tag}
                 />
@@ -360,7 +308,7 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
               <input
                 className="access-inset-field mt-1 block w-full bg-[#ffff00]"
                 value={testHours}
-                onChange={(e) => { setTestHours(numericText(e.target.value)); clearChecks(); }}
+                onChange={(e) => setTestHours(numericText(e.target.value))}
                 onKeyDown={enterNext}
                 inputMode="decimal"
               />
@@ -383,76 +331,6 @@ export function CathodicCeSheet({ train }: { train: 1 | 2 }) {
       <History train={train} rows={historyQuery.data?.rows || []} t={t} />
     </div>
     </AccessHub>
-  );
-}
-
-function CheckStep({
-  started,
-  inspName,
-  inspImage,
-  inspAt,
-  procName,
-  procImage,
-  procAt,
-  onInsp,
-  onProc,
-  t,
-}: {
-  started: boolean;
-  inspName: string;
-  inspImage: string;
-  inspAt: string;
-  procName: string;
-  procImage: string;
-  procAt: string;
-  onInsp: (patch: { name?: string; image?: string; at?: string }) => void;
-  onProc: (patch: { name?: string; image?: string; at?: string }) => void;
-  t: (key: string, vars?: Record<string, string | number>) => string;
-}) {
-  const checked = Boolean(inspName.trim() && procName.trim());
-  return (
-    <section className="mb-3">
-      <ol className="wf-stepper">
-        <li className={`wf-step${started ? " is-done" : " is-current"}`}>
-          <span className="wf-step-dot">1</span>
-          <span className="wf-step-label">{t("cathodicCe.stepEntry")}</span>
-        </li>
-        <li className={`wf-step${checked ? " is-done" : started ? " is-current" : ""}`}>
-          <span className="wf-step-dot">2</span>
-          <span className="wf-step-label">{t("wf.status.await_inspection")}</span>
-          <span className="wf-step-group">{t("wf.stageGroup.inspection.await_inspection")}</span>
-        </li>
-      </ol>
-      <div className="mt-2 border border-neutral-400 bg-white p-2">
-        <div className="mb-2 text-[12px] font-bold">{t("wf.status.await_inspection")}</div>
-        <p className="mb-2 max-w-5xl text-[12px] leading-5 text-neutral-700">
-          {checked ? t("cathodicCe.checkDone") : t("cathodicCe.checkPending")}
-        </p>
-        <div className="grid gap-2 md:grid-cols-2">
-          <InspectionSignaturePad
-            label={t("cathodicCe.signInspection")}
-            name={inspName}
-            image={inspImage}
-            readOnly={false}
-            onChange={onInsp}
-          />
-          <InspectionSignaturePad
-            label={t("cathodicCe.signProcess")}
-            name={procName}
-            image={procImage}
-            readOnly={false}
-            onChange={onProc}
-          />
-        </div>
-        {inspAt || procAt ? (
-          <p className="mt-1 text-[11px] text-neutral-600">
-            {inspAt ? `${t("cathodicCe.signInspection")}: ${inspAt}` : ""}
-            {inspAt && procAt ? " · " : ""}
-            {procAt ? `${t("cathodicCe.signProcess")}: ${procAt}` : ""}
-          </p>
-        ) : null}
-      </div>
-    </section>
   );
 }
 

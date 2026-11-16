@@ -201,8 +201,10 @@ def samples_on_day(db: Session, day: date) -> dict[str, dict[str, Any]]:
 def period_sample_power(db: Session, days: int) -> tuple[float | None, float | None]:
     """Mean daily plant kW and the sum of daily consumption.
 
-    Each AriaORMS day is one sample: kW = stack voltage × kA, and that day's
-    consumption is kW × 24 h. Days without a kA sample are left out, not averaged as zero.
+    Each day is one sample. Shift-report kA is averaged across that day's shifts
+    and is not added again on top of the log sheet. kW = stack voltage × kA,
+    and that day's consumption is kW × 24 h. Days without a kA sample are left
+    out, not averaged as zero.
     """
     today = tehran_today()
     start_day = today - timedelta(days=max(days, 1) - 1)
@@ -229,13 +231,23 @@ def period_sample_power(db: Session, days: int) -> tuple[float | None, float | N
         prev = best.get(key)
         if prev is None or _reading_is_newer(row, prev):
             best[key] = row
-    by_day: dict[date, float] = defaultdict(float)
-    for (_name, sample_day), row in best.items():
-        by_day[sample_day] += float(row.total_voltage or 0) * float(row.total_current or 0)
-    from .shift_report import shift_power_by_day
+    # One log-sheet sample per electrolyzer per day. A day that already has a
+    # shift report uses that kA only — the log-sheet current is not added on top.
+    from .shift_report import combine_train_power, shift_power_by_day
 
-    for sample_day, shift_kw in shift_power_by_day(db, start_day, end_day).items():
-        by_day[sample_day] = shift_kw
+    by_day: dict[date, float] = dict(shift_power_by_day(db, start_day, end_day))
+    log_pairs: dict[date, dict[str, list[tuple[float, float]]]] = {}
+    for (name, sample_day), row in best.items():
+        if sample_day in by_day:
+            continue
+        voltage = float(row.total_voltage or 0)
+        current = float(row.total_current or 0)
+        if voltage > 50 and current > 1:
+            log_pairs.setdefault(sample_day, {}).setdefault(train_of(name) or "", []).append((voltage, current))
+    for sample_day, trains in log_pairs.items():
+        total = sum(combine_train_power(pairs, None) for pairs in trains.values())
+        if total > 0:
+            by_day[sample_day] = total
     if not by_day:
         return None, None
     average_kw = sum(by_day.values()) / len(by_day)
@@ -275,7 +287,7 @@ def _duration_hours(current: datetime, nxt: datetime | None, *, now: datetime | 
     if nxt is not None:
         delta = (nxt - current).total_seconds() / 3600.0
         if delta <= 0:
-            return 4.0
+            return 0.0
         return min(delta, 24.0)
     horizon = now or tehran_now()
     delta = (horizon - current).total_seconds() / 3600.0

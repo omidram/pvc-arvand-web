@@ -514,7 +514,8 @@ def _voltage_live_stats(db: Session) -> dict[str, Any]:
         if peak is None or v > peak[0]:
             unit_peak[el] = (v, pos, (row.element_nr or "").strip() or None)
 
-    from .shift_report import current_shift
+    from .shift_report import combine_train_power, current_shift
+    from .plant_topology import train_of
 
     day_loads = samples_on_day(db, service_day) if service_day is not None else {}
     stacks_by_time = cell_stacks_on_day(db, service_day) if service_day is not None else {}
@@ -536,6 +537,7 @@ def _voltage_live_stats(db: Session) -> dict[str, Any]:
     unit_ka: dict[str, float] = {}
     use_units = bool(shift and shift.get("has_unit_loads"))
     train_total = sum(float(item["ka"]) for item in ((shift or {}).get("trains") or {}).values() if item.get("ka"))
+    train_pairs: dict[str, list[tuple[float, float]]] = {}
     for el in known:
         load = day_loads.get(el) or {}
         shift_unit = (shift or {}).get("units", {}).get(el) if shift else None
@@ -572,6 +574,26 @@ def _voltage_live_stats(db: Session) -> dict[str, Any]:
             unit_power[el] = power
             plant_kw += power
             plant_kwh += power * hours_day
+            train_pairs.setdefault(train_of(el) or "", []).append((use_v, ka))
+    if train_pairs:
+        # Same rule as the weekly/monthly mean: one train current, not the sum of every row it was copied onto.
+        official = {
+            str(number): float(item["ka"])
+            for number, item in ((shift or {}).get("trains") or {}).items()
+            if item.get("ka")
+        }
+        scaled_kw = 0.0
+        for train, pairs in train_pairs.items():
+            raw = sum(v * i for v, i in pairs if v > 50 and i > 0)
+            adjusted = combine_train_power(pairs, official.get(train))
+            scale = (adjusted / raw) if raw else 1.0
+            if abs(scale - 1.0) > 0.001:
+                for name, power in list(unit_power.items()):
+                    if (train_of(name) or "") == train:
+                        unit_power[name] = power * scale
+            scaled_kw += adjusted
+        plant_kw = scaled_kw
+        plant_kwh = plant_kw * hours_day
     if train_total > 0:
         plant_ka = train_total
 
