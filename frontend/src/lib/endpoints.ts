@@ -1894,6 +1894,11 @@ export const monitoringApi = {
     (await apiClient.get("/monitoring/cell-health-board", { params })).data,
   component: async (params: { kind: "anode" | "cathode" | "membrane"; nr: string }): Promise<ComponentDossier> =>
     (await apiClient.get("/monitoring/component", { params })).data,
+  alertTrend: async (params: { electrolyzer: string; days?: number }): Promise<{
+    electrolyzer: string;
+    days: number;
+    points: { date: string; danger: number | null; warning: number | null }[];
+  }> => (await apiClient.get("/monitoring/alert-trend", { params })).data,
   voltageHistory: async (params: {
     electrolyzer: string;
     position?: string;

@@ -500,6 +500,19 @@ def _sample_points(points: list[dict], limit: int) -> list[dict]:
     return [points[round(i * step)] for i in range(limit)]
 
 
+@router.get("/alert-trend")
+def alert_trend(
+    electrolyzer: str,
+    days: int = Query(default=30, ge=7, le=180),
+    db: Session = Depends(get_db),
+):
+    """Danger and warning cell counts for one electrolyzer, one point per past day."""
+    try:
+        return alerts_engine.electrolyzer_alert_trend(db, electrolyzer, days)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="electrolyzer is required") from None
+
+
 @router.get("/voltage-history")
 def voltage_history(
     electrolyzer: str,

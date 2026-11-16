@@ -424,6 +424,17 @@ def alert_summary(db: Session) -> dict[str, int]:
     }
 
 
+def reading_severity(voltage: float | None, standardized: float | None, rules: list[models.AlertRule]) -> str:
+    """Worst cell-voltage / standardized-voltage severity. Same rule as the live chips."""
+    sev, _ = cell_severity(voltage, rules, "cell_voltage")
+    if standardized is not None:
+        sev2, _ = cell_severity(float(standardized), rules, "standardized_voltage")
+        rank = {"ok": 0, "warning": 1, "danger": 2, "unknown": -1}
+        if rank.get(sev2, 0) > rank.get(sev, 0):
+            return sev2
+    return sev
+
+
 def cell_severity(value: float | None, rules: list[models.AlertRule], metric: str = "cell_voltage") -> tuple[str, float | None]:
     if value is None:
         return "unknown", None
@@ -438,6 +449,77 @@ def cell_severity(value: float | None, rules: list[models.AlertRule], metric: st
             best = sev
             thr = rule.danger_threshold if sev == "danger" else rule.warning_threshold
     return best, thr
+
+
+class _TrendSample:
+    def __init__(self, time: str | None, row_id: int | None, voltage: float | None, standardized: float | None):
+        self.time = time
+        self.id = row_id
+        self.voltage = voltage
+        self.standardized_voltage = standardized
+
+
+def electrolyzer_alert_trend(db: Session, electrolyzer: str, days: int = 30) -> dict[str, Any]:
+    """Daily danger and warning cell counts from the last reading of each cell that day."""
+    from .assembly_integrity import electrolyzer_aliases
+    from .energy import _reading_is_newer, _stored_on_days, as_date, tehran_today
+    from .plant_topology import format_electrolyzer_name, norm_pos
+
+    name = format_electrolyzer_name(electrolyzer)
+    if not name:
+        raise ValueError("electrolyzer")
+    aliases: set[str] = set()
+    for alias in electrolyzer_aliases(name):
+        aliases.update({alias, alias.upper(), alias.lower()})
+    span = max(7, min(int(days or 30), 180))
+    today = tehran_today()
+    start = today - timedelta(days=span - 1)
+    ensure_default_rules(db)
+    rules = db.query(models.AlertRule).filter(models.AlertRule.enabled.is_(True)).all()
+    rows = (
+        db.query(
+            models.VoltageReading.position,
+            models.VoltageReading.date,
+            models.VoltageReading.time,
+            models.VoltageReading.voltage,
+            models.VoltageReading.standardized_voltage,
+            models.VoltageReading.id,
+        )
+        .filter(
+            models.VoltageReading.electrolyzer.in_(aliases),
+            models.VoltageReading.voltage.isnot(None),
+            models.VoltageReading.position.isnot(None),
+            models.VoltageReading.position != "",
+            _stored_on_days(models.VoltageReading.date, start, today + timedelta(days=1)),
+        )
+        .all()
+    )
+    latest: dict[tuple[date, str], _TrendSample] = {}
+    for position, stamp, clock, voltage, standardized, row_id in rows:
+        day = as_date(stamp)
+        pos = norm_pos(position)
+        if day is None or not pos:
+            continue
+        sample = _TrendSample(clock, row_id, voltage, standardized)
+        key = (day, pos)
+        prev = latest.get(key)
+        if prev is None or _reading_is_newer(sample, prev):
+            latest[key] = sample
+    counts: dict[date, dict[str, int]] = {}
+    for (day, _pos), sample in latest.items():
+        bucket = counts.setdefault(day, {"danger": 0, "warning": 0})
+        sev = reading_severity(sample.voltage, sample.standardized_voltage, rules)
+        if sev in bucket:
+            bucket[sev] += 1
+    points = []
+    for offset in range(span):
+        day = start + timedelta(days=offset)
+        found = counts.get(day)
+        if found is None:
+            points.append({"date": day.isoformat(), "danger": None, "warning": None})
+        else:
+            points.append({"date": day.isoformat(), "danger": found["danger"], "warning": found["warning"]})
+    return {"electrolyzer": name, "days": span, "points": points}
 
 
 def _sanitize_reading_dt(value: datetime | None) -> datetime | None:
@@ -493,12 +575,7 @@ def _voltage_live_stats(db: Session) -> dict[str, Any]:
             continue
         v = float(row.voltage)
         by_el.setdefault(el, []).append(v)
-        sev, _ = cell_severity(v, voltage_rules, "cell_voltage")
-        if row.standardized_voltage is not None:
-            sev2, _ = cell_severity(float(row.standardized_voltage), voltage_rules, "standardized_voltage")
-            rank = {"ok": 0, "warning": 1, "danger": 2, "unknown": -1}
-            if rank.get(sev2, 0) > rank.get(sev, 0):
-                sev = sev2
+        sev = reading_severity(v, row.standardized_voltage, voltage_rules)
         bucket = by_sev.setdefault(el, {"ok": 0, "warning": 0, "danger": 0})
         if sev == "danger":
             danger += 1

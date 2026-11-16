@@ -4036,6 +4036,20 @@ html[data-theme="dark"] .psm-gauge-track { stroke: #334155; }
 .psm-chip-muted { background: #f1f5f9; color: #64748b; }
 .psm-chip.is-danger { background: #fee2e2; color: #991b1b; }
 .psm-chip.is-warning { background: #fef3c7; color: #92400e; }
+.psm-trend-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f2744;
+  cursor: pointer;
+}
+.psm-trend-btn:hover { border-color: var(--win-navy-mid); background: #eff6ff; }
 .psm-elo-stats {
   display: flex;
   flex-wrap: wrap;
@@ -5317,6 +5331,7 @@ html[data-theme="dark"][data-ui="modern"] .psm-chip-e { background: #9a3412; col
 html[data-theme="dark"][data-ui="modern"] .psm-chip-muted { background: #334155; color: #cbd5e1; }
 html[data-theme="dark"][data-ui="modern"] .psm-chip.is-danger { background: #7f1d1d; color: #fecaca; }
 html[data-theme="dark"][data-ui="modern"] .psm-chip.is-warning { background: #78350f; color: #fde68a; }
+html[data-theme="dark"] .psm-trend-btn { background: #1e293b; border-color: #475569; color: #e2e8f0; }
 html[data-theme="dark"][data-ui="modern"] .psm-elo-stat {
   background: #0f172a;
   border-color: #334155;

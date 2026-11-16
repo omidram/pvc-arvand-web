@@ -8,6 +8,7 @@ import { RACKS, TRAIN_LETTERS, electrolyzerName, trainOf, type TrainId } from "@
 import { useI18n } from "@/lib/i18n/context";
 import { formatNumber } from "@/lib/utils";
 import { MonitoringExport } from "@/components/domain/export-buttons";
+import { AlertTrendButton } from "@/components/domain/alert-trend-dialog";
 import { ElectrolyzerPropertiesPanel } from "@/components/domain/electrolyzer-properties";
 import { CellHealthMini } from "@/components/domain/cell-health-chip";
 import { useShowCellHealth } from "@/lib/use-show-cell-health";
@@ -190,7 +191,18 @@ function Faceplate({
   const sec = secMatch(voltage, block?.current_ka, secFactors);
   const power = powerValue(block?.power_kw);
   return (
-    <button type="button" className={`psm-face is-${health}`} onClick={onOpen}>
+    <div
+      className={`psm-face is-${health}`}
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen();
+        }
+      }}
+    >
       <div className="psm-face-top">
         <span className="psm-face-name">
           {letter}
@@ -292,8 +304,9 @@ function Faceplate({
         ) : (
           <span className="psm-chip psm-chip-muted">{t("monitoring.offline")}</span>
         )}
+        <AlertTrendButton electrolyzer={name} />
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -618,6 +631,7 @@ function ElectrolyzerMimic({
         </span>
         <span className="psm-count is-danger">{block?.danger_count ?? 0}</span>
         <span className="psm-count is-warning">{block?.warning_count ?? 0}</span>
+        <AlertTrendButton electrolyzer={name} />
         <span className="psm-count is-ok">{block?.ok_count ?? 0}</span>
         {showHealth && healthSummary ? (
           <span className="psm-elo-health-legend" title={t("monitoring.healthTitle")}>
