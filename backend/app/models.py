@@ -128,7 +128,7 @@ class VoltageSyncSettings(Base):
     password: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # Local wall-clock time for daily full pull of all electrolyzers (HH:MM).
     daily_time: Mapped[str] = mapped_column(String(5), default="00:00")
-    # Inclusive days ending yesterday for scheduled pull (Sync Now includes today).
+    # Inclusive days for Pull now. Automatic pulls always take yesterday and today.
     lookback_days: Mapped[int] = mapped_column(Integer, default=7)
     last_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     last_run_status: Mapped[str | None] = mapped_column(String(20), nullable=True)

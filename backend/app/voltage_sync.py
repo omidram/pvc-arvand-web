@@ -536,10 +536,11 @@ def _pull_from_ariaorms(
     commit_db(db)
 
     base = ariaorms_client.normalize_base_url(row.source_url)
-    # The daily clock downloads yesterday once. The typed day-count is only for Pull now.
+    # Automatic runs take yesterday and today, so a cell filled during the day
+    # reaches the charts the same day. The typed day-count is only for Pull now.
     start_day, end_day = ariaorms_client.date_window(
-        lookback_days=1 if scheduled else int(row.lookback_days or 1),
-        include_today=False if scheduled else include_today,
+        lookback_days=2 if scheduled else int(row.lookback_days or 1),
+        include_today=True if scheduled else include_today,
     )
     electrolyzers = ariaorms_client.iter_electrolyzers()
     details: list[dict[str, Any]] = []
