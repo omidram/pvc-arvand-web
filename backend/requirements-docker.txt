@@ -10,4 +10,6 @@ httpx==0.28.1
 PyJWT==2.10.1
 bcrypt==4.2.1
 reportlab==4.2.5
+arabic-reshaper==3.0.1
+python-bidi==0.6.11
 APScheduler==3.10.4

@@ -8,8 +8,6 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
-import arabic_reshaper
-from bidi.algorithm import get_display
 from fastapi.responses import Response
 from reportlab.lib.colors import Color, black, white
 from reportlab.lib.pagesizes import A4, landscape
@@ -58,6 +56,9 @@ def _shape(value: str) -> str:
     if not value or not _ARABIC.search(value):
         return value
     try:
+        import arabic_reshaper
+        from bidi.algorithm import get_display
+
         return get_display(arabic_reshaper.reshape(value))
     except Exception:
         return value
