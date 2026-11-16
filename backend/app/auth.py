@@ -430,26 +430,20 @@ DEFAULT_ROLES: list[dict] = [
     },
     {
         "name": "Inspector",
-        "description": "بازرس — ولتاژ و فرم بازرسی برای امضا و ویرایش مشترک",
+        "description": "بازرس — کارتابل بازرسی، امضای فرم و ولتاژ",
         "is_system": True,
         "permissions": {
-            "dashboard": "none",
-            "statistics": "none",
-            "reports": "none",
+            "dashboard": "view",
             "monitoring": "view",
             "elements": "view",
             "inspections": "edit",
-            "anodes": "none",
-            "cathodes": "none",
-            "membranes": "none",
-            "storage": "none",
-            "shutdowns": "none",
+            "anodes": "view",
+            "cathodes": "view",
+            "membranes": "view",
+            "storage": "view",
             "voltage": "edit",
-            "analyses": "none",
-            "search": "none",
-            "remarks": "none",
-            "settings": "none",
-            "import_export": "none",
+            "search": "view",
+            "wf_inspection": "edit",
         },
     },
     {
@@ -501,20 +495,6 @@ DEFAULT_ROLES: list[dict] = [
         "description": "انبار — کارتابل شماره ایندنت و تاریخ ورود به انبار",
         "is_system": True,
         "permissions": {"anodes": "view", "cathodes": "view", "storage": "view", "wf_warehouse": "edit"},
-    },
-    {
-        "name": "Inspection",
-        "description": "بازرسی — کارتابل بررسی آند و کاتد جداشده (پوشش خوب، پوشش متوسط، Rate off یا پوشش‌دهی مجدد)",
-        "is_system": True,
-        "permissions": {
-            "elements": "view",
-            "anodes": "view",
-            "cathodes": "view",
-            "membranes": "view",
-            "inspections": "edit",
-            "storage": "view",
-            "wf_inspection": "edit",
-        },
     },
     {
         "name": "Operation",
@@ -725,6 +705,40 @@ def seed_default_roles(db: Session) -> None:
         db.commit()
 
 
+def merge_inspector_roles(db: Session) -> None:
+    """Inspector and Inspection are one job. Move everyone onto Inspector and drop the duplicate."""
+    keeper = db.query(models.AppRole).filter(models.AppRole.name == "Inspector").first()
+    if keeper is None:
+        return
+    extras = [
+        role
+        for role in db.query(models.AppRole).all()
+        if role.id != keeper.id and (role.name or "").strip().lower() == "inspection"
+    ]
+    if not extras:
+        return
+    have = {
+        row.form_key: row
+        for row in db.query(models.RolePermission).filter(models.RolePermission.role_id == keeper.id).all()
+    }
+    for old in extras:
+        db.query(models.User).filter(models.User.role_id == old.id).update(
+            {models.User.role_id: keeper.id},
+            synchronize_session=False,
+        )
+        for row in db.query(models.RolePermission).filter(models.RolePermission.role_id == old.id).all():
+            current = have.get(row.form_key)
+            if current is None:
+                current = models.RolePermission(role_id=keeper.id, form_key=row.form_key, level=row.level)
+                db.add(current)
+                have[row.form_key] = current
+            elif LEVEL_RANK.get(current.level, 0) < LEVEL_RANK.get(row.level, 0):
+                current.level = row.level
+        db.query(models.RolePermission).filter(models.RolePermission.role_id == old.id).delete()
+        db.delete(old)
+    db.commit()
+
+
 def ensure_inspection_collaboration(db: Session) -> None:
     """Raise inspections access on built-in roles so Insp/Maint/Proc can share the form."""
     wanted = {"Operator": "edit", "Inspector": "edit", "Viewer": "view"}
@@ -745,7 +759,7 @@ def ensure_inspection_collaboration(db: Session) -> None:
             row.level = level
             changed = True
         if name == "Inspector" and role.description and "فقط بخش ولتاژ" in role.description:
-            role.description = "بازرس — ولتاژ و فرم بازرسی برای امضا و ویرایش مشترک"
+            role.description = "بازرس — کارتابل بازرسی، امضای فرم و ولتاژ"
             changed = True
             elem = (
                 db.query(models.RolePermission)
@@ -760,6 +774,7 @@ def ensure_inspection_collaboration(db: Session) -> None:
 
 def seed_default_admin(db: Session) -> None:
     seed_default_roles(db)
+    merge_inspector_roles(db)
     ensure_inspection_collaboration(db)
     if db.query(models.User).count() > 0:
         return

@@ -28,7 +28,7 @@ Session = sessionmaker(bind=engine)
 with Session() as db:
     seed_default_roles(db)
     roles = {r.name: r.id for r in db.query(models.AppRole).all()}
-    for name, role in (("c90", "C-90"), ("proc", "Procurement"), ("wh", "Warehouse"), ("insp", "Inspection"), ("viewer", "Viewer")):
+    for name, role in (("c90", "C-90"), ("proc", "Procurement"), ("wh", "Warehouse"), ("insp", "Inspector"), ("viewer", "Viewer")):
         db.add(models.User(username=name, full_name=name.upper(), password_hash="x", role="user", role_id=roles[role]))
     db.add(models.WhCompany(name="CoatCo", is_coating=True, is_supplier=False))
     db.add(models.WhCompany(name="SupCo", is_coating=False, is_supplier=True))
