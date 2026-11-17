@@ -311,9 +311,12 @@ export function VoltageReportPanel({
               <b>{hasPlan ? formatNumber(targetKa ?? 0, 1) : "\u2014"}</b>
               <span>{t("dashboard.capPlanTarget")}</span>
             </div>
-            <div title={designPct != null ? `${t("dashboard.capByDesign")}: ${formatNumber(designPct, 1)}%` : undefined}>
-              <b>{formatNumber(designKa, 1)}</b>
-              <span className="is-design">{t("dashboard.capFull")}</span>
+            <div title={designPct != null && live.plant_total_ka != null ? `${formatNumber(live.plant_total_ka, 1)} / ${formatNumber(designKa, 1)} ${U.ka}` : undefined}>
+              <b>{designPct != null ? `${formatNumber(designPct, 1)}%` : "—"}</b>
+              <span className="is-design">
+                {t("dashboard.capFull")}
+                <em>{formatNumber(designKa, 1)} {U.ka}</em>
+              </span>
             </div>
           </div>
           <div className="dv-kpi-meta">{U.ka}</div>

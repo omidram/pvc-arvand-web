@@ -8607,3 +8607,4 @@ html[data-theme="dark"] .vg-sub { color: #94a3b8; }
 .dv-cap-stats b { display: block; font-size: .95rem; color: #0f172a; font-variant-numeric: tabular-nums; }
 .dv-cap-stats span { font-size: .62rem; text-transform: uppercase; letter-spacing: .04em; color: #64748b; }
 .dv-cap-stats span.is-design { text-transform: none; letter-spacing: 0; line-height: 1.25; }
+.dv-cap-stats span.is-design em { display: block; margin-top: 0.1rem; font-style: normal; font-weight: 700; color: #334155; }
