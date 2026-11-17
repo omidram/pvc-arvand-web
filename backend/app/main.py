@@ -251,10 +251,65 @@ def _ensure_inspection_decision_column() -> None:
             present.add(column)
 
 
+def _ensure_disassembly_inspection_codes() -> None:
+    """Dismantling inspections already stored as IN-… become DS-…. Recoating stays IN-."""
+    try:
+        tables = set(inspect(engine).get_table_names())
+    except Exception:
+        return
+    if "wf_inspection_requests" not in tables:
+        return
+    insp_cols = {col["name"] for col in inspect(engine).get_columns("wf_inspection_requests")}
+    if "code" not in insp_cols or "disassembly_date" not in insp_cols:
+        return
+    reason_sql = "AND (reason IS NULL OR reason NOT LIKE 'Recoating%')" if "reason" in insp_cols else ""
+    seg_cols: set[str] = set()
+    if "electrode_segregations" in tables:
+        seg_cols = {col["name"] for col in inspect(engine).get_columns("electrode_segregations")}
+    note_cols: set[str] = set()
+    if "wf_notifications" in tables:
+        note_cols = {col["name"] for col in inspect(engine).get_columns("wf_notifications")}
+    with engine.begin() as conn:
+        rows = conn.execute(
+            text(
+                "SELECT id, code FROM wf_inspection_requests "
+                f"WHERE code LIKE 'IN-%' AND disassembly_date IS NOT NULL {reason_sql}"
+            )
+        ).fetchall()
+        for row in rows:
+            old = str(row.code or "")
+            if not old.startswith("IN-"):
+                continue
+            new = "DS" + old[2:]
+            clash = conn.execute(text("SELECT id FROM wf_inspection_requests WHERE code = :code"), {"code": new}).first()
+            if clash is not None:
+                continue
+            conn.execute(text("UPDATE wf_inspection_requests SET code = :new WHERE id = :id"), {"new": new, "id": row.id})
+            if "title" in note_cols:
+                conn.execute(
+                    text(
+                        "UPDATE wf_notifications SET title = REPLACE(title, :old, :new) "
+                        "WHERE flow = 'inspection' AND record_id = :id"
+                    ),
+                    {"old": old, "new": new, "id": row.id},
+                )
+            if "inspection_form_serial" in seg_cols:
+                conn.execute(
+                    text("UPDATE electrode_segregations SET inspection_form_serial = :new WHERE inspection_form_serial = :old"),
+                    {"old": old, "new": new},
+                )
+            if "remarks" in seg_cols:
+                conn.execute(
+                    text("UPDATE electrode_segregations SET remarks = REPLACE(remarks, :old, :new) WHERE remarks LIKE :like"),
+                    {"old": old, "new": new, "like": f"%{old}%"},
+                )
+
+
 _ensure_inspection_sheet_columns()
 _ensure_inspection_decision_column()
 _ensure_cathodic_ce_columns()
 _ensure_workflow_redesign()
+_ensure_disassembly_inspection_codes()
 
 
 def _ensure_element_remark_columns() -> None:

@@ -3109,10 +3109,13 @@ def _open_insp_for(db: Session, element_nr: str | None, anode_nr: str | None, ca
 def _new_insp(
     db: Session, actor: Any, status: str, el: models.Element | None, *, element_nr: str | None = None,
     anode_nr: str | None = None, cathode_nr: str | None = None, reason: str | None = None,
+    prefix: str = "IN",
 ) -> WfInspectionRequest:
+    """prefix DS is the dismantling inspection. Recoating and other inspections stay IN."""
+    prefix = "DS" if prefix == "DS" else "IN"
     seq = _next_seq(db, WfInspectionRequest.seq)
     r = WfInspectionRequest(
-        code=_code("IN", date.today(), seq),
+        code=_code(prefix, date.today(), seq),
         seq=seq,
         status=status,
         element_nr=(str(el.element_nr) if el is not None and el.element_nr else element_nr or None),
@@ -3214,7 +3217,8 @@ def create_inspection_request(body: InspCreateIn, db: Session = Depends(get_db),
     existing = _open_insp_for(db, el.element_nr if el is not None else None, body.anode_nr or (el.anode_nr if el else None), body.cathode_nr or (el.cathode_nr if el else None))
     if existing:
         raise HTTPException(409, f"Inspection request {existing.code} is still open for this element")
-    r = _new_insp(db, user, "await_request", el, anode_nr=(body.anode_nr or "").strip() or None, cathode_nr=(body.cathode_nr or "").strip() or None, reason=body.reason)
+    prefix = "DS" if el is not None and svc._as_date(el.disassembly_date) else "IN"
+    r = _new_insp(db, user, "await_request", el, anode_nr=(body.anode_nr or "").strip() or None, cathode_nr=(body.cathode_nr or "").strip() or None, reason=body.reason, prefix=prefix)
     _event(db, "inspection", r, "created", user, None, body.note, {"reason": r.reason})
     if not _close_if_reported(db, r, user):
         _notify(db, "inspection", r, user)
@@ -3621,7 +3625,7 @@ def inspection_on_disassembly(db: Session, el: models.Element, actor: Any) -> No
     done = db.query(WfInspectionRequest).filter(WfInspectionRequest.element_id == el.id, WfInspectionRequest.status.in_(CLOSED)).first()
     if done is not None:
         return
-    r = _new_insp(db, actor, "await_request", el, reason=(el.decommission_reason or "").strip()[:800] or "Disassembled")
+    r = _new_insp(db, actor, "await_request", el, reason=(el.decommission_reason or "").strip()[:800] or "Disassembled", prefix="DS")
     _event(db, "inspection", r, "auto_created", actor, None, None, {"date": _iso(svc._as_date(el.disassembly_date))})
     if not _close_if_reported(db, r, actor):
         _notify(db, "inspection", r, actor)
@@ -4172,6 +4176,7 @@ def _ensure_insp_from_shop(db: Session, item: dict, user: models.User, note: str
         anode_nr=item.get("anode_nr"),
         cathode_nr=item.get("cathode_nr"),
         reason=note or "Rate off — inspection from cell shop",
+        prefix="DS",
     )
     _event(db, "inspection", r, "created", user, None, note, {"from_shop": item["state"]})
     _notify(db, "inspection", r, user)
