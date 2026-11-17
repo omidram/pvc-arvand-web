@@ -47,12 +47,7 @@ function InspectionsWorkspace() {
   const params = useSearchParams();
   const startNew = editable && params.get("new") === "1";
   const prefill = Object.fromEntries(PREFILL_KEYS.map((k) => [k, params.get(k)]).filter(([, v]) => v));
-  const fresh = () => {
-    const now = new Date();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
-    return { client: "APC", inspection_date: `${now.getFullYear()}-${month}-${day}`, ...prefill };
-  };
+  const fresh = () => ({ client: "APC", ...prefill });
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
   const { listQuery, removeMutation } = useCrudResource<InspectionReport>("inspections", inspectionsApi, { limit: 500 });

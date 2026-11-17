@@ -10,6 +10,7 @@ import { elementsApi, inspectionGridsApi, relationsApi } from "@/lib/endpoints";
 import { workflowApi } from "@/lib/workflow";
 import { useI18n } from "@/lib/i18n/context";
 import { inspectionReasonLabel } from "@/lib/inspection-reason-names";
+import { MultiReason } from "@/components/ui/access-fields";
 import { fieldDefsFromKeys, labelFieldOrHumanize } from "@/lib/access-datasheet-fields";
 import type { FieldDef } from "@/components/ui/resource-form";
 
@@ -157,13 +158,6 @@ function flagOn(value: unknown): boolean {
   return value === true || value === 1 || value === "1" || value === "true";
 }
 
-function todayIso(): string {
-  const now = new Date();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${now.getFullYear()}-${month}-${day}`;
-}
-
 /** Null when the inspection date is present. Nothing else blocks saving. */
 export function inspectionSheetSaveError(
   values: Record<string, unknown>,
@@ -194,6 +188,22 @@ type SheetProps = {
 
 function text(value: unknown): string {
   return value == null ? "" : String(value);
+}
+
+function reasonChoices(
+  inspection: string[] | undefined,
+  retired: string[] | undefined,
+  t: (path: string) => string
+): Array<{ value: string; label: string }> {
+  const seen = new Set<string>();
+  const out: Array<{ value: string; label: string }> = [];
+  for (const value of [...(inspection || []), ...(retired || [])]) {
+    const bit = value.trim();
+    if (!bit || seen.has(bit)) continue;
+    seen.add(bit);
+    out.push({ value: bit, label: inspectionReasonLabel(bit, t) });
+  }
+  return out;
 }
 
 export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId }: SheetProps) {
@@ -251,6 +261,10 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
     queryKey: ["relations", "inspection-reasons"],
     queryFn: () => relationsApi.lookup("inspection-reasons"),
   });
+  const retiredReasons = useQuery({
+    queryKey: ["relations", "decommission-reasons"],
+    queryFn: () => relationsApi.lookup("decommission-reasons"),
+  });
 
   async function pull(focus: string, typed?: string) {
     const current = (typed ?? text(valuesRef.current[focus])).trim();
@@ -287,6 +301,8 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
     if (found.computed_dol_days != null && !(keepFilled && text(valuesRef.current.operation_days).trim() !== "")) {
       patch.operation_days = String(found.computed_dol_days);
     }
+    const retired = text(found.decommission_reason).trim();
+    if (retired && !text(valuesRef.current.inspection_reason).trim()) patch.inspection_reason = retired;
     if (Object.keys(patch).length) patchRef.current(patch);
   }
 
@@ -311,7 +327,6 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
     if (readOnly || numericId != null) return;
     const patch: Record<string, unknown> = {};
     if (!text(valuesRef.current.client).trim()) patch.client = "APC";
-    if (!text(valuesRef.current.inspection_date).trim()) patch.inspection_date = todayIso();
     if (Object.keys(patch).length) patchRef.current(patch);
   }, [readOnly, numericId]);
 
@@ -479,9 +494,15 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
             </tr>
             <tr>
               <td colSpan={3}>
-                <div className="insp-pairline">
+                <div className="insp-pairline insp-reason">
                   <span className="insp-lab">Reason for insepection</span>
-                  {line("inspection_reason", "insp-reasons")}
+                  <MultiReason
+                    options={reasonChoices(reasons.data, retiredReasons.data, t)}
+                    value={text(values.inspection_reason)}
+                    disabled={readOnly}
+                    placeholder={t("fields.inspectionReason")}
+                    onChange={(value) => onChange("inspection_reason", value)}
+                  />
                   <input
                     className="insp-mini"
                     aria-label="Memberane NO"
@@ -694,13 +715,6 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
         <datalist id="insp-membrane-types">
           {(membraneTypes.data || []).map((value) => (
             <option key={value} value={value} />
-          ))}
-        </datalist>
-        <datalist id="insp-reasons">
-          {(reasons.data || []).map((value) => (
-            <option key={value} value={value} label={inspectionReasonLabel(value, t)}>
-              {inspectionReasonLabel(value, t)}
-            </option>
           ))}
         </datalist>
       </div>

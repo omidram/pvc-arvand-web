@@ -4700,6 +4700,9 @@ td.insp-lab { font-weight: 700; white-space: nowrap; width: 1%; }
   padding: 0 2px;
 }
 .insp-pairline > :not(.insp-lab) { flex: 1 1 auto; min-width: 0; }
+.insp-reason { align-items: flex-start; }
+.insp-reason .multi-reason { min-width: 0; gap: 2px; }
+.insp-reason .multi-reason select { width: 100%; height: 18px; font: inherit; border: 1px solid #111; background: #fff; }
 .insp-pairline > .insp-shift { flex: 0 0 auto; min-width: auto; }
 .insp-in:focus, .insp-mini:focus { background: #fff8dc; }
 .insp-mini {

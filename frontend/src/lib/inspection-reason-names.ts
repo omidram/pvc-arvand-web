@@ -84,12 +84,20 @@ function norm(value: string): string {
     .replace(/\s+/g, " ");
 }
 
-export function inspectionReasonLabel(reason: string | null | undefined, t: (path: string) => string): string {
-  if (!reason) return "";
+function oneReasonLabel(reason: string, t: (path: string) => string): string {
   const key = KEYS[norm(reason)];
   if (key) {
     const label = t(key);
     if (label !== key) return label;
   }
   return reason;
+}
+
+export function inspectionReasonLabel(reason: string | null | undefined, t: (path: string) => string): string {
+  if (!reason) return "";
+  return reason
+    .split(",")
+    .map((part) => oneReasonLabel(part.trim(), t))
+    .filter(Boolean)
+    .join(", ");
 }

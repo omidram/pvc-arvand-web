@@ -66,6 +66,7 @@ export function MultiReason({
 }) {
   const bits = reasonBits(value || "");
   const list = options.map((opt) => (typeof opt === "string" ? { label: opt, value: opt } : opt));
+  const labelOf = (bit: string) => list.find((opt) => opt.value === bit)?.label || bit;
   const write = (next: string[]) => onChange(next.join(", "));
   const add = (raw: string) => {
     const bit = raw.trim();
@@ -78,7 +79,7 @@ export function MultiReason({
         <div className="multi-reason-picks">
           {bits.map((bit) => (
             <button key={bit} type="button" disabled={disabled} onClick={() => write(bits.filter((item) => item !== bit))}>
-              {bit}
+              {labelOf(bit)}
               <span aria-hidden>×</span>
             </button>
           ))}
