@@ -26,6 +26,20 @@ import {
 
 type T = (k: string, vars?: Record<string, string | number | null | undefined>) => string;
 
+const C90_FIELDS = ["deposits", "anode_tube", "cathode_tube", "anode_spacer", "cathode_spacer", "frame_gasket"] as const;
+type C90Field = (typeof C90_FIELDS)[number];
+
+function c90Values(d: InspectionRequest): Record<C90Field, string> {
+  return {
+    deposits: d.deposits || "",
+    anode_tube: d.anode_tube || "",
+    cathode_tube: d.cathode_tube || "",
+    anode_spacer: d.anode_spacer || "",
+    cathode_spacer: d.cathode_spacer || "",
+    frame_gasket: d.frame_gasket || "",
+  };
+}
+
 function statusColor(status: string): "emerald" | "slate" | "violet" | "amber" {
   if (status === "completed") return "emerald";
   if (status === "cancelled") return "slate";
@@ -418,11 +432,11 @@ function Fact({ label, children }: { label: string; children: React.ReactNode })
 function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
   const qc = useQueryClient();
   const [note, setNote] = useState("");
-  const [deposits, setDeposits] = useState(d.deposits || "");
+  const [shop, setShop] = useState<Record<C90Field, string>>(() => c90Values(d));
   const [deleteHint, setDeleteHint] = useState("");
   useEffect(() => {
-    setDeposits(d.deposits || "");
-  }, [d.id, d.deposits]);
+    setShop(c90Values(d));
+  }, [d.id, d.deposits, d.anode_tube, d.cathode_tube, d.anode_spacer, d.cathode_spacer, d.frame_gasket]);
   const [files, setFiles] = useState<File[]>([]);
   const acts = d.actions;
   const done = (next: InspectionRequestDetail) => {
@@ -561,11 +575,19 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
           ) : null}
           {acts.includes("edit") ? <RequestEditForm d={d} t={t} /> : null}
           {acts.includes("send") ? (
-            <label className="wh-grow">
-              {t("wf.insp.deposits")}
-              <textarea value={deposits} onChange={(e) => setDeposits(e.target.value)} rows={3} />
+            <div className="wh-grow">
               <span className="wh-muted">{t("wf.insp.depositsHint")}</span>
-            </label>
+              {C90_FIELDS.map((key) => (
+                <label key={key} className="wh-grow">
+                  {t(`wf.insp.${key}`)}
+                  {key === "deposits" ? (
+                    <textarea value={shop[key]} rows={3} onChange={(e) => setShop((prev) => ({ ...prev, [key]: e.target.value }))} />
+                  ) : (
+                    <input value={shop[key]} onChange={(e) => setShop((prev) => ({ ...prev, [key]: e.target.value }))} />
+                  )}
+                </label>
+              ))}
+            </div>
           ) : null}
           <div className="wh-form-inline wf-inline-plain">
             <label className="wh-grow">
@@ -573,7 +595,7 @@ function InspectionBody({ d, t }: { d: InspectionRequestDetail; t: T }) {
               <input value={note} onChange={(e) => setNote(e.target.value)} />
             </label>
             {acts.includes("send") ? (
-              <button type="button" className="wf-btn is-primary" disabled={run.isPending || !deposits.trim()} onClick={() => go("send", { deposits: deposits.trim() })}>
+              <button type="button" className="wf-btn is-primary" disabled={run.isPending || C90_FIELDS.some((key) => !shop[key].trim())} onClick={() => go("send", Object.fromEntries(C90_FIELDS.map((key) => [key, shop[key].trim()])))}>
                 <Send size={14} /> {t("wf.insp.send")}
               </button>
             ) : null}

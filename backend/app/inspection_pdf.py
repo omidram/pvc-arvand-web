@@ -341,19 +341,19 @@ def _draw_report(c: canvas.Canvas, row: models.InspectionReport, grids: dict[str
     foot = 13
     y -= foot
     _cell(c, m, y, mid, foot, "sample taken:", "")
-    _cell(c, m + mid, y, mid, foot, "insert pipe(Anode):", _g(row, "anode_tube_remark") or ("Yes" if row.anode_tube_ok else ""))
+    _cell(c, m + mid, y, mid, foot, "insert pipe(Anode): C-90", _g(row, "anode_tube_remark") or ("Yes" if row.anode_tube_ok else ""))
     _cell(c, m + 2 * mid, y, mid, foot, "Name:", _g(row, "inspector_name"))
     y -= foot
     _cell(c, m, y, mid, foot, "cathode:", _g(row, "sample_cathode_note") or ("Yes" if row.sample_cathode else ""))
-    _cell(c, m + mid, y, mid, foot, "insert pipe(cathode):", _g(row, "cathode_tube_remark") or ("Yes" if row.cathode_tube_ok else ""))
+    _cell(c, m + mid, y, mid, foot, "insert pipe(cathode): C-90", _g(row, "cathode_tube_remark") or ("Yes" if row.cathode_tube_ok else ""))
     _cell(c, m + 2 * mid, y, mid, foot, "Date:", _g(row, "inspection_date"))
 
     sign_h = 54
     y -= sign_h
     _cell(c, m, y + sign_h - foot, mid, foot, "Anode:", _g(row, "sample_anode_note") or ("Yes" if row.sample_anode else ""))
-    _cell(c, m + mid, y + sign_h - foot, mid, foot, "spacer strip(Anode):", _g(row, "anode_spacer_remark") or ("Yes" if row.anode_spacer_ok else ""))
+    _cell(c, m + mid, y + sign_h - foot, mid, foot, "spacer strip(Anode): C-90", _g(row, "anode_spacer_remark") or ("Yes" if row.anode_spacer_ok else ""))
     _cell(c, m, y + sign_h - 2 * foot, mid, foot, "Membrane:", _g(row, "sample_membrane_note") or ("Yes" if row.sample_membrane else ""))
-    _cell(c, m + mid, y + sign_h - 2 * foot, mid, foot, "spacer strip(cathode):", _g(row, "cathode_spacer_remark") or ("Yes" if row.cathode_spacer_ok else ""))
+    _cell(c, m + mid, y + sign_h - 2 * foot, mid, foot, "spacer strip(cathode): C-90", _g(row, "cathode_spacer_remark") or ("Yes" if row.cathode_spacer_ok else ""))
 
     remarks_h = sign_h - 2 * foot
     rx, ry, rw = m, y, mid
@@ -363,7 +363,7 @@ def _draw_report(c: canvas.Canvas, row: models.InspectionReport, grids: dict[str
     c.setFont("Helvetica", 7)
     c.drawString(rx + 3, ry + remarks_h - 20, (_g(row, "general_remarks") or "")[:90])
 
-    _cell(c, m + mid, y, mid, remarks_h, "Frame gasket:", _g(row, "frame_gasket_remark") or ("Yes" if row.frame_gasket_ok else ""))
+    _cell(c, m + mid, y, mid, remarks_h, "Frame gasket: C-90", _g(row, "frame_gasket_remark") or ("Yes" if row.frame_gasket_ok else ""))
 
     sw = mid / 3
     sx = m + 2 * mid
@@ -546,11 +546,11 @@ def inspection_form_xlsx(row: models.InspectionReport, grids: dict[str, dict[str
         ("sample cathode", _g(row, "sample_cathode_note") or ("Yes" if getattr(row, "sample_cathode", False) else "")),
         ("sample anode", _g(row, "sample_anode_note") or ("Yes" if getattr(row, "sample_anode", False) else "")),
         ("sample membrane", _g(row, "sample_membrane_note") or ("Yes" if getattr(row, "sample_membrane", False) else "")),
-        ("insert pipe (Anode)", _g(row, "anode_tube_remark") or ("Yes" if getattr(row, "anode_tube_ok", False) else "")),
-        ("insert pipe (cathode)", _g(row, "cathode_tube_remark") or ("Yes" if getattr(row, "cathode_tube_ok", False) else "")),
-        ("spacer strip (Anode)", _g(row, "anode_spacer_remark") or ("Yes" if getattr(row, "anode_spacer_ok", False) else "")),
-        ("spacer strip (cathode)", _g(row, "cathode_spacer_remark") or ("Yes" if getattr(row, "cathode_spacer_ok", False) else "")),
-        ("Frame gasket", _g(row, "frame_gasket_remark") or ("Yes" if getattr(row, "frame_gasket_ok", False) else "")),
+        ("insert pipe (Anode) C-90", _g(row, "anode_tube_remark") or ("Yes" if getattr(row, "anode_tube_ok", False) else "")),
+        ("insert pipe (cathode) C-90", _g(row, "cathode_tube_remark") or ("Yes" if getattr(row, "cathode_tube_ok", False) else "")),
+        ("spacer strip (Anode) C-90", _g(row, "anode_spacer_remark") or ("Yes" if getattr(row, "anode_spacer_ok", False) else "")),
+        ("spacer strip (cathode) C-90", _g(row, "cathode_spacer_remark") or ("Yes" if getattr(row, "cathode_spacer_ok", False) else "")),
+        ("Frame gasket C-90", _g(row, "frame_gasket_remark") or ("Yes" if getattr(row, "frame_gasket_ok", False) else "")),
         ("Name", _g(row, "inspector_name") or _g(row, "sign_insp_name")),
         ("Date", _g(row, "inspection_date")),
         ("REMARKS", _g(row, "general_remarks")),

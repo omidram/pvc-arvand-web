@@ -321,12 +321,28 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
   const depositsQuery = useQuery({
     queryKey: ["inspection-deposits", elementNr, anodeNr, cathodeNr],
     queryFn: () => workflowApi.inspectionDeposits({ element_nr: elementNr, anode_nr: anodeNr, cathode_nr: cathodeNr }),
-    enabled: !text(values.deposits) && Boolean(elementNr || anodeNr || cathodeNr),
+    enabled: Boolean(elementNr || anodeNr || cathodeNr),
   });
   useEffect(() => {
-    const found = depositsQuery.data?.deposits?.trim();
-    if (!found || text(valuesRef.current.deposits).trim()) return;
-    patchRef.current({ deposits: found });
+    const found = depositsQuery.data;
+    if (!found) return;
+    const current = valuesRef.current;
+    const patch: Record<string, unknown> = {};
+    const pairs: Array<[string, string, string]> = [
+      ["deposits", "deposits", ""],
+      ["anode_tube", "anode_tube_remark", "anode_tube_ok"],
+      ["cathode_tube", "cathode_tube_remark", "cathode_tube_ok"],
+      ["anode_spacer", "anode_spacer_remark", "anode_spacer_ok"],
+      ["cathode_spacer", "cathode_spacer_remark", "cathode_spacer_ok"],
+      ["frame_gasket", "frame_gasket_remark", "frame_gasket_ok"],
+    ];
+    for (const [source, remark, flag] of pairs) {
+      const value = String(found[source] || "").trim();
+      if (!value || text(current[remark]).trim()) continue;
+      patch[remark] = value;
+      if (flag) patch[flag] = true;
+    }
+    if (Object.keys(patch).length) patchRef.current(patch);
   }, [depositsQuery.data]);
 
   function grids(): Record<string, Record<string, unknown>> {
@@ -350,16 +366,24 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
     );
   }
 
-  function note(noteKey: string, flagKey: string) {
+  function note(noteKey: string, flagKey: string, locked = readOnly) {
     const stored = values[noteKey];
     const shown = stored != null && String(stored) !== "" ? String(stored) : values[flagKey] ? "Yes" : "";
     return (
       <input
         className="insp-in"
         value={shown}
-        disabled={readOnly}
+        disabled={locked}
         onChange={(e) => onPatch({ [noteKey]: e.target.value, [flagKey]: e.target.value.trim() !== "" })}
       />
+    );
+  }
+
+  function c90Label(label: string) {
+    return (
+      <span>
+        {label} <span className="insp-c90">C-90</span>
+      </span>
     );
   }
 
@@ -396,7 +420,7 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
     );
   }
 
-  function labeled(label: string, control: ReactNode) {
+  function labeled(label: ReactNode, control: ReactNode) {
     return (
       <div className="insp-pairline">
         <span className="insp-lab">{label}</span>
@@ -600,14 +624,14 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
             </tr>
             <tr>
               <td>{labeled("sample taken:", <span className="insp-in" />)}</td>
-              <td>{labeled("insert pipe(Anode):", note("anode_tube_remark", "anode_tube_ok"))}</td>
+              <td>{labeled(c90Label("insert pipe(Anode):"), note("anode_tube_remark", "anode_tube_ok", depositsLocked))}</td>
               <td>
                 {labeled("Name:", line("inspector_name"))}
               </td>
             </tr>
             <tr>
               <td>{labeled("cathode:", note("sample_cathode_note", "sample_cathode"))}</td>
-              <td>{labeled("insert pipe(cathode):", note("cathode_tube_remark", "cathode_tube_ok"))}</td>
+              <td>{labeled(c90Label("insert pipe(cathode):"), note("cathode_tube_remark", "cathode_tube_ok", depositsLocked))}</td>
               <td>
                 {labeled(
                   "Date:",
@@ -617,7 +641,7 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
             </tr>
             <tr>
               <td>{labeled("Anode:", note("sample_anode_note", "sample_anode"))}</td>
-              <td>{labeled("spacer strip(Anode):", note("anode_spacer_remark", "anode_spacer_ok"))}</td>
+              <td>{labeled(c90Label("spacer strip(Anode):"), note("anode_spacer_remark", "anode_spacer_ok", depositsLocked))}</td>
               <td rowSpan={3} className="insp-topcell insp-sign-cell">
                 <div className="insp-sign-stack">
                   <InspectionSignaturePad
@@ -639,7 +663,7 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
             </tr>
             <tr>
               <td>{labeled("Membrane:", note("sample_membrane_note", "sample_membrane"))}</td>
-              <td>{labeled("spacer strip(cathode):", note("cathode_spacer_remark", "cathode_spacer_ok"))}</td>
+              <td>{labeled(c90Label("spacer strip(cathode):"), note("cathode_spacer_remark", "cathode_spacer_ok", depositsLocked))}</td>
             </tr>
             <tr>
               <td className="insp-topcell">
@@ -651,7 +675,7 @@ export function InspectionSheet({ values, onChange, onPatch, readOnly, recordId 
                   onChange={(e) => onChange("general_remarks", e.target.value)}
                 />
               </td>
-              <td>{labeled("Frame gasket:", note("frame_gasket_remark", "frame_gasket_ok"))}</td>
+              <td>{labeled(c90Label("Frame gasket:"), note("frame_gasket_remark", "frame_gasket_ok", depositsLocked))}</td>
             </tr>
           </tbody>
         </table>

@@ -267,6 +267,11 @@ export interface InspectionRequest extends WfDeadline {
   reason: string | null;
   report_id: number | null;
   deposits?: string | null;
+  anode_tube?: string | null;
+  cathode_tube?: string | null;
+  anode_spacer?: string | null;
+  cathode_spacer?: string | null;
+  frame_gasket?: string | null;
   decisions?: PieceDecisions;
   created_by: string | null;
   created_at: string | null;
@@ -572,7 +577,7 @@ export const workflowApi = {
     (await apiClient.post("/workflow/inspection", body)).data,
   inspectionStep: async (id: number, action: string, body: Record<string, unknown>): Promise<InspectionRequestDetail> =>
     (await apiClient.post(`/workflow/inspection/${id}/${action}`, body)).data,
-  inspectionDeposits: async (params: { element_nr?: string; anode_nr?: string; cathode_nr?: string }): Promise<{ deposits: string }> =>
+  inspectionDeposits: async (params: { element_nr?: string; anode_nr?: string; cathode_nr?: string }): Promise<Record<string, string>> =>
     (await apiClient.get("/workflow/inspection/deposits", { params })).data,
   assembleList: async (params: { open_only?: boolean; status?: string } = {}): Promise<AssembleRequest[]> =>
     (await apiClient.get("/workflow/assemble", { params })).data,

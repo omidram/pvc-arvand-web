@@ -2905,6 +2905,11 @@ def _insp_summary(db: Session, r: WfInspectionRequest, conf: dict | None = None)
         "reason": _plant_reason(db, r.element_nr, r.element_id) or r.reason,
         "report_id": r.report_id,
         "deposits": r.deposits,
+        "anode_tube": r.anode_tube,
+        "cathode_tube": r.cathode_tube,
+        "anode_spacer": r.anode_spacer,
+        "cathode_spacer": r.cathode_spacer,
+        "frame_gasket": r.frame_gasket,
         "anode_count": 1 if r.anode_nr else 0,
         "cathode_count": 1 if r.cathode_nr else 0,
         "company_id": None,
@@ -2973,13 +2978,28 @@ def _finish_if_both(db: Session, r: WfInspectionRequest, actor: Any) -> bool:
     return True
 
 
+# C-90 fills this column of the inspection form before inspection receives it.
+C90_SHEET_FIELDS = (
+    ("deposits", "deposits", None),
+    ("anode_tube", "anode_tube_remark", "anode_tube_ok"),
+    ("cathode_tube", "cathode_tube_remark", "cathode_tube_ok"),
+    ("anode_spacer", "anode_spacer_remark", "anode_spacer_ok"),
+    ("cathode_spacer", "cathode_spacer_remark", "cathode_spacer_ok"),
+    ("frame_gasket", "frame_gasket_remark", "frame_gasket_ok"),
+)
+
+
 def _copy_request_deposits(db: Session, r: WfInspectionRequest, report: models.InspectionReport | None = None) -> None:
-    """The Deposits column is C-90's. Keep it on the request and on the inspection form."""
-    text = (r.deposits or "").strip()
-    if not text or report is None:
+    """C-90's column stays on the request and is copied onto the inspection form."""
+    if report is None:
         return
-    if not (report.deposits or "").strip():
-        report.deposits = text
+    for source, remark, flag in C90_SHEET_FIELDS:
+        text = (getattr(r, source, None) or "").strip()
+        if not text or (getattr(report, remark, None) or "").strip():
+            continue
+        setattr(report, remark, text)
+        if flag:
+            setattr(report, flag, True)
 
 
 def _attach_report(db: Session, r: WfInspectionRequest, report_id: int, actor: Any, note: str | None = None) -> None:
@@ -3164,7 +3184,9 @@ def inspection_deposits_lookup(
     """Deposits already written by C-90 for the open inspection of this element."""
     _require_view(db, user, INSPECTION_VIEW_KEYS)
     found = _open_insp_for(db, element_nr, anode_nr, cathode_nr)
-    return {"deposits": (found.deposits or "") if found is not None else ""}
+    if found is None:
+        return {source: "" for source, _remark, _flag in C90_SHEET_FIELDS}
+    return {source: (getattr(found, source, None) or "") for source, _remark, _flag in C90_SHEET_FIELDS}
 
 
 @router.get("/inspection/{request_id}")
@@ -3202,16 +3224,37 @@ def create_inspection_request(body: InspCreateIn, db: Session = Depends(get_db),
 
 class InspSendIn(NoteIn):
     deposits: str | None = None
+    anode_tube: str | None = None
+    cathode_tube: str | None = None
+    anode_spacer: str | None = None
+    cathode_spacer: str | None = None
+    frame_gasket: str | None = None
 
 
 @router.post("/inspection/{request_id}/send")
 def inspection_send(request_id: int, body: InspSendIn, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
     r = _load_insp(db, request_id)
     _require_stage(db, user, "inspection", r.status, ("await_request",))
-    deposits = (body.deposits or r.deposits or "").strip()
-    if not deposits:
-        raise HTTPException(400, "C-90 must fill Deposits before this form is sent to inspection")
-    r.deposits = deposits[:4000]
+    labels = {
+        "deposits": "Deposits",
+        "anode_tube": "insert pipe (Anode)",
+        "cathode_tube": "insert pipe (cathode)",
+        "anode_spacer": "spacer strip (Anode)",
+        "cathode_spacer": "spacer strip (cathode)",
+        "frame_gasket": "Frame gasket",
+    }
+    filled: dict[str, str] = {}
+    missing: list[str] = []
+    for source, _remark, _flag in C90_SHEET_FIELDS:
+        value = (getattr(body, source, None) or getattr(r, source, None) or "").strip()
+        if not value:
+            missing.append(labels[source])
+        else:
+            filled[source] = value[:4000]
+    if missing:
+        raise HTTPException(400, "C-90 must fill these before the form is sent to inspection: " + ", ".join(missing))
+    for source, value in filled.items():
+        setattr(r, source, value)
     if r.report_id:
         _copy_request_deposits(db, r, db.get(models.InspectionReport, r.report_id))
     if not _close_if_reported(db, r, user):
@@ -3600,10 +3643,9 @@ def inspection_report_saved(db: Session, report: models.InspectionReport) -> Non
         return
     day = svc._as_date(report.inspection_date)
     actor = _System(report.inspector_name or report.sign_insp_name or "Element Inspection")
-    if not (report.deposits or "").strip():
-        donor = _open_insp_for(db, report.element_nr, report.anode_nr or report.electrode_nr_anode, report.cathode_nr or report.electrode_nr_cathode)
-        if donor is not None and (donor.deposits or "").strip():
-            report.deposits = donor.deposits
+    donor = _open_insp_for(db, report.element_nr, report.anode_nr or report.electrode_nr_anode, report.cathode_nr or report.electrode_nr_cathode)
+    if donor is not None:
+        _copy_request_deposits(db, donor, report)
     for r in db.query(WfInspectionRequest).filter(WfInspectionRequest.status.notin_(CLOSED)).all():
         mine = {("e", compact_nr(r.element_nr)), ("a", compact_nr(r.anode_nr)), ("c", compact_nr(r.cathode_nr))}
         if not keys & mine:

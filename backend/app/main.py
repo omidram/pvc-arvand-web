@@ -243,6 +243,12 @@ def _ensure_inspection_decision_column() -> None:
     if "deposits" not in present:
         with engine.begin() as conn:
             conn.execute(text("ALTER TABLE wf_inspection_requests ADD COLUMN deposits TEXT"))
+        present.add("deposits")
+    for column in ("anode_tube", "cathode_tube", "anode_spacer", "cathode_spacer", "frame_gasket"):
+        if column not in present:
+            with engine.begin() as conn:
+                conn.execute(text(f"ALTER TABLE wf_inspection_requests ADD COLUMN {column} TEXT"))
+            present.add(column)
 
 
 _ensure_inspection_sheet_columns()
