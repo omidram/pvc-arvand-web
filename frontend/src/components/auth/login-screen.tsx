@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { Sun, Moon } from "lucide-react";
+import { Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/lib/auth/context";
 import { useI18n } from "@/lib/i18n/context";
 import { useTheme } from "@/lib/theme/context";
@@ -19,6 +19,7 @@ export function LoginScreen() {
   const { resolvedTheme, toggle: toggleTheme } = useTheme();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -113,17 +114,29 @@ export function LoginScreen() {
           </div>
           <div>
             <Label>{t("auth.password")}</Label>
-            <Input
-              type="password"
-              name="arvand_login_secret"
-              autoComplete="new-password"
-              data-lpignore="true"
-              data-1p-ignore="true"
-              data-form-type="other"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                name="arvand_login_secret"
+                autoComplete="new-password"
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pe-8"
+                required
+              />
+              <button
+                type="button"
+                className="absolute end-1 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-[var(--win-muted)] hover:text-[var(--win-text)]"
+                aria-label={t(showPassword ? "auth.hidePassword" : "auth.showPassword")}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((open) => !open)}
+              >
+                {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
           </div>
 
           {error && (
