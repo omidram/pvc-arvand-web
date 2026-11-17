@@ -638,66 +638,6 @@ function ManagementBoard({ board }: { board: ElementBoard }) {
   );
 }
 
-function PalletBoard({ pallets }: { pallets: BoardPallet[] }) {
-  const { t } = useI18n();
-  const [open, setOpen] = useState(false);
-  return (
-    <section className={`er-panel${open ? " is-open" : " is-min"}`}>
-      <button type="button" className="er-board-toggle" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-        <h3 className="er-shop-title">{t("elDash.report.palletTitle")}</h3>
-        <span aria-hidden>{open ? "−" : "+"}</span>
-      </button>
-      <p className="dash-voltage-sub">{t("elDash.report.palletSub")}</p>
-      {!open ? null : pallets.length === 0 ? (
-        <p className="er-board-empty">{t("elDash.report.palletEmpty")}</p>
-      ) : (
-        <div className="er-pallet-grid">
-          {pallets.map((pallet) => {
-            const statusKey = `wf.status.${pallet.status}`;
-            const status = t(statusKey);
-            return (
-              <article key={`${pallet.code}-${pallet.pallet_no}`} className="er-pallet">
-                <header>
-                  <Link href={palletHref(pallet)}>
-                    <strong>{pallet.code}</strong>
-                  </Link>
-                  <Link href={palletHref(pallet)}>{t("elDash.report.palletNo", { no: pallet.pallet_no })}</Link>
-                  <span className="er-board-meta">{status === statusKey ? pallet.status : status}</span>
-                  {pallet.company ? <span className="er-board-meta">{pallet.company}</span> : null}
-                </header>
-                <Link href={palletHref(pallet)} className="er-board-nums is-compact">
-                  <div>
-                    <strong>{formatNumber(pallet.anode_count, 0)}</strong>
-                    <span>{t("elDash.report.anode")}</span>
-                  </div>
-                  <div>
-                    <strong>{formatNumber(pallet.cathode_count, 0)}</strong>
-                    <span>{t("elDash.report.cathode")}</span>
-                  </div>
-                </Link>
-                <ul className="er-board-list">
-                  {pallet.anodes.map((serial) => (
-                    <li key={`a-${serial}`}>
-                      <span className="er-kind is-anode">A</span>
-                      <Link href={pieceHref(serial)}>{serial}</Link>
-                    </li>
-                  ))}
-                  {pallet.cathodes.map((serial) => (
-                    <li key={`c-${serial}`}>
-                      <span className="er-kind is-cathode">C</span>
-                      <Link href={pieceHref(serial)}>{serial}</Link>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            );
-          })}
-        </div>
-      )}
-    </section>
-  );
-}
-
 export function MonthFlow({ compact }: { compact: boolean }) {
   const { t } = useI18n();
   const [grain, setGrain] = useState<FlowGrain>("month");
@@ -878,8 +818,6 @@ function Report({ data, compact, cls, head }: { data: ElementDashOverview; compa
 
       <MonthFlow compact={compact} />
       <InServiceBreakdown />
-
-      {data.board ? <PalletBoard pallets={data.board.pallets} /> : null}
 
       {!compact && data.board ? (
         <div className="er-two">
