@@ -303,10 +303,10 @@ function SignRejectBox({
           <Check size={14} /> {signLabel}
         </button>
       </div>
-      <div className="wh-form-inline">
-        <label className="wh-grow">
+      <div className="wf-reason-row">
+        <label>
           {t("wf.asm.rejectHint")}
-          <input value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} />
+          <textarea rows={2} value={rejectNote} onChange={(e) => setRejectNote(e.target.value)} />
         </label>
         <button
           type="button"
@@ -320,10 +320,10 @@ function SignRejectBox({
       {d.actions.includes("fail_test") ? (
         <>
           <p className="wh-subdesc">{t("wf.asm.failHint")}</p>
-          <div className="wh-form-inline">
-            <label className="wh-grow">
+          <div className="wf-reason-row">
+            <label>
               {t("wf.asm.failNote")}
-              <input value={failNote} onChange={(e) => setFailNote(e.target.value)} />
+              <textarea rows={2} value={failNote} onChange={(e) => setFailNote(e.target.value)} />
             </label>
             <button
               type="button"

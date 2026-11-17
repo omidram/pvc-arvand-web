@@ -6934,7 +6934,22 @@ html[data-theme="dark"] .wf-chips button { color: #93c5fd; }
 .wf-piece { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.4rem; padding: 0.5rem 0.6rem; border: 1px solid #d7d3c8; background: #fff; }
 .wf-piece > strong { grid-column: 1 / -1; color: var(--win-navy); }
 .wf-piece label { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.75rem; color: var(--win-muted); }
-.wf-piece select, .wf-piece textarea { font: inherit; color: inherit; padding: 0.28rem 0.35rem; background: #fff; }
+.wf-piece select, .wf-piece textarea, .wf-piece input { font: inherit; color: inherit; padding: 0.28rem 0.35rem; background: #fff; border: 1px solid var(--win-face-dark); border-radius: 0.35rem; }
+.wf-detail input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]),
+.wf-detail select,
+.wf-detail textarea {
+  min-height: 32px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--win-face-dark);
+  border-radius: 0.45rem;
+  font-size: 12px;
+  background: var(--win-input);
+  color: var(--win-text);
+}
+.wf-reason-row { display: flex; flex-direction: column; align-items: stretch; gap: 0.35rem; }
+.wf-reason-row label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 11px; font-weight: 700; color: var(--win-muted); }
+.wf-reason-row textarea, .wf-reason-row input { width: 100%; }
+.wf-reason-row .wf-btn { align-self: flex-start; }
 .wf-piece textarea { grid-column: 1 / -1; min-height: 2.6rem; }
 .wf-section h4, .wf-actions h4 { margin: 0; color: var(--win-navy); font-size: 0.9rem; }
 .wf-actions { display: flex; flex-direction: column; gap: 0.55rem; padding: 0.7rem; border-radius: 0.7rem; border: 2px solid #fdba74; background: #fffaf3; }
