@@ -25,7 +25,7 @@ function isCurrentForm(href: string, pathname: string, query: string): boolean {
 }
 
 export function AllFormsPane({ onCollapse }: { onCollapse?: () => void }) {
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   const { canView } = useAuth();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -48,7 +48,7 @@ export function AllFormsPane({ onCollapse }: { onCollapse?: () => void }) {
   }, [q, shortcuts, canView]);
 
   return (
-    <aside className="access-forms-pane min-h-0 self-stretch" dir="ltr">
+    <aside className="access-forms-pane min-h-0 self-stretch" dir={dir}>
       <div className="access-forms-pane-header">
         <span>{t("menus.allForms")}</span>
         <span className="access-forms-pane-tools">

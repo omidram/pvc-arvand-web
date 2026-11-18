@@ -255,7 +255,7 @@ export function VoltageReportPanel({
             </p>
           ) : null}
           {live.shift_supervisor ? (
-            <p className="dv-reporter" title={live.shift_persons ?? undefined}>
+            <p className="dv-reporter">
               <UserRound size={13} aria-hidden />
               <span>{t("dashboard.reportedBy")}</span>
               <b>{live.shift_supervisor}</b>

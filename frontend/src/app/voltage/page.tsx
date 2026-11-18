@@ -963,7 +963,7 @@ function CurrentEfficiencyTab() {
  * (UnBer, Um, iRef / tKorr / cKorr, Umin, ...) live in `backend/app/un_ce_engine.py`.
  */
 function StandardizedVoltageBoard() {
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   const [from, setFrom] = useState(monthStartIso);
   const [till, setTill] = useState(todayIsoLocal);
   const [shown, setShown] = useState<{
@@ -1067,7 +1067,7 @@ function StandardizedVoltageBoard() {
     setShown({ title, mode: displayModeFor(values), key, stamp: Date.now() });
 
   return (
-    <div className="access-hub" dir="ltr">
+    <div className="access-hub" dir={dir}>
       <div className="access-hub-head">
         <div className="access-hub-title is-blue">{t("mainMenu.standardizedVoltage")}</div>
         <div className="flex flex-wrap items-center gap-2">

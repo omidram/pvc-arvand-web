@@ -62,7 +62,7 @@ export function ShiftReportSettings({ initial }: { initial: VoltageSyncSettings 
         <div className="space-y-4">
           <p className="text-sm text-[var(--win-text-dim)]">
             {fa
-              ? "ساعت صبح، شیفت ۱۲ شبِ روز قبل را می‌گیرد. ساعت عصر، شیفت ۱۲ صبحِ همان روز را می‌گیرد. کیلوآمپر قطار، تعداد در سرویس و نام سرپرست مبنای داشبورد هستند. نام کاربری و رمز همان تنظیمات بالاست."
+              ? "ساعت صبح، شیفت ۱۲ شبِ روز قبل را می‌گیرد. ساعت عصر، شیفت ۱۲ صبحِ همان روز را می‌گیرد. کیلوآمپر ترین، تعداد در سرویس و نام سرپرست مبنای داشبورد هستند. نام کاربری و رمز همان تنظیمات بالاست."
               : "The morning time pulls the previous day's 12 شب shift. The evening time pulls the same day's 12 صبح shift. Train kiloamperes, the in-service count and the supervisor are what the dashboard uses. The login is the one saved above."}
           </p>
           <label className="flex items-center gap-2 text-sm font-semibold text-[var(--win-text)]">

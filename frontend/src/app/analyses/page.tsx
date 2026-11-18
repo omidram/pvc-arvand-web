@@ -90,11 +90,11 @@ const COLUMNS: { titleKey: string; scope: string; items: ColumnItem[] }[] = [
 ];
 
 function AnalysisMenu() {
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   const { isAdmin } = useAuth();
   const [importOpen, setImportOpen] = useState(false);
   return (
-    <div className="access-hub" dir="ltr">
+    <div className="access-hub" dir={dir}>
       {/*
         Custom header instead of the generic AccessHub, because the real Access
         "Analyse" form places "Main Menu" BETWEEN "Current Efficiency" and

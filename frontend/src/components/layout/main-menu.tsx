@@ -46,7 +46,7 @@ function MenuButton({
 
 export function MainMenu() {
   const { canView, isAdmin, logout } = useAuth();
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   useCalendar();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: settingsApi.get });
   const canSeeVoltage = canView("voltage") || canView("dashboard") || canView("monitoring");
@@ -64,7 +64,7 @@ export function MainMenu() {
   const unreadTickets = ticketUnread.data?.notifications ?? 0;
 
   return (
-    <div className="access-eap flex h-full min-h-0 flex-1 flex-col" dir="ltr">
+    <div className="access-eap flex h-full min-h-0 flex-1 flex-col" dir={dir}>
       <div className="flex min-h-0 flex-1">
         <section className="flex min-w-0 flex-1 flex-col overflow-y-auto px-3 pb-4 pt-1">
           <div className="access-header-sunken mb-3 px-4 pb-3 pt-2">

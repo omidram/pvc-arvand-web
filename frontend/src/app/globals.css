@@ -6324,7 +6324,7 @@ html[data-theme="dark"] .er-board-card > .er-board-list::-webkit-scrollbar-thumb
 html[data-theme="dark"] .er-board-list li { border-color: #334155; }
 html[data-theme="dark"] .er-board-list a { color: #93c5fd; }
 html[data-theme="dark"] .er-flow-chip.is-on { background: #1d4ed8; color: #fff; }
-.er-flow-why { margin-top: 0.7rem; padding: 0.7rem 0.8rem; border: 1px solid #d7e3f0; border-radius: 12px; background: #f8fafc; }
+.er-flow-why { margin-top: 0.7rem; padding: 0.7rem 0.8rem; border: 1px solid #d7e3f0; border-radius: 12px; background: #f8fafc; text-align: start; }
 .er-flow-why h4 { margin: 0 0 0.35rem; color: #0f2744; font-size: 0.85rem; }
 .er-flow-why p, .er-flow-why li { margin: 0.15rem 0; font-size: 0.78rem; color: #334155; }
 .er-flow-why-block { margin-top: 0.45rem; }

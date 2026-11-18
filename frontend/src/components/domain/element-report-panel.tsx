@@ -751,7 +751,6 @@ export function MonthFlow({ compact }: { compact: boolean }) {
         </ResponsiveContainer>
       </div>
       <div className="er-flow-why">
-        <h4>{t("elDash.report.whyTitle")}</h4>
         {!picked ? <p>{t("elDash.report.whyHint")}</p> : null}
         {picked && why.isFetching ? <p>{t("common.loading")}</p> : null}
         {picked && !why.isFetching ? (
@@ -771,7 +770,10 @@ export function MonthFlow({ compact }: { compact: boolean }) {
                     <ul>
                       {reasons.map(([reason, elements]) => (
                         <li key={reason}>
-                          <span>{reason === "—" ? t("elDash.report.reasonUnknown") : reason}</span>
+                          <span>
+                            {reason === "—" ? t("elDash.report.reasonUnknown") : reason}
+                            {` (${elements.length})`}
+                          </span>
                           <em>{elements.join("، ")}</em>
                         </li>
                       ))}

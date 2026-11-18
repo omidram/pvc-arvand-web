@@ -25,7 +25,7 @@ export function AccessHub({
   extraButtons?: ReactNode;
   children: ReactNode;
 }) {
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
   const router = useRouter();
   const menuLabel = backLabel || t("common.mainMenu");
   useCalendar();
@@ -39,7 +39,7 @@ export function AccessHub({
   }
 
   return (
-    <div className="access-hub" dir="ltr">
+    <div className="access-hub" dir={dir}>
       <div className="access-hub-head">
         <div className={`access-hub-title ${titleBlue ? "is-blue" : ""}`}>{title}</div>
         <div className="flex flex-wrap items-start gap-2">

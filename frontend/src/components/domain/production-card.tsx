@@ -43,8 +43,8 @@ export function ProductionCard({ plantKa, trains }: { plantKa: number | null | u
   const perUnit = { hour: "ton/hr", day: "ton/day", week: "ton/week", month: "ton/month" }[period];
   const scopeLabel = {
     plant: fa ? "کل واحد" : "Plant",
-    "1": fa ? "قطار ۱" : "Train 1",
-    "2": fa ? "قطار ۲" : "Train 2",
+    "1": fa ? "ترین ۱" : "Train 1",
+    "2": fa ? "ترین ۲" : "Train 2",
   };
   const cl2 = ka > 0 ? ka * cl2Factor * hours : null;
   const naoh = ka > 0 ? ka * naohFactor * hours : null;
