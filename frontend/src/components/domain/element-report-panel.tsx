@@ -430,11 +430,24 @@ function reasonText(t: (path: string) => string, reason: string | null | undefin
   return label === key ? reason || "" : label;
 }
 
-function PieceList({ list, moreHref }: { list: BoardList; moreHref: string }) {
+function PieceList({ list, source, kind }: { list: BoardList; source?: string; kind?: "anode" | "cathode" }) {
   const { t } = useI18n();
-  const items = list.items || [];
-  if (!items.length) return <p className="er-board-empty">{t("elDash.report.none")}</p>;
-  const more = Math.max(0, (list.total || 0) - items.length);
+  const [rest, setRest] = useState<BoardPiece[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const preview = list.items || [];
+  const items = rest || preview;
+  if (!preview.length && !rest) return <p className="er-board-empty">{t("elDash.report.none")}</p>;
+  const more = rest ? 0 : Math.max(0, (list.total || 0) - preview.length);
+  async function loadMore() {
+    if (!source) return;
+    setLoading(true);
+    try {
+      const data = await elementDashboardApi.boardList(source, kind);
+      setRest(data.items);
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <ul className="er-board-list">
       {items.map((item: BoardPiece, index) => (
@@ -454,7 +467,9 @@ function PieceList({ list, moreHref }: { list: BoardList; moreHref: string }) {
       ))}
       {more > 0 ? (
         <li className="er-board-more">
-          <Link href={moreHref}>{t("elDash.report.more", { n: more })}</Link>
+          <button type="button" className="er-board-more-btn" disabled={loading || !source} onClick={() => void loadMore()}>
+            {loading ? t("common.loading") : t("elDash.report.showMore", { n: more })}
+          </button>
         </li>
       ) : null}
     </ul>
@@ -552,10 +567,11 @@ function BoardCard({ title, sub, hrefTo, tone, children }: { title: string; sub:
 
 function sideOf(list: BoardList | undefined, kind: "anode" | "cathode"): BoardList {
   const items = (list?.items || []).filter((item) => (item.kind || "anode") === kind);
+  const count = kind === "anode" ? list?.anode ?? items.length : list?.cathode ?? items.length;
   return {
-    anode: kind === "anode" ? list?.anode || items.length : 0,
-    cathode: kind === "cathode" ? list?.cathode || items.length : 0,
-    total: items.length,
+    anode: kind === "anode" ? count : 0,
+    cathode: kind === "cathode" ? count : 0,
+    total: count,
     shown: items.length,
     items,
   };
@@ -612,8 +628,8 @@ function ManagementBoard({ board }: { board: ElementBoard }) {
           onAnode={() => show("apart-anode")}
           onCathode={() => show("apart-cathode")}
         />
-        {listKey === "apart-anode" ? <PieceList list={sideOf(board.disassembled, "anode")} moreHref={href("shop", { stage: "disassembled" })} /> : null}
-        {listKey === "apart-cathode" ? <PieceList list={sideOf(board.disassembled, "cathode")} moreHref={href("shop", { stage: "disassembled" })} /> : null}
+        {listKey === "apart-anode" ? <PieceList list={sideOf(board.disassembled, "anode")} source="disassembled" kind="anode" /> : null}
+        {listKey === "apart-cathode" ? <PieceList list={sideOf(board.disassembled, "cathode")} source="disassembled" kind="cathode" /> : null}
       </BoardCard>
       <BoardCard title={t("elDash.report.stockCardTitle")} sub={t("elDash.report.stockCardSub")} hrefTo={stockHref} tone="stock">
         <GroupedCounts
@@ -649,8 +665,8 @@ function ManagementBoard({ board }: { board: ElementBoard }) {
           onAnode={() => show("check-anode")}
           onCathode={() => show("check-cathode")}
         />
-        {listKey === "check-anode" ? <PieceList list={sideOf(board.awaiting_check, "anode")} moreHref={coatingHref} /> : null}
-        {listKey === "check-cathode" ? <PieceList list={sideOf(board.awaiting_check, "cathode")} moreHref={coatingHref} /> : null}
+        {listKey === "check-anode" ? <PieceList list={sideOf(board.awaiting_check, "anode")} source="awaiting_check" kind="anode" /> : null}
+        {listKey === "check-cathode" ? <PieceList list={sideOf(board.awaiting_check, "cathode")} source="awaiting_check" kind="cathode" /> : null}
       </BoardCard>
       <BoardCard title={t("elDash.report.recoatedTitle")} sub={t("elDash.report.recoatedSub")} hrefTo={stockHref} tone="stock">
         <CountPair anode={countSide(recoated, "anode")} cathode={countSide(recoated, "cathode")} hrefTo={stockHref} />

@@ -1392,6 +1392,33 @@ def tafkik_spare_lists(
     return groups
 
 
+def board_items(db: Session, name: str, kind: str | None = None) -> dict[str, Any]:
+    """Every piece behind one dashboard card, not just the first preview page."""
+    cfg = settings_dict(get_settings(db))
+    anode_rows = electrode_rows(db, "anode", cfg)[0]
+    cathode_rows = electrode_rows(db, "cathode", cfg)[0]
+    groups = tafkik_spare_lists(db, anode_rows, cathode_rows)
+    pieces = anode_rows + cathode_rows
+    spare = [r for r in pieces if not r["installed"] and not r["at_coater"]]
+    if name == "disassembled":
+        rows = [r for r in spare if r.get("disassembly_date") and r.get("bucket") != "not_ok"]
+        rows.sort(key=lambda r: (r.get("disassembly_date") or "", r.get("serial") or ""), reverse=True)
+        fields = {"date": "disassembly_date", "element_nr": "last_element_nr"}
+    elif name == "awaiting_check":
+        rows = [r for r in spare if r.get("bucket") == "pending"] + list(groups.get("needs_grade", []))
+        rows.sort(key=lambda r: (r.get("kind") or "", r.get("serial") or ""))
+        fields = {}
+    else:
+        rows, fields = [], {}
+    if kind in {"anode", "cathode"}:
+        rows = [r for r in rows if r.get("kind") == kind]
+    items = []
+    for row in rows:
+        extra = {label: row.get(src) for label, src in fields.items()}
+        items.append(_board_piece(row, **extra))
+    return {"total": len(items), "items": items}
+
+
 def management_board(
     anode_rows: list[dict[str, Any]],
     cathode_rows: list[dict[str, Any]],

@@ -32,6 +32,15 @@ def in_service_breakdown(db: Session = Depends(get_db)):
     return svc.in_service_breakdown(db)
 
 
+@router.get("/board-items")
+def board_items(name: str = Query(...), kind: str | None = None, db: Session = Depends(get_db)):
+    if name not in {"disassembled", "awaiting_check"}:
+        raise HTTPException(status_code=400, detail="Unknown board list")
+    if kind not in {None, "anode", "cathode"}:
+        raise HTTPException(status_code=400, detail="Unknown part")
+    return svc.board_items(db, name, kind)
+
+
 @router.get("/overview")
 def get_overview(db: Session = Depends(get_db)):
     return svc.overview(db)

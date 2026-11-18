@@ -6262,6 +6262,7 @@ html[data-theme="dark"] .er-report .ed-table tr.is-total td { background: #1e293
 .er-board-nums span, .er-board-meta, .er-board-more { font-size: 0.68rem; color: #64748b; font-weight: 650; }
 .er-board-nums.is-compact strong { font-size: 1.05rem; }
 .er-board-list { list-style: none; margin: 0; padding: 0; overflow: auto; }
+.er-board-more-btn { border: 0; background: none; padding: 0; color: #1d4ed8; font: inherit; font-weight: 700; cursor: pointer; }
 .er-board-card > .er-board-list {
   flex: 1 1 0;
   min-height: 0;

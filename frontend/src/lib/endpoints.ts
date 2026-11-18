@@ -1998,6 +1998,8 @@ export const elementDashboardApi = {
     by_group: { group: string; cells: number; anode_coating: string | null; cathode_coating: string | null; membrane_type: string | null; gap_mm: string | null }[];
     by_company: { company: string; anode: number; cathode: number; total: number }[];
   }> => (await apiClient.get("/element-dashboard/in-service-breakdown")).data,
+  boardList: async (name: string, kind?: "anode" | "cathode"): Promise<{ total: number; items: T.BoardPiece[] }> =>
+    (await apiClient.get("/element-dashboard/board-items", { params: { name, kind } })).data,
   overview: async (refresh = false): Promise<T.ElementDashOverview> =>
     (await apiClient.get("/element-dashboard/overview", { params: refresh ? { refresh: true } : undefined })).data,
   partsNow: async (params: { anode_nr?: string | null; cathode_nr?: string | null; membrane_nr?: string | null; element_id?: number | null }): Promise<{

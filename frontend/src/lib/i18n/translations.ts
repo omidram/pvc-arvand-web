@@ -2800,6 +2800,7 @@ const en = {
       assemblySerials: "Serials free for a new element",
       none: "None right now",
       more: "+{n} more",
+      showMore: "Show more ({n})",
       daysOut: "{n} d out",
       reason: {
         coating: "Coating problem",
@@ -5920,6 +5921,7 @@ const fa: DeepPartialStrings<typeof en> = {
       assemblySerials: "سریال‌های آزاد برای المنت جدید",
       none: "موردی نیست",
       more: "+{n} مورد دیگر",
+      showMore: "نمایش بقیه ({n})",
       daysOut: "{n} روز بیرون",
       reason: {
         coating: "مشکل پوشش",
