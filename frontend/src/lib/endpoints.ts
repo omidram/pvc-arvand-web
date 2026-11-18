@@ -2082,7 +2082,7 @@ export const elementDashboardApi = {
     (await apiClient.get("/element-dashboard/relations", { params: refresh ? { refresh: true } : undefined })).data,
   repair: async (payload: { mode: "all" | "links" | "fill"; only?: string[] }): Promise<T.AuditRepairResult> =>
     (await apiClient.post("/element-dashboard/relations/repair", payload)).data,
-  activity: async (grain: "day" | "week" | "month" | "year"): Promise<{ key: string; assembled: number; commissioned: number; decommissioned: number; disassembled: number }[]> =>
+  activity: async (grain: "day" | "week" | "month" | "year"): Promise<{ key: string; assembled: number; commissioned: number; decommissioned: number; disassembled: number; segregated: number }[]> =>
     (await apiClient.get("/element-dashboard/activity", { params: { grain } })).data,
   activityWhy: async (
     grain: "day" | "week" | "month" | "year",

@@ -1453,6 +1453,47 @@ def management_board(
     }
 
 
+def _both_sides_judged(decisions: Any, anode_nr: str | None, cathode_nr: str | None) -> bool:
+    """Inspection and process each recorded a segregation result for every piece on the request."""
+    if not isinstance(decisions, dict):
+        return False
+    kinds = [kind for kind, serial in (("anode", anode_nr), ("cathode", cathode_nr)) if (serial or "").strip()] or ["anode", "cathode"]
+    for side in ("inspection", "process"):
+        block = decisions.get(side)
+        if not isinstance(block, dict):
+            return False
+        for kind in kinds:
+            item = block.get(kind)
+            if not isinstance(item, dict) or not str(item.get("result") or "").strip():
+                return False
+    return True
+
+
+def _final_segregation_events(db: Session) -> list[dict[str, Any]]:
+    """Elements whose segregation flow was closed after both inspection and process approved it."""
+    from .workflow_models import WfInspectionRequest
+
+    events: list[dict[str, Any]] = []
+    for row in db.query(WfInspectionRequest).filter(WfInspectionRequest.status == "completed").all():
+        if (row.reason or "").strip().lower().startswith("recoating"):
+            continue
+        if not _both_sides_judged(row.decisions, row.anode_nr, row.cathode_nr):
+            continue
+        day = _as_date(row.completed_at) or _as_date(row.updated_at)
+        if day is None:
+            continue
+        events.append(
+            {
+                "date": day.isoformat(),
+                "kind": "segregated",
+                "element_nr": "" if row.element_nr is None else str(row.element_nr),
+                "reason": row.code,
+                "_day": day,
+            }
+        )
+    return events
+
+
 def _monthly_flow(db: Session, months: int = 36) -> list[dict[str, Any]]:
     today = date.today()
     first = today.replace(day=1)
@@ -1462,7 +1503,7 @@ def _monthly_flow(db: Session, months: int = 36) -> list[dict[str, Any]]:
         tags.append(cursor.strftime("%Y-%m"))
         cursor = (cursor - timedelta(days=1)).replace(day=1)
     tags.reverse()
-    flow = {tag: {"month": tag, "assembled": 0, "commissioned": 0, "decommissioned": 0, "disassembled": 0} for tag in tags}
+    flow = {tag: {"month": tag, "assembled": 0, "commissioned": 0, "decommissioned": 0, "disassembled": 0, "segregated": 0} for tag in tags}
     fields = (
         ("assembly_date", "assembled"),
         ("commissioning_date", "commissioned"),
@@ -1474,6 +1515,10 @@ def _monthly_flow(db: Session, months: int = 36) -> list[dict[str, Any]]:
             day = _as_date(getattr(el, field))
             if day and (tag := day.strftime("%Y-%m")) in flow:
                 flow[tag][name] += 1
+    for event in _final_segregation_events(db):
+        tag = event["_day"].strftime("%Y-%m")
+        if tag in flow:
+            flow[tag]["segregated"] += 1
     return [flow[t] for t in tags]
 
 
@@ -1511,6 +1556,7 @@ def _dated_events(db: Session) -> list[dict[str, Any]]:
             if not day:
                 continue
             events.append({"date": day.isoformat(), "kind": name, "element_nr": nr, "reason": reason if name == "decommissioned" else None, "_day": day})
+    events.extend(_final_segregation_events(db))
     return events
 
 
@@ -1518,7 +1564,7 @@ def activity_series(db: Session, grain: str) -> list[dict[str, Any]]:
     counts: dict[str, dict[str, Any]] = {}
     for event in _dated_events(db):
         key = _activity_bucket(event["_day"], grain)
-        row = counts.setdefault(key, {"key": key, "assembled": 0, "commissioned": 0, "decommissioned": 0, "disassembled": 0})
+        row = counts.setdefault(key, {"key": key, "assembled": 0, "commissioned": 0, "decommissioned": 0, "disassembled": 0, "segregated": 0})
         row[event["kind"]] += 1
     return [counts[key] for key in sorted(counts)]
 

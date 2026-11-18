@@ -2876,6 +2876,7 @@ const en = {
       commissioned: "Commissioned",
       decommissioned: "Decommissioned",
       disassembled: "Disassembled",
+      segregated: "Segregated",
     },
     chart: {
       flow: "Elements per month",
@@ -5995,6 +5996,7 @@ const fa: DeepPartialStrings<typeof en> = {
       commissioned: "راه‌اندازی",
       decommissioned: "خروج از مدار",
       disassembled: "دمونتاژ",
+      segregated: "تفکیک‌شده",
     },
     chart: {
       flow: "المنت‌ها در هر ماه",

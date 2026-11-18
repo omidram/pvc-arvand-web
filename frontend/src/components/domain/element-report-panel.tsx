@@ -17,7 +17,7 @@ import { MembraneUsedModal } from "./membrane-stock-panel";
 import { STAGE_FLOW, STAGE_TONE } from "./element-dashboard-ui";
 
 const REPORT_STAGES: ElementStage[] = ["decommissioned", "awaiting_disassembly", "awaiting_qc", "ready"];
-const FLOW_KINDS = ["assembled", "commissioned", "decommissioned", "disassembled"] as const;
+const FLOW_KINDS = ["assembled", "commissioned", "decommissioned", "disassembled", "segregated"] as const;
 type FlowGrain = "day" | "week" | "month" | "year";
 type FlowHit = { date: string; kind: string; element_nr: string; reason: string | null };
 
@@ -746,6 +746,7 @@ export function MonthFlow({ compact }: { compact: boolean }) {
             <Line type="monotone" dataKey="commissioned" name={t("elDash.flow.commissioned")} stroke="#16a34a" strokeWidth={2.4} dot={{ r: 2 }} activeDot={{ r: 5 }} />
             <Line type="monotone" dataKey="decommissioned" name={t("elDash.flow.decommissioned")} stroke="#dc2626" strokeWidth={2.4} dot={{ r: 2 }} activeDot={{ r: 5 }} />
             <Line type="monotone" dataKey="disassembled" name={t("elDash.flow.disassembled")} stroke="#64748b" strokeWidth={2.4} dot={{ r: 2 }} activeDot={{ r: 5 }} />
+            <Line type="monotone" dataKey="segregated" name={t("elDash.flow.segregated")} stroke="#0f766e" strokeWidth={2.4} dot={{ r: 2 }} activeDot={{ r: 5 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>

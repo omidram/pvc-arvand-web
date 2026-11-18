@@ -1573,7 +1573,7 @@ export interface ElementDashOverview {
   workshop?: WorkshopSheet;
   alerts: { danger: number; warning: number; info: number };
   by_electrolyzer: { electrolyzer: string; cells: number; capacity: number }[];
-  monthly_flow: { month: string; assembled: number; commissioned: number; decommissioned: number; disassembled: number }[];
+  monthly_flow: { month: string; assembled: number; commissioned: number; decommissioned: number; disassembled: number; segregated?: number }[];
   board?: ElementBoard;
   events: ShopEvent[];
   settings: ElementDashSettings;
