@@ -6900,6 +6900,9 @@ html[data-theme="dark"] .tk-bell-btn.is-classic { background: #1e293b; border-co
 .wf-wait-col label { display: flex; align-items: center; gap: 0.35rem; padding: 0.28rem 0.45rem; font-size: 12px; font-weight: 600; cursor: pointer; }
 .wf-wait-col label em { margin-inline-start: auto; font-style: normal; font-weight: 500; color: #64748b; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 45%; }
 .wf-wait-col .wh-muted { padding: 0.45rem; }
+.wf-pieces-fact { display: inline-flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+.wf-selected-pieces .wf-wait-col li { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.28rem 0.45rem; }
+.wf-selected-pieces .wf-wait-col em { font-style: normal; color: #64748b; font-size: 11px; }
 .wf-picker-list li { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.3rem 0.45rem; border-radius: 0.35rem; cursor: pointer; font-size: 12px; }
 .wf-picker-list li strong { font-family: ui-monospace, Consolas, monospace; }
 .wf-picker-list li.is-active { background: #e0f2fe; }

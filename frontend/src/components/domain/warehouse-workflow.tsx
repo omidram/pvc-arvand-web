@@ -844,8 +844,12 @@ function InspectionCell({ item, t }: { item: NonNullable<WfDetail["packages"]>[n
 
 function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; t: T }) {
   const coating = d.flow === "coating";
+  const [piecesOpen, setPiecesOpen] = useState(false);
   const reports = d.files.filter((f) => f.kind === "report");
   const attachments = d.files.filter((f) => f.kind === "attachment");
+  const selected = (d.packages || []).flatMap((pallet) => pallet.items.map((item) => ({ ...item, code: pallet.code })));
+  const anodes = selected.filter((item) => item.element_kind === "anode");
+  const cathodes = selected.filter((item) => item.element_kind === "cathode");
   return (
     <div className="wf-detail">
       <Stepper flow={d.flow} status={d.status} t={t} />
@@ -866,7 +870,16 @@ function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; 
             </Badge>
           </Fact>
         ) : null}
-        <Fact label={t("wf.col.pieces")}>{t("wf.piecesShort", { a: d.anode_count, k: d.cathode_count })}</Fact>
+        <Fact label={t("wf.col.pieces")}>
+          <span className="wf-pieces-fact">
+            {t("wf.piecesShort", { a: d.anode_count, k: d.cathode_count })}
+            {coating && selected.length ? (
+              <button type="button" className="wf-btn wf-btn-sm" onClick={() => setPiecesOpen((open) => !open)}>
+                {t(piecesOpen ? "wf.coating.hidePieces" : "wf.coating.showPieces")}
+              </button>
+            ) : null}
+          </span>
+        </Fact>
         <Fact label={t("wf.col.company")}>{d.company_name || "—"}</Fact>
         <Fact label={t("wf.col.indent")}>{d.indent_no || "—"}</Fact>
         {d.approval_ref ? <Fact label={t("wf.purchase.approvalRef")}>{d.approval_ref}</Fact> : null}
@@ -890,6 +903,36 @@ function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; 
         </Fact>
         {d.remarks ? <Fact label={t("fields.remarks")}>{d.remarks}</Fact> : null}
       </div>
+
+      {coating && piecesOpen ? (
+        <section className="wf-section wf-selected-pieces">
+          <h4>{t("wf.coating.showPieces")}</h4>
+          <div className="wf-wait-grid">
+            {(["anode", "cathode"] as const).map((kind) => {
+              const rows = kind === "anode" ? anodes : cathodes;
+              return (
+                <section key={kind} className="wf-wait-col">
+                  <h4>
+                    {t(kind === "anode" ? "wf.kind.anode" : "wf.kind.cathode")} <b>{rows.length}</b>
+                  </h4>
+                  {rows.length === 0 ? (
+                    <p className="wh-muted">{t("wf.coating.waitingEmpty")}</p>
+                  ) : (
+                    <ul>
+                      {rows.map((row) => (
+                        <li key={row.id}>
+                          <span className="wf-code">{row.serial}</span>
+                          <em>{row.code}</em>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <StepActions key={`${d.flow}-${d.id}-${d.status}`} d={d} companies={companies} t={t} />
 
