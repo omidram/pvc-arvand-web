@@ -25,6 +25,13 @@ from ..warehouse import compact_eq, compact_nr
 
 router = APIRouter(prefix="/electrode-segregations", tags=["segregation"])
 
+
+def _publish() -> None:
+    """Segregation moves a piece into stock or the coating queue. Boards must see that at once."""
+    from ..element_dashboard import clear_cache
+
+    clear_cache()
+
 EXPORT_FIELDS = [k for k in schemas.ElectrodeSegregationRead.model_fields if not k.startswith("flow_")]
 
 _SEG_FIELD_NAMES = set(schemas.ElectrodeSegregationBase.model_fields.keys())
@@ -211,6 +218,7 @@ def enrich_from_assembly(
         if i % 200 == 0:
             db.flush()
     db.commit()
+    _publish()
     return {"checked": len(rows), "updated": updated}
 
 
@@ -281,6 +289,7 @@ async def import_tafkik_excel(
             if progress and (done == total or done % 25 == 0):
                 progress(done, total)
         db.commit()
+        _publish()
         return {
             "imported_rows": created,
             "sheet": parsed.get("sheet"),
@@ -345,6 +354,7 @@ def ensure_segregation(body: SegregationEnsure, db: Session = Depends(get_db)):
         _link_master(db, obj)
         db.add(obj)
         db.commit()
+        _publish()
         db.refresh(obj)
         return _safe_read(obj)
     changed = False
@@ -354,6 +364,7 @@ def ensure_segregation(body: SegregationEnsure, db: Session = Depends(get_db)):
             changed = True
     if changed:
         db.commit()
+        _publish()
         db.refresh(existing)
     return _safe_read(existing)
 
@@ -420,6 +431,7 @@ def create_segregation(payload: schemas.ElectrodeSegregationBase, db: Session = 
 
     alert = warn_failed_under_warranty(db, obj)
     db.commit()
+    _publish()
     db.refresh(obj)
     obj.warranty_alert = alert
     return obj
@@ -440,6 +452,7 @@ def update_segregation(item_id: int, payload: schemas.ElectrodeSegregationBase, 
 
     alert = warn_failed_under_warranty(db, obj)
     db.commit()
+    _publish()
     db.refresh(obj)
     obj.warranty_alert = alert
     return obj
@@ -452,4 +465,5 @@ def delete_segregation(item_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Not found")
     db.delete(obj)
     db.commit()
+    _publish()
     return None

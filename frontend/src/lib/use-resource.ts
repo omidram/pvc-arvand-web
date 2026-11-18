@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { refreshWarehouseData } from "@/lib/workflow";
 
 interface CrudApi<TRead, TWrite> {
   list: (params?: Record<string, unknown>) => Promise<TRead[]>;
@@ -23,7 +24,11 @@ export function useCrudResource<TRead, TWrite = Partial<TRead>>(
   });
 
   function invalidate() {
-    return queryClient.invalidateQueries({ queryKey: [queryKey] });
+    const refresh = queryClient.invalidateQueries({ queryKey: [queryKey] });
+    if (["electrode-segregations", "elements", "anodes", "cathodes", "membranes", "inspections"].includes(queryKey)) {
+      refreshWarehouseData(queryClient);
+    }
+    return refresh;
   }
 
   const createMutation = useMutation({

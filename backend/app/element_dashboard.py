@@ -20,7 +20,7 @@ from .plant_topology import all_electrolyzers, format_electrolyzer_name, is_vali
 from .relations_sync import is_junk_serial
 from .warehouse import BUCKETS, _as_date, _grouped, _iso, _life_key, build_board, compact_eq, compact_nr, load_shutdown_windows, rows_of
 
-CACHE_SECONDS = 30  # the heavy per-part computations are reused for a short time; "Refresh" clears them
+CACHE_SECONDS = 5  # writes clear this; a short window only covers repeated reads of an unchanged board
 _CACHE: dict[Any, tuple[float, Any]] = {}
 
 

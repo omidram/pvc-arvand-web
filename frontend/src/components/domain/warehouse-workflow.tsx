@@ -424,6 +424,70 @@ export function WorkflowCartablePanel({ onOpen }: { onOpen: (flow: WfFlow, id: n
 
 // ------------------------------------------------------------------ recoating
 
+const WAITING_GROUPS = [
+  { outcome: "coating_problem", label: "wf.coating.groupCoating" },
+  { outcome: "mechanical_problem", label: "wf.coating.groupMechanical" },
+  { outcome: "rate_off", label: "wf.coating.groupRateOff" },
+] as const;
+
+function WaitingSegregation({
+  rows,
+  picked,
+  canPick,
+  onToggle,
+  t,
+}: {
+  rows: WfCoatingCandidate[];
+  picked: Set<string>;
+  canPick: boolean;
+  onToggle: (row: WfCoatingCandidate, on: boolean) => void;
+  t: T;
+}) {
+  return (
+    <div className="wf-wait-board">
+      <h3>{t("wf.coating.waitingTitle")}</h3>
+      <p className="wh-subdesc">{t("wf.coating.waitingHint")}</p>
+      <div className="wf-wait-grid">
+        {WAITING_GROUPS.map((group) => {
+          const items = rows.filter((row) => row.outcome === group.outcome);
+          const free = items.filter((row) => !row.busy).length;
+          return (
+            <section key={group.outcome} className="wf-wait-col">
+              <h4>
+                {t(group.label)} <b>{free}</b>
+              </h4>
+              {items.length === 0 ? (
+                <p className="wh-muted">{t("wf.coating.waitingEmpty")}</p>
+              ) : (
+                <ul>
+                  {items.map((row) => {
+                    const key = `${row.kind}:${row.serial}`;
+                    return (
+                      <li key={key}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            disabled={!canPick || row.busy}
+                            checked={picked.has(key)}
+                            onChange={(e) => onToggle(row, e.target.checked)}
+                          />
+                          <b>{row.kind === "anode" ? "A" : "C"}</b>
+                          <span>{row.serial}</span>
+                          <em>{row.busy ? t("wf.coating.inOpenRequest") : row.problem || row.decision || ""}</em>
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: number) => void }) {
   const { t } = useI18n();
   const qc = useQueryClient();
@@ -439,11 +503,15 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
   const candidates = useQuery({
     queryKey: ["wf", "coating-candidates"],
     queryFn: workflowApi.coatingCandidates,
-    enabled: canRequest,
-    staleTime: 30_000,
+    staleTime: 0,
+    refetchInterval: LIVE_MS,
   });
-  const anodeOptions = useMemo(() => (candidates.data ?? []).filter((c) => c.kind === "anode"), [candidates.data]);
-  const cathodeOptions = useMemo(() => (candidates.data ?? []).filter((c) => c.kind === "cathode"), [candidates.data]);
+  const waiting = useMemo(
+    () => (candidates.data ?? []).filter((row) => row.outcome === "coating_problem" || row.outcome === "mechanical_problem" || row.outcome === "rate_off"),
+    [candidates.data]
+  );
+  const anodeOptions = useMemo(() => waiting.filter((row) => row.kind === "anode" && !row.busy), [waiting]);
+  const cathodeOptions = useMemo(() => waiting.filter((row) => row.kind === "cathode" && !row.busy), [waiting]);
   const [aPicked, setAPicked] = useState<WfCoatingCandidate[]>([]);
   const [kPicked, setKPicked] = useState<WfCoatingCandidate[]>([]);
   const [palletSize, setPalletSize] = useState(20);
@@ -482,10 +550,19 @@ export function CoatingWorkflowPanel({ onOpen }: { onOpen: (flow: WfFlow, id: nu
     },
   });
   const createError = create.error && !unknown.length ? create.error.message : null;
+  const pickedKeys = useMemo(
+    () => new Set([...aPicked, ...kPicked].map((row) => `${row.kind}:${row.serial}`)),
+    [aPicked, kPicked]
+  );
+  function toggleWaiting(row: WfCoatingCandidate, on: boolean) {
+    const set = row.kind === "anode" ? setAPicked : setKPicked;
+    set((prev) => (on ? (prev.some((item) => item.serial === row.serial) ? prev : [...prev, row]) : prev.filter((item) => item.serial !== row.serial)));
+  }
 
   return (
     <div className="wh-panel-block">
       <Stepper flow="coating" status="c90_select" t={t} />
+      <WaitingSegregation rows={waiting} picked={pickedKeys} canPick={canRequest} onToggle={toggleWaiting} t={t} />
       {canRequest ? (
         <form
           className="wh-form"

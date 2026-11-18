@@ -740,7 +740,13 @@ export const extraEn: Tree = {
     coating: {
       newTitle: "New recoating request (C-90)",
       newHint:
-        "Anodes and cathodes are picked only from the TAFKIK segregation form: type the number and choose a suggestion (Enter or click). A pasted list works too. Problems are taken automatically from the segregation records. Every pallet (default 20 pieces) gets its own code CO-date-number and Excel sheet.",
+        "Not reusable pieces wait below in three groups: coating, mechanical and rate off. Tick the ones for this pallet, or type a segregation serial. Every pallet (default 20 pieces) gets its own code CO-date-number and Excel sheet.",
+      waitingTitle: "Waiting after segregation",
+      waitingHint: "These anodes and cathodes were marked not reusable. Select them here, then generate the pallet and send it.",
+      waitingEmpty: "None waiting",
+      groupCoating: "Coating",
+      groupMechanical: "Mechanical",
+      groupRateOff: "Rate off",
       pickPlaceholder: "Type a number…",
       notInTafkik: "Not in the segregation form",
       inOpenRequest: "Already in an open recoating request",
@@ -1986,7 +1992,13 @@ export const extraFa: Tree = {
     coating: {
       newTitle: "درخواست جدید پوشش‌دهی مجدد (C-90)",
       newHint:
-        "آندها و کاتدها فقط از فرم تفکیک (TAFKIK) انتخاب می‌شوند: شماره را تایپ کنید و از پیشنهادها انتخاب کنید (Enter یا کلیک). می‌توانید فهرستی را هم paste کنید. مشکلات به‌صورت خودکار از سوابق تفکیک خوانده می‌شود. هر پالت (پیش‌فرض ۲۰ عدد) کد جداگانه CO-تاریخ-شماره و شیت اکسل خودش را می‌گیرد.",
+        "قطعات غیرقابل استفاده در سه گروه پوشش، مکانیکی و خارج از رده پایین منتظر می‌مانند. برای این پالت تیک بزنید، یا شماره تفکیک را تایپ کنید. هر پالت (پیش‌فرض ۲۰ عدد) کد جداگانه CO-تاریخ-شماره و شیت اکسل خودش را می‌گیرد.",
+      waitingTitle: "منتظر بعد از تفکیک",
+      waitingHint: "این آندها و کاتدها غیرقابل استفاده مجدد شده‌اند. از همین‌جا انتخاب کنید، بعد پالت را بسازید و بفرستید.",
+      waitingEmpty: "موردی منتظر نیست",
+      groupCoating: "پوشش",
+      groupMechanical: "مکانیکی",
+      groupRateOff: "خارج از رده",
       pickPlaceholder: "شماره را تایپ کنید…",
       notInTafkik: "در فرم تفکیک پیدا نشد",
       inOpenRequest: "در یک درخواست باز پوشش‌دهی است",
