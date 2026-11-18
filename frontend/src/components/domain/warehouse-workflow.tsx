@@ -906,7 +906,7 @@ function DetailBody({ d, companies, t }: { d: WfDetail; companies: WhCompany[]; 
 
       {coating && piecesOpen ? (
         <section className="wf-section wf-selected-pieces">
-          <h4>{t("wf.coating.showPieces")}</h4>
+          <h4>{t("wf.coating.piecesTitle")}</h4>
           <div className="wf-wait-grid">
             {(["anode", "cathode"] as const).map((kind) => {
               const rows = kind === "anode" ? anodes : cathodes;
