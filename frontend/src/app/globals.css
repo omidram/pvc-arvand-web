@@ -6253,9 +6253,10 @@ html[data-theme="dark"] .er-report .ed-table tr.is-total td { background: #1e293
 .er-shop-table a { color: inherit; text-decoration: none; font-weight: 700; }
 .er-shop-table a:hover, .er-board-nums:hover strong, .er-pallet header a:hover { color: #1d4ed8; text-decoration: underline; }
 .er-pallet header a { color: inherit; text-decoration: none; font-weight: 750; }
-.er-board-nums > div {
+.er-board-nums > div, .er-board-nums > a, .er-board-nums > button {
   display: flex; flex-direction: column; align-items: center; gap: 0.05rem;
   padding: 0.35rem 0.2rem; border-radius: 10px; background: #f4f7fb;
+  border: 0; color: inherit; text-decoration: none; font: inherit; cursor: pointer; width: 100%;
 }
 .er-board-nums strong { font-size: 1.35rem; line-height: 1; font-variant-numeric: tabular-nums; color: #0f2744; }
 .er-board-nums span, .er-board-meta, .er-board-more { font-size: 0.68rem; color: #64748b; font-weight: 650; }
@@ -6312,7 +6313,9 @@ html[data-theme="dark"] .er-board-card,
 html[data-theme="dark"] .er-pallet,
 html[data-theme="dark"] .er-flow-chip,
 html[data-theme="dark"] .er-flow-filter select { background: #0f172a; border-color: #334155; color: #e2e8f0; }
-html[data-theme="dark"] .er-board-nums > div { background: #1e293b; }
+html[data-theme="dark"] .er-board-nums > div,
+html[data-theme="dark"] .er-board-nums > a,
+html[data-theme="dark"] .er-board-nums > button { background: #1e293b; }
 html[data-theme="dark"] .er-board-groups .er-board-kicker { color: #cbd5e1; }
 html[data-theme="dark"] .er-board-nums strong,
 html[data-theme="dark"] .er-pallet header strong,

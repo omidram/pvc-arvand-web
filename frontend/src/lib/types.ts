@@ -1557,6 +1557,7 @@ export interface ElementBoard {
   at_coater: BoardList;
   membranes: { stock: number; installed: number; shown: number; items: { type: string; count: number }[] };
   pallets: BoardPallet[];
+  shipments?: BoardPallet[];
 }
 
 export interface ElementDashOverview {

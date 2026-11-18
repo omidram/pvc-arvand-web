@@ -1246,13 +1246,13 @@ def _board_piece(row: dict[str, Any], **extra: Any) -> dict[str, Any]:
     return item
 
 
-def _packing_pallets(db: Session) -> list[dict[str, Any]]:
-    """Pallets packed for coating that have not left the plant yet."""
+def _packing_pallets(db: Session, statuses: tuple[str, ...] = _PALLET_READY) -> list[dict[str, Any]]:
+    """Coating pallet codes in the given workflow stages."""
     from .workflow_models import WfCoatingBatch, WfCoatingItem, WfCoatingPackage
 
     batches = (
         db.query(WfCoatingBatch)
-        .filter(WfCoatingBatch.status.in_(_PALLET_READY))
+        .filter(WfCoatingBatch.status.in_(statuses))
         .order_by(WfCoatingBatch.created_at.desc())
         .limit(40)
         .all()
@@ -1450,6 +1450,7 @@ def management_board(
             "shown": len({(r.get("membrane_type") or "").strip() or "—" for r in stock}),
         },
         "pallets": _packing_pallets(db),
+        "shipments": _packing_pallets(db, ("await_return",)),
     }
 
 

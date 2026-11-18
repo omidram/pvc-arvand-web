@@ -452,7 +452,7 @@ function WaitingSegregation({
           const items = rows.filter((row) => row.outcome === group.outcome);
           const free = items.filter((row) => !row.busy).length;
           return (
-            <section key={group.outcome} className="wf-wait-col">
+            <section key={group.outcome} id={`wf-wait-${group.outcome}`} className="wf-wait-col">
               <h4>
                 {t(group.label)} <b>{free}</b>
               </h4>
