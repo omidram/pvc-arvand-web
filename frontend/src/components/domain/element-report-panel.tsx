@@ -534,6 +534,13 @@ function PoolPieceList({ rows, moreHref }: { rows: AssemblyPoolRow[]; moreHref: 
   );
 }
 
+function membraneTypesInStock(items: Array<{ type?: string | null; count?: number | null }> | undefined) {
+  return (items || [])
+    .filter((item) => (item.count || 0) > 0 && (item.type || "").trim() && (item.type || "").trim() !== "—")
+    .map((item) => ({ type: (item.type || "").trim(), count: item.count || 0 }))
+    .sort((a, b) => b.count - a.count || a.type.localeCompare(b.type));
+}
+
 function ManagementBoard({ board }: { board: ElementBoard }) {
   const { t } = useI18n();
   const pool = useQuery({
@@ -612,25 +619,17 @@ function ManagementBoard({ board }: { board: ElementBoard }) {
         <PoolPieceList rows={purchased} moreHref={stockHref} />
       </BoardCard>
       <BoardCard title={t("elDash.report.membraneStockTitle")} sub={t("elDash.report.membraneCardSub")} hrefTo="/membranes" tone="mem">
-        <Link href="/membranes" className="er-board-nums">
-          <div>
-            <strong>{formatNumber(board.membranes.stock, 0)}</strong>
-            <span>{t("elDash.report.membraneTotal")}</span>
-          </div>
-        </Link>
-        {board.membranes.items.filter((item) => item.count > 0).length === 0 ? (
+        {membraneTypesInStock(board.membranes.items).length === 0 ? (
           <p className="er-board-empty">{t("elDash.report.none")}</p>
         ) : (
           <ul className="er-board-list">
-            {board.membranes.items
-              .filter((item) => item.count > 0 && item.type && item.type !== "—")
-              .map((item, index) => (
-                <li key={`${item.type}-${index}`}>
-                  <span className="er-kind is-membrane">M</span>
-                  <Link href="/membranes">{item.type}</Link>
-                  <span className="er-board-meta">{formatNumber(item.count, 0)}</span>
-                </li>
-              ))}
+            {membraneTypesInStock(board.membranes.items).map((item) => (
+              <li key={item.type}>
+                <span className="er-kind is-membrane">M</span>
+                <Link href="/membranes">{item.type}</Link>
+                <span className="er-board-meta">{formatNumber(item.count, 0)}</span>
+              </li>
+            ))}
           </ul>
         )}
       </BoardCard>

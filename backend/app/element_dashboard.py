@@ -1445,7 +1445,7 @@ def management_board(
                     ).items(),
                     key=lambda kv: (-kv[1], kv[0]),
                 )
-                if n > 0
+                if n > 0 and name not in {"", "—", "-", "–", "−"}
             ],
             "shown": len({(r.get("membrane_type") or "").strip() or "—" for r in stock}),
         },
@@ -1787,6 +1787,11 @@ def life_log(db: Session, element_nr: str) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------- cells in the plant: by group and by coating company
 
 
+def _unclassified(name: str | None) -> bool:
+    """A blank or dash label is the uncategorized row and stays at the bottom of a count sort."""
+    return (name or "").strip() in {"", "—", "-", "–", "−"}
+
+
 def in_service_breakdown(db: Session) -> dict[str, Any]:
     """Cells running now, counted per Group Definition and per coating company."""
     running = {str(item["element_nr"]): item for item in build_pipeline(db) if item["state"] == "in_service"}
@@ -1836,9 +1841,9 @@ def in_service_breakdown(db: Session) -> dict[str, Any]:
                 "gap_mm": g.gap_mm,
             }
         )
-    by_group.sort(key=lambda r: (-r["cells"], r["group"]))
+    by_group.sort(key=lambda r: (_unclassified(r["group"]), -r["cells"], r["group"]))
     by_company = [{"company": name, "anode": v["anode"], "cathode": v["cathode"], "total": v["anode"] + v["cathode"]} for name, v in companies.items()]
-    by_company.sort(key=lambda r: (-r["total"], r["company"]))
+    by_company.sort(key=lambda r: (_unclassified(r["company"]), -r["total"], r["company"]))
     return {"total": len(running), "by_group": by_group, "by_company": by_company}
 
 
