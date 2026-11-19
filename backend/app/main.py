@@ -35,6 +35,7 @@ from .routers import (
     imports as imports_router_module,
     uploads as uploads_router_module,
     inspections,
+    launch_import as launch_import_router_module,
     logs as logs_router_module,
     maintenance_reports as maintenance_reports_router_module,
     monitoring as monitoring_router_module,
@@ -947,6 +948,7 @@ _api(config_router.correction_factors_router, dependencies=_perm("settings"))
 _api(config_router.electrode_areas_router, dependencies=_perm("settings"))
 _api(config_router.voltage_distribution_classes_router, dependencies=_perm("settings"))
 _api(config_router.settings_router, dependencies=_perm("settings"))
+_api(launch_import_router_module.router, dependencies=_perm("settings"))
 _api(system_router_module.router)
 
 # --- Element administration ---

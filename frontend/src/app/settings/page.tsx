@@ -54,6 +54,7 @@ import { TableFilesTab } from "@/components/domain/table-files-tab";
 import { DirectoryTab } from "@/components/domain/directory-tab";
 import { WorkflowSlaTab } from "@/components/domain/workflow-sla-tab";
 import { PlannerJobsTab } from "@/components/domain/planner-jobs-tab";
+import { LaunchImportTab } from "@/components/domain/launch-import-tab";
 import { useI18n } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { useTheme } from "@/lib/theme/context";
@@ -609,6 +610,9 @@ function SettingsPageInner() {
       <Tabs
         defaultTab={tab}
         tabs={[
+          ...(canEdit("settings") || isAdmin
+            ? [{ key: "launch", label: t("settings.launchTab"), content: <LaunchImportTab /> }]
+            : []),
           { key: "plant", label: t("settings.tabPlant"), content: <PlantInfoTab /> },
           { key: "formulas", label: t("settings.tabFormulas"), content: <FormulasTab /> },
           {

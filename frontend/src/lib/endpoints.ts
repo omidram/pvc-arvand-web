@@ -131,6 +131,32 @@ export const correctionFactorsApi = resource<T.CorrectionFactor>("/correction-fa
 export const electrodeAreasApi = resource<T.ElectrodeArea>("/electrode-areas");
 export const voltageDistributionClassesApi = resource<T.VoltageDistributionClass>("/voltage-distribution-classes");
 
+export const launchImportApi = {
+  slots: async (): Promise<{ slots: { key: string; file: string; columns: string[] }[] }> =>
+    (await apiClient.get("/launch-import/slots")).data,
+  run: async (
+    slot: string,
+    file: File,
+    dryRun: boolean,
+  ): Promise<{
+    ok: boolean;
+    dry_run: boolean;
+    slot: string | null;
+    accepted: number;
+    rejected: { row: number; message: string; value?: string }[];
+    rejected_count: number;
+    error: string | null;
+  }> => {
+    const form = new FormData();
+    form.append("file", file);
+    const { data } = await apiClient.post(`/launch-import/${slot}`, form, {
+      params: { dry_run: dryRun },
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data;
+  },
+};
+
 export const settingsApi = {
   get: async (): Promise<T.PlantSettings> => (await apiClient.get("/settings")).data,
   update: async (payload: Partial<T.PlantSettings>): Promise<T.PlantSettings> =>
