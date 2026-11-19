@@ -1547,7 +1547,7 @@ const en = {
     launch: {
       title: "Official position files",
       intro:
-        "Each file sits only in the section its name belongs to. A row with a missing number, an unreadable date, or a piece that is still on an element is refused and is not written. Jalali dates, including Persian digits, are stored as the real calendar day. Uploading the same file again replaces only the previous copy of that file.",
+        "Each file sits only in the section its name belongs to. A row with a missing number, an unreadable date, or a piece that is still on an element is refused and is not written. Jalali dates, including Persian digits, are stored as the real calendar day. Files that are already inside a process also open that process at the same step, so the next person finds it in the cartable. Uploading the same file again replaces only the previous copy of that file.",
       warn:
         "This does not wipe the database. On launch day the test data is removed first, then the element workbook and the TAFKIK workbook, and only then these twelve files. A row whose element is not yet out of service, or not yet disassembled, stays out until that date exists.",
       check: "Check only",
@@ -4713,7 +4713,7 @@ const fa: DeepPartialStrings<typeof en> = {
     launch: {
       title: "فایل‌های رسمی موقعیت قطعات",
       intro:
-        "هر فایل فقط در بخشی می‌نشیند که اسمش می‌گوید. ردیف بدون شماره، با تاریخ ناخوانا، یا قطعه‌ای که هنوز روی المان است نوشته نمی‌شود. تاریخ شمسی، با رقم فارسی هم، به همان روز واقعی تبدیل می‌شود. بارگذاری دوبارهٔ همان فایل فقط نسخهٔ قبلی همان فایل را عوض می‌کند.",
+        "هر فایل فقط در بخشی می‌نشیند که اسمش می‌گوید. ردیف بدون شماره، با تاریخ ناخوانا، یا قطعه‌ای که هنوز روی المان است نوشته نمی‌شود. تاریخ شمسی، با رقم فارسی هم، به همان روز واقعی تبدیل می‌شود. فایل‌هایی که وسط یک فرایند هستند همان فلو را در همان مرحله باز می‌کنند تا نفر بعدی آن را در کارتابل ببیند. بارگذاری دوبارهٔ همان فایل فقط نسخهٔ قبلی همان فایل را عوض می‌کند.",
       warn:
         "این کار پایگاه داده را پاک نمی‌کند. روز راه‌اندازی اول داده‌های آزمایشی حذف می‌شود، بعد فایل اطلاعات المان و فایل تفکیک، و بعد این دوازده فایل. المانی که هنوز تاریخ خروج یا تاریخ دمونتاژ ندارد در صف مربوطه نمی‌نشیند.",
       check: "فقط بررسی",

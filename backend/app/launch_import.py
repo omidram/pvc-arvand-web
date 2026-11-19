@@ -25,12 +25,16 @@ from .workflow_models import (
     MembraneStock,
     MembraneStockMove,
     WfAssembleRequest,
+    WfCellRequest,
     WfCoatingBatch,
     WfCoatingItem,
     WfCoatingPackage,
+    WfEvent,
     WfInspectionRequest,
+    WfNotification,
     WfPurchase,
     WfPurchaseItem,
+    WfWorkOrder,
 )
 
 MARKER_PREFIX = "ACM-LAUNCH:"
@@ -302,6 +306,7 @@ class _Book:
         self.blocked = _blocked(db, self.marker)
         self.open_assemble = _open_requests(db, WfAssembleRequest)
         self.open_inspection = _open_requests(db, WfInspectionRequest)
+        self.open_cell = _open_requests(db, WfCellRequest)
         self.inspection_days = _inspection_days(db)
 
     def spell(self, kind: str, serial: str) -> str:
@@ -736,6 +741,8 @@ def _screen_pickup(book: _Book, element: str) -> str | None:
     shop = book.shop.get(compact_nr(element))
     if shop is not None and shop.note == marker_of("disassemble"):
         return "این المان در فایل منتظر دمونتاژ ثبت شده است"
+    if _live_open(book, book.open_cell, element) is not None:
+        return "برای این المان یک فرآیند سل باز است"
     return None
 
 
@@ -755,6 +762,8 @@ def _screen_disassemble(book: _Book, element: str) -> str | None:
     shop = book.shop.get(compact_nr(element))
     if shop is not None and (shop.note or "").startswith(MARKER_PREFIX) and shop.note != book.marker:
         return "این المان در فایل دیگر راه‌اندازی ثبت شده است"
+    if _live_open(book, book.open_cell, element) is not None:
+        return "برای این المان یک فرآیند سل باز است"
     return None
 
 
@@ -828,12 +837,20 @@ def _launch_shell(el: models.Element, marker: str) -> bool:
         (
             el.electrolyzer,
             el.position,
-            el.assembly_date,
             el.commissioning_date,
             el.decommissioning_date,
             el.disassembly_date,
         )
     )
+
+
+def _live_open(book: _Book, mapping: dict[str, Any], element: str | None):
+    """An open request that was not created by any launch file."""
+    row = mapping.get(compact_nr(element))
+    note = getattr(row, "last_note", None) or ""
+    if row is None or note.startswith(MARKER_PREFIX):
+        return None
+    return row
 
 
 def _open_requests(db: Session, model) -> dict[str, Any]:
@@ -863,20 +880,21 @@ def _replace_slot(book: _Book) -> None:
     db = book.db
     marker = book.marker
     if slot == "pickup":
-        return
-    if slot == "disassemble":
+        _drop_marked(book, WfCellRequest, "cell")
+    elif slot == "disassemble":
         _clear_marked_shop(book)
+        _drop_marked(book, WfCellRequest, "cell")
     elif slot == "tafkik":
-        for row in db.query(WfInspectionRequest).all():
-            if row.last_note == marker and row.status not in _CLOSED:
-                db.delete(row)
+        _drop_marked(book, WfInspectionRequest, "inspection")
     elif slot in ("qc", "ready"):
         _clear_marked_shop(book)
-        for row in db.query(WfAssembleRequest).all():
-            if row.last_note == marker and row.status not in _CLOSED:
-                db.delete(row)
+        _drop_assemble(book)
         for el in list(db.query(models.Element).all()):
             if _launch_shell(el, marker):
+                for wo in db.query(WfWorkOrder).filter(WfWorkOrder.element_nr == el.element_nr, WfWorkOrder.status == "open"):
+                    if wo.created_by_name == book.user_name:
+                        _erase_flow(db, "workorder", wo.id)
+                        db.delete(wo)
                 book.elements.pop(compact_nr(el.element_nr), None)
                 db.delete(el)
     elif slot == "membrane":
@@ -896,6 +914,64 @@ def _replace_slot(book: _Book) -> None:
     elif slot in ("packed", "atcoater"):
         _delete_coating(book)
     db.flush()
+
+
+def _erase_flow(db: Session, flow: str, record_id: int) -> None:
+    db.query(WfEvent).filter(WfEvent.flow == flow, WfEvent.record_id == record_id).delete(synchronize_session=False)
+    db.query(WfNotification).filter(WfNotification.flow == flow, WfNotification.record_id == record_id).delete(synchronize_session=False)
+
+
+def _drop_marked(book: _Book, model, flow: str) -> None:
+    for row in book.db.query(model).all():
+        if book.marker not in (row.last_note or "") or row.status in _CLOSED:
+            continue
+        _erase_flow(book.db, flow, row.id)
+        book.db.delete(row)
+
+
+def _drop_assemble(book: _Book) -> None:
+    for row in book.db.query(WfAssembleRequest).all():
+        if book.marker not in (row.last_note or "") or row.status in _CLOSED:
+            continue
+        air_id = (row.decisions or {}).get("air_id") if isinstance(row.decisions, dict) else None
+        report = book.db.get(models.AssemblyInspectionReport, air_id) if air_id else None
+        if report is not None and report.remarks == book.marker:
+            book.db.delete(report)
+        _erase_flow(book.db, "assemble", row.id)
+        book.db.delete(row)
+
+
+def _announce(book: _Book, flow: str, record: Any, steps: list[tuple[str, str | None, str]], groups: list[str]) -> None:
+    """History of the steps already passed, then tell the people who own the current step."""
+    from .routers.workflow import _members, _title
+
+    now = datetime.now()
+    for action, src, dst in steps:
+        book.db.add(
+            WfEvent(
+                flow=flow,
+                record_id=record.id,
+                action=action,
+                from_status=src,
+                to_status=dst,
+                actor_name=book.user_name[:150],
+                data={"launch": book.slot},
+                created_at=now,
+            )
+        )
+    title = _title(flow, record, book.db)[:200]
+    for uid in _members(book.db, groups):
+        book.db.add(
+            WfNotification(
+                user_id=uid,
+                flow=flow,
+                record_id=record.id,
+                status=record.status,
+                title=title,
+                from_name=book.user_name[:150],
+                created_at=now,
+            )
+        )
 
 
 def _delete_marked(db: Session, model, field: str, marker: str) -> None:
@@ -922,6 +998,7 @@ def _delete_coating(book: _Book) -> None:
             serials.extend((item.element_kind, item.serial) for item in items)
         for item in items:
             db.delete(item)
+        _erase_flow(db, "coating", batch.id)
         for package in db.query(WfCoatingPackage).filter(WfCoatingPackage.batch_id == batch.id).all():
             db.delete(package)
         db.delete(batch)
@@ -978,34 +1055,82 @@ def _write(book: _Book, slot: str, accepted: list[dict[str, Any]]) -> int:
 
 
 def _write_pickup(book: _Book, accepted: list[dict[str, Any]]) -> int:
-    count = 0
     for item in accepted:
         el = book.elements[compact_nr(item["element"])]
         shop = book.shop.get(compact_nr(item["element"]))
-        if shop is None:
-            count += 1
-            continue
-        book.db.add(
-            models.ElementShopEvent(
-                element_nr=shop.element_nr,
-                from_stage=shop.stage,
-                to_stage="clear",
-                note=book.marker,
-                user=book.user_name,
-                created_at=datetime.now(),
+        if shop is not None:
+            book.db.add(
+                models.ElementShopEvent(
+                    element_nr=shop.element_nr,
+                    from_stage=shop.stage,
+                    to_stage="clear",
+                    note=book.marker,
+                    user=book.user_name,
+                    created_at=datetime.now(),
+                )
             )
-        )
-        book.db.delete(shop)
-        count += 1
-        _ = el
-    return count
+            book.shop.pop(compact_nr(item["element"]), None)
+            book.db.delete(shop)
+        _open_cell_flow(book, el, "pickup")
+    return len(accepted)
 
 
 def _write_stage(book: _Book, accepted: list[dict[str, Any]], stage: str) -> int:
     for item in accepted:
         el = book.elements[compact_nr(item["element"])]
         _put_shop(book, el, stage, item.get("day"))
+        if stage == "awaiting_disassembly":
+            _open_cell_flow(book, el, "disassemble")
     return len(accepted)
+
+
+def _open_cell_flow(book: _Book, el: models.Element, kind: str) -> None:
+    if _live_open(book, book.open_cell, el.element_nr) is not None:
+        return
+    previous = book.open_cell.get(compact_nr(el.element_nr))
+    if previous is not None and book.marker not in (previous.last_note or ""):
+        _erase_flow(book.db, "cell", previous.id)
+        book.db.delete(previous)
+        book.db.flush()
+        book.open_cell.pop(compact_nr(el.element_nr), None)
+    day = _as_date(el.decommissioning_date) or date.today()
+    seq, code = _fresh_code(book.db, WfCellRequest, "CR", day)
+    if kind == "pickup":
+        status = "await_shop"
+        decision = None
+        steps = [("created", None, "await_shutdown"), ("shutdown", "await_shutdown", "await_shop")]
+        groups = ["cellshop"]
+    else:
+        status = "await_disassembly"
+        decision = "disassemble"
+        steps = [
+            ("created", None, "await_shutdown"),
+            ("shutdown", "await_shutdown", "await_shop"),
+            ("receive", "await_shop", "in_shop"),
+            ("decide", "in_shop", "await_disassembly"),
+        ]
+        groups = ["c90"]
+    row = WfCellRequest(
+        code=code,
+        seq=seq,
+        status=status,
+        request_kind="removal",
+        element_nr=(el.element_nr or "")[:50],
+        element_id=el.id,
+        electrolyzer=el.electrolyzer,
+        position=el.position,
+        reason=((el.decommission_reason or "").strip() or "خارج از مدار")[:800],
+        decommission_date=day,
+        decision=decision,
+        last_note=book.marker,
+        created_by_name=book.user_name,
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
+    )
+    book.db.add(row)
+    book.db.flush()
+    book.open_cell[compact_nr(el.element_nr)] = row
+    _announce(book, "cell", row, steps, groups)
 
 
 def _put_shop(book: _Book, el: models.Element, stage: str, day: date | None) -> None:
@@ -1061,25 +1186,33 @@ def _write_tafkik(book: _Book, accepted: list[dict[str, Any]]) -> int:
             continue
         day = item.get("day") or _event_date(el) or date.today()
         seq, code = _fresh_code(book.db, WfInspectionRequest, "DS", day)
-        book.db.add(
-            WfInspectionRequest(
-                code=code,
-                seq=seq,
-                status="await_inspection",
-                element_nr=(el.element_nr or item["element"])[:50],
-                element_id=el.id,
-                electrolyzer=el.electrolyzer,
-                position=el.position,
-                anode_nr=anode,
-                cathode_nr=cathode,
-                membrane_nr=el.membrane_nr,
-                disassembly_date=_as_date(el.disassembly_date),
-                reason=(el.decommission_reason or None),
-                last_note=book.marker,
-                created_by_name=book.user_name,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            )
+        request = WfInspectionRequest(
+            code=code,
+            seq=seq,
+            status="await_inspection",
+            element_nr=(el.element_nr or item["element"])[:50],
+            element_id=el.id,
+            electrolyzer=el.electrolyzer,
+            position=el.position,
+            anode_nr=anode,
+            cathode_nr=cathode,
+            membrane_nr=el.membrane_nr,
+            disassembly_date=_as_date(el.disassembly_date),
+            reason=(el.decommission_reason or None),
+            last_note=book.marker,
+            created_by_name=book.user_name,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+        book.db.add(request)
+        book.db.flush()
+        book.open_inspection[compact_nr(request.element_nr)] = request
+        _announce(
+            book,
+            "inspection",
+            request,
+            [("created", None, "await_request"), ("send", "await_request", "await_inspection")],
+            ["inspection", "process"],
         )
         written += 1
     return written
@@ -1102,29 +1235,78 @@ def _write_built(book: _Book, accepted: list[dict[str, Any]], stage: str, status
         book.elements[compact_nr(el.element_nr)] = el
         book.installed.add(("anode", compact_nr(anode)))
         book.installed.add(("cathode", compact_nr(cathode)))
-        _put_shop(book, el, stage, item.get("day"))
         day = item.get("day") or date.today()
+        if el.assembly_date is None:
+            el.assembly_date = day
+        _put_shop(book, el, stage, day)
         seq, code = _fresh_code(book.db, WfAssembleRequest, "AS", day)
-        book.db.add(
-            WfAssembleRequest(
-                code=code,
-                seq=seq,
-                status=status,
-                element_nr=(el.element_nr or "")[:50],
-                element_id=el.id,
-                anode_nr=anode,
-                cathode_nr=cathode,
-                membrane_nr=item["membrane_code"][:50],
-                membrane_type=item["membrane_type"][:100],
-                assembly_date=item.get("day"),
-                last_note=book.marker,
-                created_by_name=book.user_name,
-                created_at=datetime.now(),
-                updated_at=datetime.now(),
-            )
+        request = WfAssembleRequest(
+            code=code,
+            seq=seq,
+            status=status,
+            element_nr=(el.element_nr or "")[:50],
+            element_id=el.id,
+            anode_nr=anode,
+            cathode_nr=cathode,
+            membrane_nr=item["membrane_code"][:50],
+            membrane_type=item["membrane_type"][:100],
+            assembly_date=day,
+            last_note=book.marker,
+            created_by_name=book.user_name,
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
         )
+        book.db.add(request)
+        book.db.flush()
+        _pin_assembly_form(book, request, day)
+        if status == "await_insp_sign":
+            steps = [
+                ("created", None, "await_assembly"),
+                ("assemble", "await_assembly", "await_air"),
+                ("submit_air", "await_air", "await_insp_sign"),
+            ]
+            groups = ["inspection"]
+        else:
+            steps = [
+                ("created", None, "await_assembly"),
+                ("assemble", "await_assembly", "await_air"),
+                ("submit_air", "await_air", "await_insp_sign"),
+                ("sign_insp", "await_insp_sign", "await_proc_sign"),
+                ("sign_proc", "await_proc_sign", "await_position"),
+            ]
+            groups = ["c90"]
+        _announce(book, "assemble", request, steps, groups)
+        from .routers.work_orders import ensure_work_order_process
+
+        ensure_work_order_process(book.db, request.element_nr, "generation", _LaunchActor(book.user_name), day=day)
         book.db.flush()
     return len(accepted)
+
+
+class _LaunchActor:
+    def __init__(self, name: str):
+        self.username = name
+        self.full_name = name
+        self.id = None
+
+
+def _pin_assembly_form(book: _Book, request: WfAssembleRequest, day: date) -> None:
+    from .assembly_inspection_def import empty_check_remarks, empty_checks
+
+    report = models.AssemblyInspectionReport(
+        assembly_date=day,
+        element_nr=request.element_nr,
+        anode_nr=request.anode_nr,
+        cathode_nr=request.cathode_nr,
+        membrane_nr=request.membrane_nr,
+        membrane_type=request.membrane_type,
+        checks=empty_checks(),
+        check_remarks=empty_check_remarks(),
+        remarks=book.marker,
+    )
+    book.db.add(report)
+    book.db.flush()
+    request.decisions = {"air_id": report.id}
 
 
 def _ensure_built_element(book: _Book, item: dict[str, Any]) -> models.Element:
@@ -1317,6 +1499,7 @@ def _write_packed(book: _Book, accepted: list[dict[str, Any]]) -> int:
                 )
             )
         book.db.flush()
+        _announce(book, "coating", batch, [("created", None, "await_dispatch")], ["procurement"])
     return len(accepted)
 
 
@@ -1360,6 +1543,8 @@ def _write_at_coater(book: _Book, accepted: list[dict[str, Any]]) -> int:
             )
         )
         upsert_state(book.db, piece["kind"], serial, lifecycle_status="at_coater")
+    book.db.flush()
+    _announce(book, "coating", batch, [("created", None, "await_return")], ["procurement"])
     return len(accepted)
 
 
