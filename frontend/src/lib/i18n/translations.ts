@@ -1549,7 +1549,7 @@ const en = {
       intro:
         "Each file sits only in the section its name belongs to. A row with a missing number, an unreadable date, or a piece that is still on an element is refused and is not written. Jalali dates, including Persian digits, are stored as the real calendar day. Files that are already inside a process also open that process at the same step, so the next person finds it in the cartable. Uploading the same file again replaces only the previous copy of that file.",
       warn:
-        "This does not wipe the database. On launch day the test data is removed first, then the element workbook and the TAFKIK workbook, and only then these twelve files. A row whose element is not yet out of service, or not yet disassembled, stays out until that date exists.",
+        "This does not wipe the database. On launch day the test data is removed first. Inject Assembly Data, then the TAFKIK workbook, then the twelve position files. Each injection rewrites anode, cathode, membrane and element numbers to the master spelling and fills a blank coating or membrane type from Assembly Data. A row whose element is not yet out of service, or not yet disassembled, stays out until that date exists.",
       check: "Check only",
       apply: "Inject",
       accepted: "Placed",
@@ -1558,8 +1558,11 @@ const en = {
       saved: "Written.",
       idle: "Choose the matching Excel file.",
       failed: "The file was not accepted. Try again.",
+      links: "Links aligned: {renamed} spellings, {masters} new master rows, {filled} blank coatings or types, {groups} groups.",
       more: "and {count} more",
       slots: {
+        elements: "Assembly Data",
+        segregation: "Segregation (TAFKIK)",
         pickup: "Elements waiting to move to the cell shop",
         disassemble: "Elements waiting to be disassembled",
         tafkik: "Disassembled, waiting for inspection and process",
@@ -1574,6 +1577,8 @@ const en = {
         atcoater: "Anodes and cathodes at the coating company",
       },
       files: {
+        elements: "Plant montage workbook — element, anode, cathode, membrane, dates",
+        segregation: "TAFKIK workbook — serial, decision, dates",
         pickup: "pick up to cell shop Element.xlsx",
         disassemble: "Waiting for DissAssemble Element.xlsx",
         tafkik: "Waiting for Inspection-Process Check TAFKIK.xlsx",
@@ -4715,7 +4720,7 @@ const fa: DeepPartialStrings<typeof en> = {
       intro:
         "هر فایل فقط در بخشی می‌نشیند که اسمش می‌گوید. ردیف بدون شماره، با تاریخ ناخوانا، یا قطعه‌ای که هنوز روی المان است نوشته نمی‌شود. تاریخ شمسی، با رقم فارسی هم، به همان روز واقعی تبدیل می‌شود. فایل‌هایی که وسط یک فرایند هستند همان فلو را در همان مرحله باز می‌کنند تا نفر بعدی آن را در کارتابل ببیند. بارگذاری دوبارهٔ همان فایل فقط نسخهٔ قبلی همان فایل را عوض می‌کند.",
       warn:
-        "این کار پایگاه داده را پاک نمی‌کند. روز راه‌اندازی اول داده‌های آزمایشی حذف می‌شود، بعد فایل اطلاعات المان و فایل تفکیک، و بعد این دوازده فایل. المانی که هنوز تاریخ خروج یا تاریخ دمونتاژ ندارد در صف مربوطه نمی‌نشیند.",
+        "این کار پایگاه داده را پاک نمی‌کند. روز راه‌اندازی اول داده‌های آزمایشی حذف می‌شود. بعد اسمبل‌دیتا، بعد تفکیک، بعد دوازده فایل موقعیت. هر تزریق املای آند و کاتد و ممبراین و شماره المان را با شناسنامه یکی می‌کند و پوشش یا نوع خالی را از اسمبل‌دیتا پر می‌کند. المانی که هنوز تاریخ خروج یا تاریخ دمونتاژ ندارد در صف مربوطه نمی‌نشیند.",
       check: "فقط بررسی",
       apply: "تزریق",
       accepted: "نشست",
@@ -4724,8 +4729,11 @@ const fa: DeepPartialStrings<typeof en> = {
       saved: "نوشته شد.",
       idle: "فایل اکسل همین بخش را انتخاب کنید.",
       failed: "فایل پذیرفته نشد. دوباره تلاش کنید.",
+      links: "رابطه‌ها هم‌تراز شد: {renamed} املا، {masters} شناسنامهٔ تازه، {filled} پوشش یا نوع خالی، {groups} گروه.",
       more: "و {count} مورد دیگر",
       slots: {
+        elements: "اسمبل‌دیتا",
+        segregation: "تفکیک",
         pickup: "المان‌های منتظر انتقال به سل‌شاپ",
         disassemble: "المان‌های منتظر دمونتاژ",
         tafkik: "دمونتاژشده، منتظر بازرسی و فرآیند",
@@ -4740,6 +4748,8 @@ const fa: DeepPartialStrings<typeof en> = {
         atcoater: "آند و کاتد نزد شرکت پوشش‌دهنده",
       },
       files: {
+        elements: "فایل مونتاژ واحد — المان، آند، کاتد، ممبراین، تاریخ‌ها",
+        segregation: "فایل تفکیک — شماره سریال، تصمیم، تاریخ‌ها",
         pickup: "pick up to cell shop Element.xlsx",
         disassemble: "Waiting for DissAssemble Element.xlsx",
         tafkik: "Waiting for Inspection-Process Check TAFKIK.xlsx",

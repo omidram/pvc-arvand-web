@@ -344,7 +344,7 @@ def _sync_latest_electrode_coatings(db: Session) -> None:
         _write_electrode_coating(db, models.Cathode, "cathode_nr", nr, coating)
 
 
-def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) -> dict:
+def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None, *, commit: bool = True) -> dict:
     """Write montage / demontage rows onto Assembly Data.
 
     A row is the same installation when electrolyzer, position, assembly date,
@@ -430,11 +430,17 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
             membrane_index,
             extra={"membrane_type": payload.get("membrane_type")},
         )
+        el.anode_nr = link_serial(db, "anode", el.anode_nr, index=anode_index) or el.anode_nr
+        el.cathode_nr = link_serial(db, "cathode", el.cathode_nr, index=cathode_index) or el.cathode_nr
+        el.membrane_nr = (
+            link_serial(db, "membrane", el.membrane_nr, extra={"membrane_type": el.membrane_type}, index=membrane_index)
+            or el.membrane_nr
+        )
         if item.get("write_coatings") or item.get("coating_split"):
             _write_electrode_coating(db, models.Anode, "anode_nr", payload.get("anode_nr"), payload.get("anode_coating"), anode_index)
             _write_electrode_coating(db, models.Cathode, "cathode_nr", payload.get("cathode_nr"), payload.get("cathode_coating"), cathode_index)
         if (created + updated) % 500 == 0:
-            db.commit()
+            db.flush()
         if progress and (done == total or done % 25 == 0):
             progress(done, total)
 
@@ -458,7 +464,10 @@ def _apply_assembly_import(db: Session, parsed: dict, mode: str, progress=None) 
     if created + updated == 0:
         db.rollback()
         raise HTTPException(status_code=400, detail="No assembly rows were imported")
-    db.commit()
+    if commit:
+        db.commit()
+    else:
+        db.flush()
     return {
         "ok": True,
         "imported_rows": created + updated,

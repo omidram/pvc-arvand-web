@@ -212,6 +212,24 @@ def _build_relations() -> list[Rel]:
     add(name="analysis-electrolyzer", label="Analyses - Electrolyzer", child=models.AnalysisSample, field="electrolyzer", parent_label="Electrolyzers", parent=_parent_electrolyzers, norm=_electrolyzer_key, severity="warning", group="analyses")
     add(name="analysis-group", label="Analyses - Group", child=models.AnalysisSample, field="group_nr", parent_label="Group Definition", parent=GROUPS, create=_create_group, severity="warning", group="analyses")
 
+    # --- workflows opened from Assembly Data and TAFKIK
+    from .workflow_models import WfAssembleRequest, WfCellRequest, WfCoatingItem, WfInspectionRequest, WfPurchaseItem
+
+    for model, tag, nice in (
+        (WfAssembleRequest, "asm", "Assemble request"),
+        (WfInspectionRequest, "insreq", "Inspection request"),
+    ):
+        add(name=f"{tag}-anode", label=f"{nice} - Anode No", child=model, field="anode_nr", parent_label="Anode Details", parent=ANODES, create=_creator("anode"), group="workflow")
+        add(name=f"{tag}-cathode", label=f"{nice} - Cathode No", child=model, field="cathode_nr", parent_label="Cathode Details", parent=CATHODES, create=_creator("cathode"), group="workflow")
+        add(name=f"{tag}-membrane", label=f"{nice} - Membrane No", child=model, field="membrane_nr", parent_label="Membrane Details", parent=MEMBRANES, create=_creator("membrane"), group="workflow")
+        add(name=f"{tag}-element", label=f"{nice} - Element No", child=model, field="element_nr", parent_label="Assembly Data (element)", parent=ELEMENTS, severity="warning", group="workflow")
+    for kind, parent in (("anode", ANODES), ("cathode", CATHODES)):
+        add(name=f"coatitem-{kind}", label=f"Coating pallet ({kind}) - serial", child=WfCoatingItem, field="serial", parent_label=f"{kind.title()} Details", parent=parent, where=_by_kind(WfCoatingItem, "element_kind", kind), create=_creator(kind), group="workflow")
+        add(name=f"buyitem-{kind}", label=f"Purchase item ({kind}) - serial", child=WfPurchaseItem, field="serial", parent_label=f"{kind.title()} Details", parent=parent, where=_by_kind(WfPurchaseItem, "element_kind", kind), create=_creator(kind), group="workflow")
+    add(name="cellreq-element", label="Cell request - Element No", child=WfCellRequest, field="element_nr", parent_label="Assembly Data (element)", parent=ELEMENTS, severity="warning", group="workflow")
+    add(name="shop-element", label="Cell-shop stage - Element No", child=models.ElementShopState, field="element_nr", parent_label="Assembly Data (element)", parent=ELEMENTS, severity="warning", group="workflow")
+    add(name="seg-pair", label="Electrode Segregation - pair serial", child=seg, field="pair_serial_nr", parent_label="Anode / Cathode Details", parent=ELECTRODES, severity="warning", group="segregation")
+
     # --- shutdowns
     add(name="shut-cause", label="Shutdowns - Cause", child=models.Shutdown, field="cause", parent_label="Shutdown Causes", parent=_parent_text(models.ShutdownCause, "cause"), norm=_fold, create=_create_cause, severity="warning", group="shutdowns")
     add(name="shut-category", label="Shutdowns - Category", child=models.Shutdown, field="category", parent_label="Shutdown Categories", parent=_parent_text(models.ShutdownCategory, "category"), norm=_fold, create=_create_category, severity="warning", group="shutdowns")
@@ -447,6 +465,17 @@ def run_audit(db: Session) -> dict[str, Any]:
 # ---------------------------------------------------------------- repair
 
 
+def _canonical_already_stored(db: Session, rel: Rel, canonical: str) -> bool:
+    if rel.child is models.WhElementState:
+        return (
+            db.query(models.WhElementState).filter(models.WhElementState.serial == canonical, rel.where()).first()
+            is not None
+        )
+    if rel.child is models.ElementShopState:
+        return db.query(models.ElementShopState).filter(models.ElementShopState.element_nr == canonical).first() is not None
+    return False
+
+
 def repair_relation(db: Session, rel: Rel) -> dict[str, int]:
     parents = rel.parent(db)
     renamed = created = 0
@@ -465,11 +494,8 @@ def repair_relation(db: Session, rel: Rel) -> dict[str, int]:
                 db.flush()
             continue
         if str(raw) != canonical and rel.rename:
-            if rel.child is models.WhElementState and (
-                db.query(models.WhElementState).filter(models.WhElementState.serial == canonical, rel.where()).first()
-                is not None
-            ):
-                continue  # unique (kind, serial): the correctly spelled row already exists - leave this one for a person
+            if _canonical_already_stored(db, rel, canonical):
+                continue
             stmt = update(rel.child).where(col == raw)
             if rel.where is not None:
                 stmt = stmt.where(rel.where())
@@ -500,6 +526,24 @@ def fill_blank_masters(db: Session) -> int:
                 setattr(master, master_field, value[: 50 if master_field == "coating" else 100])
                 filled += 1
     return filled
+
+
+def sync_linked_fields(db: Session) -> dict[str, int]:
+    """Rewrite spellings to the master row and fill blank coating / membrane type / group. Does not commit."""
+    from .relations_sync import apply_defined_groups
+
+    renamed = created = 0
+    for rel in RELATIONS:
+        result = repair_relation(db, rel)
+        renamed += result["renamed_rows"]
+        created += result["created_masters"]
+    db.flush()
+    return {
+        "renamed_rows": renamed,
+        "created_masters": created,
+        "masters_filled": fill_blank_masters(db),
+        "groups_aligned": apply_defined_groups(db),
+    }
 
 
 def run_repair(db: Session, only: list[str] | None = None, mode: str = "all") -> dict[str, Any]:

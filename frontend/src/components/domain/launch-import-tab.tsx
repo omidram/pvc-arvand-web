@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const SLOTS = [
+  "elements",
+  "segregation",
   "pickup",
   "disassemble",
   "tafkik",
@@ -30,6 +32,7 @@ type Result = {
   rejected: { row: number; message: string; value?: string }[];
   rejected_count: number;
   error: string | null;
+  links?: { renamed_rows: number; created_masters: number; masters_filled: number; groups_aligned: number };
 };
 
 export function LaunchImportTab() {
@@ -112,6 +115,16 @@ function SlotCard({ slot }: { slot: Slot }) {
               {" · "}
               {t("settings.launch.refused")}: {result.rejected_count}
             </p>
+            {result.links ? (
+              <p>
+                {t("settings.launch.links", {
+                  renamed: result.links.renamed_rows,
+                  masters: result.links.created_masters,
+                  filled: result.links.masters_filled,
+                  groups: result.links.groups_aligned,
+                })}
+              </p>
+            ) : null}
             {result.error && <p>{result.error}</p>}
             {shown.length > 0 && (
               <ul className="max-h-48 space-y-1 overflow-auto">

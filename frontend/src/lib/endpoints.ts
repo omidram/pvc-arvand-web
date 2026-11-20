@@ -146,6 +146,7 @@ export const launchImportApi = {
     rejected: { row: number; message: string; value?: string }[];
     rejected_count: number;
     error: string | null;
+    links?: { renamed_rows: number; created_masters: number; masters_filled: number; groups_aligned: number };
   }> => {
     const form = new FormData();
     form.append("file", file);

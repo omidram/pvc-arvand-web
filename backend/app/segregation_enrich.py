@@ -419,9 +419,6 @@ def enrich_segregation_fields(
         side = _side_on_element(el, serial_nr)
         if side:
             kind = side
-        coating = coating_for_serial(el, serial_nr)
-        if coating:
-            out["company"] = coating
         install = _as_date(el.commissioning_date) or _as_date(el.assembly_date)
         if install:
             out["install_date"] = install
@@ -431,7 +428,7 @@ def enrich_segregation_fields(
         disassemble = _as_date(el.disassembly_date)
         if disassemble:
             out["disassemble_date"] = disassemble
-        if el.decommission_reason:
+        if el.decommission_reason and not out.get("problems"):
             out["problems"] = str(el.decommission_reason).strip() or None
 
         pair = pair_serial_from_element(el, serial_nr)

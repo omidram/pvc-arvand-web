@@ -20,7 +20,7 @@ from . import models
 from .database import commit_db
 from .element_dashboard import _base_state, _event_date, clear_cache
 from .plant_import import gregorian_to_jalali, jalali_to_gregorian
-from .warehouse import compact_nr, ensure_indexed, load_compact_index
+from .warehouse import compact_nr, load_compact_index
 from .workflow_models import (
     MembraneStock,
     MembraneStockMove,
@@ -54,8 +54,20 @@ SLOTS: dict[str, dict[str, Any]] = {
         "file": "Waiting for DissAssemble Element.xlsx",
         "columns": ("element",),
     },
+    "elements": {
+        "needles": (),
+        "file": "Assembly Data (montage workbook)",
+        "columns": (),
+        "master": "elements",
+    },
+    "segregation": {
+        "needles": (),
+        "file": "TAFKIK segregation workbook",
+        "columns": (),
+        "master": "segregation",
+    },
     "tafkik": {
-        "needles": ("tafkik",),
+        "needles": ("inspection process", "check tafkik"),
         "file": "Waiting for Inspection-Process Check TAFKIK.xlsx",
         "columns": ("element", "anode", "cathode"),
     },
@@ -315,11 +327,12 @@ class _Book:
         return index.get(key, serial.strip()[:50])
 
     def ensure(self, kind: str, serial: str) -> str:
-        model = models.Anode if kind == "anode" else models.Cathode
-        field = "anode_nr" if kind == "anode" else "cathode_nr"
+        from .relations_sync import link_serial
+
         index = self.anodes if kind == "anode" else self.cathodes
-        ensure_indexed(self.db, model, field, serial, index)
-        return self.spell(kind, serial)
+        spelled = link_serial(self.db, kind, serial, index=index)
+        text = spelled if isinstance(spelled, str) and spelled.strip() else (serial or "")
+        return text.strip()[:50]
 
 
 def _latest_elements(db: Session) -> dict[str, models.Element]:
@@ -438,6 +451,8 @@ def import_launch_workbook(
 ) -> dict[str, Any]:
     if slot not in SLOTS:
         return _fail("این بخش شناخته نشد")
+    if SLOTS[slot].get("master"):
+        return _import_master(db, slot, filename, content, dry_run=dry_run)
     if not file_matches(slot, filename):
         return _fail(
             f"نام فایل با این بخش جور نیست. فایل مورد انتظار: {SLOTS[slot]['file']}"
@@ -479,6 +494,7 @@ def import_launch_workbook(
         _replace_slot(book)
         written = _write(book, slot, accepted)
         book.db.flush()
+        links = _sync_links(book.db)
         if dry_run:
             db.rollback()
         elif not commit_db(db):
@@ -497,6 +513,80 @@ def import_launch_workbook(
         "rejected": rejected[:300],
         "rejected_count": len(rejected),
         "error": None,
+        "links": links,
+    }
+
+
+def _position_slot(filename: str) -> str | None:
+    for key, spec in SLOTS.items():
+        if spec.get("master"):
+            continue
+        if file_matches(key, filename):
+            return key
+    return None
+
+
+def _sync_links(db: Session) -> dict[str, int]:
+    from .relationship_audit import sync_linked_fields
+
+    return sync_linked_fields(db)
+
+
+def _import_master(db: Session, slot: str, filename: str, content: bytes, *, dry_run: bool) -> dict[str, Any]:
+    from fastapi import HTTPException
+
+    other = _position_slot(filename)
+    if other:
+        return _fail(f"این فایل برای «{SLOTS[other]['file']}» است، نه جدول اصلی. چیزی نوشته نشد.")
+    try:
+        if slot == "elements":
+            from .plant_import import parse_assembly_excel
+            from .routers.elements import _apply_assembly_import
+
+            parsed = parse_assembly_excel(content, from_year=None, filename=filename)
+            if not parsed.get("recognized"):
+                return _fail("این فایل با جدول اسمبل‌دیتا جور نیست. چیزی نوشته نشد.")
+            if parsed.get("error"):
+                return _fail(str(parsed["error"]))
+            written = int(_apply_assembly_import(db, parsed, "upsert", commit=False).get("imported_rows") or 0)
+        else:
+            from .plant_import import parse_tafkik_excel
+            from .routers.segregation import apply_tafkik_records
+
+            records = parse_tafkik_excel(content).get("records") or []
+            if not records:
+                return _fail("این فایل با جدول تفکیک جور نیست. چیزی نوشته نشد.")
+            written = int(apply_tafkik_records(db, records, commit=False).get("imported_rows") or 0)
+        if not written:
+            db.rollback()
+            return _fail("ردیف قابل تزریقی پیدا نشد. چیزی نوشته نشد.")
+        links = _sync_links(db)
+        if dry_run:
+            db.rollback()
+        elif not commit_db(db):
+            db.rollback()
+            return _fail("پایگاه داده مشغول بود. دوباره تلاش کنید. چیزی قطعی نشد.")
+        else:
+            clear_cache()
+            if slot == "segregation":
+                from .routers.segregation import _publish
+
+                _publish()
+    except HTTPException as exc:
+        db.rollback()
+        return _fail(str(exc.detail))
+    except Exception:
+        db.rollback()
+        raise
+    return {
+        "ok": True,
+        "dry_run": dry_run,
+        "slot": slot,
+        "accepted": written,
+        "rejected": [],
+        "rejected_count": 0,
+        "error": None,
+        "links": links,
     }
 
 
@@ -1225,13 +1315,12 @@ def _open_inspection(book: _Book, element: str) -> WfInspectionRequest | None:
 def _write_built(book: _Book, accepted: list[dict[str, Any]], stage: str, status: str) -> int:
     for item in accepted:
         el = _ensure_built_element(book, item)
-        _ensure_membrane(book, item["membrane_code"], item["membrane_type"])
         anode = book.ensure("anode", item["anode"])
         cathode = book.ensure("cathode", item["cathode"])
-        el.anode_nr = el.anode_nr or anode
-        el.cathode_nr = el.cathode_nr or cathode
-        el.membrane_nr = el.membrane_nr or item["membrane_code"][:50]
-        el.membrane_type = el.membrane_type or item["membrane_type"][:100]
+        el.anode_nr = anode
+        el.cathode_nr = cathode
+        el.membrane_nr = _ensure_membrane(book, item["membrane_code"], item["membrane_type"])
+        el.membrane_type = item["membrane_type"][:100]
         book.elements[compact_nr(el.element_nr)] = el
         book.installed.add(("anode", compact_nr(anode)))
         book.installed.add(("cathode", compact_nr(cathode)))
@@ -1248,7 +1337,7 @@ def _write_built(book: _Book, accepted: list[dict[str, Any]], stage: str, status
             element_id=el.id,
             anode_nr=anode,
             cathode_nr=cathode,
-            membrane_nr=item["membrane_code"][:50],
+            membrane_nr=el.membrane_nr,
             membrane_type=item["membrane_type"][:100],
             assembly_date=day,
             last_note=book.marker,
@@ -1321,13 +1410,22 @@ def _ensure_built_element(book: _Book, item: dict[str, Any]) -> models.Element:
     return el
 
 
-def _ensure_membrane(book: _Book, code: str, membrane_type: str) -> None:
-    key = compact_nr(code)
-    if key in book.membranes:
-        return
-    stored = code.strip()[:50]
-    book.db.add(models.Membrane(membrane_nr=stored, membrane_type=membrane_type[:100], remarks=book.marker))
-    book.membranes[key] = stored
+def _ensure_membrane(book: _Book, code: str, membrane_type: str) -> str:
+    from .relations_sync import link_serial
+
+    spelled = link_serial(
+        book.db,
+        "membrane",
+        code,
+        extra={"membrane_type": membrane_type},
+        index=book.membranes,
+    )
+    text = spelled if isinstance(spelled, str) and spelled.strip() else code.strip()
+    stored = text.strip()[:50]
+    master = book.db.get(models.Membrane, book.membranes.get(compact_nr(stored), stored))
+    if master is not None and membrane_type and not (master.membrane_type or "").strip():
+        master.membrane_type = membrane_type[:100]
+    return stored
 
 
 def _write_membranes(book: _Book, accepted: list[dict[str, Any]]) -> int:

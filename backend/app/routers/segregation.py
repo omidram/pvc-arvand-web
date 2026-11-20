@@ -247,6 +247,57 @@ def from_assembly(
     return out
 
 
+def apply_tafkik_records(db: Session, records: list[dict], *, commit: bool = True) -> dict:
+    """Write TAFKIK rows and tie each serial to Assembly Data and the anode/cathode master.
+
+    The workshop company column stays as written. It is not replaced by the coating name.
+    """
+    anode_keys = {compact_nr(nr) for (nr,) in db.query(models.Anode.anode_nr).all() if nr}
+    cathode_keys = {compact_nr(nr) for (nr,) in db.query(models.Cathode.cathode_nr).all() if nr}
+    element_index = build_latest_element_index(db)
+    created = 0
+    for item in records:
+        kind = item.get("electrode_kind")
+        if not kind or kind == "unknown":
+            key = compact_nr(item.get("serial_nr"))
+            if key in anode_keys and key not in cathode_keys:
+                kind = "anode"
+            elif key in cathode_keys and key not in anode_keys:
+                kind = "cathode"
+        fields = enrich_segregation_fields(
+            db,
+            serial_nr=item["serial_nr"],
+            electrode_kind=kind,
+            preserve_service_life=item.get("service_life") or None,
+            excel_values=item,
+            element_index=element_index,
+        )
+        if item.get("company"):
+            fields["company"] = item["company"]
+        else:
+            fields.pop("company", None)
+        linked_kind = (fields.get("electrode_kind") or "").lower()
+        if linked_kind in ("anode", "cathode"):
+            fields["serial_nr"] = link_serial(db, linked_kind, fields.get("serial_nr"))
+            if linked_kind == "anode":
+                anode_keys.add(compact_nr(fields["serial_nr"]))
+            else:
+                cathode_keys.add(compact_nr(fields["serial_nr"]))
+        if fields.get("pair_serial_nr") and linked_kind in ("anode", "cathode"):
+            pair_kind = "cathode" if linked_kind == "anode" else "anode"
+            fields["pair_serial_nr"] = link_serial(db, pair_kind, fields["pair_serial_nr"])
+        db.add(models.ElectrodeSegregation(**_row_kwargs(fields)))
+        created += 1
+        if created % 500 == 0:
+            db.flush()
+    if commit and created:
+        db.commit()
+        _publish()
+    elif created:
+        db.flush()
+    return {"imported_rows": created}
+
+
 @router.post("/import-tafkik-excel")
 async def import_tafkik_excel(
     _admin=Depends(require_admin),
@@ -262,39 +313,12 @@ async def import_tafkik_excel(
         total = len(records)
         if progress:
             progress(0, total)
-        anode_keys = {compact_nr(nr) for (nr,) in db.query(models.Anode.anode_nr).all() if nr}
-        cathode_keys = {compact_nr(nr) for (nr,) in db.query(models.Cathode.cathode_nr).all() if nr}
-        element_index = build_latest_element_index(db)
-        created = 0
-        for done, item in enumerate(records, start=1):
-            kind = item.get("electrode_kind")
-            if not kind or kind == "unknown":
-                key = compact_nr(item["serial_nr"])
-                if key in anode_keys and key not in cathode_keys:
-                    kind = "anode"
-                elif key in cathode_keys and key not in anode_keys:
-                    kind = "cathode"
-            fields = enrich_segregation_fields(
-                db,
-                serial_nr=item["serial_nr"],
-                electrode_kind=kind,
-                preserve_service_life=item.get("service_life") or None,
-                excel_values=item,
-                element_index=element_index,
-            )
-            db.add(models.ElectrodeSegregation(**_row_kwargs(fields)))
-            created += 1
-            if created % 500 == 0:
-                db.flush()
-            if progress and (done == total or done % 25 == 0):
-                progress(done, total)
-        db.commit()
-        _publish()
-        return {
-            "imported_rows": created,
-            "sheet": parsed.get("sheet"),
-            "preview": records[:3],
-        }
+        result = apply_tafkik_records(db, records, commit=True)
+        if progress:
+            progress(total, total)
+        result["sheet"] = parsed.get("sheet")
+        result["preview"] = records[:3]
+        return result
 
     return spawn_import(work)
 
