@@ -932,18 +932,15 @@ def _fill_groups_after_definition(db: Session, obj: models.GroupDefinition) -> N
     obj.cathode_coating = coating_name(obj.cathode_coating)
     for field in ("anode_coating", "cathode_coating", "membrane_type", "gap_mm"):
         publish_assembly_value(db, "group_definitions", field, getattr(obj, field, None))
-    apply_defined_groups(db)
-
-
-def _realign_after_group_delete(db: Session, _obj: models.GroupDefinition) -> None:
-    apply_defined_groups(db)
 
 
 def _refresh_group_dashboard() -> None:
-    """Drop the element-dashboard cache so a new group shows on the next read."""
+    """The chart reads definitions directly. The stored group numbers catch up in the background."""
     from ..element_dashboard import clear_cache
+    from ..link_sync import request_sync
 
     clear_cache()
+    request_sync()
 
 
 group_definitions_router = build_crud_router(
@@ -957,7 +954,6 @@ group_definitions_router = build_crud_router(
     unique_compact=True,
     sort_key=lambda row: natural_key(row.group_nr),
     after_save=_fill_groups_after_definition,
-    after_delete=_realign_after_group_delete,
     after_commit=_refresh_group_dashboard,
     on_rename=_rename_group,
 )
@@ -967,9 +963,6 @@ group_definitions_router = build_crud_router(
 def group_overview(db: Session = Depends(get_db)):
     """Amount of elements per group, as described in the manual ('Group overview')."""
     from sqlalchemy import func
-
-    if apply_defined_groups(db):
-        db.commit()
 
     rows = (
         db.query(models.Element.group_nr, func.count(models.Element.id))

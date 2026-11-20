@@ -29,6 +29,7 @@ export function InServiceBreakdown() {
     queryFn: elementDashboardApi.inServiceBreakdown,
     staleTime: 0,
     refetchOnMount: "always",
+    refetchInterval: 15_000,
   });
   const cells = useQuery({
     queryKey: ["element-dashboard", "in-service-cells", pick],

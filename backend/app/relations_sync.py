@@ -163,7 +163,7 @@ def group_match_score(
 
 
 def match_defined_group(
-    db: Session,
+    db: Session | None = None,
     *,
     anode_coating: Any = None,
     cathode_coating: Any = None,
@@ -191,44 +191,46 @@ def match_defined_group(
     return best[1] if best else None
 
 
-def sync_element_group(db: Session, el: models.Element, definitions: list[models.GroupDefinition] | None = None) -> str:
-    """Point one Assembly Data row at the Group Definition its coatings match.
+def target_group(el: models.Element, definitions: list[models.GroupDefinition]) -> str | None:
+    """The group number this element should show, from the definitions, without writing.
 
     A group that still fits is kept. A blank group, a missing group, or a group whose
-    specification no longer fits moves to a more specific match. Returns assigned, kept,
-    blank, or mismatch (left in place because nothing else fits).
+    specification no longer fits moves to a more specific match. None means unclassified.
     """
-    groups = definitions if definitions is not None else db.query(models.GroupDefinition).all()
     kwargs = {
         "anode_coating": el.anode_coating,
         "cathode_coating": el.cathode_coating,
         "membrane_type": el.membrane_type,
         "gap_mm": el.gap_mm,
     }
-    best = match_defined_group(db, definitions=groups, **kwargs)
-    by_nr = {g.group_nr: g for g in groups}
+    best = match_defined_group(definitions=definitions, **kwargs)
+    by_nr = {g.group_nr: g for g in definitions}
     current = str(el.group_nr or "").strip()
     current_group = by_nr.get(current)
     current_score = group_match_score(current_group, **kwargs) if current_group is not None else None
     best_score = group_match_score(by_nr[best], **kwargs) if best and best in by_nr else 0
     if not current:
-        if not best:
-            return "blank"
-        el.group_nr = best
-        return "assigned"
+        return best or None
     if current_score:
         if best and best != current and best_score > current_score:
-            el.group_nr = best
-            return "assigned"
-        return "kept"
+            return best
+        return current
     if best and best != current:
-        el.group_nr = best
-        return "assigned"
+        return best
     if current_group is None:
-        # Only groups that exist in Group Definition may stay on an element (no ghost group such as "2").
-        el.group_nr = None
-        return "cleared"
-    return "mismatch"
+        return None
+    return current
+
+
+def sync_element_group(db: Session, el: models.Element, definitions: list[models.GroupDefinition] | None = None) -> str:
+    """Point one Assembly Data row at the Group Definition its coatings match."""
+    groups = definitions if definitions is not None else db.query(models.GroupDefinition).all()
+    wanted = target_group(el, groups)
+    current = str(el.group_nr or "").strip() or None
+    if wanted == current:
+        return "kept" if wanted else "blank"
+    el.group_nr = wanted
+    return "assigned" if wanted else "cleared"
 
 
 def apply_defined_groups(db: Session) -> int:

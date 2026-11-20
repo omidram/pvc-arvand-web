@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from . import models
 from .calculations import element_dol, serial_dol, shutdowns_affecting
 from .plant_topology import all_electrolyzers, format_electrolyzer_name, is_valid_electrolyzer_name, norm_pos
-from .relations_sync import is_junk_serial
+from .relations_sync import is_junk_serial, target_group
 from .warehouse import BUCKETS, _as_date, _grouped, _iso, _life_key, build_board, compact_eq, compact_nr, load_shutdown_windows, rows_of
 
 CACHE_SECONDS = 5  # writes clear this; a short window only covers repeated reads of an unchanged board
@@ -1861,6 +1861,19 @@ def life_log(db: Session, element_nr: str) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------- cells in the plant: by group and by coating company
 
 
+def _shown_group(el: models.Element | None, item: dict[str, Any], definitions: list) -> str:
+    """Group to display: the definition this cell matches now, not a stored number that is still catching up."""
+    if el is not None:
+        chosen = target_group(el, definitions)
+        if chosen:
+            return chosen
+    stored = str((el.group_nr if el is not None else None) or item.get("group_nr") or "").strip()
+    known = {str(g.group_nr or "").strip() for g in definitions}
+    if stored and stored in known:
+        return stored
+    return "—"
+
+
 def _unclassified(name: str | None) -> bool:
     """A blank or dash label is the uncategorized row and stays at the bottom of a count sort."""
     return (name or "").strip() in {"", "—", "-", "–", "−"}
@@ -1874,12 +1887,13 @@ def in_service_breakdown(db: Session) -> dict[str, Any]:
         nr = str(el.element_nr or "")
         if nr in running and el.commissioning_date and not el.disassembly_date and not el.decommissioning_date:
             live[nr] = el  # newest open installation wins
-    defs = {g.group_nr: g for g in db.query(models.GroupDefinition).all()}
+    definitions = db.query(models.GroupDefinition).all()
+    defs = {g.group_nr: g for g in definitions}
     groups: dict[str, dict[str, Any]] = {}
     companies: dict[str, dict[str, int]] = {}
     for nr, item in running.items():
         el = live.get(nr)
-        group = str((el.group_nr if el else None) or item.get("group_nr") or "").strip() or "—"
+        group = _shown_group(el, item, definitions)
         row = groups.setdefault(group, {"group": group, "cells": 0, "anodes": 0, "cathodes": 0})
         row["cells"] += 1
         for side, col in (("anode", "anode_coating"), ("cathode", "cathode_coating")):
@@ -1929,10 +1943,11 @@ def in_service_cells(db: Session, group: str | None = None, company: str | None 
         nr = str(el.element_nr or "")
         if nr in running and el.commissioning_date and not el.disassembly_date and not el.decommissioning_date:
             live[nr] = el
+    definitions = db.query(models.GroupDefinition).all()
     out: list[dict[str, Any]] = []
     for nr, item in running.items():
         el = live.get(nr)
-        grp = str((el.group_nr if el else None) or item.get("group_nr") or "").strip() or "\u2014"
+        grp = _shown_group(el, item, definitions)
         anode_co = str((el.anode_coating if el else None) or "").strip() or "\u2014"
         cathode_co = str((el.cathode_coating if el else None) or "").strip() or "\u2014"
         if group is not None and grp != group:
